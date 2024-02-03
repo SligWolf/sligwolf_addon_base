@@ -1,0 +1,4 @@
+*.tmp
+*.zip
+*.gma
+_deployment/

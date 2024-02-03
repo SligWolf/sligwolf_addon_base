@@ -1,0 +1,19 @@
+{
+	"title"		:	"SW Base",
+    "type"		:	"tool",
+	"tags"		:	"fun",
+	"ignore"	:
+	[
+		"*.git*",
+		"*.vscode*",
+		"*.svn*",
+		"*.txt",
+		"*.bat",
+		"*.gma",
+		"*.zip",
+		"*.tmp",
+		"_deployment/*",
+		"*.md",
+		"LICENSE"
+	]
+}
