@@ -2,7 +2,9 @@
 set compressor=gmad.exe
 set uploader=gmpublish.exe
 set zipper=gma_to_zip.bat
+
 set addonid=2866238940
+set addonname=sw_base
 
 rem Compress
 :Compress
@@ -12,10 +14,13 @@ rem Compress
 
 	set addonpath=%CD%
 	for %%a in ("%CD%") do set addonpath=%%~dpnxa
-	for %%a in ("%CD%") do set addonname=%%~nxa
-	set gmapath=%addonpath%/_deployment/%addonname%.gma
 
-	if not exist %addonpath%/_deployment mkdir %addonpath%/_deployment
+	set gmafolder=%addonpath%/_deployment
+	set gmapath=%gmafolder%/%addonname%.gma
+
+	if not exist "%gmafolder%" (
+		mkdir "%gmafolder%"
+	)
 
 	echo %compressor% create -folder "%addonpath%" -out "%gmapath%"
 	%compressor% create -folder "%addonpath%" -out "%gmapath%"
