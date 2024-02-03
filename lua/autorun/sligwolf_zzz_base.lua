@@ -3,6 +3,7 @@
 
 AddCSLuaFile()
 
-if !SW_Addons then
-	include("sw_addons/init.lua")
+if not SligWolf_Addons then
+	include("sligwolf_addons/main.lua")
 end
+

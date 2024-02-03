@@ -1,0 +1,113 @@
+AddCSLuaFile()
+local SligWolf_Addons = SligWolf_Addons
+
+if not SLIGWOLF_ADDON then
+	SligWolf_Addons.AutoLoadAddon(function() end)
+	return
+end
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "null",
+	channel = CHAN_AUTO,
+	volume = 0,
+	level = 75,
+	sound = "common/null.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "indicator.on",
+	channel = CHAN_AUTO,
+	volume = 0.5,
+	level = 75,
+	pitch = 100,
+	sound = "vehicles/sligwolf/generic/indicator_on.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "indicator.off",
+	channel = CHAN_AUTO,
+	volume = 0.5,
+	level = 75,
+	pitch = 75,
+	sound = "vehicles/sligwolf/generic/indicator_on.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.click",
+	channel = CHAN_STATIC,
+	volume = 1.5,
+	level = 70,
+	sound = "vehicles/sligwolf/generic/talk.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.switchclick",
+	channel = CHAN_STATIC,
+	volume = 1.0,
+	level = 70,
+	sound = "vehicles/sligwolf/generic/light.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.carhorn",
+	channel = CHAN_STATIC,
+	level = 110,
+	sound = "vehicles/sligwolf/generic/carhorn.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.carhorn2",
+	channel = CHAN_STATIC,
+	level = 110,
+	sound = "vehicles/sligwolf/generic/carhorn2.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.bikehorn",
+	channel = CHAN_STATIC,
+	level = 110,
+	sound = "vehicles/sligwolf/generic/bikehorn.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.door",
+	channel = CHAN_AUTO,
+	level = 75,
+	pitch = 100,
+	sound = "vehicles/sligwolf/generic/door01.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.metaldoor.open",
+	channel = CHAN_AUTO,
+	level = 75,
+	pitch = 100,
+	sound = "doors/door_metal_medium_open1.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "generic.metaldoor.close",
+	channel = CHAN_AUTO,
+	level = 75,
+	pitch = 100,
+	sound = "doors/door_metal_medium_close1.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "wagon.drive",
+	channel = CHAN_STATIC,
+	volume = 1.0,
+	level = 90,
+	sound = "vehicles/sligwolf/generic/wagon_wheel_loop.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "weapon.denyaction",
+	channel = CHAN_WEAPON,
+	level = 100,
+	pitch = 120,
+	sound = "buttons/combine_button2.wav"
+})
+
+return true
+
