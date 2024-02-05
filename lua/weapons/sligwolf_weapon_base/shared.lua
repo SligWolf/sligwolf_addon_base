@@ -6,7 +6,8 @@ DEFINE_BASECLASS("weapon_base")
 SWEP.Spawnable				= false
 SWEP.AdminOnly				= false
 
-SWEP.sligwolf_baseEntity	= true
+SWEP.sligwolf_entity		= true
+SWEP.sligwolf_baseWeapon	= true
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
@@ -67,10 +68,6 @@ function SWEP:MakeEnt(classname, name, parent)
 	local addon = self:GetAddon()
 	if not addon then
 		return
-	end
-
-	if not parent then
-		parent = self
 	end
 
 	local plyOwner = self:GetOwner()

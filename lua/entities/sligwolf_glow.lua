@@ -1,7 +1,7 @@
 AddCSLuaFile()
 local SligWolf_Addons = SligWolf_Addons
 
-DEFINE_BASECLASS("gmod_sligwolf_base")
+DEFINE_BASECLASS("sligwolf_base")
 
 ENT.Spawnable			= false
 ENT.RenderGroup 		= RENDERGROUP_BOTH

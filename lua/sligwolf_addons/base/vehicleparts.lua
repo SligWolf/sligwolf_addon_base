@@ -779,7 +779,7 @@ function SLIGWOLF_ADDON:SetUpVehicleProp(parent, component, ply, superparent)
 
 	local name = component.name
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_phys", ply, parent, "Prop_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_phys", ply, parent, "Prop_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -794,7 +794,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSlider(parent, component, ply, superparent)
 
 	local name = component.name
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_slider", ply, parent, "Slider_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_slider", ply, parent, "Slider_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -811,7 +811,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBogie(parent, component, ply, superparent)
 
 	local name = component.name
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_bogie", ply, parent, "Bogie_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_bogie", ply, parent, "Bogie_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -827,7 +827,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	local name = component.name
 	local boneMerge = component.boneMerge
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_phys", ply, parent, "ParentedProp_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_phys", ply, parent, "ParentedProp_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -847,7 +847,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 	local name = component.name
 	local boneMerge = component.boneMerge
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_animatable", ply, parent, "Animatable_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_animatable", ply, parent, "Animatable_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -871,7 +871,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 	local maxPoseValue = component.maxPoseValue
 	local poseName = component.poseName
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_speedometer", ply, parent, "Speedometer_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_speedometer", ply, parent, "Speedometer_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -897,7 +897,7 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent)
 
 	local name = component.name
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_trigger_search", ply, parent, "Trigger_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_trigger_search", ply, parent, "Trigger_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -930,7 +930,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 		return
 	end
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_door", ply, parent, "Door_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_door", ply, parent, "Door_" .. name)
 	if not IsValid(ent) then
 		return
 	end
@@ -972,7 +972,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	local gender = component.gender
 	local searchRadius = component.searchRadius
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_connector", ply, parent, "Connector_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_connector", ply, parent, "Connector_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -1061,7 +1061,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	local name = component.name
 	local inVehicle = component.inVehicle
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_button", ply, parent, "ConnectorButton_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_button", ply, parent, "ConnectorButton_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -1090,7 +1090,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 		return
 	end
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_button", ply, parent, "Button_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_button", ply, parent, "Button_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -1125,7 +1125,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	local endAlpha = component.endAlpha
 	local selfAttachment = component.selfAttachment
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_particle", ply, parent, "Smoke_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_particle", ply, parent, "Smoke_" .. name)
 	if not IsValid(ent) then return end
 
 	SetPartKeyValues(ent, keyValues)
@@ -1177,7 +1177,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	local shadowRenderDist = component.shadowRenderDist
 	local selfAttachment = component.selfAttachment
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_light_cone", ply, parent, "Light_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_light_cone", ply, parent, "Light_" .. name)
 	if not IsValid(ent) then return end
 
 	SetPartKeyValues(ent, keyValues)
@@ -1225,7 +1225,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 	local alphaReduce = component.alphaReduce
 	local selfAttachment = component.selfAttachment
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_glow", ply, parent, "Glow_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_glow", ply, parent, "Glow_" .. name)
 	if not IsValid(ent) then return end
 
 	SetPartKeyValues(ent, keyValues)
@@ -1295,7 +1295,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superp
 	local restrate = component.restrate
 	local boneMerge = component.boneMerge
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_wheel", ply, parent, "Wheel_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_wheel", ply, parent, "Wheel_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
@@ -1319,7 +1319,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	local scale = component.scale
 	local functionName = component.functionName
 
-	local ent = self:MakeEntEnsured("gmod_sligwolf_display", ply, parent, "Display_" .. name)
+	local ent = self:MakeEntEnsured("sligwolf_display", ply, parent, "Display_" .. name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)

@@ -9,8 +9,8 @@ if not SLIGWOLF_BASE_OBJ then
 	return
 end
 
-local LIBPrint = SligWolf_Addons.Print
 local LIBEntities = SligWolf_Addons.Entities
+local LIBPrint = SligWolf_Addons.Print
 
 function SLIGWOLF_BASE_OBJ:RunPostInitialize()
 	self:TimerNextFrame("PostInitialize", function()

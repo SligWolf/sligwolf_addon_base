@@ -24,8 +24,8 @@ end
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBBones = SligWolf_Addons.Bones
 local LIBEntities = SligWolf_Addons.Entities
+local LIBBones = SligWolf_Addons.Bones
 local LIBUtil = SligWolf_Addons.Util
 
 ENT.FailbackModel = CONSTANTS.mdlCube1
