@@ -109,5 +109,30 @@ SLIGWOLF_ADDON:AddSoundScript({
 	sound = "buttons/combine_button2.wav"
 })
 
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "crane.engineStart",
+	channel = CHAN_STATIC,
+	volume = 1.0,
+	level = 90,
+	sound = "vehicles/Crane/crane_startengine1.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "crane.turn",
+	channel = CHAN_STATIC,
+	volume = 1.0,
+	level = 90,
+	sound = "vehicles/Crane/crane_turn_loop2.wav"
+})
+
+SLIGWOLF_ADDON:AddSoundScript({
+	name = "crane.moveArm",
+	channel = CHAN_STATIC,
+	volume = 1.0,
+	level = 90,
+	pitch = {90, 120},
+	sound = "vehicles/Crane/crane_extend_loop1.wav"
+})
+
 return true
 

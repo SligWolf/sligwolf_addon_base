@@ -70,9 +70,9 @@ CONSTANTS.sndRPGFire = Sound("Weapon_RPG.Single")
 CONSTANTS.sndWeaponDenyAction = Sound("SLIGWOLF.base.weapon.denyaction")
 CONSTANTS.sndCrowbarHitWorld = Sound("Weapon_Crowbar.Melee_HitWorld")
 
-CONSTANTS.sndCraneEngineStart = Sound("Crane_engine_start")
-CONSTANTS.sndCraneExtendStart = Sound("Crane_extend_start")
-CONSTANTS.sndCraneFirstgear = Sound("Crane_firstgear")
+CONSTANTS.sndCraneEngineStart = Sound("SLIGWOLF.base.crane.engineStart")
+CONSTANTS.sndCraneExtendStart = Sound("SLIGWOLF.base.crane.moveArm")
+CONSTANTS.sndCraneFirstgear = Sound("SLIGWOLF.base.crane.turn")
 CONSTANTS.sndMagnetToggle = Sound("Crane_magnet_toggle")
 CONSTANTS.sndMagnetRelease = Sound("Crane_magnet_release")
 
