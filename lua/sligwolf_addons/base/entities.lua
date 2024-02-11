@@ -12,7 +12,6 @@ end
 
 local LIBEntities = SligWolf_Addons.Entities
 local LIBUtil = SligWolf_Addons.Util
-local LIBTimer = SligWolf_Addons.Timer
 
 function SLIGWOLF_ADDON:MakeEnt(classname, plyOwner, parent, name)
 	local ent = ents.Create(classname)
@@ -260,25 +259,23 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	duplicator.RegisterEntityModifier(dupename, function(ply, ent, data)
 		if not IsValid(ent) then return end
 
-		-- delay the dupe modifier 2 frames late, as the main spawn function is already delayed
-		LIBTimer.SimpleNextFrame(0, function()
-			if not IsValid(ent) then return end
+		self:EntityTimerUntil(ent, "registerEntityModifier_" .. name, 0.1, function()
+			local superparent = LIBEntities.GetSuperParent(ent) or ent
+			if not IsValid(superparent) then return end
 
-			LIBTimer.SimpleNextFrame(0, function()
-				if not IsValid(ent) then return end
+			-- delay the dupe modifier until the entire entity system has been spawned
+			if superparent.sligwolf_isSpawningParts then return end
 
-				local superparent = LIBEntities.GetSuperParent(ent) or ent
-				if not IsValid(superparent) then return end
+			superparent.SLIGWOLF_Vars = superparent.SLIGWOLF_Vars or {}
+			local vars = superparent.SLIGWOLF_Vars
 
-				superparent.SLIGWOLF_Vars = superparent.SLIGWOLF_Vars or {}
-				local vars = superparent.SLIGWOLF_Vars
+			vars.Data = data or {}
 
-				vars.Data = data or {}
+			if IsValid(superparent) then
+				postcopycallback(superparent)
+			end
 
-				if IsValid(superparent) then
-					postcopycallback(superparent)
-				end
-			end)
+			return true
 		end)
 	end)
 
