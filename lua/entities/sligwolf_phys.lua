@@ -26,10 +26,6 @@ function ENT:InitializePhysics()
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 end
 
-function ENT:IsPickedUp()
-	return LIBEntities.IsPickedUp(self)
-end
-
 local g_getClassActedAsProp = nil
 g_getClassActedAsProp = function(this)
 	if not this.sligwolf_physBaseEntity and this.SLIGWOLF_oldGetClass and this.SLIGWOLF_oldGetClass ~= g_getClassActedAsProp then
@@ -48,7 +44,8 @@ function ENT:CallActingAsPropPhysics(func, ...)
 		return
 	end
 
-	local meta = debug.getmetatable(self)
+	--local meta = debug.getmetatable(self)
+	local meta = getmetatable(self)
 	local swOldGetClass = meta.SLIGWOLF_oldGetClass
 
 	if swOldGetClass or swOldGetClass == g_getClassActedAsProp then
@@ -92,6 +89,14 @@ function ENT:CallActingAsPropPhysics(func, ...)
 	end
 
 	return unpack(result)
+end
+
+function ENT:UpdateBodySystemMotion(delayed)
+	LIBEntities.UpdateBodySystemMotion(self, delayed)
+end
+
+function ENT:IsPhysgunPickedUp()
+	return LIBEntities.IsPhysgunPickedUp(self)
 end
 
 function ENT:OnPhysgunPickup()

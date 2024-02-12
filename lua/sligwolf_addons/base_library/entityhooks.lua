@@ -23,25 +23,47 @@ end
 
 LIBHook.Add("EntityKeyValue", "Library_EntityHooks_RegisterKeyValue", RegisterKeyValue, 20000)
 
-local function MarkPickedUp(ply, ent)
+local function MarkPhysgunPickedUp(ply, ent)
+	if not SERVER then return end
 	if not IsValid(ent) then return end
 	if not ent.sligwolf_entity then return end
 	if not ent.sligwolf_physEntity then return end
 
-	LIBEntities.MarkPickedUp(ent, ply)
+	LIBEntities.MarkPhysgunPickedUp(ent, ply)
 end
 
-LIBHook.Add("PhysgunPickup", "Library_EntityHooks_MarkPickedUp", MarkPickedUp, 20000)
+LIBHook.Add("PhysgunPickup", "Library_EntityHooks_MarkPhysgunPickedUp", MarkPhysgunPickedUp, 20000)
 
-local function UnmarkPickedUp(ply, ent)
+local function UnmarkPhysgunPickedUp(ply, ent)
+	if not SERVER then return end
 	if not IsValid(ent) then return end
 	if not ent.sligwolf_entity then return end
 	if not ent.sligwolf_physEntity then return end
 
-	LIBEntities.UnmarkPickedUp(ent, ply)
+	LIBEntities.UnmarkPhysgunPickedUp(ent, ply)
 end
 
-LIBHook.Add("PhysgunDrop", "Library_EntityHooks_UnmarkPickedUp", UnmarkPickedUp, 20000)
+LIBHook.Add("PhysgunDrop", "Library_EntityHooks_UnmarkPhysgunPickedUp", UnmarkPhysgunPickedUp, 20000)
+
+LIBHook.Add("OnPhysgunFreeze", "Library_EntityHooks_UpdateFreeze", function(weapon, phys, ent, ply)
+	if not SERVER then return end
+	LIBEntities.UpdateBodySystemMotion(ent, true)
+end, 21000)
+
+LIBHook.Add("CanPlayerUnfreeze", "Library_EntityHooks_UpdateFreeze", function(ply, ent, phys)
+	if not SERVER then return end
+	LIBEntities.UpdateBodySystemMotion(ent, true)
+end, 21000)
+
+LIBHook.Add("OnPhysgunPickup", "Library_EntityHooks_UpdateFreeze", function(ply, ent)
+	if not SERVER then return end
+	LIBEntities.UpdateBodySystemMotion(ent, true)
+end, 21000)
+
+LIBHook.Add("PhysgunDrop", "Library_EntityHooks_UpdateFreeze", function(ply, ent)
+	if not SERVER then return end
+	LIBEntities.UpdateBodySystemMotion(ent, true)
+end, 21000)
 
 local function SpawnSystemFinished(ent, ply)
 	if not IsValid(ent) then return end

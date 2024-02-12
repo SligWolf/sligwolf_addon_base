@@ -86,7 +86,7 @@ function LIB.Load()
 	local LIBHook = SligWolf_Addons.Hook
 	local LIBTimer = SligWolf_Addons.Timer
 
-	LIBTimer.NextFrame("Library_VR_Load", function()
+	LIBTimer.SimpleNextFrame(function()
 		-- ensure the VRMod has been loaded
 
 		g_vrmod = nil

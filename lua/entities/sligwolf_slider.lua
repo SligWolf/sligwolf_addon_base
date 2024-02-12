@@ -41,10 +41,13 @@ if CLIENT then
 			return
 		end
 
-		if renderMode == LIBConvar.ENUM_SLIDER_RENDER_MODE_PHYSGUN then
-			if not self.shouldDrawModel then
-				return
-			end
+		if renderMode == LIBConvar.ENUM_SLIDER_RENDER_MODE_ALWAYS then
+			self:DrawModel(flags)
+			return
+		end
+
+		if not self:IsPhysgunPickedUp() then
+			return
 		end
 
 		self:DrawModel(flags)
@@ -58,20 +61,3 @@ if CLIENT then
 		self:RenderSlider(flags)
 	end
 end
-
-function ENT:OnPhysgunPickup()
-	if not CLIENT then
-		return
-	end
-
-	self.shouldDrawModel = true
-end
-
-function ENT:OnPhysgunDrop()
-	if not CLIENT then
-		return
-	end
-
-	self.shouldDrawModel = false
-end
-

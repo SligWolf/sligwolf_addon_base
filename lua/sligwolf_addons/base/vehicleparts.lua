@@ -34,6 +34,7 @@ local g_FailbackComponentsParams = {
 	constraints = {},
 	motion = true,
 	colorFromParent = false,
+	isBody = false,
 
 	typesParams = {
 		propParent = {
@@ -604,6 +605,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local motion = component.motion
 	local mass = component.mass
 	local colorFromParent = component.colorFromParent
+	local isBody = component.isBody
 	local selfAttachment = component.selfAttachment
 
 	if LIBUtil.IsValidModel(model) then
@@ -671,8 +673,19 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		ent:SetColorBaseEntity(parent)
 	end
 
-	ent.SLIGWOLF_Blockedprop = blocked
-	ent.SLIGWOLF_BlockAllTools = blockAllTools
+	if blocked then
+		ent.sligwolf_blockedprop = true
+		ent:SetNWBool("sligwolf_blockedprop", true)
+	end
+
+	if blockAllTools then
+		ent.sligwolf_blockAllTools = true
+		ent:SetNWBool("sligwolf_blockAllTools", true)
+	end
+
+	if isBody then
+		ent:SetNWBool("sligwolf_isBody", true)
+	end
 
 	local phys = ent:GetPhysicsObject()
 	if not IsValid(phys) then
@@ -1066,7 +1079,10 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
 
 	ent.SLIGWOLF_Dir = name
-	ent.SLIGWOLF_Cantpickup = true
+
+	ent.sligwolf_noPickup = true
+	ent:SetNWBool("sligwolf_noPickup", true)
+
 	ent.SLIGWOLF_Invehicle = inVehicle
 	ent.SLIGWOLF_Buttonfunc = function(...)
 		return LIBCoupling.CouplingMechanism(...)
@@ -1094,7 +1110,9 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
 
-	ent.SLIGWOLF_Cantpickup = true
+	ent.sligwolf_noPickup = true
+	ent:SetNWBool("sligwolf_noPickup", true)
+
 	ent.SLIGWOLF_Invehicle = inVehicle
 	ent.SLIGWOLF_Buttonfunc = function(...)
 		return func(...)
@@ -1155,7 +1173,9 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	ent:Set_DieTime(dieTime)
 	ent:Set_StartAlpha(startAlpha)
 	ent:Set_EndAlpha(endAlpha)
-	ent.SLIGWOLF_Blockedprop = true
+
+	ent.sligwolf_blockedprop = true
+	ent:SetNWBool("sligwolf_blockedprop", true)
 
 	return ent
 end
@@ -1202,7 +1222,9 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	ent:Set_FarZ(farZ)
 	ent:SetColor(color)
 	ent:Set_ShadowRenderDist(shadowRenderDist)
-	ent.SLIGWOLF_Blockedprop = true
+
+	ent.sligwolf_blockedprop = true
+	ent:SetNWBool("sligwolf_blockedprop", true)
 
 	return ent
 end
@@ -1252,7 +1274,9 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 	ent:Set_Count(count)
 	ent:Set_Alpha_Reduce(alphaReduce)
 	ent:TurnOn(false)
-	ent.SLIGWOLF_Blockedprop = true
+
+	ent.sligwolf_blockedprop = true
+	ent:SetNWBool("sligwolf_blockedprop", true)
 
 	return ent
 end

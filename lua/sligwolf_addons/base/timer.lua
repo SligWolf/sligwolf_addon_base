@@ -94,7 +94,6 @@ end
 
 local function getTimerNameFromEntity(ent, identifier)
 	if not IsValid(ent) then return nil end
-	if not ent.GetCreationID then return nil end
 
 	identifier = ent:GetCreationID() .. "_" .. tostring(identifier or "")
 	return identifier

@@ -99,12 +99,9 @@ end
 function ENT:SpawnCollision(model, pos, ang)
 	if CLIENT then return end
 
-	local isFirstSpawn = true
-
 	if IsValid(self.CollisionProp) then
 		self.CollisionProp:Remove()
 		self.CollisionProp = nil
-		isFirstSpawn = false
 	end
 
 	if IsValid(self.CollisionPropConst) then
@@ -112,7 +109,7 @@ function ENT:SpawnCollision(model, pos, ang)
 		self.CollisionPropConst = nil
 	end
 
-	self.CollisionProp = self:MakeEntEnsured("prop_physics", "CollisionProp")
+	self.CollisionProp = self:MakeEntEnsured("sligwolf_phys", "CollisionProp")
 	if not IsValid(self.CollisionProp) then
 		return
 	end
@@ -144,11 +141,7 @@ function ENT:SpawnCollision(model, pos, ang)
 	WD.DoNotDuplicate = true
 	self.CollisionPropConst = WD
 
-	local phys = Prop:GetPhysicsObject()
-	if not IsValid(phys) then return Prop end
-
-	phys:EnableMotion(isFirstSpawn)
-
+	self:UpdateBodySystemMotion()
 	return Prop
 end
 

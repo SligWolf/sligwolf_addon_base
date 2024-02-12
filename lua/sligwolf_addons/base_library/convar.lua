@@ -76,7 +76,11 @@ function LIB.Load()
 			g_isDebug = calcIsDebug()
 
 			if CLIENT then
-				g_sliderRenderMode = g_isDebug or cl_calcSliderRenderMode()
+				if g_isDebug then
+					g_sliderRenderMode = LIB.ENUM_SLIDER_RENDER_MODE_ALWAYS
+				else
+					g_sliderRenderMode = cl_calcSliderRenderMode()
+				end
 			end
 
 			g_lastThink = now + 1 + math.random()

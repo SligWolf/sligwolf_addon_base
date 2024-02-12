@@ -16,11 +16,13 @@ table.Empty(SligWolf_Addons.Entities)
 local LIB = SligWolf_Addons.Entities
 
 local LIBUtil = nil
+local LIBTimer = nil
 local LIBPrint = nil
 local LIBPosition = nil
 
 function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
+	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
 	LIBPosition = SligWolf_Addons.Position
 end
@@ -148,6 +150,7 @@ local function ClearCacheHelper(thisent)
 
 	vars.ChildrenRecursiveENTs = nil
 	vars.SystemENTs = nil
+	vars.BodyENTs = nil
 	vars.ChildrenENTsSorted = nil
 end
 
@@ -161,6 +164,7 @@ function LIB.ClearChildrenCache(ent)
 
 	ClearCacheHelper(vars.ParentENT)
 	ClearCacheHelper(vars.SuperParentENT)
+	ClearCacheHelper(vars.NearstBodyENT)
 end
 
 local function GenerateUnknownEntityName(ent)
@@ -258,6 +262,7 @@ function LIB.SetParent(ent, parent)
 	end
 
 	vars.SuperParentENT = nil
+	vars.NearstBodyENT = nil
 
 	LIB.UnregisterChild(oldParent, name)
 	LIB.RegisterChild(parent, name, ent)
@@ -276,11 +281,52 @@ function LIB.CalcSuperParent(ent)
 		end
 
 		local parent = LIB.GetParent(curparent)
-		if not IsValid(parent) or parent == ent then
+		if not IsValid(parent) then
+			break
+		end
+
+		if parent == ent then
 			break
 		end
 
 		curparent = parent
+	end
+
+	if not IsValid(curparent) then return end
+
+	return curparent
+end
+
+function LIB.CalcNearstBody(ent)
+	if not IsValid(ent) then return end
+
+	local curparent = ent
+
+	while true do
+		if not IsValid(curparent) then
+			break
+		end
+
+		if curparent:GetNWBool("sligwolf_isBody", false) then
+			break
+		end
+
+		local parent = LIB.GetParent(curparent)
+		if not IsValid(parent) then
+			break
+		end
+
+		if parent == ent then
+			break
+		end
+
+		curparent = parent
+	end
+
+	if not IsValid(curparent) then return end
+
+	if not curparent:GetNWBool("sligwolf_isBody", false) then
+		return
 	end
 
 	return curparent
@@ -304,10 +350,33 @@ function LIB.GetSuperParent(ent)
 	end
 
 	vars.SuperParentENT = superParent
+	print("aaaaaaaaa", ent, superParent)
 
 	LIB.ClearChildrenCache(ent)
 
 	return superParent
+end
+
+function LIB.GetNearstBody(ent)
+	if not IsValid(ent) then return end
+
+	local vars = ent.SLIGWOLF_Vars or {}
+	ent.SLIGWOLF_Vars = vars
+
+	local body = vars.NearstBodyENT
+
+	if IsValid(body) then
+		return body
+	end
+
+	body = LIB.CalcNearstBody(ent)
+	if not IsValid(body) then
+		body = LIB.GetSuperParent(ent)
+	end
+
+	vars.NearstBodyENT = body
+
+	return body
 end
 
 function LIB.GetEntityPath(ent)
@@ -467,12 +536,16 @@ function LIB.FindChildren(ent, name)
 	return found
 end
 
-local function GetAllChildrenRecursiveItemHelper(child, container, nodouble)
+local function GetAllChildrenRecursiveItemHelper(child, container, nodouble, filter)
 	if not IsValid(child) then
 		return false
 	end
 
 	if nodouble[child] then
+		return false
+	end
+
+	if filter and not filter(child) then
 		return false
 	end
 
@@ -482,7 +555,7 @@ local function GetAllChildrenRecursiveItemHelper(child, container, nodouble)
 	return true
 end
 
-local function GetAllChildrenRecursiveHelper(parent, container, nodouble)
+local function GetAllChildrenRecursiveHelper(parent, container, nodouble, filter)
 	if not IsValid(parent) then
 		return
 	end
@@ -495,11 +568,11 @@ local function GetAllChildrenRecursiveHelper(parent, container, nodouble)
 	nodouble = nodouble or {}
 
 	for k, child in ipairs(children) do
-		if not GetAllChildrenRecursiveItemHelper(child, container, nodouble) then
+		if not GetAllChildrenRecursiveItemHelper(child, container, nodouble, filter) then
 			continue
 		end
 
-		GetAllChildrenRecursiveHelper(child, container, nodouble)
+		GetAllChildrenRecursiveHelper(child, container, nodouble, filter)
 	end
 end
 
@@ -546,6 +619,39 @@ function LIB.GetSystemEntities(ent)
 	return children
 end
 
+function LIB.GetBodyEntities(ent)
+	local body = LIB.GetNearstBody(ent)
+	if not IsValid(body) then
+		return
+	end
+
+	body.SLIGWOLF_Vars = body.SLIGWOLF_Vars or {}
+	local vars = body.SLIGWOLF_Vars
+
+	if vars.BodyENTs then
+		return vars.BodyENTs
+	end
+
+	local children = {}
+	local nodouble = {}
+
+	local filter = function(thisent)
+		if LIB.GetNearstBody(thisent) ~= body then
+			return false
+		end
+
+		return true
+	end
+
+	GetAllChildrenRecursiveItemHelper(body, children, nodouble, filter)
+	GetAllChildrenRecursiveHelper(ent, children, nodouble, filter)
+
+	children = table.Reverse(children)
+
+	vars.BodyENTs = children
+	return children
+end
+
 function LIB.FindPropInSphere(ent, radius, attachment, filterA, filterB)
 	if not IsValid(ent) then return nil end
 	radius = tonumber(radius or 10)
@@ -578,13 +684,23 @@ function LIB.GetKeyValue(ent, key)
 	return kv[key]
 end
 
-function LIB.IsPickedUp(ent)
+function LIB.IsPhysgunPickedUp(ent)
 	local root = LIB.GetSuperParent(ent)
 	if not IsValid(root) then
 		return false
 	end
 
-	local pickedUpList = root.sligwolf_isPickedUp
+	if CLIENT then
+		local isPhysgunPickedUp = root:GetNWBool("sligwolf_isPhysgunPickedUp", false)
+
+		if not isPhysgunPickedUp then
+			return false
+		end
+
+		return true
+	end
+
+	local pickedUpList = root.sligwolf_isPhysgunPickedUp
 	if not pickedUpList then
 		return false
 	end
@@ -596,7 +712,9 @@ function LIB.IsPickedUp(ent)
 	return true
 end
 
-function LIB.MarkPickedUp(ent, ply)
+function LIB.MarkPhysgunPickedUp(ent, ply)
+	if not SERVER then return end
+
 	local root = LIB.GetSuperParent(ent)
 	if not IsValid(root) then
 		return
@@ -606,15 +724,17 @@ function LIB.MarkPickedUp(ent, ply)
 		return
 	end
 
-	root.sligwolf_isPickedUp = root.sligwolf_isPickedUp or {}
-	local pickedUpList = root.sligwolf_isPickedUp
+	root.sligwolf_isPhysgunPickedUp = root.sligwolf_isPhysgunPickedUp or {}
+	local pickedUpList = root.sligwolf_isPhysgunPickedUp
 
 	local plyId = ply:EntIndex()
-	local wasPickedUpByAny = LIB.IsPickedUp(ent)
+	local wasPickedUpByAny = LIB.IsPhysgunPickedUp(ent)
 
 	pickedUpList[plyId] = ply
 
 	if not wasPickedUpByAny then
+		root:SetNWBool("sligwolf_isPhysgunPickedUp", true)
+
 		local systemEntities = LIB.GetSystemEntities(root)
 
 		for _, ent in ipairs(systemEntities) do
@@ -627,19 +747,20 @@ function LIB.MarkPickedUp(ent, ply)
 	end
 end
 
-function LIB.UnmarkPickedUp(ent, ply)
-	local root = LIB.GetSuperParent(ent)
+function LIB.UnmarkPhysgunPickedUp(ent, ply)
+	if not SERVER then return end
 
+	local root = LIB.GetSuperParent(ent)
 	if not IsValid(root) then
 		return
 	end
 
-	local pickedUpList = root.sligwolf_isPickedUp
+	local pickedUpList = root.sligwolf_isPhysgunPickedUp
 	if not pickedUpList then
 		return
 	end
 
-	local wasPickedUpByAny = LIB.IsPickedUp(ent)
+	local wasPickedUpByAny = LIB.IsPhysgunPickedUp(ent)
 
 	if IsValid(ply) then
 		local plyId = ply:EntIndex()
@@ -658,10 +779,12 @@ function LIB.UnmarkPickedUp(ent, ply)
 	end
 
 	if not found then
-		root.sligwolf_isPickedUp = nil
+		root.sligwolf_isPhysgunPickedUp = nil
 	end
 
 	if wasPickedUpByAny then
+		root:SetNWBool("sligwolf_isPhysgunPickedUp", false)
+
 		local systemEntities = LIB.GetSystemEntities(root)
 
 		for _, ent in ipairs(systemEntities) do
@@ -672,6 +795,86 @@ function LIB.UnmarkPickedUp(ent, ply)
 			ent:OnPhysgunDrop()
 		end
 	end
+end
+
+function LIB.CanApplyBodySystemMotion(ent)
+	if not IsValid(ent) then
+		return false
+	end
+
+	if not ent.sligwolf_entity then
+		return false
+	end
+
+	if not ent.sligwolf_physEntity then
+		return false
+	end
+
+	if ent.sligwolf_noUnfreeze then
+		return false
+	end
+
+	if ent.sligwolf_noBodySystemApplyMotion then
+		return false
+	end
+
+	if ent:GetPhysicsObjectCount() ~= 1 then
+		-- ignore ragdolls
+		return false
+	end
+
+	return true
+end
+
+function LIB.EnableBodySystemMotion(ent, bool)
+	local body = LIB.GetNearstBody(ent)
+
+	if not IsValid(body) then
+		return
+	end
+
+	local bodyEntities = LIB.GetBodyEntities(body)
+
+	for _, ent in ipairs(bodyEntities) do
+		if not LIB.CanApplyBodySystemMotion(ent) then
+			continue
+		end
+
+		-- @TODO: debug
+		-- if bool then
+		-- 	ent:SetColor(Color(0, 255, 0))
+		-- else
+		-- 	ent:SetColor(Color(255, 0, 0))
+		-- end
+
+		LIB.EnableMotion(ent, bool)
+	end
+end
+
+function LIB.UpdateBodySystemMotion(ent, delayed)
+	if not LIB.CanApplyBodySystemMotion(ent) then
+		return
+	end
+
+	if not delayed then
+		local phys = ent:GetPhysicsObject()
+		if not IsValid(phys) then return end
+
+		LIB.EnableBodySystemMotion(ent, phys:IsMotionEnabled())
+		return
+	end
+
+	local body = LIB.GetNearstBody(ent)
+
+	if not IsValid(body) then
+		return
+	end
+
+	local BID = body:GetCreationID()
+
+	LIBTimer.NextFrame("Library_Entities_UpdateBodySystemMotion_" .. BID, function()
+		LIB.UpdateBodySystemMotion(ent, false)
+	end)
 end
 
 function LIB.EnableMotion(ent, bool)
