@@ -15,8 +15,6 @@ table.Empty(SligWolf_Addons.Convar)
 
 local LIB = SligWolf_Addons.Convar
 
-local LIBHook = nil
-
 local g_lastThink = 0
 
 local g_sliderRenderMode = 0
@@ -69,7 +67,7 @@ local function calcIsDebug()
 end
 
 function LIB.Load()
-	LIBHook = SligWolf_Addons.Hook
+	local LIBHook = SligWolf_Addons.Hook
 
 	LIBHook.Add("Think", "ConvarsUpdate", function()
 		local now = RealTime()

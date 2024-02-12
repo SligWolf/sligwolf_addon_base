@@ -14,9 +14,11 @@ SligWolf_Addons.VR = SligWolf_Addons.VR or {}
 table.Empty(SligWolf_Addons.VR)
 
 local LIB = SligWolf_Addons.VR
-local LIBHook = SligWolf_Addons.Hook
+
+local g_vrmod = nil
 
 function LIB.Exist()
+	local vrmod = g_vrmod or _G.vrmod
 	if not istable(vrmod) then return false end
 
 	local isPlayerInVRFunc = vrmod.IsPlayerInVR
@@ -26,29 +28,26 @@ function LIB.Exist()
 end
 
 function LIB.IsPlayerInVR(ply)
-	if not LIB.Exist() then return false end
 	if not IsValid(ply) then return false end
-	if not vrmod.IsPlayerInVR(ply) then return false end
+	if not ply.sligwolf_VRState then return false end
 
 	return true
 end
 
-local g_VRPoll_Delay = nil
+local g_nextVRPoll = nil
 
 local function VRPoll()
-	local Past = g_VRPoll_Delay or 0
-	local Now = RealTime()
-	local Delay = Now - Past
+	local now = RealTime()
 
-	if Delay < 0.05 then
+	if g_nextVRPoll and g_nextVRPoll < now then
 		return
 	end
 
 	for k, ply in ipairs(player.GetHumans()) do
 		if not IsValid(ply) then continue end
 
-		local LastVRState = ply.SLIGWOLF_VRState or false
-		local VRState = LIB.IsPlayerInVR(ply)
+		local LastVRState = ply.sligwolf_VRState or false
+		local VRState = g_vrmod.IsPlayerInVR(ply)
 
 		if VRState ~= LastVRState then
 			-- Ensure the vr state change is detected on EVERY client without additional networking
@@ -59,15 +58,11 @@ local function VRPoll()
 			end
 
 			SligWolf_Addons.CallFunctionOnAllAddons("OnVRStateChange", ply, VRState)
-			ply.SLIGWOLF_VRState = VRState
-		end
-
-		if VRState then
-			SligWolf_Addons.CallFunctionOnAllAddons("OnVRThink", ply)
+			ply.sligwolf_VRState = VRState
 		end
 	end
 
-	g_VRPoll_Delay = Now
+	g_nextVRPoll = now + 0.2 + math.random() * 0.3
 end
 
 local function VRModStatusChange(ply)
@@ -75,12 +70,9 @@ local function VRModStatusChange(ply)
 		return
 	end
 
-	g_VRPoll_Delay = nil
+	g_nextVRPoll = nil
 	VRPoll()
 end
-
-LIBHook.Add("VRMod_Start", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
-LIBHook.Add("VRMod_Exit", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
 
 local function VRModStatusPoll()
 	if not LIB.Exist() then
@@ -90,7 +82,27 @@ local function VRModStatusPoll()
 	VRPoll()
 end
 
-LIBHook.Add("Think", "Library_VR_Poll", VRModStatusPoll, 10000)
+function LIB.Load()
+	local LIBHook = SligWolf_Addons.Hook
+	local LIBTimer = SligWolf_Addons.Timer
+
+	LIBTimer.NextFrame("Library_VR_Load", function()
+		-- ensure the VRMod has been loaded
+
+		g_vrmod = nil
+
+		if not LIB.Exist() then
+			return
+		end
+
+		g_vrmod = _G.vrmod
+
+		LIBHook.Add("VRMod_Start", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
+		LIBHook.Add("VRMod_Exit", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
+
+		LIBHook.Add("Think", "Library_VR_Poll", VRModStatusPoll, 10000)
+	end)
+end
 
 return true
 

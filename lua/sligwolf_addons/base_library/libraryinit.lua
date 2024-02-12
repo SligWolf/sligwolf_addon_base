@@ -51,6 +51,7 @@ SligWolf_Addons.VehicleControl.Load()
 SligWolf_Addons.Coupling.Load()
 SligWolf_Addons.Tracer.Load()
 SligWolf_Addons.Util.Load()
+SligWolf_Addons.VR.Load()
 SligWolf_Addons.Convar.Load()
 
 return true
