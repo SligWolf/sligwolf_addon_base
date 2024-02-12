@@ -507,19 +507,29 @@ local function CreateAddonNode(pnlContent, parentNode, icon, addonDataWrap, buil
 end
 
 local function PopulateSpawnmenuListContent(pnlContent, tree, itemClass, icon, buildFunction)
+	local itemsOrderedInAddonCategories = LIB.GetSpawnMenuItemsOrdered(itemClass)
+
+	if not itemsOrderedInAddonCategories or table.IsEmpty(itemsOrderedInAddonCategories) then
+		return
+	end
+
 	local mainNode = CreateMainNode(tree, tree, cookieName)
 
 	if not IsValid(mainNode) then
 		return
 	end
 
-	local itemsOrderedInAddonCategories = LIB.GetSpawnMenuItemsOrdered(itemClass) or {}
-
 	for _, addonsByAddonCategory in ipairs(itemsOrderedInAddonCategories) do
 		local addonCategoryData = addonsByAddonCategory.addonCategory
+		local addonCategoryAddons = addonsByAddonCategory.addons
+
+		if table.IsEmpty(addonCategoryAddons) then
+			continue
+		end
+
 		local addonCategoryNode = CreateAddonCategoryNode(tree, mainNode, itemClass, addonCategoryData)
 
-		for _, headersByAddon in ipairs(addonsByAddonCategory.addons) do
+		for _, headersByAddon in ipairs(addonCategoryAddons) do
 			CreateAddonNode(pnlContent, addonCategoryNode, icon, headersByAddon, buildFunction)
 		end
 	end

@@ -762,7 +762,7 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 
 	if ok then
 		thisAddon:TimerNextFrame("Afterload", function()
-			sligwolfAddons.CallFunctionOnAddon("Afterload")
+			sligwolfAddons.CallFunctionOnAddon(thisAddon, "Afterload")
 		end)
 	end
 
