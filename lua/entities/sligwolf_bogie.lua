@@ -22,12 +22,10 @@ function ENT:InitializePhysics()
 end
 
 function ENT:OnPhysgunPickup()
-	-- self:SetNoDraw(false)
 	print("OnPhysgunPickup", self)
 end
 
 function ENT:OnPhysgunDrop()
-	-- self:SetNoDraw(true)
 	print("OnPhysgunDrop", self)
 end
 

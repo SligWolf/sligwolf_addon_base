@@ -350,8 +350,6 @@ function LIB.GetSuperParent(ent)
 	end
 
 	vars.SuperParentENT = superParent
-	print("aaaaaaaaa", ent, superParent)
-
 	LIB.ClearChildrenCache(ent)
 
 	return superParent
