@@ -15,12 +15,12 @@ function ENT:Initialize()
 	BaseClass.Initialize(self)
 
 	self:TurnOn(false)
+end
 
-	if SERVER then
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_NONE)
-		self:SetCollisionGroup(COLLISION_GROUP_WORLD)
-	end
+function ENT:InitializePhysics()
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_NONE)
+	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 end
 
 function ENT:SetupDataTables()

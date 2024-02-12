@@ -109,9 +109,9 @@ function ENT:Think()
 	self:Debug(10)
 end
 
-function ENT:DrawTranslucent()
+function ENT:DrawTranslucent(...)
 	if not CLIENT then return end
-	self.BaseClass.DrawTranslucent(self)
+	self.BaseClass.DrawTranslucent(self, ...)
 
 	local isON = self:IsOn()
 	if not isON then return end
@@ -128,6 +128,10 @@ function ENT:DrawTranslucent()
 end
 
 function ENT:Debug(Size, Col, Time, ...)
+	if not self:IsDeveloper() then
+		return
+	end
+
 	Size = Size or 10
 	Col = Col or color_white
 	Time = Time or FrameTime()

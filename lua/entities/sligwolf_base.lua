@@ -158,6 +158,10 @@ function ENT:OnRemove()
 end
 
 function ENT:Debug(Size, Col, Time)
+	if not self:IsDeveloper() then
+		return
+	end
+
 	local pos = self:GetPos()
 	local ang = self:GetAngles()
 

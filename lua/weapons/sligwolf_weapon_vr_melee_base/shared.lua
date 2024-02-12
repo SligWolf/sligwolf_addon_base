@@ -37,8 +37,10 @@ function SWEP:GetVrVelocitySensorPos()
 
 	if not pos then return nil end
 
-	debugoverlay.Cross(pos, 1, 0.1, color_white, true)
-	debugoverlay.EntityTextAtPosition(pos, 0, "SWEP:GetVrVelocitySensorPos()", 0.1, color_white)
+	if self:IsDeveloper() then
+		debugoverlay.Cross(pos, 1, 0.1, color_white, true)
+		debugoverlay.EntityTextAtPosition(pos, 0, "SWEP:GetVrVelocitySensorPos()", 0.1, color_white)
+	end
 
 	return pos
 end

@@ -130,8 +130,8 @@ function ENT:DrawGlow(size, enlarge, count, col, AlphaReduce, matLight)
 	end
 end
 
-function ENT:DrawTranslucent()
-	BaseClass.DrawTranslucent(self)
+function ENT:DrawTranslucent(...)
+	BaseClass.DrawTranslucent(self, ...)
 	if (not self:IsOn()) then return end
 
 	local Size = self:Get_Size()

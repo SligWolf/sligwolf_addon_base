@@ -57,8 +57,6 @@ local function CanTool(ply, tr, tool)
 	if not IsValid(ply) then return end
 
 	local ent = tr.Entity
-	debugoverlay.Text(tr.HitPos, tostring(tool), 3, false)
-
 	if ent.SLIGWOLF_BlockAllTools then return false end
 
 	local tb = ent.SLIGWOLF_BlockTool

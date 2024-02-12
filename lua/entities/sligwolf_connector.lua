@@ -25,10 +25,6 @@ function ENT:Initialize()
 	BaseClass.Initialize(self)
 
 	if SERVER then
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
-		self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-		self:SetNotSolid(true)
 		self:SetNoDraw(true)
 	end
 
@@ -37,8 +33,19 @@ function ENT:Initialize()
 	self.kind = ""
 end
 
-function ENT:DrawTranslucent()
+function ENT:InitializePhysics()
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+	self:SetNotSolid(true)
+end
 
+function ENT:Draw()
+	-- invisible
+end
+
+function ENT:DrawTranslucent()
+	-- invisible
 end
 
 function ENT:AllowAllTypes(kind)
@@ -222,6 +229,10 @@ end
 function ENT:Debug(Size, Col, Time)
 	if CLIENT then return end
 
+	if not self:IsDeveloper() then
+		return
+	end
+
 	local pos = self:GetPos()
 	Col = Col or color_white
 	Size = Size or 4
@@ -246,6 +257,7 @@ function ENT:Debug(Size, Col, Time)
 	end
 
 	local debugtext = tostring(self) .. ", " .. kind .. ", " .. gender
+
 	debugoverlay.EntityTextAtPosition(pos, 0, debugtext, Time, Col)
 	debugoverlay.Cross(pos, Size, Time, Col, true)
 end

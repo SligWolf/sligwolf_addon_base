@@ -15,6 +15,7 @@ table.Empty(SligWolf_Addons.Tracer)
 
 local LIB = SligWolf_Addons.Tracer
 
+local LIBUtil = nil
 local LIBPosition = nil
 local LIBEntities = nil
 
@@ -34,6 +35,7 @@ if CLIENT then
 end
 
 function LIB.Load()
+	LIBUtil = SligWolf_Addons.Util
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 end
@@ -51,6 +53,8 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 			return true
 		end
 	end
+
+	local isDebug = LIBUtil.IsDeveloper()
 
 	local tr = TRACE_RESULT_BUFFER
 	local params = TRACE_RESULT_PARAMS
@@ -79,7 +83,9 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 		if not lastVector then
 			lastVector = thisVector
 
-			debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "Start", 0.05, Color_trText)
+			if isDebug then
+				debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "Start", 0.05, Color_trText)
+			end
 
 			continue
 		end
@@ -97,20 +103,26 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 		local trHitPos = tr.HitPos
 		local trHit = tr.Hit
 
-		debugoverlay.Line(trStart, trHitPos, 0.05, Color_trGreen, true)
-		debugoverlay.Line(trHitPos, trEnd, 0.05, Color_trBlue, true)
-		debugoverlay.Cross(trEnd, 1, 0.05, Color_trCross, true)
+		if isDebug then
+			debugoverlay.Line(trStart, trHitPos, 0.05, Color_trGreen, true)
+			debugoverlay.Line(trHitPos, trEnd, 0.05, Color_trBlue, true)
+			debugoverlay.Cross(trEnd, 1, 0.05, Color_trCross, true)
+		end
 
 		if trHit then
-			debugoverlay.Cross(trHitPos, 1, 0.05, Color_trCross, true)
-			debugoverlay.EntityTextAtPosition(trHitPos, LineOffset_trText, "Hit", 0.05, Color_trTextHit)
+			if isDebug then
+				debugoverlay.Cross(trHitPos, 1, 0.05, Color_trCross, true)
+				debugoverlay.EntityTextAtPosition(trHitPos, LineOffset_trText, "Hit", 0.05, Color_trTextHit)
+			end
 
 			break
 		end
 	end
 
-	if lastVector then
-		debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "End", 0.05, Color_trText)
+	if isDebug then
+		if lastVector then
+			debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "End", 0.05, Color_trText)
+		end
 	end
 
 	if not hasTraced or not tr or table.IsEmpty(tr) then
@@ -165,8 +177,12 @@ function LIB.TracerAttachmentToAttachment(ent, attachmentA, attachmentB, filterf
 	local posB = LIBPosition.GetAttachmentPosAng(ent, attachmentB)
 	if not posB then return end
 
-	debugoverlay.EntityTextAtPosition(posA, LineOffset_trText + 1, attachmentA, 0.05, Color_trText)
-	debugoverlay.EntityTextAtPosition(posB, LineOffset_trText + 1, attachmentB, 0.05, Color_trText)
+	local isDebug = LIBUtil.IsDeveloper()
+
+	if isDebug then
+		debugoverlay.EntityTextAtPosition(posA, LineOffset_trText + 1, attachmentA, 0.05, Color_trText)
+		debugoverlay.EntityTextAtPosition(posB, LineOffset_trText + 1, attachmentB, 0.05, Color_trText)
+	end
 
 	return LIB.Tracer(ent, posA, posB, filterfunc)
 end
@@ -174,12 +190,17 @@ end
 function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc)
 	local vectorChain = {}
 
+	local isDebug = LIBUtil.IsDeveloper()
+
 	for _, attachmentChainItem in ipairs(attachmentChain) do
 		local pos = LIBPosition.GetAttachmentPosAng(ent, attachmentChainItem)
 		if not pos then return end
 
 		vectorChain[#vectorChain + 1] = pos
-		debugoverlay.EntityTextAtPosition(pos, LineOffset_trText + 1, attachmentChainItem, 0.05, Color_trText)
+
+		if isDebug then
+			debugoverlay.EntityTextAtPosition(pos, LineOffset_trText + 1, attachmentChainItem, 0.05, Color_trText)
+		end
 	end
 
 	return LIB.TracerChain(ent, vectorChain, filterfunc)

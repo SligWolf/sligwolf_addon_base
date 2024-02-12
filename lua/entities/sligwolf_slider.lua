@@ -5,34 +5,73 @@ DEFINE_BASECLASS("sligwolf_phys")
 
 ENT.Spawnable 				= false
 ENT.AdminOnly 				= false
+ENT.RenderGroup 			= RENDERGROUP_BOTH
 ENT.DoNotDuplicate 			= false
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local LIBConvar = SligWolf_Addons.Convar
+
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
-	if SERVER then
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
-		self:SetCollisionGroup(COLLISION_GROUP_NONE)
+	if CLIENT then
+		self.shouldDrawModel = false
+	end
+end
 
-		self:SetNoDraw(true)
+function ENT:InitializePhysics()
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 
-		local phys = self:GetPhysicsObject()
-		if IsValid(phys) then
-			phys:SetMaterial("gmod_ice")
+	local phys = self:GetPhysicsObject()
+	if IsValid(phys) then
+		phys:SetMaterial("gmod_ice")
+	end
+end
+
+if CLIENT then
+	function ENT:RenderSlider(flags)
+		local renderMode = LIBConvar.GetSliderRenderMode()
+
+		if renderMode == LIBConvar.ENUM_SLIDER_RENDER_MODE_DISABLED then
+			return
 		end
+
+		if renderMode == LIBConvar.ENUM_SLIDER_RENDER_MODE_PHYSGUN then
+			if not self.shouldDrawModel then
+				return
+			end
+		end
+
+		self:DrawModel(flags)
+	end
+
+	function ENT:Draw(flags)
+		self:RenderSlider(flags)
+	end
+
+	function ENT:DrawTranslucent(flags)
+		self:RenderSlider(flags)
 	end
 end
 
 function ENT:OnPhysgunPickup()
-	self:SetNoDraw(false)
+	if not CLIENT then
+		return
+	end
+
+	self.shouldDrawModel = true
 end
 
 function ENT:OnPhysgunDrop()
-	self:SetNoDraw(true)
+	if not CLIENT then
+		return
+	end
+
+	self.shouldDrawModel = false
 end
 

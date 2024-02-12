@@ -51,8 +51,10 @@ function SWEP:GetRightHandPose()
 
 	rhAng:Normalize()
 
-	debugoverlay.Axis(rhPos, rhAng, 3, 0.05, true)
-	debugoverlay.EntityTextAtPosition(rhPos, 0, "SWEP:GetRightHandPose()", 0.1, color_white)
+	if self:IsDeveloper() then
+		debugoverlay.Axis(rhPos, rhAng, 3, 0.05, true)
+		debugoverlay.EntityTextAtPosition(rhPos, 0, "SWEP:GetRightHandPose()", 0.1, color_white)
+	end
 
 	return rhPos, rhAng
 end

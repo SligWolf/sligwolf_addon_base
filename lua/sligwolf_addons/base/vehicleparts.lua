@@ -800,8 +800,6 @@ function SLIGWOLF_ADDON:SetUpVehicleSlider(parent, component, ply, superparent)
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	parent:DeleteOnRemove(ent)
 
-	ent:SetNoDraw(true)
-
 	return ent
 end
 

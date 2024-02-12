@@ -15,9 +15,14 @@ table.Empty(SligWolf_Addons.Util)
 
 local LIB = SligWolf_Addons.Util
 
+local LIBConvar = nil
+
+function LIB.Load()
+	LIBConvar = SligWolf_Addons.Convar
+end
+
 function LIB.IsDeveloper()
-	local debugging = tobool(GetConVar("developer"):GetInt())
-	return debugging
+	return LIBConvar.IsDebug()
 end
 
 function LIB.ValidateName(name)

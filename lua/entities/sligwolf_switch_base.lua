@@ -50,9 +50,6 @@ function ENT:Initialize()
 
 	if SERVER then
 		self:SetUseType(SIMPLE_USE)
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
-		self:SetCollisionGroup(COLLISION_GROUP_NONE)
 
 		AddWireInOutPuts(self)
 	end
@@ -65,6 +62,12 @@ function ENT:Initialize()
 	if SERVER then
 		ChangeWireOutputs(self)
 	end
+end
+
+function ENT:InitializePhysics()
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 end
 
 function ENT:TriggerInput(name, value)

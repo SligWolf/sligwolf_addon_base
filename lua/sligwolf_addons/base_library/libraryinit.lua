@@ -42,6 +42,7 @@ loadLib("vehicle")
 loadLib("velocity")
 loadLib("vr")
 loadLib("vgui")
+loadLib("convar")
 
 SligWolf_Addons.Print.Load()
 SligWolf_Addons.Entities.Load()
@@ -49,6 +50,8 @@ SligWolf_Addons.Vehicle.Load()
 SligWolf_Addons.VehicleControl.Load()
 SligWolf_Addons.Coupling.Load()
 SligWolf_Addons.Tracer.Load()
+SligWolf_Addons.Util.Load()
+SligWolf_Addons.Convar.Load()
 
 return true
 

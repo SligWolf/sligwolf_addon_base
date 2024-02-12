@@ -14,12 +14,12 @@ if not SligWolf_Addons.IsLoaded() then return end
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
-	if SERVER then
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_NONE)
-		self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-	end
-
 	self:SetAnim(0)
+end
+
+function ENT:InitializePhysics()
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_NONE)
+	self:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
 end
 

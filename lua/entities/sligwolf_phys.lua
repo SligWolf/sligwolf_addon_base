@@ -18,12 +18,12 @@ local LIBEntities = SligWolf_Addons.Entities
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
+end
 
-	if SERVER then
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
-		self:SetCollisionGroup(COLLISION_GROUP_NONE)
-	end
+function ENT:InitializePhysics()
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 end
 
 function ENT:IsPickedUp()
