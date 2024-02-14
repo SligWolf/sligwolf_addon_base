@@ -39,7 +39,7 @@ local g_nextVRPoll = nil
 local function VRPoll()
 	local now = RealTime()
 
-	if g_nextVRPoll and g_nextVRPoll < now then
+	if g_nextVRPoll and g_nextVRPoll > now then
 		return
 	end
 
@@ -50,6 +50,8 @@ local function VRPoll()
 		local VRState = g_vrmod.IsPlayerInVR(ply)
 
 		if VRState ~= LastVRState then
+			ply.sligwolf_VRState = VRState
+
 			-- Ensure the vr state change is detected on EVERY client without additional networking
 			if VRState then
 				SligWolf_Addons.CallFunctionOnAllAddons("OnVRStart", ply)
@@ -58,7 +60,6 @@ local function VRPoll()
 			end
 
 			SligWolf_Addons.CallFunctionOnAllAddons("OnVRStateChange", ply, VRState)
-			ply.sligwolf_VRState = VRState
 		end
 	end
 
