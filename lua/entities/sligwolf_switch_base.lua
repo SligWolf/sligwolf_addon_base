@@ -15,7 +15,7 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local DTR = {
+local dtr = {
 	weld = "",
 	remover = "",
 }
@@ -116,7 +116,7 @@ function ENT:SpawnCollision(model, pos, ang)
 
 	local Prop = self.CollisionProp
 
-	Prop.SLIGWOLF_DenyToolReload = DTR
+	Prop.sligwolf_denyToolReload = dtr
 	Prop.DoNotDuplicate = true
 
 	Prop:SetModel(model or "")

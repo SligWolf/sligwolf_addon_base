@@ -88,7 +88,7 @@ local function CanTool(ply, trace, mode, tool, button)
 		return false
 	end
 
-	local tb = ent.SLIGWOLF_BlockTool
+	local tb = ent.sligwolf_blockTool
 
 	if istable(tb) then
 		if tb[mode] then
@@ -96,7 +96,7 @@ local function CanTool(ply, trace, mode, tool, button)
 		end
 	end
 
-	if ent.SLIGWOLF_AllowOnlyThisTool == tool then
+	if ent.sligwolf_allowOnlyThisTool == tool then
 		return false
 	end
 end
@@ -112,7 +112,7 @@ local function CanToolReload(ply, trace, mode, tool, button)
 	local ent = trace.Entity
 	if not IsValid(ent) then return end
 
-	local tb = ent.SLIGWOLF_DenyToolReload
+	local tb = ent.sligwolf_denyToolReload
 
 	if not istable(tb) then return end
 	if not tb[mode] then return end

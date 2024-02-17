@@ -307,20 +307,20 @@ function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 	local tr = LIBTracer.DoTrace(ply, 100)
 	if not tr then return end
 
-	local Button = tr.Entity
-	if not IsValid(Button) then return end
+	local button = tr.Entity
+	if not IsValid(button) then return end
 
-	local superparent = LIBEntities.GetSuperParent(Button)
+	local superparent = LIBEntities.GetSuperParent(button)
 
 	if not IsValid(superparent) then
-		superparent = Button
+		superparent = button
 		playervehicle = nil
 	else
-		if Button.SLIGWOLF_Invehicle and not IsValid(playervehicle) then return end
+		if button.sligwolf_inVehicle and not IsValid(playervehicle) then return end
 	end
 
 	if IsValid(playervehicle) and superparent ~= playervehicle then return end
-	if not Button.SLIGWOLF_Buttonfunc then return end
+	if not button.SLIGWOLF_Buttonfunc then return end
 
 	if not superparent.SLIGWOLF_AddonID or (superparent.SLIGWOLF_AddonID == "") then
 		error("superparent.SLIGWOLF_AddonID missing!")
@@ -337,7 +337,7 @@ function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 
 	if not allowuse then return end
 
-	return Button.SLIGWOLF_Buttonfunc(Button, superparent, ply)
+	return button.SLIGWOLF_Buttonfunc(button, superparent, ply)
 end
 
 return true

@@ -26,8 +26,8 @@ end
 function LIB.GetControlledVehicle(ply)
 	local vehicle = ply:GetVehicle()
 
-	local remoteVehicle = ply.SLIGWOLF_RemoteControlledVehicle
-	local remoteState = ply.SLIGWOLF_RemoteControllerState
+	local remoteVehicle = ply.sligwolf_remoteControlledVehicle
+	local remoteState = ply.sligwolf_remoteControllerState
 
 	if not IsValid(vehicle) and remoteState then
 		vehicle = remoteVehicle
@@ -117,9 +117,9 @@ function LIB.TrainDoorButtonToggle(button, mainvehicle, ply)
 	local door = LIBEntities.GetChild(mainvehicle, "Door_D" .. id)
 	if not IsValid(door) then return end
 
-	door.SLIGWOLF_Door_State = not door.SLIGWOLF_Door_State
+	door.sligwolf_doorState = not door.sligwolf_doorState
 
-	if door.SLIGWOLF_Door_State then
+	if door.sligwolf_doorState then
 		door:Set_AutoClose(false)
 		door:Open()
 		return
@@ -142,26 +142,26 @@ function LIB.TrainSpeedOrder(vehicle, ply, acceleration, emergencyBrake)
 
 	-- @TODO: Create new speed control logic for trains and vehicles for upcomming remote controller update
 
-	if not vehicle.SLIGWOLF_VehicleEngine then return end
+	if not vehicle.sligwolf_vehicleEngine then return end
 
 	if ply:KeyDown(IN_FORWARD) then
-		vehicle.SLIGWOLF_Speed = vehicle.SLIGWOLF_Speed + acceleration
+		vehicle.sligwolf_speed = vehicle.sligwolf_speed + acceleration
 	end
 	if ply:KeyDown(IN_BACK) then
-		vehicle.SLIGWOLF_Speed = vehicle.SLIGWOLF_Speed - acceleration
+		vehicle.sligwolf_speed = vehicle.sligwolf_speed - acceleration
 	end
 
 	if ply:KeyDown(IN_JUMP) then
-		if vehicle.SLIGWOLF_Speed >= breakUntil then
-			vehicle.SLIGWOLF_Speed = vehicle.SLIGWOLF_Speed - emergencyBrake
-			if vehicle.SLIGWOLF_Speed <= stopBreakingAt then
-				vehicle.SLIGWOLF_Speed = setSpeedTo
+		if vehicle.sligwolf_speed >= breakUntil then
+			vehicle.sligwolf_speed = vehicle.sligwolf_speed - emergencyBrake
+			if vehicle.sligwolf_speed <= stopBreakingAt then
+				vehicle.sligwolf_speed = setSpeedTo
 			end
 		end
-		if vehicle.SLIGWOLF_Speed <= -breakUntil then
-			vehicle.SLIGWOLF_Speed = vehicle.SLIGWOLF_Speed + emergencyBrake
-			if vehicle.SLIGWOLF_Speed >= -stopBreakingAt then
-				vehicle.SLIGWOLF_Speed = setSpeedTo
+		if vehicle.sligwolf_speed <= -breakUntil then
+			vehicle.sligwolf_speed = vehicle.sligwolf_speed + emergencyBrake
+			if vehicle.sligwolf_speed >= -stopBreakingAt then
+				vehicle.sligwolf_speed = setSpeedTo
 			end
 		end
 	end

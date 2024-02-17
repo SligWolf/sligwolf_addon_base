@@ -7,7 +7,7 @@ ENT.Spawnable			= false
 ENT.RenderGroup 		= RENDERGROUP_BOTH
 ENT.DoNotDuplicate 		= true
 
-ENT.SLIGWOLF_IsConnector = true
+ENT.sligwolf_isConnector = true
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
@@ -117,7 +117,7 @@ end
 function ENT:CanConnect(Con)
 	if not IsValid(Con) then return false end
 	if Con == self then return false end
-	if not Con.SLIGWOLF_IsConnector then return false end
+	if not Con.sligwolf_isConnector then return false end
 
 	if not self:IsAllowedType(Con:GetType()) then return false end
 	if not Con:IsAllowedType(self:GetType()) then return false end

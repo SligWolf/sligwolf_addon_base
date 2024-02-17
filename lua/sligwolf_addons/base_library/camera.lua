@@ -20,35 +20,35 @@ function LIB.CamControl(ply, camEnt)
 
 	if not IsValid(camEnt) then
 		ply:SetViewEntity(ply)
-		ply.SLIGWOLF_Camera = nil
+		ply.sligwolf_camera = nil
 		return
 	end
 
 	if camEnt == ply then
 		ply:SetViewEntity(ply)
-		ply.SLIGWOLF_Camera = nil
+		ply.sligwolf_camera = nil
 		return
 	end
 
 	if ply:GetViewEntity() == camEnt then
 		-- toggle view back
 		ply:SetViewEntity(ply)
-		ply.SLIGWOLF_Camera = nil
+		ply.sligwolf_camera = nil
 		return
 	end
 
 	ply:SetViewEntity(camEnt)
-	ply.SLIGWOLF_Camera = camEnt
+	ply.sligwolf_camera = camEnt
 end
 
 function LIB.ResetCamera(ply)
 	if not IsValid(ply) then return end
 
-	local swCamEnt = ply.SLIGWOLF_Camera
+	local swCamEnt = ply.sligwolf_camera
 	if not IsValid(swCamEnt) then return end
 
-	if ply.SLIGWOLF_Camera == ply then
-		ply.SLIGWOLF_Camera = nil
+	if ply.sligwolf_camera == ply then
+		ply.sligwolf_camera = nil
 		return
 	end
 

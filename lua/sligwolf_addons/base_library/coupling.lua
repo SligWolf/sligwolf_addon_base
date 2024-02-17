@@ -144,16 +144,16 @@ function LIB.CouplingMechanism(couplerButton, mainvehicle, ply)
 	if not IsValid(couplerButton) then return end
 	if not IsValid(ply) then return end
 
-	local dir = couplerButton.SLIGWOLF_Dir
+	local dir = couplerButton.sligwolf_connectorDirection
 	if not dir then return end
 
 	local ConA = LIB.FindCorrectConnector(mainvehicle, dir)
 	local ConB = nil
 
 	if not IsValid(ConA) then return end
-	if not ConA.SLIGWOLF_IsConnector then return end
-	if not ConA.SLIGWOLF_Dir then return end
-	if ConA.SLIGWOLF_Dir ~= dir then return end
+	if not ConA.sligwolf_isConnector then return end
+	if not ConA.sligwolf_connectorDirection then return end
+	if ConA.sligwolf_connectorDirection ~= dir then return end
 
 	local Radius = ConA.searchRadius
 	if not Radius then return end
@@ -166,8 +166,8 @@ function LIB.CouplingMechanism(couplerButton, mainvehicle, ply)
 	for k, v in pairs(Cons) do
 		if not IsValid(v) then continue end
 		if v == ConA then continue end
-		if not v.SLIGWOLF_IsConnector then continue end
-		if not v.SLIGWOLF_Dir then continue end
+		if not v.sligwolf_isConnector then continue end
+		if not v.sligwolf_connectorDirection then continue end
 
 		local sp = LIBEntities.GetSuperParent(v)
 		if sp == mainvehicle then continue end
@@ -210,7 +210,7 @@ function LIB.AutoConnectVehicles(ConA)
 	local Cons = ents.FindInSphere(PosA, Radius) or {}
 
 	for k, ConB in pairs(Cons) do
-		if not ConB.SLIGWOLF_IsConnector then continue end
+		if not ConB.sligwolf_isConnector then continue end
 		if ConB == ConA then continue end
 
 		local PosB = ConB:GetPos()

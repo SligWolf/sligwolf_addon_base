@@ -328,7 +328,7 @@ local function CreateWeld(ent, parent, constraintInfos)
 	end
 
 	WD.DoNotDuplicate = true
-	parent.SLIGWOLF_ConstraintWeld = WD
+	parent.sligwolf_constraintWeld = WD
 
 	return WD
 end
@@ -346,7 +346,7 @@ local function CreateNoCollide(ent, parent, constraintInfos)
 	end
 
 	NC.DoNotDuplicate = true
-	parent.SLIGWOLF_ConstraintNoCollide = NC
+	parent.sligwolf_constraintNoCollide = NC
 
 	return NC
 end
@@ -371,7 +371,7 @@ local function CreateAxis(ent, parent, constraintInfos)
 	end
 
 	AX.DoNotDuplicate = true
-	parent.SLIGWOLF_ConstraintAxis = AX
+	parent.sligwolf_constraintAxis = AX
 
 	return AX
 end
@@ -393,7 +393,7 @@ local function CreateBallSocket(ent, parent, constraintInfos)
 	end
 
 	BS.DoNotDuplicate = true
-	parent.SLIGWOLF_ConstraintBallSocket = BS
+	parent.sligwolf_constraintBallSocket = BS
 
 	return BS
 end
@@ -426,7 +426,7 @@ local function CreateAdvBallsocket(ent, parent, constraintInfos)
 	end
 
 	ADVBS.DoNotDuplicate = true
-	parent.SLIGWOLF_ConstraintAdvBallsocket = ADVBS
+	parent.sligwolf_constraintAdvBallsocket = ADVBS
 
 	return ADVBS
 end
@@ -444,7 +444,7 @@ local function CreateKeepupright(ent, parent, constraintInfos)
 	end
 
 	KU.DoNotDuplicate = true
-	parent.SLIGWOLF_ConstraintKeepupright = KU
+	parent.sligwolf_constraintKeepupright = KU
 
 	return KU
 end
@@ -775,7 +775,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 	local ent = func(self, parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
-	ent.SLIGWOLF_DenyToolReload = dtr
+	ent.sligwolf_denyToolReload = dtr
 
 	local hasSpawnedConstraints = self:CreateConstraints(ent, parent, component.constraints)
 	if not hasSpawnedConstraints then
@@ -988,7 +988,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 
-	ent.SLIGWOLF_Dir = name
+	ent.sligwolf_connectorDirection = name
 	parent:DeleteOnRemove(ent)
 
 	ent.OnDisconnect = function(ConA, ConB)
@@ -997,8 +997,8 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleA) then return end
 		if not IsValid(vehicleB) then return end
 
-		local DirA = ConA.SLIGWOLF_Dir
-		local DirB = ConB.SLIGWOLF_Dir
+		local DirA = ConA.sligwolf_connectorDirection
+		local DirB = ConB.sligwolf_connectorDirection
 
 		if isfunction(self.OnDisconnectTrailer) then
 			self:OnDisconnectTrailer(vehicleA, vehicleB, DirA)
@@ -1018,8 +1018,8 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleA) then return end
 		if not IsValid(vehicleB) then return end
 
-		local DirA = ConA.SLIGWOLF_Dir
-		local DirB = ConB.SLIGWOLF_Dir
+		local DirA = ConA.sligwolf_connectorDirection
+		local DirB = ConB.sligwolf_connectorDirection
 
 		vehicleA.SLIGWOLF_Connected = vehicleA.SLIGWOLF_Connected or {}
 		vehicleB.SLIGWOLF_Connected = vehicleB.SLIGWOLF_Connected or {}
@@ -1039,8 +1039,8 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleA) then return end
 		if not IsValid(vehicleB) then return end
 
-		local DirA = ConA.SLIGWOLF_Dir
-		local DirB = ConB.SLIGWOLF_Dir
+		local DirA = ConA.sligwolf_connectorDirection
+		local DirB = ConB.sligwolf_connectorDirection
 
 		vehicleA.SLIGWOLF_Connected = vehicleA.SLIGWOLF_Connected or {}
 		vehicleB.SLIGWOLF_Connected = vehicleB.SLIGWOLF_Connected or {}
@@ -1078,12 +1078,12 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
 
-	ent.SLIGWOLF_Dir = name
+	ent.sligwolf_connectorDirection = name
 
 	ent.sligwolf_noPickup = true
 	ent:SetNWBool("sligwolf_noPickup", true)
 
-	ent.SLIGWOLF_Invehicle = inVehicle
+	ent.sligwolf_inVehicle = inVehicle
 	ent.SLIGWOLF_Buttonfunc = function(...)
 		return LIBCoupling.CouplingMechanism(...)
 	end
@@ -1113,7 +1113,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 	ent.sligwolf_noPickup = true
 	ent:SetNWBool("sligwolf_noPickup", true)
 
-	ent.SLIGWOLF_Invehicle = inVehicle
+	ent.sligwolf_inVehicle = inVehicle
 	ent.SLIGWOLF_Buttonfunc = function(...)
 		return func(...)
 	end
@@ -1392,7 +1392,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 		return
 	end
 
-	parent.SLIGWOLF_ConstraintWeld1 = WD1
+	parent.sligwolf_constraintWeld1 = WD1
 
 	local WD2 = self:CreateConstraint(ent, parentRear, "Weld", {
 		bone1 = 0,
@@ -1406,7 +1406,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 		return
 	end
 
-	parent.SLIGWOLF_ConstraintWeld2 = WD2
+	parent.sligwolf_constraintWeld2 = WD2
 
 	ent.sligwolf_physEntity = true
 
