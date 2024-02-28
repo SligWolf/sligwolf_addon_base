@@ -165,7 +165,6 @@ end
 function LIB.AddHooks()
 	local function SpawnVehicleFinished(vehicle, ply)
 		if not IsValid(vehicle) then return end
-		if not IsValid(ply) then return end
 
 		if not vehicle:IsVehicle() then return end
 		if not vehicle:IsValidVehicle() then return end
@@ -232,6 +231,71 @@ function LIB.AddHooks()
 	end
 
 	LIBHook.Add("PlayerSpawnedVehicle", "Library_Vehicle_PlayerSpawnedVehicle", PlayerSpawnedVehicle, 10000)
+
+	if CLIENT then
+		local g_trace = {}
+		local g_traceResult = {}
+
+		g_trace.output = g_traceResult
+
+		local function CalcVehicleView(vehicle, ply, view)
+			if not vehicle then
+				return
+			end
+
+			if not vehicle.sligwolf_entity and not vehicle:GetNWBool("sligwolf_entity") then
+				return
+			end
+
+			if vehicle.GetThirdPersonMode == nil or ply:GetViewEntity() ~= ply then
+				return
+			end
+
+			if not vehicle:GetThirdPersonMode() then
+				return view
+			end
+
+			local mn, mx = vehicle:GetRenderBounds()
+			local radius = (mn - mx):Length()
+			local radius = radius + radius * vehicle:GetCameraDistance()
+
+			local TargetOrigin = view.origin + (view.angles:Forward() * -radius)
+			local WallOffset = 4
+
+			local root = LIBEntities.GetSuperParent(vehicle)
+
+			g_trace.start = view.origin
+			g_trace.endpos = TargetOrigin
+
+			g_trace.filter = function(ent)
+				if not ent.sligwolf_entity and not ent:GetNWBool("sligwolf_entity") then
+					return true
+				end
+
+				if LIBEntities.GetSuperParent(ent) == root then
+					return false
+				end
+
+				return true
+			end
+
+			g_trace.mins = Vector(-WallOffset, -WallOffset, -WallOffset)
+			g_trace.maxs = Vector(WallOffset, WallOffset, WallOffset)
+
+			util.TraceHull(g_trace)
+
+			view.origin = g_traceResult.HitPos
+			view.drawviewer = true
+
+			if g_traceResult.Hit and not g_traceResult.StartSolid then
+				view.origin = view.origin + g_traceResult.HitNormal * WallOffset
+			end
+
+			return view
+		end
+
+		LIBHook.Add("CalcVehicleView", "Library_Vehicle_CalcVehicleView", CalcVehicleView, 10000)
+	end
 end
 
 return true

@@ -51,56 +51,59 @@ function LIB.IsControllingVehicle(ply)
 end
 
 local checkForEmptySpaceVectors = {
-	V1 = { VecA = Vector(0, 0, 0), VecB = Vector(0, 0, 70) },
-	V2 = { VecA = Vector(15, 0, 0), VecB = Vector(15, 0, 70) },
-	V3 = { VecA = Vector(0, 15, 0), VecB = Vector(0, 15, 70) },
-	V4 = { VecA = Vector(-15, 0, 0), VecB = Vector(-15, 0, 70) },
-	V5 = { VecA = Vector(0, -15, 0), VecB = Vector(0, -15, 70) },
-	V6 = { VecA = Vector(15, 15, 0), VecB = Vector(15, 15, 70) },
-	V7 = { VecA = Vector(-15, 15, 0), VecB = Vector(-15, 15, 70) },
-	V8 = { VecA = Vector(-15, -15, 0), VecB = Vector(-15, -15, 70) },
-	V9 = { VecA = Vector(15, -15, 0), VecB = Vector(15, -15, 70) },
+	{ VecA = Vector(0, 0, 0), VecB = Vector(0, 0, 70) },
+	{ VecA = Vector(15, 0, 0), VecB = Vector(15, 0, 70) },
+	{ VecA = Vector(0, 15, 0), VecB = Vector(0, 15, 70) },
+	{ VecA = Vector(-15, 0, 0), VecB = Vector(-15, 0, 70) },
+	{ VecA = Vector(0, -15, 0), VecB = Vector(0, -15, 70) },
+	{ VecA = Vector(15, 15, 0), VecB = Vector(15, 15, 70) },
+	{ VecA = Vector(-15, 15, 0), VecB = Vector(-15, 15, 70) },
+	{ VecA = Vector(-15, -15, 0), VecB = Vector(-15, -15, 70) },
+	{ VecA = Vector(15, -15, 0), VecB = Vector(15, -15, 70) },
 }
 
-function LIB.ExitSeat(ent, ply)
-	--@TODO: Recode and clean up
+function LIB.ExitSeat(seat, ply)
+-- 	--@TODO: Recode and clean up
 
-	if not IsValid(ent) then return false end
+	if not IsValid(seat) then return false end
 	if not IsValid(ply) then return false end
 
-	local tb = ent.sligwolf_ExitVectors or {}
+	local tb = seat.sligwolf_ExitVectors or {}
 	local exitPlyVector = tb[1]
 	local exitEyeVector = tb[2]
 
 	if not isvector(exitPlyVector) then return false end
 	if not isvector(exitEyeVector) then return false end
 
-	local Filter = function(veh, f_ent)
-		if not IsValid(f_ent) then return false end
-		if not IsValid(ply) then return false end
-		if f_ent == veh then return false end
-		if f_ent == ply then return false end
-		if f_ent:GetModel() == "models/sligwolf/unique_props/seat.mdl" then return false end
+	-- local filter = function(veh, ent)
+	-- 	if not IsValid(ent) then return false end
 
-		return true
-	end
+	-- 	if ent == veh then return false end
+	-- 	if ent.sligwolf_vehiclePod then return false end
 
-	local seatPos 	= ent:GetPos()
-	local seatAng 	= ent:GetAngles()
-	local forward 	= seatAng:Forward()
-	local right 	= seatAng:Right()
-	local up 		= seatAng:Up()
+	-- 	return true
+	-- end
 
-	local exitPos = seatPos + forward * exitPlyVector.x + right * exitPlyVector.y + up * exitPlyVector.z
-	local eyePos  = seatPos - (seatPos + forward * exitEyeVector.x + right * exitEyeVector.y + up * exitEyeVector.z)
+	local seatPos 	= seat:GetPos()
+	-- local seatAng 	= seat:GetAngles()
+	-- local forward 	= seatAng:Forward()
+	-- local right 	= seatAng:Right()
+	-- local up 		= seatAng:Up()
 
-	for k, v in pairs(checkForEmptySpaceVectors) do
-		local tr = LIBTracer.Tracer(ent, exitPos + v.VecA, exitPos + v.VecB, Filter)
-		if tr.Hit then return true end
-	end
+	local exitPos = seat:LocalToWorld(exitPlyVector)
+	--local eyePos = seat:LocalToWorld(exitEyeVector)
 
+	--local exitPos = seatPos + forward * exitPlyVector.x + right * exitPlyVector.y + up * exitPlyVector.z
+	--local eyePos  = seatPos - (seatPos + forward * exitEyeVector.x + right * exitEyeVector.y + up * exitEyeVector.z)
+
+	-- for _, v in ipairs(checkForEmptySpaceVectors) do
+	-- 	local tr = LIBTracer.Tracer(seat, exitPos + v.VecA, exitPos + v.VecB, filter)
+	-- 	if tr.Hit then return true end
+	-- end
+
+	//ply:SetPos(Vector(0,0,0))
 	ply:SetPos(exitPos)
-	ply:SetEyeAngles(eyePos:Angle())
+	--ply:SetEyeAngles(eyePos:Angle())
 
 	return false
 end

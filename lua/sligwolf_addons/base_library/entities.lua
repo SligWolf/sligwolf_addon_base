@@ -234,6 +234,12 @@ function LIB.GetParent(ent)
 		if IsValid(parent) and parent ~= ent then
 			return parent
 		end
+
+		local parent = ent:GetNWEntity("sligwolf_parent")
+
+		if IsValid(parent) and parent ~= ent then
+			return parent
+		end
 	end
 
 	return nil
@@ -259,6 +265,8 @@ function LIB.SetParent(ent, parent)
 
 	if ent.sligwolf_baseEntity then
 		ent:SetParentEntity(parent)
+	else
+		ent:SetNWEntity("sligwolf_parent", parent or NULL)
 	end
 
 	vars.SuperParentENT = nil

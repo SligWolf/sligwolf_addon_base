@@ -1304,6 +1304,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 	end
 
 	ent.sligwolf_physEntity = true
+	ent.sligwolf_vehiclePod = true
 
 	return ent
 end

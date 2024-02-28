@@ -26,6 +26,9 @@ function SLIGWOLF_ADDON:MakeEnt(classname, plyOwner, parent, name)
 		ent:SetAddonID(self.Addonname)
 	end
 
+	ent:SetNWBool("sligwolf_entity", true)
+	ent:SetNWBool("sligwolf_subentity", true)
+
 	ent.sligwolf_entity = true
 	ent.sligwolf_subentity = true
 	ent.sligwolf_Addonname = self.Addonname
