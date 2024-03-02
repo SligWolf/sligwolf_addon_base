@@ -43,9 +43,46 @@ function LIB.ToString(ent)
 	return str
 end
 
+function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
+	local ent = ents.Create(classname)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	if IsValid(parent) then
+		addonname = addonname or parent.sligwolf_Addonname
+	end
+
+	ent.SLIGWOLF_Vars = ent.SLIGWOLF_Vars or {}
+
+	LIB.SetName(ent, name)
+	LIB.SetParent(ent, parent)
+
+	if ent.sligwolf_baseEntity and addonname then
+		ent:SetAddonID(addonname)
+	end
+
+	ent:SetNWBool("sligwolf_entity", true)
+	ent:SetNWBool("sligwolf_subentity", true)
+
+	ent.sligwolf_entity = true
+	ent.sligwolf_subentity = true
+	ent.sligwolf_Addonname = addonname
+
+	if IsValid(plyOwner) then
+		LIB.SetOwner(ent, plyOwner)
+	end
+
+	return ent
+end
+
 function LIB.SetupChildEntity(ent, parent, collision, attachmentid)
 	if not IsValid(ent) then return end
 	if not IsValid(parent) then return end
+
+	if attachmentid and isstring(attachmentid) then
+		attachmentid = ent:LookupAttachment(attachmentid) or 0
+	end
 
 	collision = collision or COLLISION_GROUP_NONE
 	attachmentid = tonumber(attachmentid or 0)
@@ -53,12 +90,17 @@ function LIB.SetupChildEntity(ent, parent, collision, attachmentid)
 	ent:SetParent(parent, attachmentid)
 	ent:SetCollisionGroup(collision)
 	ent:SetMoveType(MOVETYPE_NONE)
+
 	ent.DoNotDuplicate = true
+	ent.sligwolf_noUnfreeze = true
+	ent.sligwolf_noBodySystemApplyMotion = true
+
 	parent:DeleteOnRemove(ent)
 
 	local phys = ent:GetPhysicsObject()
-	if not IsValid(phys) then return ent end
-	phys:Sleep()
+	if IsValid(phys) then
+		phys:Sleep()
+	end
 
 	return ent
 end

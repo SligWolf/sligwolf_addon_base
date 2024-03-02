@@ -130,5 +130,84 @@ function LIB.SetEntAngPosViaAttachment(entA, entB, attA, attB)
 	return true
 end
 
+function LIB.GetNearestAttachment(ent, pos, filter)
+	if not LIBUtil.IsValidModelEntity(ent) then return nil end
+	if not pos then return nil end
+
+	local attachments = ent:GetAttachments()
+	if not attachments then return nil end
+
+	local nearstAttachment = nil
+	local nearstDist = nil
+
+	for i, attachment in ipairs(attachments) do
+		local id = attachment.id
+		local name = attachment.name
+
+		if filter and not filter(ent, id, name) then
+			continue
+		end
+
+		local attAngPos = ent:GetAttachment(id)
+		if not attAngPos then
+			continue
+		end
+
+		local attPos = attAngPos.Pos
+		if not attPos then
+			continue
+		end
+
+		local attDist = attPos:DistToSqr(pos)
+
+		if nearstDist and nearstAttachment and nearstDist <= attDist then
+			continue
+		end
+
+		nearstAttachment = {
+			id = id,
+			name = name,
+			angPos = attAngPos,
+			distanceSqr = attDist,
+			ent = ent,
+		}
+
+		nearstDist = attDist
+	end
+
+	return nearstAttachment
+end
+
+function LIB.GetNearestAttachmentInEntities(entities, pos, filter)
+	if not pos then return nil end
+
+	entities = entities or {}
+
+	if not istable(entities) then
+		entities = {entities}
+	end
+
+	local nearstAttachment = nil
+	local nearstDist = nil
+
+	for i, ent in ipairs(entities) do
+		local attachment = LIB.GetNearestAttachment(ent, pos, filter)
+		if not attachment then
+			continue
+		end
+
+		local attDist = attachment.distanceSqr
+
+		if nearstDist and nearstAttachment and nearstDist <= attDist then
+			continue
+		end
+
+		nearstAttachment = attachment
+	end
+
+	return nearstAttachment
+end
+
+
 return true
 

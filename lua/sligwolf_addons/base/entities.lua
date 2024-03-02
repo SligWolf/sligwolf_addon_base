@@ -14,27 +14,9 @@ local LIBEntities = SligWolf_Addons.Entities
 local LIBUtil = SligWolf_Addons.Util
 
 function SLIGWOLF_ADDON:MakeEnt(classname, plyOwner, parent, name)
-	local ent = ents.Create(classname)
-	if not IsValid(ent) then return end
-
-	ent.SLIGWOLF_Vars = ent.SLIGWOLF_Vars or {}
-
-	LIBEntities.SetName(ent, name)
-	LIBEntities.SetParent(ent, parent)
-
-	if ent.sligwolf_baseEntity then
-		ent:SetAddonID(self.Addonname)
-	end
-
-	ent:SetNWBool("sligwolf_entity", true)
-	ent:SetNWBool("sligwolf_subentity", true)
-
-	ent.sligwolf_entity = true
-	ent.sligwolf_subentity = true
-	ent.sligwolf_Addonname = self.Addonname
-
-	if IsValid(plyOwner) then
-		LIBEntities.SetOwner(ent, plyOwner)
+	local ent = LIBEntities.MakeEnt(classname, plyOwner, parent, name, self.Addonname)
+	if not ent then
+		return nil
 	end
 
 	return ent

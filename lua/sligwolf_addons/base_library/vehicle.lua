@@ -21,16 +21,6 @@ local LIBCamera = nil
 local LIBTimer = nil
 local LIBHook = nil
 
-function LIB.Load()
-	LIBVehicleControl = SligWolf_Addons.VehicleControl
-	LIBEntities = SligWolf_Addons.Entities
-	LIBCamera = SligWolf_Addons.Camera
-	LIBTimer = SligWolf_Addons.Timer
-	LIBHook = SligWolf_Addons.Hook
-
-	LIB.AddHooks()
-end
-
 function LIB.ToString(vehicle)
 	local vehicleStr = LIBEntities.ToString(vehicle)
 
@@ -162,7 +152,13 @@ function LIB.ResetDriverMaxHealth(ply)
 	ply.__SLIGWOLF_oldHealth = nil
 end
 
-function LIB.AddHooks()
+function LIB.Load()
+	LIBVehicleControl = SligWolf_Addons.VehicleControl
+	LIBEntities = SligWolf_Addons.Entities
+	LIBCamera = SligWolf_Addons.Camera
+	LIBTimer = SligWolf_Addons.Timer
+	LIBHook = SligWolf_Addons.Hook
+
 	local function SpawnVehicleFinished(vehicle, ply)
 		if not IsValid(vehicle) then return end
 

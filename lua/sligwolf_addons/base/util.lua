@@ -13,7 +13,7 @@ end
 local LIBUtil = SligWolf_Addons.Util
 
 function SLIGWOLF_ADDON:IsDeveloper()
-	--MsgN("DEPRECATED: Use SligWolf_Addons.Util.IsDeveloper instead")
+	MsgN("DEPRECATED: Use SligWolf_Addons.Util.IsDeveloper instead")
 	return LIBUtil.IsDeveloper()
 end
 

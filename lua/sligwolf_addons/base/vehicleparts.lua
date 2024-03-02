@@ -649,7 +649,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	end
 
 	if not ent.sligwolf_baseEntity then
-		--engine entities must not be spawned before model dependent positioning.
+		-- engine entities must not be spawned before model dependent positioning.
 
 		ent:Spawn()
 		ent:Activate()
@@ -1296,6 +1296,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 
 	ent.sligwolf_physEntity = true
 	ent.sligwolf_vehicle = true
+	ent.sligwolf_vehiclePod = true
 
 	ent.sligwolf_ExitVectors = component.exitVectors
 
@@ -1303,8 +1304,6 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 		ent:AddEffects(EF_BONEMERGE)
 	end
 
-	ent.sligwolf_physEntity = true
-	ent.sligwolf_vehiclePod = true
 
 	return ent
 end
