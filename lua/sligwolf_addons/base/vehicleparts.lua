@@ -42,6 +42,11 @@ local g_FailbackComponentsParams = {
 			parentAttachment = 0,
 			boneMerge = false,
 		},
+		seatGroup = {
+			collision = COLLISION_GROUP_WORLD,
+			parentAttachment = 0,
+			seatModel = CONSTANTS.mdlDynamicSeat,
+		},
 		trigger = {
 			parentAttachment = 0,
 		},
@@ -745,6 +750,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 		slider = self.SetUpVehicleSlider,
 		bogie = self.SetUpVehicleBogie,
 		propParent = self.SetUpVehiclePropParented,
+		seatGroup = self.SetUpVehicleSeatGroup,
 		animatable = self.SetUpVehicleAnimatable,
 		speedometer = self.SetUpVehicleSpeedometer,
 		trigger = self.SetUpVehicleTrigger,
@@ -847,6 +853,24 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
 	end
+
+	return ent
+end
+
+function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparent)
+	local attachment = self:CheckToProceedToCreateEnt(parent, component)
+	if not attachment then return end
+
+	local name = component.name
+	local seatModel = component.seatModel
+
+	local ent = self:MakeEntEnsured("sligwolf_seat_group", ply, parent, "SeatGroup_" .. name)
+	if not IsValid(ent) then return end
+
+	self:SetPartValues(ent, parent, component, attachment, superparent)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+
+	ent:SetSeatModel(seatModel)
 
 	return ent
 end

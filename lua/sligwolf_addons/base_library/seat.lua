@@ -30,8 +30,21 @@ local g_traceResult = {}
 
 g_trace.output = g_traceResult
 
-local function seatAttachmentFilter(parentEnt, attId, attName)
-	return string.StartsWith(attName, "seat_")
+local function seatAttachmentFilter(seatGroup, attId, attName)
+	if not string.StartsWith(attName, "seat_") then
+		return false
+	end
+
+	if seatGroup.sligwolf_seatGroupEntity and seatGroup:IsSeatOccupied(attName) then
+		return false
+	end
+
+	return true
+end
+
+local function seatAttachmentToName(attachmentName)
+	local name = "DynamicSeat_" .. tostring(attachmentName or "")
+	return name
 end
 
 function LIB.TraceSeatAttachment(ply)
@@ -63,15 +76,7 @@ function LIB.TraceSeatAttachment(ply)
 		return nil
 	end
 
-	if ent.sligwolf_vehicleDynamicSeat then
-		return nil
-	end
-
-	if ent.sligwolf_buttonEntity then
-		return nil
-	end
-
-	if ent.sligwolf_isConnector then
+	if not ent.sligwolf_seatGroupEntity then
 		return nil
 	end
 
@@ -104,17 +109,18 @@ function LIB.TraceAndTakeSeat(ply)
 	if not nearstAttachment then return nil end
 
 	local ent = nearstAttachment.ent
+	if not ent.sligwolf_seatGroupEntity then return nil end
+
 	local name = nearstAttachment.name
 
-	local seat = LIB.TakeSeat(ply, ent, name)
-	return seat
+	return ent:TakeSeat(ply, name)
 end
 
-function LIB.TakeSeat(ply, parent, attachmentName)
+function LIB.TakeSeat(ply, seatGroup, attachmentName)
 	if not IsValid(ply) then return nil end
-	if not IsValid(parent) then return nil end
+	if not IsValid(seatGroup) then return nil end
 
-	local seat = LIB.GetOrSpawnSeat(parent, attachmentName)
+	local seat = LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 	if not IsValid(seat) then
 		return nil
 	end
@@ -136,26 +142,25 @@ function LIB.TakeSeat(ply, parent, attachmentName)
 	return seat
 end
 
-function LIB.GetOrSpawnSeat(parent, attachmentName)
-	if not IsValid(parent) then return nil end
+function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
+	if not IsValid(seatGroup) then return nil end
+	if not seatGroup.sligwolf_seatGroupEntity then return nil end
 
-	local name = "DynamicSeat_" .. tostring(attachmentName)
-	local seat = LIBEntities.GetChild(parent, name)
+	local name = seatAttachmentToName(attachmentName)
+	local seat = LIBEntities.GetChild(seatGroup, name)
 
 	if IsValid(seat) then
 		return seat
 	end
 
-	local ownerPly = LIBEntities.GetOwner(parent)
-
-	local seat = LIBEntities.MakeEnt("prop_vehicle_prisoner_pod", ownerPly, parent, name, addonname)
+	local seat = seatGroup:MakeEnt("prop_vehicle_prisoner_pod", name)
 	if not IsValid(seat) then
 		return nil
 	end
 
-	seat:SetModel(CONSTANTS.mdlDynamicSeat)
+	seat:SetModel(seatGroup:GetSeatModel())
 
-	if not LIBPosition.SetEntAngPosViaAttachment(parent, seat, attachmentName) then
+	if not LIBPosition.SetEntAngPosViaAttachment(seatGroup, seat, attachmentName) then
 		LIB.RemoveSeat(seat)
 		return nil
 	end
@@ -175,16 +180,16 @@ function LIB.GetOrSpawnSeat(parent, attachmentName)
 	seat:Spawn()
 	seat:Activate()
 
-	LIBEntities.SetupChildEntity(seat, parent, COLLISION_GROUP_NONE, attachmentName)
+	LIBEntities.SetupChildEntity(seat, seatGroup, COLLISION_GROUP_IN_VEHICLE, attachmentName)
 
 	return seat
 end
 
-function LIB.GetSeat(parent, attachmentName)
-	if not IsValid(parent) then return nil end
+function LIB.GetSeat(seatGroup, attachmentName)
+	if not IsValid(seatGroup) then return nil end
 
-	local name = "DynamicSeat_" .. tostring(attachmentName)
-	local seat = LIB.GetChild(parent, name)
+	local name = seatAttachmentToName(attachmentName)
+	local seat = LIBEntities.GetChild(seatGroup, name)
 
 	if not IsValid(seat) then
 		return nil
@@ -193,18 +198,43 @@ function LIB.GetSeat(parent, attachmentName)
 	return seat
 end
 
+function LIB.IsSeatOccupied(seatGroup, attachmentName)
+	local seat = LIB.GetSeat(seatGroup, attachmentName)
+
+	if not seat then
+		return false
+	end
+
+	local driver = seat:GetDriver()
+
+	if not IsValid(driver) then
+		return false
+	end
+
+	return true
+end
+
 function LIB.RemoveSeat(seat)
 	if not IsValid(seat) then return end
 
-	local parent = LIBEntities.GetParent(seat)
+	local seatGroup = LIBEntities.GetParent(seat)
 	local root = LIBEntities.GetSuperParent(seat)
 
 	LIBEntities.SetParent(seat, nil)
 
 	LIBEntities.RemoveEntity(seat)
 
-	LIBEntities.ClearChildrenCache(parent)
+	LIBEntities.ClearChildrenCache(seatGroup)
 	LIBEntities.ClearChildrenCache(root)
+end
+
+function LIB.RemoveSeatByAttachment(seatGroup, attachmentName)
+	local seat = LIB.GetSeat(seatGroup, attachmentName)
+	LIB.RemoveSeat(seat)
+end
+
+function LIB.ExitSeatTrace(ply)
+	if not IsValid(ply) then return end
 end
 
 function LIB.ExitSeat(ply)
@@ -235,35 +265,13 @@ function LIB.Load()
 
 		LIBHook.Add("PlayerLeaveVehicle", "Library_Seat_PlayerLeaveSeat", PlayerLeaveSeat, 21000)
 
-		local function KeyPress(ply, key)
-			if key ~= IN_USE then
-				return
-			end
+		-- local function test(ply, key)
+		-- 	local ply = Entity(1)
 
-			if not IsValid(ply) then
-				return
-			end
+		-- 	LIB.ExitSeatTrace(ply)
+		-- end
 
-			if not ply:Alive() then
-				return
-			end
-
-			if not ply:Alive() then
-				return
-			end
-
-			if ply:InVehicle() then
-				return
-			end
-
-			if ply:IsDrivingEntity() then
-				return
-			end
-
-			LIB.TraceAndTakeSeat(ply)
-		end
-
-		LIBHook.Add("KeyPress", "Library_Seat_KeyPress", KeyPress, 10000)
+		-- LIBHook.Add("Think", "Library_Seat_Test", test, 10000)
 	end
 end
 
