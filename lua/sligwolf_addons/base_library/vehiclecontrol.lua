@@ -63,10 +63,12 @@ local checkForEmptySpaceVectors = {
 }
 
 function LIB.ExitSeat(seat, ply)
--- 	--@TODO: Recode and clean up
+	-- 	--@TODO: Recode and clean up
 
-	if not IsValid(seat) then return false end
 	if not IsValid(ply) then return false end
+	if not IsValid(seat) then return false end
+	
+	if seat.sligwolf_vehicleDynamicSeat then return false end
 
 	local tb = seat.sligwolf_ExitVectors or {}
 	local exitPlyVector = tb[1]

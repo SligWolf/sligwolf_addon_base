@@ -35,6 +35,7 @@ function ENT:Initialize()
 
 	if SERVER then
 		self:InitializePhysics()
+		self:SetUseType(SIMPLE_USE)
 	end
 
 	self:RunPostInitialize()

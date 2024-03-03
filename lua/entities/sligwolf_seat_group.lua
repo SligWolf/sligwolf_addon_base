@@ -23,6 +23,10 @@ local LIBSeat = SligWolf_Addons.Seat
 local LIBUtil = SligWolf_Addons.Util
 
 ENT.SeatModel = CONSTANTS.mdlDynamicSeat
+ENT.SeatKeyValues = {
+	vehiclescript = "scripts/vehicles/prisoner_pod.txt",
+	limitview = 0,
+}
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
@@ -40,10 +44,16 @@ end
 
 function ENT:Use(activator, caller, useType, value)
 	if CLIENT then return end
+
 	if not IsValid(activator) then return end
 	if not activator:IsPlayer() then return end
 
+	if LIBSeat.SeatGroupUsageBounced(activator) then
+		return
+	end
+
 	LIBSeat.TraceAndTakeSeat(activator)
+	LIBSeat.DebounceSeatGroupUsage(activator)
 end
 
 function ENT:SetSeatModel(model)
@@ -59,6 +69,24 @@ end
 function ENT:GetSeatModel()
 	if CLIENT then return end
 	return self.SeatModel
+end
+
+function ENT:SetSeatKeyValues(seatKeyValues)
+	if CLIENT then return end
+
+	local seatKeyValuesCopy = {}
+
+	for k, v in pairs(seatKeyValues) do
+		k = tostring(k)
+		seatKeyValuesCopy[k] = v
+	end
+
+	self.SeatKeyValues = seatKeyValuesCopy
+end
+
+function ENT:GetSeatKeyValues()
+	if CLIENT then return end
+	return self.SeatKeyValues
 end
 
 function ENT:TakeSeat(ply, attachmentName)

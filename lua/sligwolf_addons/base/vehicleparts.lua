@@ -42,11 +42,6 @@ local g_FailbackComponentsParams = {
 			parentAttachment = 0,
 			boneMerge = false,
 		},
-		seatGroup = {
-			collision = COLLISION_GROUP_WORLD,
-			parentAttachment = 0,
-			seatModel = CONSTANTS.mdlDynamicSeat,
-		},
 		trigger = {
 			parentAttachment = 0,
 		},
@@ -123,6 +118,15 @@ local g_FailbackComponentsParams = {
 			parentAttachment = 0,
 			boneMerge = false,
 			keyValues = {
+				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
+				limitview = 0,
+			},
+		},
+		seatGroup = {
+			collision = COLLISION_GROUP_WORLD,
+			parentAttachment = 0,
+			seatModel = CONSTANTS.mdlDynamicSeat,
+			seatKeyValues = {
 				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
 				limitview = 0,
 			},
@@ -863,6 +867,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 
 	local name = component.name
 	local seatModel = component.seatModel
+	local seatKeyValues = component.seatKeyValues
 
 	local ent = self:MakeEntEnsured("sligwolf_seat_group", ply, parent, "SeatGroup_" .. name)
 	if not IsValid(ent) then return end
@@ -871,6 +876,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
 
 	ent:SetSeatModel(seatModel)
+	ent:SetSeatKeyValues(seatKeyValues)
 
 	return ent
 end
