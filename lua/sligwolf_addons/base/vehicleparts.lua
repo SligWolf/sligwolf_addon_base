@@ -39,11 +39,9 @@ local g_FailbackComponentsParams = {
 	typesParams = {
 		propParent = {
 			collision = COLLISION_GROUP_IN_VEHICLE,
-			parentAttachment = 0,
 			boneMerge = false,
 		},
 		trigger = {
-			parentAttachment = 0,
 		},
 		door = {
 			autoClose = true,
@@ -58,12 +56,10 @@ local g_FailbackComponentsParams = {
 		},
 		connectorButton = {
 			collision = COLLISION_GROUP_WORLD,
-			parentAttachment = 0,
 			inVehicle = false,
 		},
 		button = {
 			collision = COLLISION_GROUP_WORLD,
-			parentAttachment = 0,
 			inVehicle = false,
 		},
 		smoke = {
@@ -75,25 +71,21 @@ local g_FailbackComponentsParams = {
 			endAlpha = 10,
 			lifeTime = 0,
 			dieTime = 3,
-			parentAttachment = 0,
 		},
 		light = {
 			fov = 120,
 			farZ = 2048,
 			shadowRenderDist = 2048,
-			parentAttachment = 0,
 		},
 		glow = {
 			size = 30,
 			enlarge = 10,
 			count = 2,
 			alphaReduce = 100,
-			parentAttachment = 0,
 		},
 		animatedWheel = {
 			size = 8,
 			restrate = 16,
-			parentAttachment = 0,
 			boneMerge = false,
 			collision = COLLISION_GROUP_WEAPON,
 		},
@@ -106,7 +98,6 @@ local g_FailbackComponentsParams = {
 		},
 		display = {
 			scale = 0.25,
-			parentAttachment = 0,
 			functionName = "",
 		},
 		bendi = {
@@ -115,7 +106,6 @@ local g_FailbackComponentsParams = {
 		},
 		pod = {
 			collision = COLLISION_GROUP_WORLD,
-			parentAttachment = 0,
 			boneMerge = false,
 			keyValues = {
 				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
@@ -124,7 +114,6 @@ local g_FailbackComponentsParams = {
 		},
 		seatGroup = {
 			collision = COLLISION_GROUP_WORLD,
-			parentAttachment = 0,
 			seatModel = CONSTANTS.mdlDynamicSeat,
 			seatKeyValues = {
 				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
@@ -852,7 +841,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -873,7 +862,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
 	ent:SetSeatModel(seatModel)
 	ent:SetSeatKeyValues(seatKeyValues)
@@ -892,7 +881,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -923,7 +912,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 	ent:SetPoseName(poseName)
 	ent:SetMessureEntity(parent)
 
-	ent:AttachToEnt(parent, component.parentAttachment)
+	ent:AttachToEnt(parent, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -942,7 +931,7 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
 	return ent
 end
@@ -1106,7 +1095,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_connectorDirection = name
 
@@ -1138,7 +1127,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_noPickup = true
 	ent:SetNWBool("sligwolf_noPickup", true)
@@ -1193,7 +1182,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 		return
 	end
 
-	ent:AttachToEnt(parent, component.parentAttachment)
+	ent:AttachToEnt(parent, attachment)
 	ent:Set_SpawnTime(spawnTime)
 	ent:Set_Velocity(velocity)
 	ent:SetColor(color)
@@ -1247,7 +1236,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 		return
 	end
 
-	ent:AttachToEnt(parent, component.parentAttachment)
+	ent:AttachToEnt(parent, attachment)
 	ent:Set_FOV(fov)
 	ent:Set_FarZ(farZ)
 	ent:SetColor(color)
@@ -1298,7 +1287,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 	end
 
 	ent:SetColor(color)
-	ent:AttachToEnt(parent, component.parentAttachment)
+	ent:AttachToEnt(parent, attachment)
 	ent:Set_Size(size)
 	ent:Set_Enlarge(enlarge)
 	ent:Set_Count(count)
@@ -1322,7 +1311,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, component.parentAttachment)
+	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_physEntity = true
 	ent.sligwolf_vehicle = true
@@ -1354,7 +1343,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superp
 	ent:SetSize(size)
 	ent:SetRestRate(restrate)
 	ent:SetMessureEntity(parent)
-	ent:AttachToEnt(parent, component.parentAttachment)
+	ent:AttachToEnt(parent, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -1376,7 +1365,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	ent:SetDisplayOriginName("displaypos01")
-	ent:AttachToEnt(parent, component.parentAttachment)
+	ent:AttachToEnt(parent, attachment)
 	ent:TurnOn(true)
 	ent:Set_Scale(scale)
 	ent:SetDisplayFunctionName(functionName)
