@@ -272,7 +272,7 @@ local g_exitSeatTrace = {}
 local g_exitSeatTraceResult = {}
 
 g_exitSeatTrace.output = g_exitSeatTraceResult
---g_exitSeatTrace.mask = MASK_PLAYERSOLID
+g_exitSeatTrace.mask = MASK_PLAYERSOLID
 g_exitSeatTrace.filter = function(ent)
 	if not IsValid(ent) then return false end
 	if g_exitSeatTrace.ply == ent then return false end
@@ -309,7 +309,7 @@ local g_exitSeatTraceHull = {}
 local g_exitSeatTraceHullResult = {}
 
 g_exitSeatTraceHull.output = g_exitSeatTraceHullResult
---g_exitSeatTraceHull.mask = MASK_PLAYERSOLID
+g_exitSeatTraceHull.mask = MASK_PLAYERSOLID
 g_exitSeatTraceHull.filter = function(ent)
 	if not IsValid(ent) then return false end
 	if g_exitSeatTraceHull.ply == ent then return false end
