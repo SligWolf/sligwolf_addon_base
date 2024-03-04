@@ -47,6 +47,7 @@ loadLib("convar")
 
 SligWolf_Addons.Print.Load()
 SligWolf_Addons.Entities.Load()
+SligWolf_Addons.Position.Load()
 SligWolf_Addons.Vehicle.Load()
 SligWolf_Addons.VehicleControl.Load()
 SligWolf_Addons.Coupling.Load()

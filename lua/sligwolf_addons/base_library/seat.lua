@@ -71,10 +71,14 @@ function LIB.TraceSeatAttachment(ply)
 	if not IsValid(ply) then return nil end
 	if ply:InVehicle() then return nil end
 
-	local dir = ply:EyeAngles():Forward()
+	local data = LIBPosition.GetPlayerPosData(ply)
+	if not data then return end
 
-	g_seatSpawnTrace.start = ply:EyePos()
-	g_seatSpawnTrace.endpos = g_seatSpawnTrace.start + dir * g_maxAttachmentTraceDistance
+	local eyePos = data.eyePos
+	local aimVector = data.aimVectorNoCursor
+
+	g_seatSpawnTrace.start = eyePos
+	g_seatSpawnTrace.endpos = g_seatSpawnTrace.start + aimVector * g_maxAttachmentTraceDistance
 	g_seatSpawnTrace.filter = ply
 
 	util.TraceLine(g_seatSpawnTrace)
@@ -268,6 +272,8 @@ function LIB.RemoveSeatByAttachment(seatGroup, attachmentName)
 	LIB.RemoveSeat(seat)
 end
 
+
+
 local g_exitSeatTrace = {}
 local g_exitSeatTraceResult = {}
 
@@ -276,6 +282,21 @@ g_exitSeatTrace.mask = MASK_PLAYERSOLID
 g_exitSeatTrace.filter = function(ent)
 	if not IsValid(ent) then return false end
 	if g_exitSeatTrace.ply == ent then return false end
+
+	if ent.sligwolf_vehicleDynamicSeat then return false end
+	if ent.sligwolf_seatGroupEntity then return false end
+
+	return true
+end
+
+local g_exitSeatTraceHull = {}
+local g_exitSeatTraceHullResult = {}
+
+g_exitSeatTraceHull.output = g_exitSeatTraceHullResult
+g_exitSeatTraceHull.mask = MASK_PLAYERSOLID
+g_exitSeatTraceHull.filter = function(ent)
+	if not IsValid(ent) then return false end
+	if g_exitSeatTraceHull.ply == ent then return false end
 
 	if ent.sligwolf_vehicleDynamicSeat then return false end
 	if ent.sligwolf_seatGroupEntity then return false end
@@ -304,21 +325,6 @@ local function buildSearchPattern(pos, mins, maxs, dir)
 end
 
 local g_exitSeatSearchTracePattern = buildSearchPattern()
-
-local g_exitSeatTraceHull = {}
-local g_exitSeatTraceHullResult = {}
-
-g_exitSeatTraceHull.output = g_exitSeatTraceHullResult
-g_exitSeatTraceHull.mask = MASK_PLAYERSOLID
-g_exitSeatTraceHull.filter = function(ent)
-	if not IsValid(ent) then return false end
-	if g_exitSeatTraceHull.ply == ent then return false end
-
-	if ent.sligwolf_vehicleDynamicSeat then return false end
-	if ent.sligwolf_seatGroupEntity then return false end
-
-	return true
-end
 
 local function traceGround(pos, mins, maxs, dir)
 	if not pos then
@@ -411,17 +417,14 @@ local function traceGroundPattern(groundTrace, mins, maxs, size2D)
 	return nil
 end
 
-local g_lastPlyPosData = {}
-
 function LIB.ExitSeatTrace(ply)
 	if not IsValid(ply) then return end
 
-	local plyId = ply:UserID()
-	local data = g_lastPlyPosData[plyId]
-
+	local data = LIBPosition.GetPlayerPosData(ply)
 	if not data then return end
-	if not data.pos then return end
-	if not data.dir then return end
+
+	local eyePos = data.eyePos
+	local aimVector = data.aimVectorNoCursor
 
 	local mins, maxs = ply:GetHull()
 
@@ -429,15 +432,13 @@ function LIB.ExitSeatTrace(ply)
 	maxs = maxs + Vector(2, 2, 2)
 
 	local size2D = maxs:Distance2D(mins) / 2 + 4
-
-	local dir = data.dir
 	local len = math.max(size2D * 1.4, 64)
 
 	g_exitSeatTrace.ply = ply
 	g_exitSeatTraceHull.ply = ply
 
-	g_exitSeatTrace.start = data.pos
-	g_exitSeatTrace.endpos = data.pos + dir * len
+	g_exitSeatTrace.start = eyePos
+	g_exitSeatTrace.endpos = eyePos + aimVector * len
 
 	util.TraceLine(g_exitSeatTrace)
 
@@ -462,7 +463,7 @@ function LIB.ExitSeatTrace(ply)
 		return nil
 	end
 
-	-- LIBUtil.DebugHullTrace(g_exitSeatTraceHull, tr, nil, 0.05)
+	LIBUtil.DebugHullTrace(g_exitSeatTraceHull, tr, nil, 0.05)
 
 	return tr
 end
@@ -470,11 +471,8 @@ end
 function LIB.ExitSeat(ply)
 	if not IsValid(ply) then return end
 
-	local plyId = ply:UserID()
-	local data = g_lastPlyPosData[plyId]
-
-	if not data then return end
-	if not data.pos then return end
+	local eyePos = LIBPosition.GetPlayerEyePos(ply)
+	if not eyePos then return end
 
 	LIB.DebounceSeatGroupUsage(ply)
 
@@ -484,8 +482,6 @@ function LIB.ExitSeat(ply)
 	end
 
 	local exitPos = tr.HitPos
-
-	local eyePos = data.pos
 	local exitAng = (exitPos - eyePos):Angle()
 
 	ply:SetPos(exitPos)
@@ -515,28 +511,6 @@ function LIB.Load()
 		end
 
 		LIBHook.Add("PlayerLeaveVehicle", "Library_Seat_PlayerLeaveSeat", PlayerLeaveSeat, 21000)
-
-		local function UpdatePlayerPos(ply, key)
-			for i, ply in ipairs(player.GetAll()) do
-				if not IsValid(ply) then
-					continue
-				end
-
-				if not ply:InVehicle() then
-					return nil
-				end
-
-				local plyId = ply:UserID()
-
-				local data = g_lastPlyPosData[plyId] or {}
-				g_lastPlyPosData[plyId] = data
-
-				data.pos = ply:EyePos()
-				data.dir = ply:GetAimVector()
-			end
-		end
-
-		LIBHook.Add("Think", "Library_Seat_UpdatePlayerPos", UpdatePlayerPos, 50000)
 	end
 end
 

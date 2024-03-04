@@ -14,7 +14,8 @@ SligWolf_Addons.Position = SligWolf_Addons.Position or {}
 table.Empty(SligWolf_Addons.Position)
 
 local LIB = SligWolf_Addons.Position
-local LIBUtil = SligWolf_Addons.Util
+
+local LIBUtil = nil
 
 function LIB.VectorToLocalToWorld(ent, vec)
 	if not IsValid(ent) then return nil end
@@ -208,6 +209,131 @@ function LIB.GetNearestAttachmentInEntities(entities, pos, filter)
 	return nearstAttachment
 end
 
+function LIB.UpdatePlayerPosData(ply)
+	local data = LIB.GetPlayerPosData(ply)
+	if not data then
+		return
+	end
+
+	if data.skipNextUpdate then
+		return data
+	end
+
+	data.ply = ply
+
+	data.pos = ply:GetPos()
+	data.eyePos = ply:EyePos()
+
+	data.aimVector = ply:GetAimVector()
+
+	local eyeAngles = ply:LocalEyeAngles()
+	local parent = ply:GetParent()
+
+	if IsValid(parent) then
+		-- fix for wongy angles in vehicles
+		eyeAngles = parent:LocalToWorldAngles(eyeAngles)
+	end
+
+	data.eyeAngles = eyeAngles
+	data.aimVectorNoCursor = eyeAngles:Forward()
+
+	return data
+end
+
+function LIB.GetPlayerPosData(ply)
+	if not ply then
+		return nil
+	end
+
+	local getTable = ply.GetTable
+	if not getTable then
+		return nil
+	end
+
+	local plyTable = getTable(ply)
+
+	local data = plyTable.sligwolf_lastPlyPosData or {}
+	plyTable.sligwolf_lastPlyPosData = data
+
+	return data
+end
+
+function LIB.GetPlayerPos(ply)
+	local data = LIB.GetPlayerPosData(ply)
+	if not data then
+		return
+	end
+
+	return data.pos
+end
+
+function LIB.GetPlayerEyePos(ply)
+	local data = LIB.GetPlayerPosData(ply)
+	if not data then
+		return
+	end
+
+	return data.eyePos
+end
+
+function LIB.GetPlayerEyeAngles(ply)
+	local data = LIB.GetPlayerPosData(ply)
+	if not data then
+		return
+	end
+
+	return data.eyeAngles
+end
+
+function LIB.GetPlayerAimVectorNoCursor(ply)
+	local data = LIB.GetPlayerPosData(ply)
+	if not data then
+		return
+	end
+
+	return data.aimVectorNoCursor
+end
+
+function LIB.GetPlayerAimVector(ply)
+	local data = LIB.GetPlayerPosData(ply)
+	if not data then
+		return
+	end
+
+	return data.eyeVector
+end
+
+
+function LIB.Load()
+	LIBUtil = SligWolf_Addons.Util
+	local LIBHook = SligWolf_Addons.Hook
+
+	local function UpdatePlayerPos_SkipNextUpdate(ply, vehicle)
+		local data = LIB.GetPlayerPosData(ply)
+		if not data then
+			return
+		end
+
+		-- do not update the pos data with broken data, better use old data instead
+		data.skipNextUpdate = true
+	end
+
+	LIBHook.Add("PlayerLeaveVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000000)
+	LIBHook.Add("PlayerEnteredVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000000)
+
+	local function UpdatePlayerPos(ply, key)
+		for i, ply in player.Iterator() do
+			local data = LIB.UpdatePlayerPosData(ply)
+			if not data then
+				continue
+			end
+
+			data.skipNextUpdate = nil
+		end
+	end
+
+	LIBHook.Add("Think", "Library_Position_UpdatePlayerPos", UpdatePlayerPos, 1000000)
+end
 
 return true
 
