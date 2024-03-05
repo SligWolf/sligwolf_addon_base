@@ -303,7 +303,6 @@ function LIB.GetPlayerAimVector(ply)
 	return data.eyeVector
 end
 
-
 function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
 	local LIBHook = SligWolf_Addons.Hook

@@ -15,6 +15,8 @@ table.Empty(SligWolf_Addons.Convar)
 
 local LIB = SligWolf_Addons.Convar
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local g_lastThink = 0
 
 local g_sliderRenderMode = 0
@@ -41,9 +43,36 @@ if CLIENT then
 		return g_sliderRenderMode
 	end
 
+	local function getToolMode()
+		local ply = LocalPlayer()
+
+		local toolgun = ply:GetActiveWeapon()
+		if not IsValid(toolgun) then
+			return
+		end
+
+		if toolgun:GetClass() ~= "gmod_tool" then
+			return
+		end
+
+		return toolgun:GetMode()
+	end
+
 	cl_calcSliderRenderMode = function()
+		if g_isDebug then
+			return LIB.ENUM_SLIDER_RENDER_MODE_ALWAYS
+		end
+
 		local showSlidersMode = g_cvShowSliders:GetInt()
 		showSlidersMode = math.Clamp(showSlidersMode, 0, 2)
+
+		if showSlidersMode == LIB.ENUM_SLIDER_RENDER_MODE_DISABLED then
+			return showSlidersMode
+		end
+
+		if getToolMode() == CONSTANTS.toolRubatsEasyInspector then
+			return LIB.ENUM_SLIDER_RENDER_MODE_ALWAYS
+		end
 
 		return showSlidersMode
 	end
@@ -66,6 +95,16 @@ local function calcIsDebug()
 	return true
 end
 
+local function doDelayedThink()
+	g_isDebug = calcIsDebug()
+
+	if SERVER then
+		return
+	end
+
+	g_sliderRenderMode = cl_calcSliderRenderMode()
+end
+
 function LIB.Load()
 	local LIBHook = SligWolf_Addons.Hook
 
@@ -73,16 +112,7 @@ function LIB.Load()
 		local now = RealTime()
 
 		if g_lastThink < now then
-			g_isDebug = calcIsDebug()
-
-			if CLIENT then
-				if g_isDebug then
-					g_sliderRenderMode = LIB.ENUM_SLIDER_RENDER_MODE_ALWAYS
-				else
-					g_sliderRenderMode = cl_calcSliderRenderMode()
-				end
-			end
-
+			doDelayedThink()
 			g_lastThink = now + 1 + math.random()
 		end
 	end)

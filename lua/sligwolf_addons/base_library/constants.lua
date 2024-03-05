@@ -116,5 +116,8 @@ CONSTANTS.numConRadius = 17
 CONSTANTS.numBlinkInterval1 = 0.4
 CONSTANTS.numBlinkInterval2 = 0.8
 
+-- special
+CONSTANTS.toolRubatsEasyInspector = "rb655_easy_inspector"
+
 return true
 

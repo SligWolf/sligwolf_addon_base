@@ -14,6 +14,9 @@ SligWolf_Addons.Protection = SligWolf_Addons.Protection or {}
 table.Empty(SligWolf_Addons.Protection)
 
 local LIB = SligWolf_Addons.Protection
+
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBHook = SligWolf_Addons.Hook
 
 function LIB.CheckAllowUse(ent, ply)
@@ -75,7 +78,7 @@ end
 LIBHook.Add("CanPlayerUnfreeze", "Library_Protection_CantUnfreeze", CantUnfreeze, 10000)
 
 local function CanTool(ply, trace, mode, tool, button)
-	if not IsValid(ply) then return end
+	if mode == CONSTANTS.toolRubatsEasyInspector then return end
 
 	local ent = trace.Entity
 	if not IsValid(ent) then return end
@@ -104,7 +107,7 @@ end
 LIBHook.Add("CanTool", "Library_Protection_CanTool", CanTool, 10000)
 
 local function CanToolReload(ply, trace, mode, tool, button)
-	if not IsValid(ply) then return end
+	if mode == CONSTANTS.toolRubatsEasyInspector then return end
 
 	-- reload case
 	if button ~= 3 then return end
