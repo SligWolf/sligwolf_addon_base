@@ -8,6 +8,8 @@ ENT.AdminOnly 				= false
 ENT.RenderGroup 			= RENDERGROUP_BOTH
 ENT.DoNotDuplicate 			= false
 
+ENT.sligwolf_sliderEntity    = true
+
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
@@ -46,7 +48,7 @@ if CLIENT then
 			return
 		end
 
-		if not self:IsPhysgunPickedUp() then
+		if not self:IsPhysgunCarried() then
 			return
 		end
 

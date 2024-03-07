@@ -193,6 +193,8 @@ local function ClearCacheHelper(thisent)
 	vars.ChildrenRecursiveENTs = nil
 	vars.SystemENTs = nil
 	vars.BodyENTs = nil
+	vars.SystemENTsFilteredCache = nil
+	vars.BodyENTsFilteredCache = nil
 	vars.ChildrenENTsSorted = nil
 end
 
@@ -530,7 +532,10 @@ function LIB.GetChildFromPath(ent, path)
 	local curchild = ent
 	for k, v in pairs(hierarchy) do
 		curchild = LIB.GetChild(curchild, v)
-		if not IsValid(curchild) then return end
+
+		if not IsValid(curchild) then
+			return nil
+		end
 	end
 
 	return curchild
@@ -670,7 +675,7 @@ end
 function LIB.GetBodyEntities(ent)
 	local body = LIB.GetNearstBody(ent)
 	if not IsValid(body) then
-		return
+		return nil
 	end
 
 	body.SLIGWOLF_Vars = body.SLIGWOLF_Vars or {}
@@ -698,6 +703,102 @@ function LIB.GetBodyEntities(ent)
 
 	vars.BodyENTs = children
 	return children
+end
+
+local function filterEntities(inputEntsentities, filteredEnts, filterFunc)
+	table.Empty(filteredEnts)
+
+	for i, filteredEnt in ipairs(inputEntsentities) do
+		if not filteredEnt then
+			continue
+		end
+
+		if not filter(filteredEnt) then
+			continue
+		end
+
+		table.insert(filteredEnts, filteredEnt)
+	end
+end
+
+function LIB.GetSystemEntitiesFiltered(ent, cacheName, filterFunc)
+	cacheName = tostring(cacheName or "")
+	if cacheName == "" then
+		return
+	end
+
+	local root = LIB.GetSuperParent(ent)
+	if not IsValid(root) then
+		return nil
+	end
+
+	root.SLIGWOLF_Vars = root.SLIGWOLF_Vars or {}
+	local vars = root.SLIGWOLF_Vars
+
+	vars.SystemENTsFilteredCache = vars.SystemENTsFilteredCache or {}
+	local cache = vars.SystemENTsFilteredCache
+
+	local cachedEntities = cache[cacheName]
+
+	if cachedEntities then
+		return cachedEntities
+	end
+
+	local entities = LIB.GetSystemEntities(ent)
+	if not entities then
+		return nil
+	end
+
+	local filterFunc = filterFunc or function()
+		return true
+	end
+
+	cache[cacheName] = cache[cacheName] or {}
+	cachedEntities = cache[cacheName]
+
+	filterEntities(entities, cachedEntities, filterFunc)
+
+	return cachedEntities
+end
+
+function LIB.GetBodyEntitiesFiltered(ent, cacheName, filterFunc)
+	cacheName = tostring(cacheName or "")
+	if cacheName == "" then
+		return nil
+	end
+
+	local body = LIB.GetNearstBody(ent)
+	if not IsValid(body) then
+		return nil
+	end
+
+	body.SLIGWOLF_Vars = body.SLIGWOLF_Vars or {}
+	local vars = body.SLIGWOLF_Vars
+
+	vars.BodyENTsFilteredCache = vars.SystemENTsFilteredCache or {}
+	local cache = vars.BodyENTsFilteredCache
+
+	local cachedEntities = cache[cacheName]
+
+	if cachedEntities then
+		return cachedEntities
+	end
+
+	local entities = LIB.GetBodyEntities(ent)
+	if not entities then
+		return nil
+	end
+
+	local filterFunc = filterFunc or function()
+		return true
+	end
+
+	cache[cacheName] = cache[cacheName] or {}
+	cachedEntities = cache[cacheName]
+
+	filterEntities(entities, cachedEntities, filterFunc)
+
+	return cachedEntities
 end
 
 function LIB.FindPropInSphere(ent, radius, attachment, filterA, filterB)
@@ -732,120 +833,7 @@ function LIB.GetKeyValue(ent, key)
 	return kv[key]
 end
 
-function LIB.IsPhysgunPickedUp(ent)
-	local root = LIB.GetSuperParent(ent)
-	if not IsValid(root) then
-		return false
-	end
-
-	if CLIENT then
-		local isPhysgunPickedUp = root:GetNWBool("sligwolf_isPhysgunPickedUp", false)
-
-		if not isPhysgunPickedUp then
-			return false
-		end
-
-		return true
-	end
-
-	local pickedUpList = root.sligwolf_isPhysgunPickedUp
-	if not pickedUpList then
-		return false
-	end
-
-	if table.IsEmpty(pickedUpList) then
-		return false
-	end
-
-	return true
-end
-
-function LIB.MarkPhysgunPickedUp(ent, ply)
-	if not SERVER then return end
-
-	local root = LIB.GetSuperParent(ent)
-	if not IsValid(root) then
-		return
-	end
-
-	if not IsValid(ply) then
-		return
-	end
-
-	root.sligwolf_isPhysgunPickedUp = root.sligwolf_isPhysgunPickedUp or {}
-	local pickedUpList = root.sligwolf_isPhysgunPickedUp
-
-	local plyId = ply:EntIndex()
-	local wasPickedUpByAny = LIB.IsPhysgunPickedUp(ent)
-
-	pickedUpList[plyId] = ply
-
-	if not wasPickedUpByAny then
-		root:SetNWBool("sligwolf_isPhysgunPickedUp", true)
-
-		local systemEntities = LIB.GetSystemEntities(root)
-
-		for _, ent in ipairs(systemEntities) do
-			if not isfunction(ent.OnPhysgunPickup) then
-				continue
-			end
-
-			ent:OnPhysgunPickup()
-		end
-	end
-end
-
-function LIB.UnmarkPhysgunPickedUp(ent, ply)
-	if not SERVER then return end
-
-	local root = LIB.GetSuperParent(ent)
-	if not IsValid(root) then
-		return
-	end
-
-	local pickedUpList = root.sligwolf_isPhysgunPickedUp
-	if not pickedUpList then
-		return
-	end
-
-	local wasPickedUpByAny = LIB.IsPhysgunPickedUp(ent)
-
-	if IsValid(ply) then
-		local plyId = ply:EntIndex()
-		pickedUpList[plyId] = nil
-	end
-
-	local found = false
-
-	for thisPlyId, thisPly in pairs(pickedUpList) do
-		if not IsValid(thisPly) then
-			pickedUpList[thisPlyId] = nil
-			continue
-		end
-
-		found = true
-	end
-
-	if not found then
-		root.sligwolf_isPhysgunPickedUp = nil
-	end
-
-	if wasPickedUpByAny then
-		root:SetNWBool("sligwolf_isPhysgunPickedUp", false)
-
-		local systemEntities = LIB.GetSystemEntities(root)
-
-		for _, ent in ipairs(systemEntities) do
-			if not isfunction(ent.OnPhysgunDrop) then
-				continue
-			end
-
-			ent:OnPhysgunDrop()
-		end
-	end
-end
-
-function LIB.CanApplyBodySystemMotion(ent)
+function LIB.CanApplyBodySystemMotion(ent, srcEnt, motion)
 	if not IsValid(ent) then
 		return false
 	end
@@ -858,10 +846,6 @@ function LIB.CanApplyBodySystemMotion(ent)
 		return false
 	end
 
-	if ent.sligwolf_noUnfreeze then
-		return false
-	end
-
 	if ent.sligwolf_noBodySystemApplyMotion then
 		return false
 	end
@@ -871,11 +855,27 @@ function LIB.CanApplyBodySystemMotion(ent)
 		return false
 	end
 
+	if not IsValid(srcEnt) then
+		srcEnt = ent
+	end
+
+	if ent.sligwolf_physBaseEntity then
+		if not ent:CanApplyBodySystemMotionFrom(srcEnt, motion) then
+			return false
+		end
+	end
+
+	if srcEnt.sligwolf_physBaseEntity then
+		if not srcEnt:CanApplyBodySystemMotionFor(ent, motion) then
+			return false
+		end
+	end
+
 	return true
 end
 
-function LIB.EnableBodySystemMotion(ent, bool)
-	local body = LIB.GetNearstBody(ent)
+function LIB.EnableBodySystemMotion(srcEnt, motion)
+	local body = LIB.GetNearstBody(srcEnt)
 
 	if not IsValid(body) then
 		return
@@ -883,45 +883,53 @@ function LIB.EnableBodySystemMotion(ent, bool)
 
 	local bodyEntities = LIB.GetBodyEntities(body)
 
-	for _, ent in ipairs(bodyEntities) do
-		if not LIB.CanApplyBodySystemMotion(ent) then
+	for _, thisent in ipairs(bodyEntities) do
+		if not LIB.CanApplyBodySystemMotion(thisent, srcEnt, motion) then
 			continue
 		end
 
 		-- @TODO: debug
-		-- if bool then
+		-- if motion then
 		-- 	ent:SetColor(Color(0, 255, 0))
 		-- else
 		-- 	ent:SetColor(Color(255, 0, 0))
 		-- end
 
-		LIB.EnableMotion(ent, bool)
+		LIB.EnableMotion(thisent, motion)
 	end
 end
 
-function LIB.UpdateBodySystemMotion(ent, delayed)
-	if not LIB.CanApplyBodySystemMotion(ent) then
+function LIB.UpdateBodySystemMotion(srcEnt, delayed)
+	if not IsValid(ent) then
+		return false
+	end
+
+	local phys = srcEnt:GetPhysicsObject()
+	if not IsValid(phys) then
+		return
+	end
+
+	local motion = phys:IsMotionEnabled()
+
+	if not LIB.CanApplyBodySystemMotion(srcEnt, nil, motion) then
 		return
 	end
 
 	if not delayed then
-		local phys = ent:GetPhysicsObject()
-		if not IsValid(phys) then return end
-
-		LIB.EnableBodySystemMotion(ent, phys:IsMotionEnabled())
+		LIB.EnableBodySystemMotion(srcEnt, motion)
 		return
 	end
 
-	local body = LIB.GetNearstBody(ent)
+	local body = LIB.GetNearstBody(srcEnt)
 
 	if not IsValid(body) then
 		return
 	end
 
-	local BID = body:GetCreationID()
+	local bid = body:GetCreationID()
 
-	LIBTimer.NextFrame("Library_Entities_UpdateBodySystemMotion_" .. BID, function()
-		LIB.UpdateBodySystemMotion(ent, false)
+	LIBTimer.NextFrame("Library_Entities_UpdateBodySystemMotion_" .. bid, function()
+		LIB.UpdateBodySystemMotion(srcEnt, false)
 	end)
 end
 
@@ -932,6 +940,63 @@ function LIB.EnableMotion(ent, bool)
 	if not IsValid(phys) then return end
 
 	phys:EnableMotion(bool or false)
+end
+
+function LIB.LockEntityToMountPoint(selfEnt)
+	if not IsValid(selfEnt) then
+		return false
+	end
+
+	if not selfEnt.sligwolf_physEntity then
+		return false
+	end
+
+	if IsValid(selfEnt.sligwolf_lockConstraintWeld) then
+		return true
+	end
+
+	local mountPoint = LIBPosition.GetMountPoint(selfEnt)
+	if not mountPoint then
+		return false
+	end
+
+	if not LIBPosition.RemountToMountPoint(selfEnt, mountPoint) then
+		return false
+	end
+
+	local parentEnt = mountPoint.parentEnt
+
+	local weldConstraint = constraint.Weld(
+		selfEnt,
+		parentEnt,
+		0,
+		0,
+		0,
+		false,
+		false
+	)
+
+	if not IsValid(weldConstraint) then
+		return false
+	end
+
+	weldConstraint.DoNotDuplicate = true
+	selfEnt.sligwolf_lockConstraintWeld = weldConstraint
+
+	return true
+end
+
+function LIB.UnlockEntityFromMountPoint(selfEnt)
+	if not IsValid(selfEnt) then
+		return false
+	end
+
+	if not selfEnt.sligwolf_physEntity then
+		return false
+	end
+
+	LIB.RemoveEntity(selfEnt.sligwolf_lockConstraintWeld)
+	return true
 end
 
 return true

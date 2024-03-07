@@ -10,73 +10,61 @@ if not SligWolf_Addons.LoadingLibraries then
 	return
 end
 
-local LIBEntities = SligWolf_Addons.Entities
-local LIBHook = SligWolf_Addons.Hook
+SligWolf_Addons.Entityhooks = SligWolf_Addons.Entityhooks or {}
+table.Empty(SligWolf_Addons.Entityhooks)
 
-if SERVER then
-	local function RegisterKeyValue(ent, key, value)
-		if not IsValid(ent) then return end
-		if not string.StartsWith(key, "sligwolf_") then return end
+local LIB = SligWolf_Addons.Entityhooks
 
-		ent.sligwolf_kv = ent.sligwolf_kv or {}
-		ent.sligwolf_kv[key] = value
-	end
+function LIB.Load()
+	local LIBEntities = SligWolf_Addons.Entities
 
-	LIBHook.Add("EntityKeyValue", "Library_EntityHooks_RegisterKeyValue", RegisterKeyValue, 20000)
+	local LIBHook = SligWolf_Addons.Hook
 
-	local function MarkPhysgunPickedUp(ply, ent)
-		if not IsValid(ent) then return end
-		if not ent.sligwolf_entity then return end
-		if not ent.sligwolf_physEntity then return end
+	if SERVER then
+		local function RegisterKeyValue(ent, key, value)
+			if not IsValid(ent) then return end
+			if not string.StartsWith(key, "sligwolf_") then return end
 
-		LIBEntities.MarkPhysgunPickedUp(ent, ply)
-	end
-
-	LIBHook.Add("PhysgunPickup", "Library_EntityHooks_MarkPhysgunPickedUp", MarkPhysgunPickedUp, 20000)
-
-	local function UnmarkPhysgunPickedUp(ply, ent)
-		if not IsValid(ent) then return end
-		if not ent.sligwolf_entity then return end
-		if not ent.sligwolf_physEntity then return end
-
-		LIBEntities.UnmarkPhysgunPickedUp(ent, ply)
-	end
-
-	LIBHook.Add("PhysgunDrop", "Library_EntityHooks_UnmarkPhysgunPickedUp", UnmarkPhysgunPickedUp, 20000)
-
-	LIBHook.Add("OnPhysgunFreeze", "Library_EntityHooks_UpdateFreeze", function(weapon, phys, ent, ply)
-		LIBEntities.UpdateBodySystemMotion(ent, true)
-	end, 21000)
-
-	LIBHook.Add("CanPlayerUnfreeze", "Library_EntityHooks_UpdateFreeze", function(ply, ent, phys)
-		LIBEntities.UpdateBodySystemMotion(ent, true)
-	end, 21000)
-
-	LIBHook.Add("OnPhysgunPickup", "Library_EntityHooks_UpdateFreeze", function(ply, ent)
-		LIBEntities.UpdateBodySystemMotion(ent, true)
-	end, 21000)
-
-	LIBHook.Add("PhysgunDrop", "Library_EntityHooks_UpdateFreeze", function(ply, ent)
-		LIBEntities.UpdateBodySystemMotion(ent, true)
-	end, 21000)
-end
-
-local function SpawnSystemFinished(ent, ply)
-	if not IsValid(ent) then return end
-	if not ent.sligwolf_entity then return end
-
-	local systemEntities = LIBEntities.GetSystemEntities(ent)
-
-	for _, thisent in ipairs(systemEntities) do
-		if not isfunction(thisent.SpawnSystemFinished) then
-			continue
+			ent.sligwolf_kv = ent.sligwolf_kv or {}
+			ent.sligwolf_kv[key] = value
 		end
 
-		thisent:SpawnSystemFinished(ply)
-	end
-end
+		LIBHook.Add("EntityKeyValue", "Library_EntityHooks_RegisterKeyValue", RegisterKeyValue, 20000)
 
-LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinished", SpawnSystemFinished, 19000)
+		LIBHook.Add("OnPhysgunFreeze", "Library_EntityHooks_UpdateFreeze", function(weapon, phys, ent, ply)
+			LIBEntities.UpdateBodySystemMotion(ent, true)
+		end, 20000)
+
+		LIBHook.Add("CanPlayerUnfreeze", "Library_EntityHooks_UpdateFreeze", function(ply, ent, phys)
+			LIBEntities.UpdateBodySystemMotion(ent, true)
+		end, 20000)
+
+		LIBHook.Add("OnPhysgunPickup", "Library_EntityHooks_UpdateFreeze", function(ply, ent)
+			LIBEntities.UpdateBodySystemMotion(ent, true)
+		end, 20000)
+
+		LIBHook.Add("PhysgunDrop", "Library_EntityHooks_UpdateFreeze", function(ply, ent)
+			LIBEntities.UpdateBodySystemMotion(ent, true)
+		end, 20000)
+	end
+
+	local function SpawnSystemFinished(ent, ply)
+		if not IsValid(ent) then return end
+		if not ent.sligwolf_entity then return end
+
+		local systemEntities = LIBEntities.GetSystemEntities(ent)
+
+		for _, thisent in ipairs(systemEntities) do
+			if not isfunction(thisent.SpawnSystemFinished) then
+				continue
+			end
+
+			thisent:SpawnSystemFinished(ply)
+		end
+	end
+
+	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinished", SpawnSystemFinished, 19000)
+end
 
 return true
 

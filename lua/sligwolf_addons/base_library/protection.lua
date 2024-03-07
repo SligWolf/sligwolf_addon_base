@@ -33,7 +33,6 @@ function LIB.CheckAllowUse(ent, ply)
 end
 
 local function CantTouch(ply, ent)
-	if not IsValid(ply) then return end
 	if not IsValid(ent) then return end
 
 	if ent.sligwolf_blockedprop then
@@ -48,7 +47,6 @@ end
 LIBHook.Add("PhysgunPickup", "Library_Protection_CantTouch", CantTouch, 10000)
 
 local function CantPickUp(ply, ent)
-	if not IsValid(ply) then return end
 	if not IsValid(ent) then return end
 
 	if ent.sligwolf_noPickup then
@@ -62,20 +60,35 @@ end
 
 LIBHook.Add("AllowPlayerPickup", "Library_Protection_CantPickUp", CantPickUp, 10000)
 
-local function CantUnfreeze(ply, ent)
-	if not IsValid(ply) then return end
-	if not IsValid(ent) then return end
+if SERVER then
+	local function CantUnfreeze(ply, ent, phys)
+		if not IsValid(ent) then return end
 
-	if ent.sligwolf_noUnfreeze then
-		return false
+		if ent.sligwolf_blockedprop then
+			return false
+		end
+
+		if ent.sligwolf_noUnfreeze then
+			return false
+		end
 	end
 
-	if ent:GetNWBool("sligwolf_noUnfreeze", false) then
-		return false
+	LIBHook.Add("CanPlayerUnfreeze", "Library_Protection_CantUnfreeze", CantUnfreeze, 10000)
+
+	local function CantFreeze(weapon, phys, ent, ply)
+		if not IsValid(ent) then return end
+
+		if ent.sligwolf_blockedprop then
+			return false
+		end
+
+		if ent.sligwolf_noFreeze then
+			return false
+		end
 	end
+
+	LIBHook.Add("OnPhysgunFreeze", "Library_Protection_CantFreeze", CantFreeze, 10000)
 end
-
-LIBHook.Add("CanPlayerUnfreeze", "Library_Protection_CantUnfreeze", CantUnfreeze, 10000)
 
 local function CanTool(ply, trace, mode, tool, button)
 	if mode == CONSTANTS.toolRubatsEasyInspector then return end

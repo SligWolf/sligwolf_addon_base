@@ -18,6 +18,22 @@ local function loadLib(name)
 	SligWolf_Addons.Include(path)
 end
 
+local function callLoaders()
+	for _, lib in pairs(SligWolf_Addons) do
+		if not istable(lib) then
+			continue
+		end
+
+		local loader = lib.Load
+
+		if not isfunction(loader) then
+			continue
+		end
+
+		loader()
+	end
+end
+
 SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base_library/baseobject.lua")
 
 loadLib("constants")
@@ -40,22 +56,14 @@ loadLib("protection")
 loadLib("spawnmenu")
 loadLib("vehicle")
 loadLib("velocity")
+loadLib("physgun")
 loadLib("seat")
+loadLib("rail")
 loadLib("vr")
 loadLib("vgui")
 loadLib("convar")
 
-SligWolf_Addons.Print.Load()
-SligWolf_Addons.Entities.Load()
-SligWolf_Addons.Position.Load()
-SligWolf_Addons.Vehicle.Load()
-SligWolf_Addons.VehicleControl.Load()
-SligWolf_Addons.Coupling.Load()
-SligWolf_Addons.Tracer.Load()
-SligWolf_Addons.Util.Load()
-SligWolf_Addons.Seat.Load()
-SligWolf_Addons.VR.Load()
-SligWolf_Addons.Convar.Load()
+callLoaders()
 
 return true
 

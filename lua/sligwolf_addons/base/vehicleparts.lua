@@ -633,7 +633,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		return
 	end
 
-	if not LIBPosition.SetEntAngPosViaAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
 		self:RemoveFaultyEntites(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -1169,7 +1169,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	ent:Spawn()
 	ent:Activate()
 
-	if not LIBPosition.SetEntAngPosViaAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
 		self:RemoveFaultyEntites(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -1223,7 +1223,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	ent:Spawn()
 	ent:Activate()
 
-	if not LIBPosition.SetEntAngPosViaAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
 		self:RemoveFaultyEntites(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -1273,7 +1273,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 	ent:Spawn()
 	ent:Activate()
 
-	if not LIBPosition.SetEntAngPosViaAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
 		self:RemoveFaultyEntites(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",

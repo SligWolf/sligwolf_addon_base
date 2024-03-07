@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Position)
 local LIB = SligWolf_Addons.Position
 
 local LIBUtil = nil
+local LIBPrint = nil
 
 function LIB.VectorToLocalToWorld(ent, vec)
 	if not IsValid(ent) then return nil end
@@ -38,75 +39,151 @@ function LIB.DirToLocalToWorld(ent, ang, dir)
 	ang = ang or Angle()
 	ang = ent:LocalToWorldAngles(ang)
 
-
 	local func = ang[dir]
 	if not isfunction(func) then return end
 
 	return func(ang)
 end
 
+function LIB.GetAttachmentCache(ent, forceRebuild)
+	if not LIBUtil.IsValidModelEntity(ent) then
+		return nil
+	end
+
+	local entTable = ent:GetTable()
+	if not entTable then
+		return nil
+	end
+
+	if not entTable.sligwolf_attachmentIdCache then
+		entTable.sligwolf_attachmentIdCache = {}
+		forceRebuild = true
+	end
+
+	if not entTable.sligwolf_attachmentNameCache then
+		entTable.sligwolf_attachmentNameCache = {}
+		forceRebuild = true
+	end
+
+	local attachmentIdCache = entTable.sligwolf_attachmentIdCache
+	local attachmentNameCache = entTable.sligwolf_attachmentNameCache
+
+	if forceRebuild then
+		local attachments = ent:GetAttachments()
+		if not attachments then
+			return nil
+		end
+
+		table.Empty(attachmentIdCache)
+		table.Empty(attachmentNameCache)
+
+		for i, item in ipairs(attachments) do
+			if not item then
+				continue
+			end
+
+			local id = item.id
+			local name = item.name
+
+			if id <= 0 then
+				continue
+			end
+
+			if name == "" then
+				continue
+			end
+
+			attachmentIdCache[id] = id
+			attachmentIdCache[name] = id
+
+			attachmentNameCache[id] = name
+			attachmentNameCache[name] = name
+		end
+	end
+
+	return attachmentIdCache, attachmentNameCache
+end
+
+function LIB.GetAttachmentId(ent, attachment)
+	if not attachment then
+		return nil
+	end
+
+	local attachmentIdCache = LIB.GetAttachmentCache(ent, false)
+	if not attachmentIdCache then
+		return nil
+	end
+
+	if istable(attachment) then
+		attachment = attachment.id
+	end
+
+	attachment = attachmentIdCache[attachment]
+	return attachment
+end
+
+function LIB.GetAttachmentName(ent, attachment)
+	if not attachment then
+		return nil
+	end
+
+	local _, attachmentNameCache = LIB.GetAttachmentCache(ent, false)
+	if not attachmentNameCache then
+		return nil
+	end
+
+	if istable(attachment) then
+		attachment = attachment.id
+	end
+
+	attachment = attachmentNameCache[attachment]
+	return attachment
+end
+
 function LIB.GetAttachmentPosAng(ent, attachment)
-	if not LIBUtil.IsValidModelEntity(ent) then return nil end
-	attachment = tostring(attachment or "")
+	attachment = LIB.GetAttachmentId(ent, attachment)
 
-	if attachment == "" then
+	if not attachment then
 		local pos = ent:GetPos()
 		local ang = ent:GetAngles()
 
 		return pos, ang, false
 	end
 
-	local Num = ent:LookupAttachment(attachment) or 0
-	if Num <= 0 then
+	local attachmentData = ent:GetAttachment(attachment)
+	if not attachmentData then
 		local pos = ent:GetPos()
 		local ang = ent:GetAngles()
 
 		return pos, ang, false
 	end
 
-	local Att = ent:GetAttachment(Num)
-	if not Att then
-		local pos = ent:GetPos()
-		local ang = ent:GetAngles()
-
-		return pos, ang, false
-	end
-
-	local pos = Att.Pos
-	local ang = Att.Ang
+	local pos = attachmentData.Pos
+	local ang = attachmentData.Ang
 
 	return pos, ang, true
 end
 
-function LIB.SetEntAngPosViaAttachment(entA, entB, attA, attB)
-	if not LIBUtil.IsValidModelEntity(entA) then return false end
-	if not LIBUtil.IsValidModelEntity(entB) then return false end
+function LIB.GetAngPosViaAttachmentMount(parentEnt, selfEnt, parentAttachment, selfAttachment)
+	if not LIBUtil.IsValidModelEntity(parentEnt) then return nil end
+	if not LIBUtil.IsValidModelEntity(selfEnt) then return nil end
 
-	attA = tostring(attA or "")
-	attB = tostring(attB or "")
-
-	local PosA, AngA, HasAttA = LIB.GetAttachmentPosAng(entA, attA)
-	local PosB, AngB, HasAttB = LIB.GetAttachmentPosAng(entB, attB)
+	local PosA, AngA, HasAttA = LIB.GetAttachmentPosAng(parentEnt, parentAttachment)
+	local PosB, AngB, HasAttB = LIB.GetAttachmentPosAng(selfEnt, selfAttachment)
 
 	if not HasAttA and not HasAttB then
-		entB:SetPos(PosA)
-		entB:SetAngles(AngA)
-
-		return true
+		return PosA, AngA
 	end
 
 	if not HasAttB then
-		entB:SetPos(PosA)
-		entB:SetAngles(AngA)
-
-		return true
+		return PosA, AngA
 	end
 
-	local localPosA = entA:WorldToLocal(PosA)
-	local localAngA = entA:WorldToLocalAngles(AngA)
+	local localPosA = parentEnt:WorldToLocal(PosA)
+	local localAngA = parentEnt:WorldToLocalAngles(AngA)
 
-	local localPosB = entB:WorldToLocal(PosB)
-	local localAngB = entB:WorldToLocalAngles(AngB)
+	local localPosB = selfEnt:WorldToLocal(PosB)
+	local localAngB = selfEnt:WorldToLocalAngles(AngB)
 
 	local M = Matrix()
 
@@ -122,11 +199,106 @@ function LIB.SetEntAngPosViaAttachment(entA, entB, attA, attB)
 	local ang = M:GetAngles()
 	local pos = M:GetTranslation()
 
-	pos = entA:LocalToWorld(pos)
-	ang = entA:LocalToWorldAngles(ang)
+	pos = parentEnt:LocalToWorld(pos)
+	ang = parentEnt:LocalToWorldAngles(ang)
 
-	entB:SetAngles(ang)
-	entB:SetPos(pos)
+	return pos, ang
+end
+
+function LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment)
+	local pos, ang = LIB.GetAngPosViaAttachmentMount(parentEnt, selfEnt, parentAttachment, selfAttachment)
+
+	if not pos then
+		return false
+	end
+
+	if not ang then
+		return false
+	end
+
+	selfEnt:SetPos(pos)
+	selfEnt:SetAngles(ang)
+
+	return true
+end
+
+function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment)
+	if not LIBUtil.IsValidModelEntity(parentEnt) then return false end
+	if not LIBUtil.IsValidModelEntity(selfEnt) then return false end
+
+	local selfEntTable = selfEnt:GetTable()
+	if not selfEntTable then
+		return nil
+	end
+
+	local mountPoint = selfEntTable.sligwolf_mountPoint
+
+	if mountPoint and IsValid(mountPoint.parentEnt) then
+		local parentAttachmentName = LIB.GetAttachmentName(ent, mountPoint.parentAttachment)
+		local selfAttachmentName = LIB.GetAttachmentName(ent, mountPoint.selfAttachment)
+
+		LIBPrint.ErrorNoHaltWithStack(
+			"Entities already mounted %s <===> %s. Attachments %s <===> %s.",
+			selfEnt,
+			mountPoint.parentEnt,
+			tostring(selfAttachmentName or "<origin>"),
+			tostring(parentAttachmentName or "<origin>")
+		)
+
+		return false
+	end
+
+	local parentAttachment = LIB.GetAttachmentId(parentEnt, parentAttachment)
+	local selfAttachment = LIB.GetAttachmentId(selfEnt, selfAttachment)
+
+	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment) then
+		return false
+	end
+
+	if not mountPoint then
+		mountPoint = {}
+		selfEntTable.sligwolf_mountPoint = mountPoint
+	end
+
+	mountPoint.parentEnt = parentEnt
+	mountPoint.parentAttachment = parentAttachment
+	mountPoint.selfAttachment = selfAttachment
+
+	return true
+end
+
+function LIB.GetMountPoint(selfEnt)
+	local selfEntTable = selfEnt:GetTable()
+	if not selfEntTable then
+		return nil
+	end
+
+	local mountPoint = selfEntTable.sligwolf_mountPoint
+	if not mountPoint then
+		return nil
+	end
+
+	local parentEnt = mountPoint.parentEnt
+	if not IsValid(parentEnt) then
+		return nil
+	end
+
+	return mountPoint
+end
+
+function LIB.RemountToMountPoint(selfEnt, mountPoint)
+	mountPoint = mountPoint or LIB.GetMountPoint(selfEnt)
+	if not mountPoint then
+		return false
+	end
+
+	local parentEnt = mountPoint.parentEnt
+	local parentAttachment = mountPoint.parentAttachment
+	local selfAttachment = mountPoint.selfAttachment
+
+	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment) then
+		return false
+	end
 
 	return true
 end
@@ -305,6 +477,8 @@ end
 
 function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
+	LIBPrint = SligWolf_Addons.Print
+
 	local LIBHook = SligWolf_Addons.Hook
 
 	local function UpdatePlayerPos_SkipNextUpdate(ply, vehicle)

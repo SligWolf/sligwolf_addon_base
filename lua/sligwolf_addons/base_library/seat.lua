@@ -193,7 +193,7 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 
 	seat:SetModel(seatGroup:GetSeatModel())
 
-	if not LIBPosition.SetEntAngPosViaAttachment(seatGroup, seat, attachmentName) then
+	if not LIBPosition.MountToAttachment(seatGroup, seat, attachmentName) then
 		LIB.RemoveSeat(seat)
 		return nil
 	end

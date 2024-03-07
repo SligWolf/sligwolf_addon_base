@@ -15,6 +15,7 @@ if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBPhysgun = SligWolf_Addons.Physgun
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
@@ -95,15 +96,26 @@ function ENT:UpdateBodySystemMotion(delayed)
 	LIBEntities.UpdateBodySystemMotion(self, delayed)
 end
 
-function ENT:IsPhysgunPickedUp()
-	return LIBEntities.IsPhysgunPickedUp(self)
+function ENT:IsPhysgunCarried(checkMode)
+	return LIBPhysgun.IsPhysgunCarried(self, checkMode)
 end
 
-function ENT:OnPhysgunPickup()
+function ENT:GetPhysgunCarringPlayers(checkMode)
+	return LIBPhysgun.GetPhysgunCarringPlayers(self, checkMode)
+end
+
+function ENT:CanApplyBodySystemMotionFrom(sourceEnt, motion)
+	return true
+end
+
+function ENT:CanApplyBodySystemMotionFor(targetEnt, motion)
+	return true
+end
+
+function ENT:OnPhysgunPickup(directlyCarried, ply)
 	-- override me
 end
 
-function ENT:OnPhysgunDrop()
+function ENT:OnPhysgunDrop(directlyDropped, ply)
 	-- override me
 end
-
