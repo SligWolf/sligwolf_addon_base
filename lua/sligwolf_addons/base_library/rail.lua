@@ -159,7 +159,7 @@ end
 
 local function checkOnRailForEntList(entities, bypassCache, checkMode, additionalBodyEnt)
 	if not checkMode or checkMode == LIB.RAIL_CHECK_MODE_ALL then
-		return checkOnRailForEntListNone(entities, bypassCache, additionalBodyEnt)
+		return checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt)
 	end
 
 	if checkMode == LIB.RAIL_CHECK_MODE_NONE then
