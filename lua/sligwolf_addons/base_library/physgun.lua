@@ -17,9 +17,9 @@ local LIB = SligWolf_Addons.Physgun
 
 local LIBEntities = nil
 
-LIB.PHYSGUN_CARRIED_MODE_SYSTEM = 0
-LIB.PHYSGUN_CARRIED_MODE_DIRECT = 1
-LIB.PHYSGUN_CARRIED_MODE_BODY = 2
+LIB.ENUM_PHYSGUN_CARRIED_MODE_SYSTEM = 0
+LIB.ENUM_PHYSGUN_CARRIED_MODE_DIRECT = 1
+LIB.ENUM_PHYSGUN_CARRIED_MODE_BODY = 2
 
 local function cleanUpCarriedList(carriedList)
 	if not carriedList then
@@ -83,16 +83,16 @@ local function isPhysgunCarried(carriedList, ent, checkMode)
 		return false
 	end
 
-	if not checkMode or checkMode == LIB.PHYSGUN_CARRIED_MODE_SYSTEM then
+	if not checkMode or checkMode == LIB.ENUM_PHYSGUN_CARRIED_MODE_SYSTEM then
 		return true
 	end
 
 	local entId = ent:EntIndex()
-	if checkMode == LIB.PHYSGUN_CARRIED_MODE_DIRECT then
+	if checkMode == LIB.ENUM_PHYSGUN_CARRIED_MODE_DIRECT then
 		return IsValid(entities[entId])
 	end
 
-	if checkMode == LIB.PHYSGUN_CARRIED_MODE_BODY then
+	if checkMode == LIB.ENUM_PHYSGUN_CARRIED_MODE_BODY then
 		local body = LIBEntities.GetNearstBody(ent)
 		if not body then
 			return false
@@ -114,7 +114,7 @@ local function isPhysgunCarried(carriedList, ent, checkMode)
 		return false
 	end
 
-	if checkMode == LIB.PHYSGUN_CARRIED_MODE_BODY then
+	if checkMode == LIB.ENUM_PHYSGUN_CARRIED_MODE_BODY then
 		local body = LIBEntities.GetNearstBody(ent)
 		if not body then
 			return false
@@ -136,7 +136,7 @@ local function isPhysgunCarried(carriedList, ent, checkMode)
 		return false
 	end
 
-	if checkMode == LIB.PHYSGUN_CARRIED_MODE_PARENT then
+	if checkMode == LIB.ENUM_PHYSGUN_CARRIED_MODE_PARENT then
 		local body = LIBEntities.GetNearstBody(ent)
 		if not body then
 			return false
@@ -287,7 +287,7 @@ end
 function LIB.MarkPhysgunCarried(ent, ply)
 	if not SERVER then return end
 
-	local wasCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.PHYSGUN_CARRIED_MODE_SYSTEM)
+	local wasCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.ENUM_PHYSGUN_CARRIED_MODE_SYSTEM)
 
 	local root = LIBEntities.GetSuperParent(ent)
 	if not IsValid(root) then
@@ -299,7 +299,7 @@ function LIB.MarkPhysgunCarried(ent, ply)
 	entTable.isPhysgunCarriedSystem = entTable.isPhysgunCarriedSystem or {}
 	markPhysgunCarried(entTable.isPhysgunCarriedSystem, ent, ply)
 
-	local isCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.PHYSGUN_CARRIED_MODE_SYSTEM)
+	local isCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.ENUM_PHYSGUN_CARRIED_MODE_SYSTEM)
 
 	if not wasCarriedByAny and isCarriedByAny then
 		root:SetNWBool("sligwolf_isPhysgunCarried", true)
@@ -319,7 +319,7 @@ end
 function LIB.UnmarkPhysgunCarried(ent, ply)
 	if not SERVER then return end
 
-	local wasCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.PHYSGUN_CARRIED_MODE_SYSTEM)
+	local wasCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.ENUM_PHYSGUN_CARRIED_MODE_SYSTEM)
 
 	local root = LIBEntities.GetSuperParent(ent)
 	if not IsValid(root) then
@@ -330,7 +330,7 @@ function LIB.UnmarkPhysgunCarried(ent, ply)
 
 	unmarkPhysgunCarried(entTable.isPhysgunCarriedSystem, ent, ply)
 
-	local isCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.PHYSGUN_CARRIED_MODE_SYSTEM)
+	local isCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.ENUM_PHYSGUN_CARRIED_MODE_SYSTEM)
 
 	if wasCarriedByAny and not isCarriedByAny then
 		root:SetNWBool("sligwolf_isPhysgunCarried", false)

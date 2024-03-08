@@ -21,9 +21,9 @@ local LIBEntities = nil
 
 local g_maxRailCheckTraceAttachmentPairs = 4
 
-LIB.RAIL_CHECK_MODE_ALL = 0
-LIB.RAIL_CHECK_MODE_NONE = 1
-LIB.RAIL_CHECK_MODE_ANY = 2
+LIB.ENUM_RAIL_CHECK_MODE_ALL = 0
+LIB.ENUM_RAIL_CHECK_MODE_NONE = 1
+LIB.ENUM_RAIL_CHECK_MODE_ANY = 2
 
 function LIB.GetRailCheckAttachments(ent)
 	if not IsValid(ent) then
@@ -166,15 +166,15 @@ local function checkOnRailForEntListNone(entities, bypassCache, additionalBodyEn
 end
 
 local function checkOnRailForEntList(entities, bypassCache, checkMode, additionalBodyEnt)
-	if not checkMode or checkMode == LIB.RAIL_CHECK_MODE_ALL then
+	if not checkMode or checkMode == LIB.ENUM_RAIL_CHECK_MODE_ALL then
 		return checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt)
 	end
 
-	if checkMode == LIB.RAIL_CHECK_MODE_NONE then
+	if checkMode == LIB.ENUM_RAIL_CHECK_MODE_NONE then
 		return checkOnRailForEntListNone(entities, bypassCache, additionalBodyEnt)
 	end
 
-	if checkMode == LIB.RAIL_CHECK_MODE_ANY then
+	if checkMode == LIB.ENUM_RAIL_CHECK_MODE_ANY then
 		return checkOnRailForEntListAny(entities, bypassCache, additionalBodyEnt)
 	end
 

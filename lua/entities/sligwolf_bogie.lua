@@ -156,7 +156,7 @@ function ENT:CanRealign()
 		return false
 	end
 
-	if self:IsPhysgunCarried(LIBPhysgun.PHYSGUN_CARRIED_MODE_BODY) then
+	if self:IsPhysgunCarried(LIBPhysgun.ENUM_PHYSGUN_CARRIED_MODE_BODY) then
 		-- don't bogies being held
 		return false
 	end
