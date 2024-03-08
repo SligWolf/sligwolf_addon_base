@@ -16,9 +16,11 @@ table.Empty(SligWolf_Addons.Util)
 local LIB = SligWolf_Addons.Util
 
 local LIBConvar = nil
+local LIBPrint = nil
 
 function LIB.Load()
 	LIBConvar = SligWolf_Addons.Convar
+	LIBPrint = SligWolf_Addons.Print
 end
 
 function LIB.IsDeveloper()
@@ -267,6 +269,48 @@ function LIB.DebugHullTrace(traceHull, traceHullResult, text, lifetime)
 	end
 end
 
+function LIB.DebugColorEntities(entities, color)
+	if not LIB.IsDeveloper() then
+		return
+	end
+
+	color = color or ColorRand()
+
+	if not istable(entities) then
+		entities = {entities}
+	end
+
+	local count = 0
+	local lastEnt = nil
+
+	for entK, entV in pairs(entities) do
+		local tmp = {entK, entV}
+
+		for i, ent in ipairs(tmp) do
+			if not isentity(ent) then
+				continue
+			end
+
+			if not IsValid(ent) then
+				continue
+			end
+
+			ent:SetMaterial("models/debug/debugwhite")
+			ent:SetColor(color)
+
+			count = count + 1
+			lastEnt = ent
+		end
+	end
+
+	if count <= 0 then
+		LIBPrint.Debug("Util.DebugColorEntities: No Entity to highlight")
+	elseif count == 1 then
+		LIBPrint.Debug("Util.DebugColorEntities: Highlighting 1 Entity:\n  %s", lastEnt)
+	else
+		LIBPrint.Debug("Util.DebugColorEntities: Highlighting %i Entities", count)
+	end
+end
 
 return true
 

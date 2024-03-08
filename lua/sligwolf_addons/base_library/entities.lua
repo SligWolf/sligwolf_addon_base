@@ -196,6 +196,7 @@ local function ClearCacheHelper(thisent)
 	vars.SystemENTsFilteredCache = nil
 	vars.BodyENTsFilteredCache = nil
 	vars.ChildrenENTsSorted = nil
+	vars.SubBodyENTs = nil
 end
 
 function LIB.ClearChildrenCache(ent)
@@ -209,6 +210,21 @@ function LIB.ClearChildrenCache(ent)
 	ClearCacheHelper(vars.ParentENT)
 	ClearCacheHelper(vars.SuperParentENT)
 	ClearCacheHelper(vars.NearstBodyENT)
+	ClearCacheHelper(vars.ParentBodyENT)
+end
+
+function LIB.ClearCache(ent)
+	if not IsValid(ent) then return end
+
+	LIB.ClearChildrenCache(ent)
+
+	local vars = ent.SLIGWOLF_Vars
+	if not vars then return end
+
+	vars.ParentENT = nil
+	vars.SuperParentENT = nil
+	vars.NearstBodyENT = nil
+	vars.ParentBodyENT = nil
 end
 
 local function GenerateUnknownEntityName(ent)
@@ -235,7 +251,6 @@ end
 
 function LIB.SetName(ent, name)
 	if not IsValid(ent) then return end
-	if not ent.SLIGWOLF_Vars then return end
 
 	LIB.ClearChildrenCache(ent)
 
@@ -315,6 +330,7 @@ function LIB.SetParent(ent, parent)
 
 	vars.SuperParentENT = nil
 	vars.NearstBodyENT = nil
+	vars.ParentBodyENT = nil
 
 	LIB.UnregisterChild(oldParent, name)
 	LIB.RegisterChild(parent, name, ent)
@@ -344,7 +360,9 @@ function LIB.CalcSuperParent(ent)
 		curparent = parent
 	end
 
-	if not IsValid(curparent) then return end
+	if not IsValid(curparent) then
+		return
+	end
 
 	return curparent
 end
@@ -356,6 +374,10 @@ function LIB.CalcNearstBody(ent)
 
 	while true do
 		if not IsValid(curparent) then
+			break
+		end
+
+		if curparent.sligwolf_isBody then
 			break
 		end
 
@@ -375,13 +397,19 @@ function LIB.CalcNearstBody(ent)
 		curparent = parent
 	end
 
-	if not IsValid(curparent) then return end
-
-	if not curparent:GetNWBool("sligwolf_isBody", false) then
+	if not IsValid(curparent) then
 		return
 	end
 
-	return curparent
+	if curparent.sligwolf_isBody then
+		return curparent
+	end
+
+	if curparent:GetNWBool("sligwolf_isBody", false) then
+		return curparent
+	end
+
+	return nil
 end
 
 function LIB.GetSuperParent(ent)
@@ -425,8 +453,76 @@ function LIB.GetNearstBody(ent)
 	end
 
 	vars.NearstBodyENT = body
+	vars.ParentBodyENT = nil
 
 	return body
+end
+
+function LIB.BuildSubBodyLists(ent)
+	local root = LIB.GetSuperParent(ent)
+	if not IsValid(root) then
+		return
+	end
+
+	local entities = LIB.GetSystemEntities(root)
+	if not entities then
+		return
+	end
+
+	for i, thisEnt in ipairs(entities) do
+		local body = LIB.GetNearstBody(thisEnt)
+		local bodyParent = LIB.GetParent(body)
+		local parentBody = LIB.GetNearstBody(bodyParent)
+
+		if not IsValid(bodyParent) then
+			continue
+		end
+
+		local parentBodyVars = parentBody.SLIGWOLF_Vars or {}
+		parentBody.SLIGWOLF_Vars = parentBodyVars
+
+		parentBodyVars.SubBodyENTs = parentBodyVars.SubBodyENTs or {}
+		parentBodyVars.SubBodyENTs[body:EntIndex()] = body
+	end
+end
+
+function LIB.GetParentBody(ent)
+	if not IsValid(ent) then return end
+
+	local vars = ent.SLIGWOLF_Vars or {}
+	ent.SLIGWOLF_Vars = vars
+
+	local parentBody = vars.ParentBodyENT
+	if IsValid(parentBody) then
+		return parentBody
+	end
+
+	local body = LIB.GetNearstBody(ent)
+	local bodyParent = LIB.GetParent(body)
+	local parentBody = LIB.GetNearstBody(bodyParent)
+
+	if not IsValid(parentBody) then
+		parentBody = LIB.GetSuperParent(ent)
+	end
+
+	vars.ParentBodyENT = parentBody
+	return parentBody
+end
+
+function LIB.GetSubBodies(ent)
+	local body = LIB.GetNearstBody(ent)
+	if not IsValid(body) then
+		return nil
+	end
+
+	local vars = body.SLIGWOLF_Vars or {}
+	body.SLIGWOLF_Vars = vars
+
+	if not vars.SubBodyENTs then
+		LIB.BuildSubBodyLists(body)
+	end
+
+	return vars.SubBodyENTs
 end
 
 function LIB.GetEntityPath(ent)
@@ -495,6 +591,7 @@ function LIB.UnregisterChild(ent, name)
 	vars.ChildrenENTs[name] = nil
 
 	vars.ChildrenENTsSorted = nil
+	vars.SubBodyENTs = nil
 end
 
 function LIB.RegisterChild(ent, name, child)
@@ -508,6 +605,7 @@ function LIB.RegisterChild(ent, name, child)
 	vars.ChildrenENTs[name] = child
 
 	vars.ChildrenENTsSorted = nil
+	vars.SubBodyENTs = nil
 end
 
 function LIB.GetChild(ent, name)
@@ -620,7 +718,7 @@ local function GetAllChildrenRecursiveHelper(parent, container, nodouble, filter
 
 	nodouble = nodouble or {}
 
-	for k, child in ipairs(children) do
+	for i, child in ipairs(children) do
 		if not GetAllChildrenRecursiveItemHelper(child, container, nodouble, filter) then
 			continue
 		end
@@ -855,22 +953,6 @@ function LIB.CanApplyBodySystemMotion(ent, srcEnt, motion)
 		return false
 	end
 
-	if not IsValid(srcEnt) then
-		srcEnt = ent
-	end
-
-	if ent.sligwolf_physBaseEntity then
-		if not ent:CanApplyBodySystemMotionFrom(srcEnt, motion) then
-			return false
-		end
-	end
-
-	if srcEnt.sligwolf_physBaseEntity then
-		if not srcEnt:CanApplyBodySystemMotionFor(ent, motion) then
-			return false
-		end
-	end
-
 	return true
 end
 
@@ -888,11 +970,11 @@ function LIB.EnableBodySystemMotion(srcEnt, motion)
 			continue
 		end
 
-		-- @TODO: debug
+		-- @DEBUG: Color entities according to their motion state
 		-- if motion then
-		-- 	ent:SetColor(Color(0, 255, 0))
+		-- 	LIBUtil.DebugColorEntities(thisent, Color(0, 255, 0))
 		-- else
-		-- 	ent:SetColor(Color(255, 0, 0))
+		-- 	LIBUtil.DebugColorEntities(thisent, Color(255, 0, 0))
 		-- end
 
 		LIB.EnableMotion(thisent, motion)
@@ -900,7 +982,7 @@ function LIB.EnableBodySystemMotion(srcEnt, motion)
 end
 
 function LIB.UpdateBodySystemMotion(srcEnt, delayed)
-	if not IsValid(ent) then
+	if not IsValid(srcEnt) then
 		return false
 	end
 
@@ -983,6 +1065,9 @@ function LIB.LockEntityToMountPoint(selfEnt)
 	weldConstraint.DoNotDuplicate = true
 	selfEnt.sligwolf_lockConstraintWeld = weldConstraint
 
+	-- @DEBUG: Color entity according to their lock state
+	-- LIBUtil.DebugColorEntities(selfEnt, Color(255, 0, 0))
+
 	return true
 end
 
@@ -996,7 +1081,62 @@ function LIB.UnlockEntityFromMountPoint(selfEnt)
 	end
 
 	LIB.RemoveEntity(selfEnt.sligwolf_lockConstraintWeld)
+
+	-- @DEBUG: Color entity according to their lock state
+	-- LIBUtil.DebugColorEntities(selfEnt, Color(0, 255, 0))
+
 	return true
+end
+
+-- used to never hit the players
+local g_notSolidToPlayersCollisionGroup = COLLISION_GROUP_PASSABLE_DOOR
+
+-- only change entities with those
+local g_collisionGroupWhitelist = {
+	[COLLISION_GROUP_NONE] = true,
+	[COLLISION_GROUP_VEHICLE] = true,
+	[COLLISION_GROUP_PLAYER] = true,
+	[COLLISION_GROUP_NPC] = true,
+	[COLLISION_GROUP_WORLD] = true,
+}
+
+function LIB.SetUnsolidToPlayerRecursive(ent, unsolid)
+	local children = LIB.GetChildrenRecursive(ent)
+	if not children then
+		return
+	end
+
+	children = table.ClearKeys(children)
+	table.insert(children, ent)
+
+	for i, child in ipairs(children) do
+		if not child.sligwolf_physEntity then
+			continue
+		end
+
+		local oldCollisionGroup = child.sligwolf_oldCollisionGroupForPlayers
+
+		if unsolid then
+			local collisionGroup = child:GetCollisionGroup()
+			if not g_collisionGroupWhitelist[collisionGroup] then
+				continue
+			end
+
+			if not oldCollisionGroup then
+				child.sligwolf_oldCollisionGroupForPlayers = collisionGroup
+				child:SetCollisionGroup(g_notSolidToPlayersCollisionGroup)
+			end
+
+			continue
+		end
+
+		if not oldCollisionGroup then
+			continue
+		end
+
+		child:SetCollisionGroup(oldCollisionGroup)
+		child.sligwolf_oldCollisionGroupForPlayers = nil
+	end
 end
 
 return true

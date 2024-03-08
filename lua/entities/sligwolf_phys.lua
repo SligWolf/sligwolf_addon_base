@@ -100,8 +100,12 @@ function ENT:IsPhysgunCarried(checkMode)
 	return LIBPhysgun.IsPhysgunCarried(self, checkMode)
 end
 
-function ENT:GetPhysgunCarringPlayers(checkMode)
-	return LIBPhysgun.GetPhysgunCarringPlayers(self, checkMode)
+function ENT:GetPhysgunCarringPlayers()
+	return LIBPhysgun.GetPhysgunCarringPlayers(self)
+end
+
+function ENT:GetPhysgunCarredEntities()
+	return LIBPhysgun.GetPhysgunCarredEntities(self)
 end
 
 function ENT:CanApplyBodySystemMotionFrom(sourceEnt, motion)

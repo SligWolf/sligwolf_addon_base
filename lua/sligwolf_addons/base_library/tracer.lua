@@ -34,7 +34,7 @@ if CLIENT then
 	LineOffset_trText = 0
 end
 
-local debugLifeTime = 0.5
+LIB.DEBUG_LIFETIME = 0.20
 
 function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
@@ -57,6 +57,7 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 	end
 
 	local isDebug = LIBUtil.IsDeveloper()
+	local debugLifetime = LIB.DEBUG_LIFETIME
 
 	local tr = TRACE_RESULT_BUFFER
 	local params = TRACE_RESULT_PARAMS
@@ -86,7 +87,7 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 			lastVector = thisVector
 
 			if isDebug then
-				debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "Start", debugLifeTime, Color_trText)
+				debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "Start", debugLifetime, Color_trText)
 			end
 
 			continue
@@ -106,15 +107,15 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 		local trHit = tr.Hit
 
 		if isDebug then
-			debugoverlay.Line(trStart, trHitPos, debugLifeTime, Color_trGreen, true)
-			debugoverlay.Line(trHitPos, trEnd, debugLifeTime, Color_trBlue, true)
-			debugoverlay.Cross(trEnd, 1, debugLifeTime, Color_trCross, true)
+			debugoverlay.Line(trStart, trHitPos, debugLifetime, Color_trGreen, true)
+			debugoverlay.Line(trHitPos, trEnd, debugLifetime, Color_trBlue, true)
+			debugoverlay.Cross(trEnd, 1, debugLifetime, Color_trCross, true)
 		end
 
 		if trHit then
 			if isDebug then
-				debugoverlay.Cross(trHitPos, 1, debugLifeTime, Color_trCross, true)
-				debugoverlay.EntityTextAtPosition(trHitPos, LineOffset_trText, "Hit", debugLifeTime, Color_trTextHit)
+				debugoverlay.Cross(trHitPos, 1, debugLifetime, Color_trCross, true)
+				debugoverlay.EntityTextAtPosition(trHitPos, LineOffset_trText, "Hit", debugLifetime, Color_trTextHit)
 			end
 
 			break
@@ -123,7 +124,7 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 
 	if isDebug then
 		if lastVector then
-			debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "End", debugLifeTime, Color_trText)
+			debugoverlay.EntityTextAtPosition(lastVector, LineOffset_trText, "End", debugLifetime, Color_trText)
 		end
 	end
 
@@ -180,10 +181,11 @@ function LIB.TracerAttachmentToAttachment(ent, attachmentA, attachmentB, filterf
 	if not posB then return end
 
 	local isDebug = LIBUtil.IsDeveloper()
+	local debugLifetime = LIB.DEBUG_LIFETIME
 
 	if isDebug then
-		debugoverlay.EntityTextAtPosition(posA, LineOffset_trText + 1, attachmentA, debugLifeTime, Color_trText)
-		debugoverlay.EntityTextAtPosition(posB, LineOffset_trText + 1, attachmentB, debugLifeTime, Color_trText)
+		debugoverlay.EntityTextAtPosition(posA, LineOffset_trText + 1, attachmentA, debugLifetime, Color_trText)
+		debugoverlay.EntityTextAtPosition(posB, LineOffset_trText + 1, attachmentB, debugLifetime, Color_trText)
 	end
 
 	return LIB.Tracer(ent, posA, posB, filterfunc)
@@ -195,6 +197,7 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc)
 	table.Empty(TRACER_ATTACHMENT_CHAIN_BUFFER)
 
 	local isDebug = LIBUtil.IsDeveloper()
+	local debugLifetime = LIB.DEBUG_LIFETIME
 
 	for _, attachmentChainItem in ipairs(attachmentChain) do
 		local pos = LIBPosition.GetAttachmentPosAng(ent, attachmentChainItem)
@@ -203,7 +206,7 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc)
 		table.insert(TRACER_ATTACHMENT_CHAIN_BUFFER, pos)
 
 		if isDebug then
-			debugoverlay.EntityTextAtPosition(pos, LineOffset_trText + 1, attachmentChainItem, debugLifeTime, Color_trText)
+			debugoverlay.EntityTextAtPosition(pos, LineOffset_trText + 1, attachmentChainItem, debugLifetime, Color_trText)
 		end
 	end
 
@@ -211,6 +214,10 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc)
 end
 
 function LIB.CheckGround(ent, vec1, vec2)
+	-- if 1 then
+	-- 	return false -- @todo replace
+	-- end
+
 	if not IsValid(ent) then return false end
 
 	vec2 = vec2 or vec1

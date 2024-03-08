@@ -682,6 +682,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	end
 
 	if isBody then
+		ent.sligwolf_isBody = true
 		ent:SetNWBool("sligwolf_isBody", true)
 	end
 

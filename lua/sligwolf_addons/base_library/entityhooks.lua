@@ -48,11 +48,26 @@ function LIB.Load()
 		end, 20000)
 	end
 
+	local function SpawnSystemFinishedClearCaches(ent, ply)
+		if not IsValid(ent) then return end
+		if not ent.sligwolf_entity then return end
+
+		local systemEntities = LIBEntities.GetSystemEntities(ent)
+		if not systemEntities then return end
+
+		for _, thisent in ipairs(systemEntities) do
+			LIBEntities.ClearCache(thisent)
+		end
+	end
+
+	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinishedClearCaches", SpawnSystemFinishedClearCaches, 1000)
+
 	local function SpawnSystemFinished(ent, ply)
 		if not IsValid(ent) then return end
 		if not ent.sligwolf_entity then return end
 
 		local systemEntities = LIBEntities.GetSystemEntities(ent)
+		if not systemEntities then return end
 
 		for _, thisent in ipairs(systemEntities) do
 			if not isfunction(thisent.SpawnSystemFinished) then

@@ -21,27 +21,27 @@ local LIBEntities = nil
 
 local g_maxRailCheckTraceAttachmentPairs = 4
 
-LIB.RAIL_CHECK_MODE_ANY = 0
-LIB.RAIL_CHECK_MODE_ALL = 1
-LIB.RAIL_CHECK_MODE_NONE = 2
+LIB.RAIL_CHECK_MODE_ALL = 0
+LIB.RAIL_CHECK_MODE_NONE = 1
+LIB.RAIL_CHECK_MODE_ANY = 2
 
 function LIB.GetRailCheckAttachments(ent)
 	if not IsValid(ent) then
 		return nil
 	end
 
-	local entTable = ent:GetTable()
+	local entTable = ent:SligWolf_GetTable()
 	if not entTable then
 		return nil
 	end
 
-	local railCheckAttachmentsCache = entTable.sligwolf_railCheckAttachmentsCache
+	local railCheckAttachmentsCache = entTable.railCheckAttachmentsCache
 	if railCheckAttachmentsCache then
 		return railCheckAttachmentsCache
 	end
 
-	entTable.sligwolf_railCheckAttachmentscache = {}
-	railcheckattachmentscache = entTable.sligwolf_railCheckAttachmentscache
+	railCheckAttachmentsCache = {}
+	entTable.railCheckAttachmentsCache = railCheckAttachmentsCache
 
 	for id = 1, g_maxRailCheckTraceAttachmentPairs - 1 do
 		local attachmentNameA = string.format("railcheck_%ia", id)
@@ -59,10 +59,10 @@ function LIB.GetRailCheckAttachments(ent)
 		end
 
 		local line = {attachmentA, attachmentB}
-		table.insert(railcheckattachmentscache, line)
+		table.insert(railCheckAttachmentsCache, line)
 	end
 
-	return railcheckattachmentscache
+	return railCheckAttachmentsCache
 end
 
 function LIB.HasRailCheckAttachments(ent)
@@ -78,7 +78,7 @@ function LIB.HasRailCheckAttachments(ent)
 	return true
 end
 
-function LIB.IsOnRail(ent)
+local function doIsOnRailTrace(ent)
 	local attachmentGroups = LIB.GetRailCheckAttachments(ent)
 	if not attachmentGroups then
 		return false
@@ -90,7 +90,7 @@ function LIB.IsOnRail(ent)
 			continue
 		end
 
-		if not Hit then
+		if not tr.Hit then
 			continue
 		end
 
@@ -100,9 +100,40 @@ function LIB.IsOnRail(ent)
 	return false
 end
 
-local function checkOnRailForEntListAny(entities)
+function LIB.IsOnRail(ent, bypassCache)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	if not entTable then
+		return nil
+	end
+
+	local now = RealTime()
+
+	local isOnRailResultCache = entTable.isOnRailResultCache or {}
+	entTable.isOnRailResultCache = isOnRailResultCache
+
+	if not bypassCache and isOnRailResultCache.nextRefresh and isOnRailResultCache.nextRefresh > now then
+		return isOnRailResultCache.result
+	end
+
+	local result = doIsOnRailTrace(ent)
+
+	isOnRailResultCache.result = result
+	isOnRailResultCache.nextRefresh = now + 0.05
+
+	return result
+end
+
+local function checkOnRailForEntListAny(entities, bypassCache, additionalBodyEnt)
+	if IsValid(additionalBodyEnt) and LIB.IsOnRail(additionalBodyEnt, bypassCache) then
+		return true
+	end
+
 	for i, ent in ipairs(entities) do
-		if not LIB.IsOnRail(ent) then
+		if not LIB.IsOnRail(ent, bypassCache) then
 			continue
 		end
 
@@ -112,9 +143,13 @@ local function checkOnRailForEntListAny(entities)
 	return false
 end
 
-local function checkOnRailForEntListAll(entities)
+local function checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt)
+	if IsValid(additionalBodyEnt) and not LIB.IsOnRail(additionalBodyEnt, bypassCache) then
+		return false
+	end
+
 	for i, ent in ipairs(entities) do
-		if LIB.IsOnRail(ent) then
+		if LIB.IsOnRail(ent, bypassCache) then
 			continue
 		end
 
@@ -124,59 +159,45 @@ local function checkOnRailForEntListAll(entities)
 	return true
 end
 
-local function checkOnRailForEntListNone(entities)
-	return not checkOnRailForEntListAll(entities)
+local function checkOnRailForEntListNone(entities, bypassCache, additionalBodyEnt)
+	return not checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt)
 end
 
-local function checkOnRailForEntList(entities, checkMode)
-	if not checkMode then
-		checkMode = LIB.RAIL_CHECK_MODE_ANY
-	end
-
-	if checkMode == LIB.RAIL_CHECK_MODE_ANY then
-		return checkOnRailForEntListAny(entities)
-	end
-
-	if checkMode == LIB.RAIL_CHECK_MODE_ALL then
-		return checkOnRailForEntListNone(entities)
+local function checkOnRailForEntList(entities, bypassCache, checkMode, additionalBodyEnt)
+	if not checkMode or checkMode == LIB.RAIL_CHECK_MODE_ALL then
+		return checkOnRailForEntListNone(entities, bypassCache, additionalBodyEnt)
 	end
 
 	if checkMode == LIB.RAIL_CHECK_MODE_NONE then
-		return checkOnRailForEntListNone(entities)
+		return checkOnRailForEntListNone(entities, bypassCache, additionalBodyEnt)
+	end
+
+	if checkMode == LIB.RAIL_CHECK_MODE_ANY then
+		return checkOnRailForEntListAny(entities, bypassCache, additionalBodyEnt)
 	end
 
 	error("unknown checkMode given")
 	return nil
 end
 
-function LIB.IsSystemOnRail(ent, checkMode)
+function LIB.IsSystemOnRail(ent, checkMode, bypassCache)
 	local root = LIBEntities.GetSuperParent(ent)
 	if not IsValid(root) then
 		return false
 	end
 
-	local bogies = LIBEntities.GetSystemBogies(root)
-
-	if LIB.HasRailCheckAttachments(root) then
-		table.insert(bogies, root)
-	end
-
-	return checkOnRailForEntList(bogies, checkMode)
+	local bogies = LIB.GetSystemBogies(root)
+	return checkOnRailForEntList(bogies, bypassCache, checkMode, root)
 end
 
-function LIB.IsBodyOnRail(ent, checkMode)
+function LIB.IsBodyOnRail(ent, checkMode, bypassCache)
 	local body = LIBEntities.GetBodyEntities(ent)
 	if not IsValid(body) then
 		return false
 	end
 
-	local bogies = LIBEntities.GetBodyBogies(body)
-
-	if LIB.HasRailCheckAttachments(body) then
-		table.insert(bogies, body)
-	end
-
-	return checkOnRailForEntList(bogies, checkMode)
+	local bogies = LIB.GetBodyBogies(body)
+	return checkOnRailForEntList(bogies, bypassCache, checkMode, body)
 end
 
 local function filterBogies(bogie)

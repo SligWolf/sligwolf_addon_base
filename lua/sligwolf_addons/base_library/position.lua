@@ -50,23 +50,23 @@ function LIB.GetAttachmentCache(ent, forceRebuild)
 		return nil
 	end
 
-	local entTable = ent:GetTable()
+	local entTable = ent:SligWolf_GetTable()
 	if not entTable then
 		return nil
 	end
 
-	if not entTable.sligwolf_attachmentIdCache then
-		entTable.sligwolf_attachmentIdCache = {}
+	if not entTable.attachmentIdCache then
+		entTable.attachmentIdCache = {}
 		forceRebuild = true
 	end
 
-	if not entTable.sligwolf_attachmentNameCache then
-		entTable.sligwolf_attachmentNameCache = {}
+	if not entTable.attachmentNameCache then
+		entTable.attachmentNameCache = {}
 		forceRebuild = true
 	end
 
-	local attachmentIdCache = entTable.sligwolf_attachmentIdCache
-	local attachmentNameCache = entTable.sligwolf_attachmentNameCache
+	local attachmentIdCache = entTable.attachmentIdCache
+	local attachmentNameCache = entTable.attachmentNameCache
 
 	if forceRebuild then
 		local attachments = ent:GetAttachments()
@@ -226,12 +226,12 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 	if not LIBUtil.IsValidModelEntity(parentEnt) then return false end
 	if not LIBUtil.IsValidModelEntity(selfEnt) then return false end
 
-	local selfEntTable = selfEnt:GetTable()
+	local selfEntTable = selfEnt:SligWolf_GetTable()
 	if not selfEntTable then
 		return nil
 	end
 
-	local mountPoint = selfEntTable.sligwolf_mountPoint
+	local mountPoint = selfEntTable.mountPoint
 
 	if mountPoint and IsValid(mountPoint.parentEnt) then
 		local parentAttachmentName = LIB.GetAttachmentName(ent, mountPoint.parentAttachment)
@@ -257,7 +257,7 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 
 	if not mountPoint then
 		mountPoint = {}
-		selfEntTable.sligwolf_mountPoint = mountPoint
+		selfEntTable.mountPoint = mountPoint
 	end
 
 	mountPoint.parentEnt = parentEnt
@@ -268,12 +268,12 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 end
 
 function LIB.GetMountPoint(selfEnt)
-	local selfEntTable = selfEnt:GetTable()
+	local selfEntTable = selfEnt:SligWolf_GetTable()
 	if not selfEntTable then
 		return nil
 	end
 
-	local mountPoint = selfEntTable.sligwolf_mountPoint
+	local mountPoint = selfEntTable.mountPoint
 	if not mountPoint then
 		return nil
 	end
@@ -417,15 +417,13 @@ function LIB.GetPlayerPosData(ply)
 		return nil
 	end
 
-	local getTable = ply.GetTable
-	if not getTable then
+	local plyTable = ply:SligWolf_GetTable()
+	if not plyTable then
 		return nil
 	end
 
-	local plyTable = getTable(ply)
-
-	local data = plyTable.sligwolf_lastPlyPosData or {}
-	plyTable.sligwolf_lastPlyPosData = data
+	local data = plyTable.lastPlyPosData or {}
+	plyTable.lastPlyPosData = data
 
 	return data
 end

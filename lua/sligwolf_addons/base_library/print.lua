@@ -140,7 +140,7 @@ function LIB.Debug(format, ...)
 		format = "Empty message!"
 	end
 
-	local message = formatMessage("[DEBUG]" .. format, ...)
+	local message = formatMessage("[DEBUG] " .. format, ...)
 	print(message)
 end
 

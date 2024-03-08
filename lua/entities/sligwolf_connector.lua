@@ -4,7 +4,7 @@ local SligWolf_Addons = SligWolf_Addons
 DEFINE_BASECLASS("sligwolf_phys")
 
 ENT.Spawnable			= false
-ENT.RenderGroup 		= RENDERGROUP_BOTH
+ENT.RenderGroup 		= RENDERMODE_NONE
 ENT.DoNotDuplicate 		= true
 
 ENT.sligwolf_isConnector = true
@@ -27,6 +27,8 @@ function ENT:Initialize()
 	if SERVER then
 		self:SetNoDraw(true)
 	end
+
+	self:AddEFlags(EFL_SERVER_ONLY)
 
 	self.allowedtypes = nil
 	self.gender = GENDER_NEUTRAL

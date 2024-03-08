@@ -8,6 +8,7 @@ ENT.AdminOnly 				= false
 ENT.DoNotDuplicate 			= false
 
 ENT.sligwolf_bogieEntity    = true
+ENT.sligwolf_isBody         = true
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
@@ -33,34 +34,77 @@ function ENT:InitializePhysics()
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 end
 
-function ENT:CanApplyBodySystemMotionFrom(sourceEnt, motion)
-	if sourceEnt == self then
-		return true
+function ENT:GetParentBodyIndex()
+	if self.parentBodyIndex then
+		return self.parentBodyIndex
 	end
 
-	if srcEnt.sligwolf_bogieEntity then
-		return false
+	LIBEntities.BuildSubBodyLists(self)
+
+	local parentbody = LIBEntities.GetParentBody(self)
+	if not IsValid(parentbody) then
+		return nil
 	end
 
-	if srcEnt.sligwolf_sliderEntity then
-		return false
+	local parentBodyEntities = LIBEntities.GetBodyEntities(parentbody)
+	if not parentBodyEntities then
+		return nil
 	end
 
-	-- @todo
+	local subBodies = LIBEntities.GetSubBodies(parentbody)
+	if not subBodies then
+		return nil
+	end
 
-	return true
+	local parentBodyIndex = {}
+	self.parentBodyIndex = parentBodyIndex
+
+	for _, child in pairs(parentBodyEntities) do
+		if not IsValid(child) then
+			continue
+		end
+
+		parentBodyIndex[child:EntIndex()] = child
+	end
+
+	for _, body in pairs(subBodies) do
+		if not IsValid(body) then
+			continue
+		end
+
+		if not body.sligwolf_bogieEntity then
+			continue
+		end
+
+		local bodyEntities = LIBEntities.GetBodyEntities(body)
+		if not bodyEntities then
+			continue
+		end
+
+		for i, child in ipairs(bodyEntities) do
+			parentBodyIndex[child:EntIndex()] = child
+		end
+	end
+
+	return parentBodyIndex
 end
 
-function ENT:CanApplyBodySystemMotionFor(targetEnt, motion)
-	if targetEnt == self then
-		return true
+function ENT:IsParentBodyPhysgunCarried()
+	local entities = self:GetPhysgunCarredEntities()
+	if not entities then
+		return false
 	end
 
-	if targetEnt.sligwolf_sliderEntity then
-		return true
+	local parentBodyIndex = self:GetParentBodyIndex()
+	if not parentBodyIndex then
+		return false
 	end
 
-	-- @todo
+	for thisEntId, _ in pairs(entities) do
+		if parentBodyIndex[thisEntId] then
+			return true
+		end
+	end
 
 	return false
 end
@@ -81,8 +125,8 @@ function ENT:OnPhysgunDrop(directlyDropped, ply)
 	end
 end
 
-function ENT:IsOnRail()
-	return LIBRail.IsOnRail(self)
+function ENT:IsOnRail(bypassCache)
+	return LIBRail.IsOnRail(self, bypassCache)
 end
 
 function ENT:Think()
@@ -99,8 +143,6 @@ function ENT:Think()
 		self:UpdateCheckForRealign()
 	end
 
-	local nextTick = 0.25
-
 	if self.shouldAttemptToRealign then
 		self:RealignThink()
 	end
@@ -110,7 +152,7 @@ function ENT:Think()
 		self:UnlockFromMount()
 	end
 
-	self:NextThink( now + nextTick )
+	self:NextThink( now + 0.20 )
 	return true
 end
 
@@ -120,12 +162,24 @@ function ENT:UpdateCheckForRealign()
 end
 
 function ENT:CanRealign()
-	if not self:IsPhysgunCarried(LIBPhysgun.PHYSGUN_CARRIED_MODE_BODY) then
+	local phys = self:GetPhysicsObject()
+	if not IsValid(phys) then
 		return false
 	end
 
-	if self:IsPhysgunCarried(LIBPhysgun.PHYSGUN_CARRIED_MODE_DIRECT) then
-	 	return false
+	if not phys:IsMotionEnabled() then
+		-- don't realign frozen bogies
+		return false
+	end
+
+	if self:IsPhysgunCarried(LIBPhysgun.PHYSGUN_CARRIED_MODE_BODY) then
+		-- don't bogies being held
+		return false
+	end
+
+	if not self:IsParentBodyPhysgunCarried() then
+		-- check if the wagon (or one of its sub parts) is held
+		return false
 	end
 
 	return true
@@ -142,6 +196,7 @@ end
 
 function ENT:LockToMount()
 	if not self.nextAutoUnlockFromMount then
+		LIBEntities.SetUnsolidToPlayerRecursive(self, true)
 		LIBEntities.LockEntityToMountPoint(self)
 	end
 
@@ -151,6 +206,7 @@ end
 function ENT:UnlockFromMount()
 	if self.nextAutoUnlockFromMount then
 		LIBEntities.UnlockEntityFromMountPoint(self)
+		LIBEntities.SetUnsolidToPlayerRecursive(self, false)
 	end
 
 	self.nextAutoUnlockFromMount = nil
