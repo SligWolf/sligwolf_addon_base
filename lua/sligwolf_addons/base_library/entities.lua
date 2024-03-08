@@ -27,6 +27,56 @@ function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 end
 
+local function getCache(ent)
+	local entTable = ent:SligWolf_GetTable()
+
+	local entCache = entTable.EntCache or {}
+	entTable.EntCache = entCache
+
+	local parents = entCache.parents or {}
+	entCache.parents = parents
+
+	local children = entCache.children or {}
+	entCache.children = children
+
+	return entCache
+end
+
+LIB.GetEntityCache = getCache
+
+local function clearChildrenCacheHelper(ent)
+	if not IsValid(ent) then return end
+
+	local cache = getCache(ent)
+	if not cache then return end
+
+	table.Empty(cache.children)
+end
+
+function LIB.ClearChildrenCache(ent)
+	if not IsValid(ent) then return end
+
+	clearChildrenCacheHelper(ent)
+
+	local cache = getCache(ent)
+	if not cache then return end
+
+	for _, parent in pairs(cache.parents) do
+		clearChildrenCacheHelper(parent)
+	end
+end
+
+function LIB.ClearCache(ent)
+	if not IsValid(ent) then return end
+
+	LIB.ClearChildrenCache(ent)
+
+	local cache = getCache(ent)
+	if not cache then return end
+
+	table.Empty(cache.parents)
+end
+
 function LIB.ToString(ent)
 	local entStr = tostring(ent)
 
@@ -52,8 +102,6 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 	if IsValid(parent) then
 		addonname = addonname or parent.sligwolf_Addonname
 	end
-
-	ent.SLIGWOLF_Vars = ent.SLIGWOLF_Vars or {}
 
 	LIB.SetName(ent, name)
 	LIB.SetParent(ent, parent)
@@ -168,63 +216,28 @@ function LIB.RemoveEntity(ent)
 end
 
 function LIB.RemoveEntites(entities)
-	entities = entities or {}
+	if not entities then
+		return
+	end
 
 	if not istable(entities) then
 		entities = {entities}
 	end
 
-	for k, v in ipairs(entities) do
-		LIB.RemoveEntity(v)
+	for k, v in pairs(entities) do
+		if isentity(v) then
+			LIB.RemoveEntity(v)
+		end
+
+		if isentity(k) and k ~= v then
+			LIB.RemoveEntity(k)
+		end
 	end
 end
 
 function LIB.RemoveFaultyEntites(entities, errReasonFormat, ...)
 	LIB.RemoveEntites(entities)
 	LIBPrint.ErrorNoHaltWithStack(errReasonFormat, ...)
-end
-
-local function ClearCacheHelper(thisent)
-	if not IsValid(thisent) then return end
-
-	local vars = thisent.SLIGWOLF_Vars
-	if not vars then return end
-
-	vars.ChildrenRecursiveENTs = nil
-	vars.SystemENTs = nil
-	vars.BodyENTs = nil
-	vars.SystemENTsFilteredCache = nil
-	vars.BodyENTsFilteredCache = nil
-	vars.ChildrenENTsSorted = nil
-	vars.SubBodyENTs = nil
-end
-
-function LIB.ClearChildrenCache(ent)
-	if not IsValid(ent) then return end
-
-	ClearCacheHelper(ent)
-
-	local vars = ent.SLIGWOLF_Vars
-	if not vars then return end
-
-	ClearCacheHelper(vars.ParentENT)
-	ClearCacheHelper(vars.SuperParentENT)
-	ClearCacheHelper(vars.NearstBodyENT)
-	ClearCacheHelper(vars.ParentBodyENT)
-end
-
-function LIB.ClearCache(ent)
-	if not IsValid(ent) then return end
-
-	LIB.ClearChildrenCache(ent)
-
-	local vars = ent.SLIGWOLF_Vars
-	if not vars then return end
-
-	vars.ParentENT = nil
-	vars.SuperParentENT = nil
-	vars.NearstBodyENT = nil
-	vars.ParentBodyENT = nil
 end
 
 local function GenerateUnknownEntityName(ent)
@@ -235,12 +248,8 @@ end
 function LIB.GetName(ent)
 	if not IsValid(ent) then return end
 
-	local vars = ent.SLIGWOLF_Vars
-	local name = ""
-
-	if vars then
-		name = LIBUtil.ValidateName(vars.Name)
-	end
+	local entTable = ent:SligWolf_GetTable()
+	local name = LIBUtil.ValidateName(entTable.Name)
 
 	if CLIENT and name == "" then
 		name = GenerateUnknownEntityName(ent)
@@ -254,8 +263,7 @@ function LIB.SetName(ent, name)
 
 	LIB.ClearChildrenCache(ent)
 
-	local vars = ent.SLIGWOLF_Vars or {}
-	ent.SLIGWOLF_Vars = vars
+	local entTable = ent:SligWolf_GetTable()
 
 	local parent = LIB.GetParent(ent)
 
@@ -265,7 +273,7 @@ function LIB.SetName(ent, name)
 	end
 
 	local oldname = LIB.GetName(ent)
-	vars.Name = name
+	entTable.Name = name
 
 	LIB.UnregisterChild(parent, oldname)
 	LIB.RegisterChild(parent, name, ent)
@@ -286,9 +294,9 @@ function LIB.GetParent(ent)
 		return nil
 	end
 
-	local vars = ent.SLIGWOLF_Vars
-	if vars then
-		local parent = vars.ParentENT
+	local cache = getCache(ent).parents
+	if cache then
+		local parent = cache.ParentENT
 
 		if IsValid(parent) and parent ~= ent then
 			return parent
@@ -317,10 +325,9 @@ function LIB.SetParent(ent, parent)
 
 	local name = LIB.GetName(ent)
 
-	local vars = ent.SLIGWOLF_Vars or {}
-	ent.SLIGWOLF_Vars = vars
+	local cache = getCache(ent).parents
 
-	vars.ParentENT = parent
+	cache.ParentENT = parent
 
 	if ent.sligwolf_baseEntity then
 		ent:SetParentEntity(parent)
@@ -328,9 +335,9 @@ function LIB.SetParent(ent, parent)
 		ent:SetNWEntity("sligwolf_parent", parent or NULL)
 	end
 
-	vars.SuperParentENT = nil
-	vars.NearstBodyENT = nil
-	vars.ParentBodyENT = nil
+	cache.SuperParentENT = nil
+	cache.NearstBodyENT = nil
+	cache.ParentBodyENT = nil
 
 	LIB.UnregisterChild(oldParent, name)
 	LIB.RegisterChild(parent, name, ent)
@@ -415,10 +422,9 @@ end
 function LIB.GetSuperParent(ent)
 	if not IsValid(ent) then return end
 
-	local vars = ent.SLIGWOLF_Vars or {}
-	ent.SLIGWOLF_Vars = vars
+	local cache = getCache(ent).parents
 
-	local superParent = vars.SuperParentENT
+	local superParent = cache.SuperParentENT
 
 	if IsValid(superParent) then
 		return superParent
@@ -429,7 +435,7 @@ function LIB.GetSuperParent(ent)
 		superParent = ent
 	end
 
-	vars.SuperParentENT = superParent
+	cache.SuperParentENT = superParent
 	LIB.ClearChildrenCache(ent)
 
 	return superParent
@@ -438,10 +444,9 @@ end
 function LIB.GetNearstBody(ent)
 	if not IsValid(ent) then return end
 
-	local vars = ent.SLIGWOLF_Vars or {}
-	ent.SLIGWOLF_Vars = vars
+	local cache = getCache(ent).parents
 
-	local body = vars.NearstBodyENT
+	local body = cache.NearstBodyENT
 
 	if IsValid(body) then
 		return body
@@ -452,8 +457,8 @@ function LIB.GetNearstBody(ent)
 		body = LIB.GetSuperParent(ent)
 	end
 
-	vars.NearstBodyENT = body
-	vars.ParentBodyENT = nil
+	cache.NearstBodyENT = body
+	cache.ParentBodyENT = nil
 
 	return body
 end
@@ -478,21 +483,34 @@ function LIB.BuildSubBodyLists(ent)
 			continue
 		end
 
-		local parentBodyVars = parentBody.SLIGWOLF_Vars or {}
-		parentBody.SLIGWOLF_Vars = parentBodyVars
+		local parentBodyCache = getCache(parentBody).children
 
-		parentBodyVars.SubBodyENTs = parentBodyVars.SubBodyENTs or {}
-		parentBodyVars.SubBodyENTs[body:EntIndex()] = body
+		parentBodyCache.SubBodyENTs = parentBodyCache.SubBodyENTs or {}
+		parentBodyCache.SubBodyENTs[body:EntIndex()] = body
 	end
+end
+
+function LIB.GetSubBodies(ent)
+	local body = LIB.GetNearstBody(ent)
+	if not IsValid(body) then
+		return nil
+	end
+
+	local cache = getCache(body).children
+
+	if not cache.SubBodyENTs then
+		LIB.BuildSubBodyLists(body)
+	end
+
+	return cache.SubBodyENTs
 end
 
 function LIB.GetParentBody(ent)
 	if not IsValid(ent) then return end
 
-	local vars = ent.SLIGWOLF_Vars or {}
-	ent.SLIGWOLF_Vars = vars
+	local cache = getCache(ent).parents
 
-	local parentBody = vars.ParentBodyENT
+	local parentBody = cache.ParentBodyENT
 	if IsValid(parentBody) then
 		return parentBody
 	end
@@ -505,24 +523,8 @@ function LIB.GetParentBody(ent)
 		parentBody = LIB.GetSuperParent(ent)
 	end
 
-	vars.ParentBodyENT = parentBody
+	cache.ParentBodyENT = parentBody
 	return parentBody
-end
-
-function LIB.GetSubBodies(ent)
-	local body = LIB.GetNearstBody(ent)
-	if not IsValid(body) then
-		return nil
-	end
-
-	local vars = body.SLIGWOLF_Vars or {}
-	body.SLIGWOLF_Vars = vars
-
-	if not vars.SubBodyENTs then
-		LIB.BuildSubBodyLists(body)
-	end
-
-	return vars.SubBodyENTs
 end
 
 function LIB.GetEntityPath(ent)
@@ -544,25 +546,28 @@ end
 function LIB.GetChildren(ent)
 	if not IsValid(ent) then return end
 
-	local vars = ent.SLIGWOLF_Vars
-	if not vars then return end
+	local entTable = ent:SligWolf_GetTable()
 
-	return vars.ChildrenENTs or {}
+	local children = entTable.ChildrenENTs or {}
+	entTable.ChildrenENTs = children
+
+	return children
 end
 
 function LIB.GetChildrenSorted(ent)
 	if not IsValid(ent) then return end
 
-	ent.SLIGWOLF_Vars = ent.SLIGWOLF_Vars or {}
-	local vars = ent.SLIGWOLF_Vars
+	local cache = getCache(ent).children
 
-	if vars.ChildrenENTsSorted then
-		return vars.ChildrenENTsSorted
+	if cache.ChildrenENTsSorted then
+		return cache.ChildrenENTsSorted
 	end
+
+	local children = LIB.GetChildren(ent)
 
 	local byCid = {}
 
-	for k, v in pairs(vars.ChildrenENTs or {}) do
+	for k, v in pairs(children) do
 		if not IsValid(v) then
 			continue
 		end
@@ -577,84 +582,123 @@ function LIB.GetChildrenSorted(ent)
 		table.insert(childrenSorted, v)
 	end
 
-	vars.ChildrenENTsSorted = childrenSorted
+	cache.ChildrenENTsSorted = childrenSorted
 	return childrenSorted
 end
 
 function LIB.UnregisterChild(ent, name)
-	if not IsValid(ent) then return end
+	local children = LIB.GetChildren(ent)
+	if not children then return end
 
-	ent.SLIGWOLF_Vars = ent.SLIGWOLF_Vars or {}
-	local vars = ent.SLIGWOLF_Vars
+	children[name] = nil
 
-	vars.ChildrenENTs = vars.ChildrenENTs or {}
-	vars.ChildrenENTs[name] = nil
-
-	vars.ChildrenENTsSorted = nil
-	vars.SubBodyENTs = nil
+	LIB.ClearChildrenCache(ent)
 end
 
 function LIB.RegisterChild(ent, name, child)
 	if not IsValid(ent) then return end
 	if not IsValid(child) then return end
 
-	ent.SLIGWOLF_Vars = ent.SLIGWOLF_Vars or {}
-	local vars = ent.SLIGWOLF_Vars
+	local children = LIB.GetChildren(ent)
+	if not children then return end
 
-	vars.ChildrenENTs = vars.ChildrenENTs or {}
-	vars.ChildrenENTs[name] = child
+	children[name] = child
 
-	vars.ChildrenENTsSorted = nil
-	vars.SubBodyENTs = nil
+	LIB.ClearChildrenCache(ent)
 end
 
 function LIB.GetChild(ent, name)
 	local children = LIB.GetChildren(ent)
-	if not children then return end
+	if not children then
+		return nil
+	end
 
 	local child = children[name]
-	if not IsValid(child) then return end
-
-	if LIB.GetParent(child) ~= ent then
-		children[name] = nil
-		return
+	if not IsValid(child) then
+		return nil
 	end
 
 	return child
 end
 
 function LIB.GetChildFromPath(ent, path)
+	if not IsValid(ent) then return end
+
 	path = tostring(path or "")
+
+	local cache = getCache(ent).children
+
+	local childrenCache = cache.ChildrenPathENTs or {}
+	cache.ChildrenPathENTs = childrenCache
+
+	local cachedChild = childrenCache[path]
+	if cachedChild ~= nil then
+		if cachedChild == false then
+			return nil
+		end
+
+		return cachedChild
+	end
+
+	childrenCache[path] = nil
+
 	local hierarchy = string.Explode("/", path, false) or {}
 
-	local curchild = ent
-	for k, v in pairs(hierarchy) do
-		curchild = LIB.GetChild(curchild, v)
+	local curChild = ent
+	for i, v in ipairs(hierarchy) do
+		curChild = LIB.GetChild(curChild, v)
 
-		if not IsValid(curchild) then
+		if not curChild then
+			childrenCache[path] = false
 			return nil
 		end
 	end
 
-	return curchild
+	childrenCache[path] = curChild
+	return curChild
 end
 
 function LIB.FindChildAtPath(ent, path)
+	if not IsValid(ent) then
+		return {}
+	end
+
 	path = tostring(path or "")
+
+	local cache = getCache(ent).children
+
+	local childrenCache = cache.ChildrenPathFindENTs or {}
+	cache.ChildrenPathFindENTs = childrenCache
+
+	local cachedChildren = childrenCache[path]
+	if cachedChildren then
+		return cachedChildren
+	end
+
+	childrenCache[path] = nil
+
 	local hierarchy = string.Explode("/", path, false) or {}
 	local lastindex = #hierarchy
+
+	local result = {}
 
 	local curchild = ent
 	for k, v in ipairs(hierarchy) do
 		if k >= lastindex then
-			return LIB.FindChildren(curchild, v)
+			result = LIB.FindChildren(curchild, v)
+			childrenCache[path] = result
+			return result
 		end
 
 		curchild = LIB.GetChild(curchild, v)
-		if not IsValid(curchild) then return {} end
+		if not IsValid(curchild) then
+			childrenCache[path] = result
+			return result
+		end
 	end
 
-	return {}
+	childrenCache[path] = result
+	return result
 end
 
 function LIB.ForEachFilteredChild(ent, name, func)
@@ -672,19 +716,40 @@ function LIB.ForEachFilteredChild(ent, name, func)
 end
 
 function LIB.FindChildren(ent, name)
-	local children = LIB.GetChildren(ent)
-	if not children then return {} end
+	if not IsValid(ent) then
+		return {}
+	end
 
 	name = tostring(name or "")
 
-	local found = {}
-	for k, v in pairs(children) do
-		if not IsValid(v) then continue end
-		if not string.find(k, name) then continue end
-		found[k] = v
+	local cache = getCache(ent).children
+
+	local childrenCache = cache.ChildrenFindENTs or {}
+	cache.ChildrenFindENTs = childrenCache
+
+	local cachedChildren = childrenCache[name]
+	if cachedChildren then
+		return cachedChildren
 	end
 
-	return found
+	childrenCache[name] = nil
+
+	local children = LIB.GetChildren(ent)
+	if not children then
+		return {}
+	end
+
+	local result = {}
+
+	for k, v in pairs(children) do
+		if not IsValid(v) then continue end
+		if not string.find(k, name, 0, true) then continue end
+
+		result[k] = v
+	end
+
+	childrenCache[name] = result
+	return result
 end
 
 local function GetAllChildrenRecursiveItemHelper(child, container, nodouble, filter)
@@ -730,18 +795,17 @@ end
 function LIB.GetChildrenRecursive(ent)
 	if not IsValid(ent) then return end
 
-	ent.SLIGWOLF_Vars = ent.SLIGWOLF_Vars or {}
-	local vars = ent.SLIGWOLF_Vars
+	local cache = getCache(ent).children
 
-	if vars.ChildrenRecursiveENTs then
-		return vars.ChildrenRecursiveENTs
+	if cache.ChildrenRecursiveENTs then
+		return cache.ChildrenRecursiveENTs
 	end
 
 	local children = {}
 
 	GetAllChildrenRecursiveHelper(ent, children)
 
-	vars.ChildrenRecursiveENTs = children
+	cache.ChildrenRecursiveENTs = children
 	return children
 end
 
@@ -751,11 +815,10 @@ function LIB.GetSystemEntities(ent)
 		return
 	end
 
-	root.SLIGWOLF_Vars = root.SLIGWOLF_Vars or {}
-	local vars = root.SLIGWOLF_Vars
+	local cache = getCache(root).children
 
-	if vars.SystemENTs then
-		return vars.SystemENTs
+	if cache.SystemENTs then
+		return cache.SystemENTs
 	end
 
 	local children = {}
@@ -766,7 +829,7 @@ function LIB.GetSystemEntities(ent)
 
 	children = table.Reverse(children)
 
-	vars.SystemENTs = children
+	cache.SystemENTs = children
 	return children
 end
 
@@ -776,11 +839,10 @@ function LIB.GetBodyEntities(ent)
 		return nil
 	end
 
-	body.SLIGWOLF_Vars = body.SLIGWOLF_Vars or {}
-	local vars = body.SLIGWOLF_Vars
+	local cache = getCache(body).children
 
-	if vars.BodyENTs then
-		return vars.BodyENTs
+	if cache.BodyENTs then
+		return cache.BodyENTs
 	end
 
 	local children = {}
@@ -799,19 +861,19 @@ function LIB.GetBodyEntities(ent)
 
 	children = table.Reverse(children)
 
-	vars.BodyENTs = children
+	cache.BodyENTs = children
 	return children
 end
 
-local function filterEntities(inputEntsentities, filteredEnts, filterFunc)
+local function filterEntities(inputEnts, filteredEnts, filterFunc)
 	table.Empty(filteredEnts)
 
-	for i, filteredEnt in ipairs(inputEntsentities) do
+	for i, filteredEnt in ipairs(inputEnts) do
 		if not filteredEnt then
 			continue
 		end
 
-		if not filter(filteredEnt) then
+		if not filterFunc(filteredEnt) then
 			continue
 		end
 
@@ -830,11 +892,10 @@ function LIB.GetSystemEntitiesFiltered(ent, cacheName, filterFunc)
 		return nil
 	end
 
-	root.SLIGWOLF_Vars = root.SLIGWOLF_Vars or {}
-	local vars = root.SLIGWOLF_Vars
+	local childrenCache = getCache(root).children
 
-	vars.SystemENTsFilteredCache = vars.SystemENTsFilteredCache or {}
-	local cache = vars.SystemENTsFilteredCache
+	childrenCache.SystemENTsFilteredCache = childrenCache.SystemENTsFilteredCache or {}
+	local cache = childrenCache.SystemENTsFilteredCache
 
 	local cachedEntities = cache[cacheName]
 
@@ -870,11 +931,10 @@ function LIB.GetBodyEntitiesFiltered(ent, cacheName, filterFunc)
 		return nil
 	end
 
-	body.SLIGWOLF_Vars = body.SLIGWOLF_Vars or {}
-	local vars = body.SLIGWOLF_Vars
+	local childrenCache = getCache(body).children
 
-	vars.BodyENTsFilteredCache = vars.SystemENTsFilteredCache or {}
-	local cache = vars.BodyENTsFilteredCache
+	childrenCache.BodyENTsFilteredCache = childrenCache.BodyENTsFilteredCache or {}
+	local cache = childrenCache.BodyENTsFilteredCache
 
 	local cachedEntities = cache[cacheName]
 
@@ -972,9 +1032,9 @@ function LIB.EnableBodySystemMotion(srcEnt, motion)
 
 		-- @DEBUG: Color entities according to their motion state
 		-- if motion then
-		-- 	LIBUtil.DebugColorEntities(thisent, Color(0, 255, 0))
+		-- 	SligWolf_Addons.Debug.HighlightEntities(thisent, Color(0, 255, 0))
 		-- else
-		-- 	LIBUtil.DebugColorEntities(thisent, Color(255, 0, 0))
+		-- 	SligWolf_Addons.Debug.HighlightEntities(thisent, Color(255, 0, 0))
 		-- end
 
 		LIB.EnableMotion(thisent, motion)
@@ -1066,7 +1126,7 @@ function LIB.LockEntityToMountPoint(selfEnt)
 	selfEnt.sligwolf_lockConstraintWeld = weldConstraint
 
 	-- @DEBUG: Color entity according to their lock state
-	-- LIBUtil.DebugColorEntities(selfEnt, Color(255, 0, 0))
+	-- SligWolf_Addons.Debug.HighlightEntities(selfEnt, Color(255, 0, 0))
 
 	return true
 end
@@ -1083,7 +1143,7 @@ function LIB.UnlockEntityFromMountPoint(selfEnt)
 	LIB.RemoveEntity(selfEnt.sligwolf_lockConstraintWeld)
 
 	-- @DEBUG: Color entity according to their lock state
-	-- LIBUtil.DebugColorEntities(selfEnt, Color(0, 255, 0))
+	-- SligWolf_Addons.Debug.HighlightEntities(selfEnt, Color(0, 255, 0))
 
 	return true
 end

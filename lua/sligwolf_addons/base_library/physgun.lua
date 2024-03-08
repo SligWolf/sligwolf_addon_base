@@ -234,12 +234,8 @@ function LIB.IsPhysgunCarried(ent, checkMode)
 		return true
 	end
 
-	local rootEntTable = root:SligWolf_GetTable()
-	if not rootEntTable then
-		return false
-	end
-
-	local carriedList = rootEntTable.isPhysgunCarriedSystem
+	local entTable = root:SligWolf_GetTable()
+	local carriedList = entTable.isPhysgunCarriedSystem
 
 	if not isPhysgunCarried(carriedList, ent, checkMode) then
 		return false
@@ -258,12 +254,9 @@ function LIB.GetPhysgunCarredEntities(ent)
 		return nil
 	end
 
-	local rootEntTable = root:SligWolf_GetTable()
-	if not rootEntTable then
-		return false
-	end
+	local entTable = root:SligWolf_GetTable()
+	local carriedList = entTable.isPhysgunCarriedSystem
 
-	local carriedList = rootEntTable.isPhysgunCarriedSystem
 	if not carriedList then
 		return nil
 	end
@@ -281,12 +274,9 @@ function LIB.GetPhysgunCarringPlayers(ent)
 		return nil
 	end
 
-	local rootEntTable = root:SligWolf_GetTable()
-	if not rootEntTable then
-		return false
-	end
+	local entTable = root:SligWolf_GetTable()
+	local carriedList = entTable.isPhysgunCarriedSystem
 
-	local carriedList = rootEntTable.isPhysgunCarriedSystem
 	if not carriedList then
 		return nil
 	end
@@ -304,13 +294,10 @@ function LIB.MarkPhysgunCarried(ent, ply)
 		return
 	end
 
-	local rootEntTable = root:SligWolf_GetTable()
-	if not rootEntTable then
-		return nil
-	end
+	local entTable = root:SligWolf_GetTable()
 
-	rootEntTable.isPhysgunCarriedSystem = rootEntTable.isPhysgunCarriedSystem or {}
-	markPhysgunCarried(rootEntTable.isPhysgunCarriedSystem, ent, ply)
+	entTable.isPhysgunCarriedSystem = entTable.isPhysgunCarriedSystem or {}
+	markPhysgunCarried(entTable.isPhysgunCarriedSystem, ent, ply)
 
 	local isCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.PHYSGUN_CARRIED_MODE_SYSTEM)
 
@@ -339,12 +326,9 @@ function LIB.UnmarkPhysgunCarried(ent, ply)
 		return
 	end
 
-	local rootEntTable = root:SligWolf_GetTable()
-	if not rootEntTable then
-		return nil
-	end
+	local entTable = root:SligWolf_GetTable()
 
-	unmarkPhysgunCarried(rootEntTable.isPhysgunCarriedSystem, ent, ply)
+	unmarkPhysgunCarried(entTable.isPhysgunCarriedSystem, ent, ply)
 
 	local isCarriedByAny = LIB.IsPhysgunCarried(ent, LIB.PHYSGUN_CARRIED_MODE_SYSTEM)
 

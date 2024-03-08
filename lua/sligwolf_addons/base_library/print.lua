@@ -17,12 +17,12 @@ local LIB = SligWolf_Addons.Print
 
 local LIBVehicle = nil
 local LIBEntities = nil
-local LIBUtil = nil
+local LIBDebug = nil
 
 function LIB.Load()
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBEntities = SligWolf_Addons.Entities
-	LIBUtil = SligWolf_Addons.Util
+	LIBDebug = SligWolf_Addons.Debug
 end
 
 local function formatEntity(ent)
@@ -126,11 +126,15 @@ function LIB.Print(format, ...)
 	end
 
 	local message = formatMessage(format, ...)
-	print(message)
+	MsgN(message)
 end
 
 function LIB.Debug(format, ...)
-	if not LIBUtil.IsDeveloper() then
+	if LIBDebug then
+		return
+	end
+
+	if not LIBDebug.IsDeveloper() then
 		return
 	end
 
@@ -141,7 +145,7 @@ function LIB.Debug(format, ...)
 	end
 
 	local message = formatMessage("[DEBUG] " .. format, ...)
-	print(message)
+	MsgN(message)
 end
 
 return true

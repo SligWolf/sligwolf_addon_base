@@ -15,17 +15,6 @@ table.Empty(SligWolf_Addons.meta)
 
 local LIB = SligWolf_Addons.meta
 
-function LIB.BuildMetaPlayer()
-	local META = FindMetaTable("Player")
-
-	if not META then
-		error("Couldn't find Player metatable!")
-		return
-	end
-
-	LIB.BuildGenericMetaFunctions(META)
-end
-
 function LIB.BuildMetaEntity()
 	local META = FindMetaTable("Entity")
 
@@ -34,25 +23,28 @@ function LIB.BuildMetaEntity()
 		return
 	end
 
-	LIB.BuildGenericMetaFunctions(META)
+	local getTable = META.GetTable
+
+	LIB.BuildGenericMetaFunctions(META, getTable)
 end
 
-function LIB.BuildGenericMetaFunctions(META)
+function LIB.BuildGenericMetaFunctions(META, getTable)
 	META.SligWolf_GetTable = function(thisEnt)
-		local tab = thisEnt.sligwolf_internalTable
+		local entTable = getTable(thisEnt)
+
+		local tab = entTable.sligwolf_internalTable
 
 		if tab then
 			return tab
 		end
 
 		tab = {}
-		thisEnt.sligwolf_internalTable = tab
+		entTable.sligwolf_internalTable = tab
 
 		return tab
 	end
 end
 
-LIB.BuildMetaPlayer()
 LIB.BuildMetaEntity()
 
 return true

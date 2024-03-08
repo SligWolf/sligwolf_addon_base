@@ -51,9 +51,6 @@ function LIB.GetAttachmentCache(ent, forceRebuild)
 	end
 
 	local entTable = ent:SligWolf_GetTable()
-	if not entTable then
-		return nil
-	end
 
 	if not entTable.attachmentIdCache then
 		entTable.attachmentIdCache = {}
@@ -226,12 +223,8 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 	if not LIBUtil.IsValidModelEntity(parentEnt) then return false end
 	if not LIBUtil.IsValidModelEntity(selfEnt) then return false end
 
-	local selfEntTable = selfEnt:SligWolf_GetTable()
-	if not selfEntTable then
-		return nil
-	end
-
-	local mountPoint = selfEntTable.mountPoint
+	local entTable = selfEnt:SligWolf_GetTable()
+	local mountPoint = entTable.mountPoint
 
 	if mountPoint and IsValid(mountPoint.parentEnt) then
 		local parentAttachmentName = LIB.GetAttachmentName(ent, mountPoint.parentAttachment)
@@ -257,7 +250,7 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 
 	if not mountPoint then
 		mountPoint = {}
-		selfEntTable.mountPoint = mountPoint
+		entTable.mountPoint = mountPoint
 	end
 
 	mountPoint.parentEnt = parentEnt
@@ -268,12 +261,9 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 end
 
 function LIB.GetMountPoint(selfEnt)
-	local selfEntTable = selfEnt:SligWolf_GetTable()
-	if not selfEntTable then
-		return nil
-	end
+	local entTable = selfEnt:SligWolf_GetTable()
 
-	local mountPoint = selfEntTable.mountPoint
+	local mountPoint = entTable.mountPoint
 	if not mountPoint then
 		return nil
 	end
@@ -402,7 +392,7 @@ function LIB.UpdatePlayerPosData(ply)
 	local parent = ply:GetParent()
 
 	if IsValid(parent) then
-		-- fix for wongy angles in vehicles
+		-- fix for wonky angles in vehicles
 		eyeAngles = parent:LocalToWorldAngles(eyeAngles)
 	end
 
@@ -418,9 +408,6 @@ function LIB.GetPlayerPosData(ply)
 	end
 
 	local plyTable = ply:SligWolf_GetTable()
-	if not plyTable then
-		return nil
-	end
 
 	local data = plyTable.lastPlyPosData or {}
 	plyTable.lastPlyPosData = data

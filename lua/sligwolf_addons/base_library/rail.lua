@@ -31,9 +31,6 @@ function LIB.GetRailCheckAttachments(ent)
 	end
 
 	local entTable = ent:SligWolf_GetTable()
-	if not entTable then
-		return nil
-	end
 
 	local railCheckAttachmentsCache = entTable.railCheckAttachmentsCache
 	if railCheckAttachmentsCache then
@@ -43,7 +40,7 @@ function LIB.GetRailCheckAttachments(ent)
 	railCheckAttachmentsCache = {}
 	entTable.railCheckAttachmentsCache = railCheckAttachmentsCache
 
-	for id = 1, g_maxRailCheckTraceAttachmentPairs - 1 do
+	for id = 0, g_maxRailCheckTraceAttachmentPairs - 1 do
 		local attachmentNameA = string.format("railcheck_%ia", id)
 		local attachmentNameB = string.format("railcheck_%ib", id)
 
@@ -66,7 +63,7 @@ function LIB.GetRailCheckAttachments(ent)
 end
 
 function LIB.HasRailCheckAttachments(ent)
-	local attachmentGroups = LIB.GetRailCheckAttachments(root)
+	local attachmentGroups = LIB.GetRailCheckAttachments(ent)
 	if not attachmentGroups then
 		return false
 	end
@@ -106,16 +103,13 @@ function LIB.IsOnRail(ent, bypassCache)
 	end
 
 	local entTable = ent:SligWolf_GetTable()
-	if not entTable then
-		return nil
-	end
 
 	local now = RealTime()
 
 	local isOnRailResultCache = entTable.isOnRailResultCache or {}
 	entTable.isOnRailResultCache = isOnRailResultCache
 
-	if not bypassCache and isOnRailResultCache.nextRefresh and isOnRailResultCache.nextRefresh > now then
+	if bypassCache ~= true and isOnRailResultCache.nextRefresh and isOnRailResultCache.nextRefresh > now then
 		return isOnRailResultCache.result
 	end
 
@@ -190,14 +184,29 @@ function LIB.IsSystemOnRail(ent, checkMode, bypassCache)
 	return checkOnRailForEntList(bogies, bypassCache, checkMode, root)
 end
 
-function LIB.IsBodyOnRail(ent, checkMode, bypassCache)
-	local body = LIBEntities.GetBodyEntities(ent)
+function LIB.IsWagonOnRail(ent, checkMode, bypassCache)
+	local body = LIBEntities.GetNearstBody(ent)
 	if not IsValid(body) then
 		return false
 	end
 
-	local bogies = LIB.GetBodyBogies(body)
+	local bogies = LIB.GetWagonBogies(body)
 	return checkOnRailForEntList(bogies, bypassCache, checkMode, body)
+end
+
+function LIB.IsBogieOnRail(ent, bypassCache)
+	local body = LIBEntities.GetNearstBody(ent)
+	if not IsValid(body) then
+		return false
+	end
+
+	local bogie = LIB.GetBogie(body)
+
+	if not LIB.IsOnRail(bogie, bypassCache) then
+		return false
+	end
+
+	return true
 end
 
 local function filterBogies(bogie)
@@ -213,11 +222,56 @@ local function filterBogies(bogie)
 end
 
 function LIB.GetSystemBogies(ent)
-	return LIBEntities.GetSystemEntitiesFiltered(ent, "bogies", filterBogies) -- @todo broken/wip
+	return LIBEntities.GetSystemEntitiesFiltered(ent, "bogies", filterBogies)
 end
 
-function LIB.GetBodyBogies(ent)
-	return LIBEntities.GetBodyEntitiesFiltered(ent, "bogies", filterBogies) -- @todo broken/wip
+function LIB.GetWagonBogies(ent)
+	local body = LIBEntities.GetNearstBody(ent)
+	if not IsValid(body) then
+		return nil
+	end
+
+	local cache = LIBEntities.GetEntityCache(body).children
+	if cache.Bogies then
+		return cache.Bogies
+	end
+
+	local subBodies = LIBEntities.GetSubBodies(body)
+	if not subBodies then
+		return nil
+	end
+
+	local bogies = {}
+
+	for _, child in pairs(subBodies) do
+		local bogie = LIB.GetBogie(child)
+		table.insert(bogies, bogie)
+	end
+
+	cache.Bogies = bogies
+	return bogies
+end
+
+function LIB.GetBogie(ent)
+	local body = LIBEntities.GetNearstBody(ent)
+	if not IsValid(body) then
+		return nil
+	end
+
+	local cache = LIBEntities.GetEntityCache(body).children
+
+	if cache.Bogie then
+		return cache.Bogie
+	end
+
+	local bogies = LIBEntities.GetBodyEntitiesFiltered(body, "bogies", filterBogies)
+
+	for i, bogie in ipairs(bogies) do
+		cache.Bogie = bogie
+		return bogie
+	end
+
+	return nil
 end
 
 function LIB.Load()

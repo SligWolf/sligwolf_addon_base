@@ -11,10 +11,10 @@ end
 
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPrint = SligWolf_Addons.Print
-local LIBUtil = SligWolf_Addons.Util
+local LIBDebug = SligWolf_Addons.Debug
 
 function SLIGWOLF_BASE_OBJ:IsDeveloper()
-	return LIBUtil.IsDeveloper()
+	return LIBDebug.IsDeveloper()
 end
 
 function SLIGWOLF_BASE_OBJ:RunPostInitialize()

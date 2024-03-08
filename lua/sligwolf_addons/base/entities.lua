@@ -100,15 +100,17 @@ function SLIGWOLF_ADDON:GetVal(ent, name, default)
 	local superparent = LIBEntities.GetSuperParent(ent) or ent
 	if not IsValid(superparent) then return end
 
+	local entTable = superparent:SligWolf_GetTable()
 	local path = LIBEntities.GetEntityPath(ent)
-
-	superparent.SLIGWOLF_Vars = superparent.SLIGWOLF_Vars or {}
-	local vars = superparent.SLIGWOLF_Vars
 
 	name = LIBUtil.ValidateName(name)
 	name = self.NetworkaddonID .. "/" .. path .. "/!" .. name
 
-	local data = vars.Data or {}
+	local data = entTable.Data
+	if not data then
+		return default
+	end
+
 	local value = data[name]
 
 	if value == nil then
@@ -124,16 +126,16 @@ function SLIGWOLF_ADDON:SetVal(ent, name, value)
 	local superparent = LIBEntities.GetSuperParent(ent) or ent
 	if not IsValid(superparent) then return end
 
+	local entTable = superparent:SligWolf_GetTable()
 	local path = LIBEntities.GetEntityPath(ent)
-
-	superparent.SLIGWOLF_Vars = superparent.SLIGWOLF_Vars or {}
-	local vars = superparent.SLIGWOLF_Vars
 
 	name = LIBUtil.ValidateName(name)
 	name = self.NetworkaddonID .. "/" .. path .. "/!" .. name
 
-	vars.Data = vars.Data or {}
-	vars.Data[name] = value
+	local data = entTable.Data or {}
+	entTable.Data = data
+
+	data[name] = value
 end
 
 function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(superparent)
@@ -209,10 +211,8 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	local superparent = LIBEntities.GetSuperParent(ent) or ent
 	if not IsValid(superparent) then return end
 
-	superparent.SLIGWOLF_Vars = superparent.SLIGWOLF_Vars or {}
-	local vars = superparent.SLIGWOLF_Vars
-
-	if vars.duperegistered then return end
+	local entTable = superparent:SligWolf_GetTable()
+	if entTable.duperegistered then return end
 
 	if not isfunction(precopycallback) then
 		precopycallback = function() end
@@ -224,19 +224,19 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 
 	local oldprecopy = superparent.PreEntityCopy or function() end
 	local dupename = "SLIGWOLF_Common_MakeEnt_Dupe_" .. self.NetworkaddonID  .. "_" .. name
-	vars.dupename = dupename
+	entTable.dupename = dupename
 
 	superparent.PreEntityCopy = function(...)
 		if IsValid(superparent) then
 			precopycallback(superparent)
 		end
 
-		vars.Data = vars.Data or {}
-		duplicator.StoreEntityModifier(superparent, dupename, vars.Data)
+		entTable.Data = entTable.Data or {}
+		duplicator.StoreEntityModifier(superparent, dupename, entTable.Data)
 
 		return oldprecopy(...)
 	end
-	vars.duperegistered = true
+	entTable.duperegistered = true
 
 	self.duperegistered = self.duperegistered or {}
 	if self.duperegistered[dupename] then return end
@@ -248,13 +248,12 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 			local superparent = LIBEntities.GetSuperParent(ent) or ent
 			if not IsValid(superparent) then return end
 
+			local entTable = superparent:SligWolf_GetTable()
+
 			-- delay the dupe modifier until the entire entity system has been spawned
 			if superparent.sligwolf_isSpawningParts then return end
 
-			superparent.SLIGWOLF_Vars = superparent.SLIGWOLF_Vars or {}
-			local vars = superparent.SLIGWOLF_Vars
-
-			vars.Data = data or {}
+			entTable.Data = data or {}
 
 			if IsValid(superparent) then
 				postcopycallback(superparent)

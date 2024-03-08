@@ -17,7 +17,7 @@ local LIB = SligWolf_Addons.Seat
 
 local LIBPosition = nil
 local LIBEntities = nil
-local LIBUtil = nil
+local LIBDebug = nil
 local LIBTimer = nil
 
 local g_maxAttachmentTraceDistance = 96
@@ -112,7 +112,7 @@ function LIB.TraceSeatAttachment(ply)
 
 	local dist = nearstAttachment.distanceSqr
 
-	if LIBUtil.IsDeveloper() then
+	if LIBDebug.IsDeveloper() then
 		local angPos = nearstAttachment.angPos
 		local text = string.format("Nearst found seat: %s, %0.3f units away", nearstAttachment.name, math.sqrt(dist))
 
@@ -168,7 +168,7 @@ function LIB.TakeSeat(ply, seatGroup, attachmentName)
 
 		ply:EnterVehicle(seat)
 
-		-- @TODO check view attachment in seat model?
+		-- @TODO: check view attachment in seat model?
 		ply:SetEyeAngles(Angle(0, 90, 0))
 	end)
 
@@ -463,7 +463,7 @@ function LIB.ExitSeatTrace(ply)
 		return nil
 	end
 
-	LIBUtil.DebugHullTrace(g_exitSeatTraceHull, tr, nil, 0.05)
+	LIBDebug.ShowHullTrace(g_exitSeatTraceHull, tr, nil, 1)
 
 	return tr
 end
@@ -491,7 +491,7 @@ end
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
-	LIBUtil = SligWolf_Addons.Util
+	LIBDebug = SligWolf_Addons.Debug
 	LIBTimer = SligWolf_Addons.Timer
 
 	if SERVER then

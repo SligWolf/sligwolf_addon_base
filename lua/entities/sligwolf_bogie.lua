@@ -34,74 +34,58 @@ function ENT:InitializePhysics()
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 end
 
-function ENT:GetParentBodyIndex()
-	if self.parentBodyIndex then
-		return self.parentBodyIndex
+function ENT:GetWagonBodyIndex()
+	local wagonBodyIndex = self.wagonBodyIndex
+
+	if wagonBodyIndex then
+		return wagonBodyIndex
 	end
 
-	LIBEntities.BuildSubBodyLists(self)
-
-	local parentbody = LIBEntities.GetParentBody(self)
-	if not IsValid(parentbody) then
+	local wagon = LIBEntities.GetParentBody(self)
+	if not IsValid(wagon) then
 		return nil
 	end
 
-	local parentBodyEntities = LIBEntities.GetBodyEntities(parentbody)
-	if not parentBodyEntities then
-		return nil
+	local bogies = LIBRail.GetWagonBogies(wagon) or {}
+	local wagonEntities = LIBEntities.GetBodyEntities(wagon) or {}
+
+	wagonBodyIndex = {}
+	self.wagonBodyIndex = wagonBodyIndex
+
+	for _, bogie in pairs(wagonEntities) do
+		wagonBodyIndex[bogie:EntIndex()] = bogie
 	end
 
-	local subBodies = LIBEntities.GetSubBodies(parentbody)
-	if not subBodies then
-		return nil
-	end
-
-	local parentBodyIndex = {}
-	self.parentBodyIndex = parentBodyIndex
-
-	for _, child in pairs(parentBodyEntities) do
-		if not IsValid(child) then
+	for _, bogie in pairs(bogies) do
+		local bogieEntities = LIBEntities.GetBodyEntities(bogie)
+		if not bogieEntities then
 			continue
 		end
 
-		parentBodyIndex[child:EntIndex()] = child
-	end
-
-	for _, body in pairs(subBodies) do
-		if not IsValid(body) then
-			continue
-		end
-
-		if not body.sligwolf_bogieEntity then
-			continue
-		end
-
-		local bodyEntities = LIBEntities.GetBodyEntities(body)
-		if not bodyEntities then
-			continue
-		end
-
-		for i, child in ipairs(bodyEntities) do
-			parentBodyIndex[child:EntIndex()] = child
+		for i, child in ipairs(bogieEntities) do
+			wagonBodyIndex[child:EntIndex()] = child
 		end
 	end
 
-	return parentBodyIndex
+	-- @DEBUG: Highlight entities that would trigger realignment when being touched
+	-- SligWolf_Addons.Debug.HighlightEntities(wagonBodyIndex)
+
+	return wagonBodyIndex
 end
 
-function ENT:IsParentBodyPhysgunCarried()
+function ENT:IsWagonBodyPhysgunCarried()
 	local entities = self:GetPhysgunCarredEntities()
 	if not entities then
 		return false
 	end
 
-	local parentBodyIndex = self:GetParentBodyIndex()
-	if not parentBodyIndex then
+	local wagonBodyIndex = self:GetWagonBodyIndex()
+	if not wagonBodyIndex then
 		return false
 	end
 
 	for thisEntId, _ in pairs(entities) do
-		if parentBodyIndex[thisEntId] then
+		if wagonBodyIndex[thisEntId] then
 			return true
 		end
 	end
@@ -177,7 +161,7 @@ function ENT:CanRealign()
 		return false
 	end
 
-	if not self:IsParentBodyPhysgunCarried() then
+	if not self:IsWagonBodyPhysgunCarried() then
 		-- check if the wagon (or one of its sub parts) is held
 		return false
 	end

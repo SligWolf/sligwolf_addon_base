@@ -15,7 +15,7 @@ table.Empty(SligWolf_Addons.Tracer)
 
 local LIB = SligWolf_Addons.Tracer
 
-local LIBUtil = nil
+local LIBDebug = nil
 local LIBPosition = nil
 local LIBEntities = nil
 
@@ -37,7 +37,7 @@ end
 LIB.DEBUG_LIFETIME = 0.20
 
 function LIB.Load()
-	LIBUtil = SligWolf_Addons.Util
+	LIBDebug = SligWolf_Addons.Debug
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 end
@@ -56,7 +56,7 @@ function LIB.TracerChain(ent, vectorChain, filterfunc)
 		end
 	end
 
-	local isDebug = LIBUtil.IsDeveloper()
+	local isDebug = LIBDebug.IsDeveloper()
 	local debugLifetime = LIB.DEBUG_LIFETIME
 
 	local tr = TRACE_RESULT_BUFFER
@@ -180,7 +180,7 @@ function LIB.TracerAttachmentToAttachment(ent, attachmentA, attachmentB, filterf
 	local posB = LIBPosition.GetAttachmentPosAng(ent, attachmentB)
 	if not posB then return end
 
-	local isDebug = LIBUtil.IsDeveloper()
+	local isDebug = LIBDebug.IsDeveloper()
 	local debugLifetime = LIB.DEBUG_LIFETIME
 
 	if isDebug then
@@ -196,7 +196,7 @@ local TRACER_ATTACHMENT_CHAIN_BUFFER = {}
 function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc)
 	table.Empty(TRACER_ATTACHMENT_CHAIN_BUFFER)
 
-	local isDebug = LIBUtil.IsDeveloper()
+	local isDebug = LIBDebug.IsDeveloper()
 	local debugLifetime = LIB.DEBUG_LIFETIME
 
 	for _, attachmentChainItem in ipairs(attachmentChain) do
@@ -215,7 +215,7 @@ end
 
 function LIB.CheckGround(ent, vec1, vec2)
 	-- if 1 then
-	-- 	return false -- @todo replace with LIBRail.IsSystemOnRail
+	-- 	return false -- @TODO: replace with LIBRail.IsSystemOnRail
 	-- end
 
 	if not IsValid(ent) then return false end
