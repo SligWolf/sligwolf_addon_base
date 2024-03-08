@@ -32,6 +32,57 @@ function LIB.CheckAllowUse(ent, ply)
 	return allowuse
 end
 
+local function CantCantPropDrive(ply, ent)
+	if not IsValid(ent) then return end
+
+	if ent.sligwolf_entity then
+		return false
+	end
+
+	if ent:GetNWBool("sligwolf_entity", false) then
+		return false
+	end
+end
+
+LIBHook.Add("CanDrive", "Library_Protection_CantCantPropDrive", CantCantPropDrive, 10000)
+
+local function CantCanPropertyCollision(ply, property, ent)
+	if not IsValid(ent) then return end
+
+	if property ~= "collision" then
+		return
+	end
+
+	if ent.sligwolf_blockAllTools then
+		return false
+	end
+
+	if ent:GetNWBool("sligwolf_blockAllTools", false) then
+		return false
+	end
+end
+
+LIBHook.Add("CanProperty", "Library_Protection_CantCanPropertyCollision", CantCanPropertyCollision, 10000)
+
+local function CantCanPropertyRemover(ply, property, ent)
+	if not IsValid(ent) then return end
+
+	if property ~= "remover" then
+		return
+	end
+
+	if ent.sligwolf_blockAllTools then
+		return false
+	end
+
+	if ent:GetNWBool("sligwolf_blockAllTools", false) then
+		return false
+	end
+end
+
+LIBHook.Add("CanProperty", "Library_Protection_CantCanPropertyRemover", CantCanPropertyRemover, 10010)
+
+
 local function CantTouch(ply, ent)
 	if not IsValid(ent) then return end
 

@@ -213,11 +213,11 @@ local function filterBogies(bogie)
 end
 
 function LIB.GetSystemBogies(ent)
-	return LIBEntities.GetSystemEntitiesFiltered(ent, "bogies", filterBogies)
+	return LIBEntities.GetSystemEntitiesFiltered(ent, "bogies", filterBogies) -- @todo broken/wip
 end
 
 function LIB.GetBodyBogies(ent)
-	return LIBEntities.GetBodyEntitiesFiltered(ent, "bogies", filterBogies)
+	return LIBEntities.GetBodyEntitiesFiltered(ent, "bogies", filterBogies) -- @todo broken/wip
 end
 
 function LIB.Load()

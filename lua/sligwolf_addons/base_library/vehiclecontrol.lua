@@ -63,7 +63,8 @@ local checkForEmptySpaceVectors = {
 }
 
 function LIB.ExitSeat(seat, ply)
-	-- 	--@TODO: Recode and clean up
+	--@TODO: Remove function and all usages of it
+	--       Use engine native method for exit or use LIBSeat.ExitSeat(ply)
 
 	if not IsValid(ply) then return false end
 	if not IsValid(seat) then return false end

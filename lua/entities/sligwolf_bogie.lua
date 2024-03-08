@@ -187,7 +187,6 @@ end
 
 function ENT:RealignThink()
 	if self:IsOnRail() then
-		-- @todo fix tracers
 		return
 	end
 

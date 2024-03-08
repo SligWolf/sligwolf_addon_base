@@ -215,7 +215,7 @@ end
 
 function LIB.CheckGround(ent, vec1, vec2)
 	-- if 1 then
-	-- 	return false -- @todo replace
+	-- 	return false -- @todo replace with LIBRail.IsSystemOnRail
 	-- end
 
 	if not IsValid(ent) then return false end
