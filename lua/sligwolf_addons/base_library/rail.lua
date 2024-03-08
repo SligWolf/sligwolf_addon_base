@@ -273,9 +273,14 @@ function LIB.GetBogie(ent)
 	end
 
 	local cache = LIBEntities.GetEntityCache(body).children
+	local cachedBogie = cache.Bogie
 
-	if cache.Bogie then
-		return cache.Bogie
+	if cachedBogie ~= nil then
+		if cachedBogie == false then
+			return nil
+		end
+
+		return cachedBogie
 	end
 
 	local bogies = LIBEntities.GetBodyEntitiesFiltered(body, "bogies", filterBogies)
@@ -285,6 +290,7 @@ function LIB.GetBogie(ent)
 		return bogie
 	end
 
+	cache.Bogie = false
 	return nil
 end
 
