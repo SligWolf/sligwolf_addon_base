@@ -229,7 +229,7 @@ function LIB.RemoveEntites(entities)
 			LIB.RemoveEntity(v)
 		end
 
-		if isentity(k) and k ~= v then
+		if k ~= v and isentity(k) then
 			LIB.RemoveEntity(k)
 		end
 	end
@@ -742,8 +742,13 @@ function LIB.FindChildren(ent, name)
 	local result = {}
 
 	for k, v in pairs(children) do
-		if not IsValid(v) then continue end
-		if not string.find(k, name, 0, true) then continue end
+		if not IsValid(v) then
+			continue
+		end
+
+		if not string.find(k, name, 0, false) then
+			continue
+		end
 
 		result[k] = v
 	end

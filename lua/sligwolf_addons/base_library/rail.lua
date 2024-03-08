@@ -126,6 +126,10 @@ local function checkOnRailForEntListAny(entities, bypassCache, additionalBodyEnt
 		return true
 	end
 
+	if not entities then
+		return false
+	end
+
 	for i, ent in ipairs(entities) do
 		if not LIB.IsOnRail(ent, bypassCache) then
 			continue
@@ -140,6 +144,10 @@ end
 local function checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt)
 	if IsValid(additionalBodyEnt) and not LIB.IsOnRail(additionalBodyEnt, bypassCache) then
 		return false
+	end
+
+	if not entities then
+		return true
 	end
 
 	for i, ent in ipairs(entities) do
@@ -201,6 +209,12 @@ function LIB.IsBogieOnRail(ent, bypassCache)
 	end
 
 	local bogie = LIB.GetBogie(body)
+
+	if not IsValid(bogie) then
+		if LIB.HasRailCheckAttachments(body) then
+			bogie = body
+		end
+	end
 
 	if not LIB.IsOnRail(bogie, bypassCache) then
 		return false

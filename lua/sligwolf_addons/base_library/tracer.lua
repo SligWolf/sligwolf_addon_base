@@ -214,10 +214,7 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc)
 end
 
 function LIB.CheckGround(ent, vec1, vec2)
-	-- if 1 then
-	-- 	return false -- @TODO: replace with LIBRail.IsSystemOnRail
-	-- end
-
+	-- @TODO: replace with LIBRail.IsSystemOnRail or others
 	if not IsValid(ent) then return false end
 
 	vec2 = vec2 or vec1

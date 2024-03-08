@@ -196,30 +196,27 @@ function LIB.HighlightEntities(entities, color)
 		entities = {entities}
 	end
 
+	local uniqueEntities = {}
+
+	for entK, entV in pairs(entities) do
+		if isentity(entV) and IsValid(entV) then
+			uniqueEntities[entV] = entV
+		end
+
+		if entK ~= entV and isentity(entK) and IsValid(entK) then
+			uniqueEntities[entK] = entK
+		end
+	end
+
 	local count = 0
 	local lastEnt = nil
 
-	for entK, entV in pairs(entities) do
-		local tmp = {}
+	for _, ent in pairs(uniqueEntities) do
+		ent:SetMaterial("models/debug/debugwhite")
+		ent:SetColor(color)
 
-		tmp[entV] = true
-		tmp[entK] = true
-
-		for ent, _ in pairs(tmp) do
-			if not isentity(ent) then
-				continue
-			end
-
-			if not IsValid(ent) then
-				continue
-			end
-
-			ent:SetMaterial("models/debug/debugwhite")
-			ent:SetColor(color)
-
-			count = count + 1
-			lastEnt = ent
-		end
+		count = count + 1
+		lastEnt = ent
 	end
 
 	if count <= 0 then
