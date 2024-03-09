@@ -4,7 +4,7 @@ local SligWolf_Addons = SligWolf_Addons
 DEFINE_BASECLASS("sligwolf_base")
 
 ENT.Spawnable			= false
-ENT.RenderGroup 		= RENDERGROUP_OPAQUE
+ENT.RenderGroup 		= RENDERGROUP_BOTH
 ENT.DoNotDuplicate 		= true
 
 if not SligWolf_Addons then return end
