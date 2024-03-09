@@ -130,7 +130,7 @@ function LIB.Print(format, ...)
 end
 
 function LIB.Debug(format, ...)
-	if LIBDebug then
+	if not LIBDebug then
 		return
 	end
 

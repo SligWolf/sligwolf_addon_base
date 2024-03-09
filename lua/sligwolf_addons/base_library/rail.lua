@@ -99,7 +99,7 @@ end
 
 function LIB.IsOnRail(ent, bypassCache)
 	if not IsValid(ent) then
-		return nil
+		return false
 	end
 
 	local entTable = ent:SligWolf_GetTable()
@@ -122,7 +122,7 @@ function LIB.IsOnRail(ent, bypassCache)
 end
 
 local function checkOnRailForEntListAny(entities, bypassCache, additionalBodyEnt)
-	if IsValid(additionalBodyEnt) and LIB.IsOnRail(additionalBodyEnt, bypassCache) then
+	if LIB.HasRailCheckAttachments(additionalBodyEnt) and LIB.IsOnRail(additionalBodyEnt, bypassCache) then
 		return true
 	end
 
@@ -142,7 +142,7 @@ local function checkOnRailForEntListAny(entities, bypassCache, additionalBodyEnt
 end
 
 local function checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt)
-	if IsValid(additionalBodyEnt) and not LIB.IsOnRail(additionalBodyEnt, bypassCache) then
+	if LIB.HasRailCheckAttachments(additionalBodyEnt) and not LIB.IsOnRail(additionalBodyEnt, bypassCache) then
 		return false
 	end
 
@@ -162,7 +162,7 @@ local function checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt
 end
 
 local function checkOnRailForEntListNone(entities, bypassCache, additionalBodyEnt)
-	return not checkOnRailForEntListAll(entities, bypassCache, additionalBodyEnt)
+	return not checkOnRailForEntListAny(entities, bypassCache, additionalBodyEnt)
 end
 
 local function checkOnRailForEntList(entities, bypassCache, checkMode, additionalBodyEnt)
