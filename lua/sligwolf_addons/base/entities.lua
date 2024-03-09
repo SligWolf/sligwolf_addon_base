@@ -208,7 +208,7 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	name = LIBUtil.ValidateName(name)
 	if name == "" then return end
 
-	local superparent = LIBEntities.GetSuperParent(ent) or ent
+	local superparent = LIBEntities.GetSuperParent(ent)
 	if not IsValid(superparent) then return end
 
 	local entTable = superparent:SligWolf_GetTable()
@@ -239,19 +239,32 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	entTable.duperegistered = true
 
 	self.duperegistered = self.duperegistered or {}
-	if self.duperegistered[dupename] then return end
+	if self.duperegistered[dupename] then
+		return
+	end
 
-	duplicator.RegisterEntityModifier(dupename, function(ply, ent, data)
-		if not IsValid(ent) then return end
+	local calledEntityModifier = false
+	local timerName = "registerEntityModifier_" .. name
 
-		self:EntityTimerUntil(ent, "registerEntityModifier_" .. name, 0.1, function()
-			local superparent = LIBEntities.GetSuperParent(ent) or ent
-			if not IsValid(superparent) then return end
+	local entityModifierCallback = function(ply, ent, data)
+		calledEntityModifier = true
+
+		if not IsValid(ent) then
+			return
+		end
+
+		self:EntityTimerUntil(ent, timerName, 0.1, function()
+			local superparent = LIBEntities.GetSuperParent(ent)
+			if not IsValid(superparent) then
+				return
+			end
 
 			local entTable = superparent:SligWolf_GetTable()
 
 			-- delay the dupe modifier until the entire entity system has been spawned
-			if superparent.sligwolf_isSpawningParts then return end
+			if superparent.sligwolf_isSpawningParts then
+				return
+			end
 
 			entTable.Data = data or {}
 
@@ -261,9 +274,33 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 
 			return true
 		end)
-	end)
+	end
+
+	duplicator.RegisterEntityModifier(dupename, entityModifierCallback)
 
 	self.duperegistered[dupename] = true
+
+	if calledEntityModifier then
+		return
+	end
+
+	self:EntityTimerNextFrame(ent, timerName, function()
+		if calledEntityModifier then
+			return
+		end
+
+		local entityMods = ent.EntityMods
+		if not entityMods then
+			return
+		end
+
+		local data = entityMods[dupename]
+		if not data then
+			return
+		end
+
+		entityModifierCallback(nil, ent, data)
+	end)
 end
 
 return true
