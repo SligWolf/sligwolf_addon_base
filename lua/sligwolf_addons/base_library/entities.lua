@@ -1162,7 +1162,6 @@ local g_collisionGroupWhitelist = {
 	[COLLISION_GROUP_VEHICLE] = true,
 	[COLLISION_GROUP_PLAYER] = true,
 	[COLLISION_GROUP_NPC] = true,
-	[COLLISION_GROUP_WORLD] = true,
 }
 
 function LIB.SetUnsolidToPlayerRecursive(ent, unsolid)
@@ -1175,11 +1174,16 @@ function LIB.SetUnsolidToPlayerRecursive(ent, unsolid)
 	table.insert(children, ent)
 
 	for i, child in ipairs(children) do
+		if not IsValid(child) then
+			continue
+		end
+
 		if not child.sligwolf_physEntity then
 			continue
 		end
 
-		local oldCollisionGroup = child.sligwolf_oldCollisionGroupForPlayers
+		local entTable = child:SligWolf_GetTable()
+		local oldCollisionGroup = entTable.sligwolf_oldCollisionGroupForPlayers
 
 		if unsolid then
 			local collisionGroup = child:GetCollisionGroup()
@@ -1188,7 +1192,7 @@ function LIB.SetUnsolidToPlayerRecursive(ent, unsolid)
 			end
 
 			if not oldCollisionGroup then
-				child.sligwolf_oldCollisionGroupForPlayers = collisionGroup
+				entTable.sligwolf_oldCollisionGroupForPlayers = collisionGroup
 				child:SetCollisionGroup(g_notSolidToPlayersCollisionGroup)
 			end
 
@@ -1200,7 +1204,7 @@ function LIB.SetUnsolidToPlayerRecursive(ent, unsolid)
 		end
 
 		child:SetCollisionGroup(oldCollisionGroup)
-		child.sligwolf_oldCollisionGroupForPlayers = nil
+		entTable.sligwolf_oldCollisionGroupForPlayers = nil
 	end
 end
 

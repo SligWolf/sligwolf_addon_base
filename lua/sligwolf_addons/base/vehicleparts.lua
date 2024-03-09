@@ -472,13 +472,7 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 		return nil
 	end
 
-	local constraintEnt = nil
-
-	if ent.sligwolf_physBaseEntity then
-		constraintEnt = ent:CallActingAsPropPhysics(func, parent, constraintInfos)
-	else
-		constraintEnt = func(ent, parent, constraintInfos)
-	end
+	local constraintEnt = func(ent, parent, constraintInfos)
 
 	if not IsValid(constraintEnt) then
 		self:RemoveFaultyEntites(

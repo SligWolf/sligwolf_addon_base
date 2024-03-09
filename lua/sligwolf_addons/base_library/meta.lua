@@ -10,10 +10,10 @@ if not SligWolf_Addons.LoadingLibraries then
 	return
 end
 
-SligWolf_Addons.meta = SligWolf_Addons.meta or {}
-table.Empty(SligWolf_Addons.meta)
+SligWolf_Addons.Meta = SligWolf_Addons.Meta or {}
+table.Empty(SligWolf_Addons.Meta)
 
-local LIB = SligWolf_Addons.meta
+local LIB = SligWolf_Addons.Meta
 
 function LIB.BuildMetaEntity()
 	local META = FindMetaTable("Entity")
