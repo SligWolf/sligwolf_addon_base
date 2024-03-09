@@ -74,7 +74,7 @@ function ENT:GetWagonBodyIndex()
 end
 
 function ENT:IsWagonBodyPhysgunCarried()
-	local entities = self:GetPhysgunCarredEntities()
+	local entities = self:GetPhysgunCarriedEntities()
 	if not entities then
 		return false
 	end

@@ -244,7 +244,7 @@ function LIB.IsPhysgunCarried(ent, checkMode)
 	return true
 end
 
-function LIB.GetPhysgunCarredEntities(ent)
+function LIB.GetPhysgunCarriedEntities(ent)
 	if not SERVER then
 		return nil
 	end

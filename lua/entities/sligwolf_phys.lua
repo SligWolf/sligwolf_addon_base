@@ -104,8 +104,8 @@ function ENT:GetPhysgunCarringPlayers()
 	return LIBPhysgun.GetPhysgunCarringPlayers(self)
 end
 
-function ENT:GetPhysgunCarredEntities()
-	return LIBPhysgun.GetPhysgunCarredEntities(self)
+function ENT:GetPhysgunCarriedEntities()
+	return LIBPhysgun.GetPhysgunCarriedEntities(self)
 end
 
 function ENT:CanApplyBodySystemMotionFrom(sourceEnt, motion)
