@@ -156,7 +156,7 @@ local g_lastHue = 0
 
 function LIB.GetRandomDistinguishableColor()
 	if not LIB.IsDeveloper() then
-		return
+		return nil
 	end
 
 	local hue = 0
@@ -166,7 +166,7 @@ function LIB.GetRandomDistinguishableColor()
 		hue = math.Round(math.Rand(0, 360) / stepSize) * stepSize
 
 		local delta = math.abs(hue - g_lastHue)
-		delta = math.min(delta, 360 - delta);
+		delta = math.min(delta, 360 - delta)
 
 		if delta < stepSize * 4 then
 			continue
