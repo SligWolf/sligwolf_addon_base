@@ -25,9 +25,6 @@ CONSTANTS.vecBogie = Vector(0, 0, 1)
 -- angles
 CONSTANTS.angZero = Angle()
 
--- arrays vv remove in addons.
-CONSTANTS.emptyArray = {}
-
 -- colors
 CONSTANTS.colorDefault = Color(255, 255, 255, 255)
 CONSTANTS.colorError1 = Color(255, 0, 0, 255)
