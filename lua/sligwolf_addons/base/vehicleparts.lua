@@ -576,7 +576,7 @@ function SLIGWOLF_ADDON:CheckToProceedToCreateEnt(ent, tb)
 	local parentAttId = ent:LookupAttachment(att) or 0
 	if parentAttId == 0 then return nil end
 
-	return att
+	return parentAttId
 end
 
 function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superparent)

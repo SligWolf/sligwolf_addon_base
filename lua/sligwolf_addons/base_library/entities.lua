@@ -129,7 +129,7 @@ function LIB.SetupChildEntity(ent, parent, collision, attachmentid)
 	if not IsValid(parent) then return end
 
 	if attachmentid and isstring(attachmentid) then
-		attachmentid = ent:LookupAttachment(attachmentid) or 0
+		attachmentid = parent:LookupAttachment(attachmentid) or 0
 	end
 
 	collision = collision or COLLISION_GROUP_NONE
