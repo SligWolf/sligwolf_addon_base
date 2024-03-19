@@ -672,10 +672,13 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 		ToString = emptyAddonToString,
 	}
 
+	local luaDirectory = "sligwolf_addons/" .. name
+
 	local thisAddon = {}
 
 	thisAddon.Addonname = name
 	thisAddon.NetworkaddonID = "SLIGWOLF_" .. name
+	thisAddon.LuaDirectory = luaDirectory
 	thisAddon.WorkshopID = wsid
 	thisAddon.Loaded = false
 	thisAddon.Loading = true
@@ -683,7 +686,7 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 
 	local files = {
 		"sligwolf_addons/base/addoncore.lua",
-		"sligwolf_addons/" .. name .. "/init.lua",
+		luaDirectory .. "/init.lua",
 	}
 
 	resetIncludeErrorState()
@@ -759,12 +762,6 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	end
 
 	inValidateSortedAddondata()
-
-	if ok then
-		thisAddon:TimerNextFrame("Afterload", function()
-			sligwolfAddons.CallFunctionOnAddon(thisAddon, "Afterload")
-		end)
-	end
 
 	return true
 end

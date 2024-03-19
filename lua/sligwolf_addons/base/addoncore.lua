@@ -10,6 +10,7 @@ if not SLIGWOLF_ADDON then
 	return
 end
 
+SligWolf_Addons.Include("sligwolf_addons/base/util.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/entities.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/errorhandling.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/soundfunctions.lua")
@@ -19,6 +20,9 @@ SligWolf_Addons.Include("sligwolf_addons/base/timer.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehicle.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehiclecontrol.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehicleparts.lua")
+SligWolf_Addons.Include("sligwolf_addons/base/trackasmadapter.lua")
+
+SLIGWOLF_ADDON:AutoIncludeTrackAssamblerContent()
 
 return true
 
