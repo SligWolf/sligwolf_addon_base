@@ -98,16 +98,18 @@ function LIB.EnableWheels(vehicle, enable)
 end
 
 function LIB.WheelsOnGround(vehicle)
-		local wheels = vehicle:GetWheelCount() or 0
+	local wheels = vehicle:GetWheelCount() or 0
 
-		for i = 1, wheels do
-			local _, _, onGround = vehicle:GetWheelContactPoint(i)
+	for i = 1, wheels do
+		local _, _, onGround = vehicle:GetWheelContactPoint(i)
 
-			return onGround
+		if onGround then
+			return true
 		end
-
-		return false
 	end
+
+	return false
+end
 
 function LIB.SetDriverMaxHealth(ply, maxHealth, thresholdAsFull)
 	if not IsValid(ply) then return end
