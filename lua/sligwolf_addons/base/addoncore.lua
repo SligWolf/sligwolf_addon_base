@@ -20,9 +20,9 @@ SligWolf_Addons.Include("sligwolf_addons/base/timer.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehicle.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehiclecontrol.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehicleparts.lua")
-SligWolf_Addons.Include("sligwolf_addons/base/trackasmadapter.lua")
+SligWolf_Addons.Include("sligwolf_addons/base/trackasm_adapter.lua")
 
-SLIGWOLF_ADDON:AutoIncludeTrackAssamblerContent()
+SLIGWOLF_ADDON:TrackAssamblerAddContent()
 
 return true
 

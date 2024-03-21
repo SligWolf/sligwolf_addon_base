@@ -1,3 +1,4 @@
+AddCSLuaFile()
 local SligWolf_Addons = SligWolf_Addons
 
 if not SligWolf_Addons then
@@ -5,11 +6,10 @@ if not SligWolf_Addons then
 end
 
 if not SLIGWOLF_ADDON then
-	SligWolf_Addons.AutoLoadAddon(function() end)
 	return
 end
 
-local LIBTrackassambler = SligWolf_Addons.Trackassambler
+local LIBTrackasm = SligWolf_Addons.Trackasm
 
 local taSettings = SLIGWOLF_ADDON.TrackAssamblerSettings
 if not taSettings then
@@ -17,7 +17,7 @@ if not taSettings then
 	return
 end
 
-local asmlib = LIBTrackassambler.GetLib()
+local asmlib = LIBTrackasm.GetLib()
 if not asmlib then
 	error("TrackAssemblyTool was not loaded!")
 	return
@@ -25,7 +25,7 @@ end
 
 local myAddon = taSettings.Addon
 local myError = taSettings.Error
-local myPrefix = taSettings.Prefix
+local myPrefix = myAddon:gsub("[^%w]", "_")
 
 local myScript = tostring(debug.getinfo(1).source or "N/A")
 myScript = "@" .. myScript:gsub("^%W+", ""):gsub("\\", "/")
@@ -105,21 +105,15 @@ end
 
 myRegisterDSV(myFlag)
 
-local myCategory = SLIGWOLF_ADDON:ExportTrackAssamblerCategories()
+local myCategory = SLIGWOLF_ADDON:TrackAssamblerExportCategories()
 if myCategory then
 	myExportCategory(myCategory)
 end
 
-local myPieces = SLIGWOLF_ADDON:ExportTrackAssamblerPieces()
+local myPieces = SLIGWOLF_ADDON:TrackAssamblerExportPieces()
 if myPieces then
 	mySyncTable("PIECES", myPieces, true)
 end
-
--- local myAdditions = {}
--- mySyncTable("ADDITIONS", myAdditions, true)
-
--- local myPhysproperties = {}
--- mySyncTable("PHYSPROPERTIES", myPhysproperties, true)
 
 asmlib.LogInstance("<<< " .. myScript)
 

@@ -14,6 +14,7 @@ SligWolf_Addons.VR = SligWolf_Addons.VR or {}
 table.Empty(SligWolf_Addons.VR)
 
 local LIB = SligWolf_Addons.VR
+local LIBHook = nil
 
 local g_vrmod = nil
 
@@ -32,6 +33,10 @@ function LIB.IsPlayerInVR(ply)
 	if not ply.sligwolf_VRState then return false end
 
 	return true
+end
+
+function LIB.GetLib()
+	return g_vrmod
 end
 
 local g_nextVRPoll = nil
@@ -84,25 +89,23 @@ local function VRModStatusPoll()
 end
 
 function LIB.Load()
-	local LIBHook = SligWolf_Addons.Hook
-	local LIBTimer = SligWolf_Addons.Timer
+	LIBHook = SligWolf_Addons.Hook
+end
 
-	LIBTimer.SimpleNextFrame(function()
+function LIB.AllAddonsLoaded()
+	g_vrmod = nil
+
+	if not LIB.Exist() then
 		-- ensure the VRMod has been loaded
+		return
+	end
 
-		g_vrmod = nil
+	g_vrmod = _G.vrmod
 
-		if not LIB.Exist() then
-			return
-		end
+	LIBHook.Add("VRMod_Start", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
+	LIBHook.Add("VRMod_Exit", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
 
-		g_vrmod = _G.vrmod
-
-		LIBHook.Add("VRMod_Start", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
-		LIBHook.Add("VRMod_Exit", "Library_VR_VRModStatusChange", VRModStatusChange, 10000)
-
-		LIBHook.Add("Think", "Library_VR_Poll", VRModStatusPoll, 10000)
-	end)
+	LIBHook.Add("Think", "Library_VR_Poll", VRModStatusPoll, 10000)
 end
 
 return true

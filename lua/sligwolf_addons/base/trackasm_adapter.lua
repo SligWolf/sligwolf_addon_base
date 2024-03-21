@@ -10,7 +10,7 @@ if not SLIGWOLF_ADDON then
 	return
 end
 
-local LIBTrackassambler = SligWolf_Addons.Trackassambler
+local LIBTrackasm = SligWolf_Addons.Trackasm
 local LIBPrint = SligWolf_Addons.Print
 
 local function varToExportString(var)
@@ -54,104 +54,154 @@ local function varCategoryToArray(var)
 	return var
 end
 
-local ITEMMETA = {}
+local ITEM_META = {}
 
-function ITEMMETA:GetName()
-	return self.name
-end
-
-function ITEMMETA:GetModel()
+function ITEM_META:GetModel()
 	return self.model
 end
 
-function ITEMMETA:GetClass()
+function ITEM_META:GetName()
+	return self.name
+end
+
+function ITEM_META:GetClass()
 	return self.class
 end
 
-function ITEMMETA:GetCategory()
+function ITEM_META:GetCategory()
 	return self.category
 end
 
-function ITEMMETA:AddAttachmentPoint(attachmentPoint, ...)
-	if attachmentPoint == nil then
-		error("attachmentPoint missing!")
+function ITEM_META:SetName(name)
+	name = tostring(name or "")
+
+	if name == "" then
+		name = nil
+	end
+
+	self.name = name
+	return self
+end
+
+function ITEM_META:SetClass(class)
+	class = tostring(class or "")
+
+	if class == "" then
+		class = nil
+	end
+
+	self.class = class
+	return self
+end
+
+function ITEM_META:SetCategory(category)
+	category = varCategoryToArray(category)
+
+	self.category = category
+	return self
+end
+
+function ITEM_META:AddPoint(point, ...)
+	if point == nil then
+		error("point missing!")
 		return
 	end
 
-	if not istable(attachmentPoint) then
-		attachmentPoint = {attachmentPoint, ...}
+	if not istable(point) then
+		point = {point, ...}
 	end
 
-	local origin = varToExportString(attachmentPoint.origin or attachmentPoint[1])
-	local angle = varToExportString(attachmentPoint.angle or attachmentPoint[2])
-	local point = varToExportString(attachmentPoint.point or attachmentPoint[3])
+	local origin = varToExportString(point.origin or point[1])
+	local angle = varToExportString(point.angle or point[2])
+	local point = varToExportString(point.point or point[3])
 
 	if not origin then
 		error("missing origin!")
 		return
 	end
 
-	local attachmentPoint = {
+	local point = {
 		origin = origin,
 		angle = angle,
 		point = point,
 	}
 
-	table.insert(self.attachmentPoints, attachmentPoint)
+	table.insert(self.points, point)
+
+	return self
 end
 
-function ITEMMETA:GetAttachmentPoints()
-	return self.attachmentPoints
+function ITEM_META:AddPoints(points, ...)
+	if points == nil then
+		error("points missing!")
+		return
+	end
+
+	for i, point in ipairs(points) do
+		self:AddPoint(point)
+	end
+
+	return self
 end
 
-ITEMMETA.__index = ITEMMETA
+function ITEM_META:GetPoint(index)
+	return self.points[index]
+end
 
-local g_taAddon = nil
+function ITEM_META:GetPoints()
+	return self.points
+end
+
+function ITEM_META:Close()
+	local model = self:GetModel()
+	local points = self.points
+
+	if not model or model == "" then
+		error("Unknown model!")
+		return
+	end
+
+	if not points or table.IsEmpty(points) then
+		error(string.format("Empty points for model: %s", model))
+		return
+	end
+
+	self.closed = true
+end
+
+function ITEM_META:IsClosed()
+	return self.closed
+end
+
+ITEM_META.__index = ITEM_META
+
 local g_taType = nil
-local g_taPrefix = nil
+local g_taSettings = {}
 
-local g_taError = function(message)
+g_taSettings.Error = function(message)
 	LIBPrint.Print("%s", message)
 end
-
-local g_taSettings = {}
 
 SLIGWOLF_ADDON.TrackAssamblerSettings = g_taSettings
 SLIGWOLF_ADDON.TrackAssamblerPieces = SLIGWOLF_ADDON.TrackAssamblerPiece or {}
 
-function SLIGWOLF_ADDON:AddTrackAssamblerItem(model, name, category, class, attachmentPoints)
+function SLIGWOLF_ADDON:AddTrackAssamblerItem(model)
 	model = tostring(model or "")
-	name = tostring(name or "")
-	class = tostring(class or "")
 
 	if model == "" then
 		self:Error("Empty model!")
 		return
 	end
 
-	if name == "" then
-		self:Error("Empty name!")
-		return
-	end
-
-	if class == "" then
-		class = nil
-	end
-
-	category = varCategoryToArray(category)
-
 	local item = {}
 
 	item.model = model
-	item.name = name
-	item.class = class
-	item.category = category
-	item.attachmentPoints = {}
+	item.closed = false
+	item.points = {}
 
-	setmetatable(item, ITEMMETA)
+	setmetatable(item, ITEM_META)
 
 	self.TrackAssamblerPieces[model] = item
-
 	return item
 end
 
@@ -198,10 +248,21 @@ end
 *          used by ents.Create of the gmod ents API library. Keep this empty if your stuff is a normal prop.
 --]]
 
-local g_gsMissDB = nil
 local g_asmlib = nil
+local g_gsMissDB = nil
+local g_gsSymOff = nil
 
-function SLIGWOLF_ADDON:ExportTrackAssamblerPiece(modelOrItem)
+function SLIGWOLF_ADDON:TrackAssamblerExportPiece(modelOrItem)
+	if not g_taType then
+		self:Error("Bad g_taType!")
+		return
+	end
+
+	if not g_asmlib then
+		self:Error("TrackAssemblyTool was not loaded!")
+		return
+	end
+
 	local item = modelOrItem
 
 	if not istable(item) then
@@ -213,34 +274,33 @@ function SLIGWOLF_ADDON:ExportTrackAssamblerPiece(modelOrItem)
 		end
 	end
 
-	if g_asmlib == nil then
-		g_asmlib = LIBTrackassambler.GetLib()
+	local model = item:GetModel()
+	local name = item:GetName() or g_gsSymOff
+	local class = item:GetClass() or g_gsMissDB
+	local points = item:GetPoints()
 
-		if not g_asmlib then
-			self:Error("TrackAssemblyTool was not loaded!")
-			return
-		end
-	end
-
-	if g_gsMissDB == nil then
-		g_gsMissDB = g_asmlib.GetOpVar("MISS_NOSQL")
-	end
-
-	if not g_taType then
-		self:Error("Bad g_taType!")
+	if not model or model == "" then
+		self:Error("Piece data with unknown model!")
 		return
 	end
 
-	local name = item:GetName()
-	local class = item:GetClass() or g_gsMissDB
-	local attachmentPoints = item:GetAttachmentPoints()
+	if not item:IsClosed() then
+		self:Error("Unclosed piece data for model: %s", model)
+		return
+	end
+
+	if not points or table.IsEmpty(points) then
+		self:Error("No points given for model: %s", model)
+		return
+	end
+
 
 	local piece = {}
 
-	for lineid, attachmentPoint in ipairs(attachmentPoints) do
-		local origin = attachmentPoint.origin or g_gsMissDB
-		local angle = attachmentPoint.angle or g_gsMissDB
-		local point = attachmentPoint.point or g_gsMissDB
+	for lineid, point in ipairs(points) do
+		local origin = point.origin or g_gsMissDB
+		local angle = point.angle or g_gsMissDB
+		local point = point.point or g_gsMissDB
 
 		local pieceData = {
 			g_taType,  -- TYPE
@@ -258,7 +318,7 @@ function SLIGWOLF_ADDON:ExportTrackAssamblerPiece(modelOrItem)
 	return piece
 end
 
-function SLIGWOLF_ADDON:ExportTrackAssamblerPieceCategory(modelOrItem)
+function SLIGWOLF_ADDON:TrackAssamblerCategory(modelOrItem)
 	local item = modelOrItem
 
 	if not istable(item) then
@@ -272,11 +332,11 @@ function SLIGWOLF_ADDON:ExportTrackAssamblerPieceCategory(modelOrItem)
 	return item:GetCategory()
 end
 
-function SLIGWOLF_ADDON:ExportTrackAssamblerPieces()
+function SLIGWOLF_ADDON:TrackAssamblerExportPieces()
 	local pieces = {}
 
 	for model, item in pairs(self.TrackAssamblerPieces) do
-		local piece = self:ExportTrackAssamblerPiece(item)
+		local piece = self:TrackAssamblerExportPiece(item)
 
 		pieces[model] = piece
 	end
@@ -284,14 +344,14 @@ function SLIGWOLF_ADDON:ExportTrackAssamblerPieces()
 	return pieces
 end
 
-function SLIGWOLF_ADDON:ExportTrackAssamblerPieceCategoryCode()
+function SLIGWOLF_ADDON:TrackAssamblerExportCategoryCode()
 	-- This code needs to be tiny
 	local code = [[
 		function(m)
 			local s, c;
 
 			s = _G.SligWolf_Addons;
-			c = s and s.CallFunctionOnAddon("%s", "ExportTrackAssamblerPieceCategory", m);
+			c = s and s.CallFunctionOnAddon("%s", "TrackAssamblerCategory", m);
 
 			return c;
 		end
@@ -305,7 +365,7 @@ function SLIGWOLF_ADDON:ExportTrackAssamblerPieceCategoryCode()
 	return code
 end
 
-function SLIGWOLF_ADDON:ExportTrackAssamblerCategories()
+function SLIGWOLF_ADDON:TrackAssamblerExportCategories()
 	if not g_taType then
 		self:Error("Bad g_taType!")
 		return
@@ -314,42 +374,50 @@ function SLIGWOLF_ADDON:ExportTrackAssamblerCategories()
 	local categories = {}
 
 	categories[g_taType] = {
-		Txt = self:ExportTrackAssamblerPieceCategoryCode()
+		Txt = self:TrackAssamblerExportCategoryCode()
 	}
 
 	return categories
 end
 
-function SLIGWOLF_ADDON:AutoIncludeTrackAssamblerContent()
-	if not self:LuaExists("trackassambler.lua") then
+SLIGWOLF_ADDON.HasTrackAssamblerContent = false
+
+function SLIGWOLF_ADDON:TrackAssamblerAddContent()
+	if not self:LuaExists("trackasm_content.lua") then
 		return
 	end
 
-	SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base/trackasmexport.lua")
-	self:AddCSLuaFile("trackassambler.lua")
+	self:LuaInclude("trackasm_content.lua")
 
-	self:TimerNextFrame("AutoIncludeTrackAssamblerContent", function()
-		 -- mare sure the track assambler tool is loaded first
-		if not LIBTrackassambler.Exist() then
-			return
-		end
+	self.HasTrackAssamblerContent = true
 
-		g_taAddon = self:GetNiceNameWithAuthor()
-		g_taType = g_taAddon
-		g_taPrefix = g_taAddon:gsub("[^%w]", "_")
+	if not LIBTrackasm.Exist() then
+		return
+	end
+end
 
-		g_taSettings.Addon = g_taAddon
-		g_taSettings.Type = g_taType
-		g_taSettings.Error = g_taError
-		g_taSettings.Prefix = g_taPrefix
+function SLIGWOLF_ADDON:TrackAssamblerContentAutoInclude()
+	if not LIBTrackasm.Exist() then
+		return
+	end
 
-		local TMP_SLIGWOLF_ADDON = SLIGWOLF_ADDON
-		SLIGWOLF_ADDON = self
+	if not self.HasTrackAssamblerContent then
+		return
+	end
 
-		self:LuaInclude("trackassambler.lua")
-		SligWolf_Addons.Include("sligwolf_addons/base/trackasmexport.lua")
+	g_asmlib = LIBTrackasm.GetLib()
 
-		SLIGWOLF_ADDON = TMP_SLIGWOLF_ADDON
+	g_gsMissDB = g_asmlib.GetOpVar("MISS_NOSQL")
+	g_gsSymOff = g_asmlib.GetOpVar("OPSYM_DISABLE")
+
+	local addonName = self:GetNiceNameWithAuthor()
+	g_taType = addonName
+
+	g_taSettings.Addon = addonName
+	g_taSettings.Type = g_taType
+
+	self:CallAddonFunctionWithAddonEnvironment(function()
+		SligWolf_Addons.Include("sligwolf_addons/base/trackasm_export.lua")
 	end)
 end
 

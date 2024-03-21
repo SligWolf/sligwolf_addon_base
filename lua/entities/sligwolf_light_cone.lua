@@ -11,22 +11,11 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local CamPos
-local InRenderScene = false
+local LIBCamera = SligWolf_Addons.Camera
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 	self:TurnOn(false)
-
-	if CLIENT then
-		hook.Remove("RenderScene", "SLIGWOLF_CamInfo")
-		hook.Add("RenderScene", "SLIGWOLF_CamInfo", function(origin, angles, fov)
-			if (InRenderScene) then return end
-			InRenderScene = true
-			CamPos = origin
-			InRenderScene = false
-		end)
-	end
 end
 
 function ENT:SetupDataTables()
@@ -114,35 +103,6 @@ function ENT:CreateProjectedTexture()
 	self.flashlighttex = ProjectedTexture()
 end
 
-function ENT:GetCameraEnt(ply)
-	if (not IsValid(ply) and CLIENT) then
-		ply = LocalPlayer()
-	end
-
-	if (not IsValid(ply)) then return nil end
-	local camera = ply:GetViewEntity()
-	if (not IsValid(camera)) then return ply end
-
-	return camera
-end
-
-function ENT:GetCameraPos(ply)
-	local viewpos
-
-	if (not CamPos) then
-		local camera = self:GetCameraEnt(ply)
-		if (not IsValid(camera)) then return EmtyVec end
-
-		if (camera:IsPlayer()) then
-			viewpos = camera:EyePos()
-		else
-			viewpos = camera:GetPos()
-		end
-	end
-
-	return CamPos or viewpos or Vector()
-end
-
 function ENT:Think()
 	local isON = self:IsOn()
 
@@ -154,7 +114,8 @@ function ENT:Think()
 		self:RemoveProjectedTexture()
 	end
 
-	if not IsValid(self.flashlighttex) then return end
+	local flashlighttex = self.flashlighttex
+	if not IsValid(flashlighttex) then return end
 
 	local pos = self:GetPos()
 	local ang = self:GetAngles()
@@ -164,26 +125,32 @@ function ENT:Think()
 	local farz = self:Get_FarZ()
 	local nearz = self:Get_NearZ()
 	local maxdist = self:Get_ShadowRenderDist()
+	local maxdistSqr = maxdist * maxdist
 
 	if maxdist > 0 then
-		local campos = self:GetCameraPos()
-		local dist = pos:Distance(campos)
-		self.flashlighttex:SetEnableShadows(dist <= maxdist)
+		local campos = LIBCamera.GetCameraPos()
+
+		if campos then
+			local distSqr = pos:DistToSqr(campos)
+			flashlighttex:SetEnableShadows(distSqr <= maxdistSqr)
+		else
+			flashlighttex:SetEnableShadows(false)
+		end
 	else
-		self.flashlighttex:SetEnableShadows(true)
+		flashlighttex:SetEnableShadows(true)
 	end
 
-	self.flashlighttex:SetPos(pos)
-	self.flashlighttex:SetAngles(ang)
-	self.flashlighttex:SetTexture(self:Get_Texture())
-	self.flashlighttex:SetColor(col)
-	self.flashlighttex:SetBrightness(bright)
-	self.flashlighttex:SetFOV(fov)
-	self.flashlighttex:SetFarZ(farz)
-	self.flashlighttex:SetNearZ(nearz)
+	flashlighttex:SetPos(pos)
+	flashlighttex:SetAngles(ang)
+	flashlighttex:SetTexture(self:Get_Texture())
+	flashlighttex:SetColor(col)
+	flashlighttex:SetBrightness(bright)
+	flashlighttex:SetFOV(fov)
+	flashlighttex:SetFarZ(farz)
+	flashlighttex:SetNearZ(nearz)
 
 	self:Debug(10, col)
-	self.flashlighttex:Update()
+	flashlighttex:Update()
 end
 
 function ENT:OnRemove()
@@ -193,7 +160,9 @@ function ENT:OnRemove()
 end
 
 function ENT:Update()
-	if not IsValid(self.flashlighttex) then return end
-	self.flashlighttex:Update()
+	local flashlighttex = self.flashlighttex
+	if not IsValid(flashlighttex) then return end
+
+	flashlighttex:Update()
 end
 

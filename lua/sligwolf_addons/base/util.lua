@@ -14,6 +14,16 @@ function SLIGWOLF_ADDON:GetNiceNameWithAuthor()
 	local author = self.Author
 	local name = self.NiceName
 
+	if not author then
+		self:Error("Missing Author!")
+		return
+	end
+
+	if not name then
+		self:Error("Missing NiceName!")
+		return
+	end
+
 	return string.format("%s's %s", author, name)
 end
 
@@ -44,6 +54,17 @@ end
 function SLIGWOLF_ADDON:LuaExists(luafile)
 	luafile = self:GetLuaPath(luafile)
 	return SligWolf_Addons.LuaExists(luafile)
+end
+
+function SLIGWOLF_ADDON:CallAddonFunctionWithAddonEnvironment(func, ...)
+	local TMP_SLIGWOLF_ADDON = SLIGWOLF_ADDON
+	SLIGWOLF_ADDON = self
+
+	local status, result = self:CallAddonFunctionWithErrorNoHalt(func, ...)
+
+	SLIGWOLF_ADDON = TMP_SLIGWOLF_ADDON
+
+	return status, result
 end
 
 return true

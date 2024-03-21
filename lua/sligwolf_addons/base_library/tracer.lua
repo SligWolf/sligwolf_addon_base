@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Tracer)
 local LIB = SligWolf_Addons.Tracer
 
 local LIBDebug = nil
+local LIBCamera = nil
 local LIBPosition = nil
 local LIBEntities = nil
 
@@ -38,6 +39,7 @@ LIB.DEBUG_LIFETIME = 0.20
 
 function LIB.Load()
 	LIBDebug = SligWolf_Addons.Debug
+	LIBCamera = SligWolf_Addons.Camera
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 end
@@ -238,32 +240,22 @@ function LIB.CheckGround(ent, vec1, vec2)
 	return false
 end
 
-local function GetCameraEnt(ply)
-	if not IsValid(ply) and CLIENT then
-		ply = LocalPlayer()
-	end
-
-	if not IsValid(ply) then return nil end
-	local camera = ply:GetViewEntity()
-	if not IsValid(camera) then return ply end
-
-	return camera
-end
-
 function LIB.DoTrace(ply, maxdist, filter)
-	local camera = GetCameraEnt(ply)
-	local start_pos, end_pos
+	local camera = LIBCamera.GetCameraEnt(ply)
+
 	if not IsValid(ply) then return nil end
 	if not IsValid(camera) then return nil end
 
 	maxdist = tonumber(maxdist or 500)
 
+	local start_pos, end_pos
+
 	if camera:IsPlayer() then
-		start_pos = camera:EyePos()
-		end_pos = start_pos + camera:GetAimVector() * maxdist
+		start_pos = LIBPosition.GetPlayerEyePos(camera)
+		end_pos = start_pos + LIBPosition.GetPlayerAimVector(camera) * maxdist
 	else
 		start_pos = camera:GetPos()
-		end_pos = start_pos + ply:GetAimVector() * maxdist
+		end_pos = start_pos + LIBPosition.GetPlayerAimVector(ply) * maxdist
 	end
 
 	local trace = {}

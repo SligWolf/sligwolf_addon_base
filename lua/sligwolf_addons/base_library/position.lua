@@ -457,7 +457,7 @@ function LIB.GetPlayerAimVector(ply)
 		return
 	end
 
-	return data.eyeVector
+	return data.aimVector
 end
 
 function LIB.Load()
@@ -476,8 +476,8 @@ function LIB.Load()
 		data.skipNextUpdate = true
 	end
 
-	LIBHook.Add("PlayerLeaveVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000000)
-	LIBHook.Add("PlayerEnteredVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000000)
+	LIBHook.Add("PlayerLeaveVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000)
+	LIBHook.Add("PlayerEnteredVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000)
 
 	local function UpdatePlayerPos(ply, key)
 		for i, ply in player.Iterator() do
@@ -490,7 +490,7 @@ function LIB.Load()
 		end
 	end
 
-	LIBHook.Add("Think", "Library_Position_UpdatePlayerPos", UpdatePlayerPos, 1000000)
+	LIBHook.Add("Think", "Library_Position_UpdatePlayerPos", UpdatePlayerPos, 1000)
 end
 
 return true

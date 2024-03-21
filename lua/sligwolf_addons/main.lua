@@ -49,6 +49,9 @@ local g_DefaultHooks = {
 	VehicleOrderThink = "Think",
 	VehicleOrderMenu = "PopulateToolMenu",
 	VehicleOrderLeave = "PlayerLeaveVehicle",
+
+	AllAddonsLoaded = "SLIGWOLF_AllAddonsLoaded",
+	TrackAssamblerContentAutoInclude = "SLIGWOLF_AllAddonsLoaded",
 }
 
 local g_FunctionPathCache = {}
@@ -899,6 +902,9 @@ function SligWolf_Addons.ReloadAllAddons()
 	inValidateSortedAddondata()
 
 	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon("base")
+
+	sligwolfAddons.AllAddonsLoaded = nil
+	sligwolfAddons.CallAllAddonsLoadedHook()
 end
 
 function SligWolf_Addons.AutoLoadAddon(funcobj)
@@ -1010,20 +1016,6 @@ function SligWolf_Addons.IsLoadingAddon(name)
 	return true
 end
 
-function SligWolf_Addons.GetAddonTitle(name)
-	local sligwolfAddons = _G.SligWolf_Addons
-	if not sligwolfAddons then
-		return nil
-	end
-
-	local addon = sligwolfAddons.GetAddon(name)
-	if not addon then
-		return nil
-	end
-
-	return addon.NiceName
-end
-
 function SligWolf_Addons.IsLoaded()
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then
@@ -1043,6 +1035,38 @@ function SligWolf_Addons.IsLoaded()
 	end
 
 	return true
+end
+
+function SligWolf_Addons.GetAddonTitle(name)
+	local sligwolfAddons = _G.SligWolf_Addons
+	if not sligwolfAddons then
+		return nil
+	end
+
+	local addon = sligwolfAddons.GetAddon(name)
+	if not addon then
+		return nil
+	end
+
+	return addon.NiceName
+end
+
+function SligWolf_Addons.CallAllAddonsLoadedHook()
+	local sligwolfAddons = _G.SligWolf_Addons
+	if not sligwolfAddons then
+		return
+	end
+
+	if sligwolfAddons.AllAddonsLoaded then
+		return
+	end
+
+	if not SligWolf_Addons.IsLoaded() then
+		return
+	end
+
+	sligwolfAddons.AllAddonsLoaded = true
+	hook.Run("SLIGWOLF_AllAddonsLoaded")
 end
 
 local function OnBaseReload(name)

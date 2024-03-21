@@ -18,20 +18,30 @@ local function loadLib(name)
 	SligWolf_Addons.Include(path)
 end
 
-local function callLoaders()
+local function callLoaderFunc(name)
 	for _, lib in pairs(SligWolf_Addons) do
 		if not istable(lib) then
 			continue
 		end
 
-		local loader = lib.Load
+		local func = lib[name]
 
-		if not isfunction(loader) then
+		if not isfunction(func) then
 			continue
 		end
 
-		loader()
+		func()
+
+		lib[name] = nil
 	end
+end
+
+local function callLoaders()
+	callLoaderFunc("Load")
+end
+
+local function callAllAddonsLoaded()
+	callLoaderFunc("AllAddonsLoaded")
 end
 
 SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base_library/baseobject.lua")
@@ -61,12 +71,14 @@ loadLib("velocity")
 loadLib("physgun")
 loadLib("seat")
 loadLib("rail")
-loadLib("trackassambler")
+loadLib("trackasm")
 loadLib("vr")
 loadLib("vgui")
 loadLib("convar")
 
 callLoaders()
+
+SligWolf_Addons.Hook.Add("SLIGWOLF_AllAddonsLoaded", "Library_Init_AllAddonsLoaded", callAllAddonsLoaded, 1000)
 
 return true
 

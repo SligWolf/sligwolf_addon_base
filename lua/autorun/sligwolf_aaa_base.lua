@@ -1,9 +1,11 @@
--- It is named "aaa_base" so it loads first on Windows
+-- It is named "sligwolf_aaa_base" so it loads first among all sligwolf addons.
 -- https://wiki.facepunch.com/gmod/Lua_Loading_Order
 
 AddCSLuaFile()
 
-if not SligWolf_Addons then
-	include("sligwolf_addons/main.lua")
+if SligWolf_Addons then
+	return
 end
+
+include("sligwolf_addons/main.lua")
 

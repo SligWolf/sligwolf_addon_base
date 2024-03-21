@@ -11,6 +11,13 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+ENT.GlowPoints = {
+	{
+		pos = Vector(),
+		ang = Angle(),
+	},
+}
+
 local S_Size 			= 1
 local S_Enlarge 		= 1
 local S_Count 			= 1
@@ -20,6 +27,7 @@ local S_LightMat 		= Material("sprites/light_ignorez")
 
 local render 			= render
 local util 				= util
+local math 				= math
 local EyePos 			= EyePos
 
 function ENT:Initialize()
@@ -29,8 +37,51 @@ function ENT:Initialize()
 	self:TurnOn(false)
 
 	if CLIENT then
-		self.PixVis = util.GetPixelVisibleHandle()
+		self.PixVis = {}
+		self:UpdateRenderBounds()
 	end
+end
+
+function ENT:GetMinMax()
+	local glowPoints = self.GlowPoints
+	if not glowPoints then
+		return
+	end
+
+	local mins = Vector()
+	local maxs = Vector()
+
+	for i, point in ipairs(glowPoints) do
+		if not point then
+			continue
+		end
+
+		local pos = point.pos
+		if not pos then
+			continue
+		end
+
+		mins.x = math.min(mins.x, pos.x)
+		mins.y = math.min(mins.y, pos.y)
+		mins.z = math.min(mins.z, pos.z)
+
+		maxs.x = math.max(maxs.x, pos.x)
+		maxs.y = math.max(maxs.y, pos.y)
+		maxs.z = math.max(maxs.z, pos.z)
+	end
+
+	return mins, maxs
+end
+
+function ENT:UpdateRenderBounds(size)
+	if SERVER then
+		return
+	end
+
+	local min, max = self:GetMinMax()
+	local size = self:Get_Size() / 2
+
+	self:SetRenderBounds(min, max, Vector(size, size, size))
 end
 
 function ENT:SetupDataTables()
@@ -41,6 +92,8 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Int", "Enlarge")
 	self:AddNetworkRVar("Int", "Count")
 	self:AddNetworkRVar("Int", "Alpha_Reduce")
+
+	self:GetNetworkRVarNotify("Size", self.UpdateRenderBounds)
 end
 
 function ENT:Set_Size(num)
@@ -93,9 +146,25 @@ function ENT:Get_Material()
 	return self:GetNetworkRVarMaterial("Material", "sprites/light_ignorez")
 end
 
-function ENT:DrawGlow(size, enlarge, count, col, AlphaReduce, matLight)
-	if not self.PixVis then return end
+function ENT:Debug(Col, Time)
+	if not self:IsDeveloper() then
+		return
+	end
 
+	local pos = self:GetPos()
+	local ang = self:GetAngles()
+
+	local min, max = self:GetRenderBounds()
+
+	Col = Col or color_white
+	Time = Time or FrameTime()
+
+	debugoverlay.EntityTextAtPosition(pos, 0, tostring(self), Time, color_white)
+	debugoverlay.Axis(pos, ang, 4, Time, true)
+	debugoverlay.SweptBox(pos, pos, min, max, ang, Time, Col)
+end
+
+function ENT:DrawGlow(pixVis, pos, ang, size, enlarge, count, col, AlphaReduce, matLight)
 	size = size or S_Size
 	enlarge = enlarge or S_Enlarge
 	count = count or S_Count
@@ -103,36 +172,61 @@ function ENT:DrawGlow(size, enlarge, count, col, AlphaReduce, matLight)
 	AlphaReduce = AlphaReduce or S_Alpha
 	matLight = matLight or S_LightMat
 
-	local L_Pos = self:GetPos()
-	local L_Nrm = self:GetAngles():Forward()
-	local View_Nrm = L_Pos - EyePos()
-	local Distance = View_Nrm:Length()
+	local alpha = col.a
+
+	local L_Nrm = ang:Forward() * -1
+	local View_Nrm = pos - EyePos()
+	local dist = View_Nrm:Length()
 	View_Nrm:Normalize()
-	local ViewDot = View_Nrm:Dot(L_Nrm * -1)
+	local ViewDot = View_Nrm:Dot(L_Nrm)
 
-	if ViewDot >= 0 then
-		render.SetMaterial(matLight)
-		local Visibile = util.PixelVisible(L_Pos, 4, self.PixVis) or 0
-		if Visibile < 0.1 then return end
-		local Vis = Visibile * ViewDot
+	-- @DEBUG: Show a cross for each position a glow sprite could be rendered
+	-- if self:IsDeveloper() then
+	-- 	debugoverlay.Cross(pos, size / 10, FrameTime(), Col, true)
+	-- end
 
-		local Size = math.Clamp(Distance * Vis * 2, 1, size)
-		Distance = math.Clamp(Distance, 32, 800)
-
-		col.a = math.Clamp((1000 - Distance) * Vis, 0, col.a)
-
-		for i = 0, count do
-			render.DrawSprite(L_Pos, Size, Size, col, Vis)
-
-			size = size + enlarge
-			col.a = math.Clamp(col.a - AlphaReduce, 0, 255)
-		end
+	if ViewDot < 0 then
+		return
 	end
+
+	local Visibile = util.PixelVisible(pos, 4, pixVis) or 0
+
+	if Visibile < 0.1 then return end
+	local Vis = Visibile * ViewDot
+
+	local alphaDist = math.Clamp(dist, 32, 800)
+	col.a = math.Clamp((1000 - alphaDist) * Vis, 0, alpha)
+
+	render.SetMaterial(matLight)
+
+	for i = 0, count do
+		local spriteSize = math.Clamp(dist * Vis * 2, 1, size)
+
+		render.DrawSprite(pos, spriteSize, spriteSize, col, Vis)
+
+		size = size + enlarge
+		col.a = math.Clamp(col.a - AlphaReduce, 0, 255)
+	end
+
+	col.a = alpha
 end
 
 function ENT:DrawTranslucent(...)
 	BaseClass.DrawTranslucent(self, ...)
-	if (not self:IsOn()) then return end
+
+	if not self:IsOn() then
+		return
+	end
+
+	local glowPoints = self.GlowPoints
+	if not glowPoints then
+		return
+	end
+
+	local pixVisTable = self.PixVis
+	if not pixVisTable then
+		return
+	end
 
 	local Size = self:Get_Size()
 	local Enlarge = self:Get_Enlarge()
@@ -141,7 +235,30 @@ function ENT:DrawTranslucent(...)
 	local AlphaReduce = self:Get_Alpha_Reduce()
 	local LightMat = self:Get_Material()
 
-	self:Debug(Size, Col)
-	self:DrawGlow(Size, Enlarge, Count, Col, AlphaReduce, LightMat)
+	self:Debug(Col)
+
+	for i, point in ipairs(glowPoints) do
+		if not point then
+			continue
+		end
+
+		local pos = point.pos
+		if not pos then
+			continue
+		end
+
+		local ang = point.ang or angle_zero
+
+		pos = self:LocalToWorld(pos)
+		ang = self:LocalToWorldAngles(ang)
+
+		local pixVis = pixVisTable[i]
+		if not pixVis then
+			pixVis = util.GetPixelVisibleHandle()
+			pixVisTable[i] = pixVis
+		end
+
+		self:DrawGlow(pixVis, pos, ang, Size, Enlarge, Count, Col, AlphaReduce, LightMat)
+	end
 end
 
