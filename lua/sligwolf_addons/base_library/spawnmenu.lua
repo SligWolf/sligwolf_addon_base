@@ -761,10 +761,8 @@ end
 
 LIBHook.Add("PopulateWeapons", "Library_Spawnmenu_PopulateWeaponlistContent", PopulateWeaponlistContent, 20000)
 
---[[ Wait for gmod update
 local function g_NPCSetup(ply, npc)
 	if not IsValid(npc) then return end
-	if npc.Is_SLIGWOLF_Duped then return end
 
 	local spawnname = npc.NPCName
 	if not spawnname then return end
@@ -781,10 +779,6 @@ local function g_NPCSetup(ply, npc)
 		npc:SetCurrentWeaponProficiency(data_custom.Accuracy)
 	end
 
-	if data_custom.Health then
-		npc:SetHealth(data_custom.Health)
-	end
-
 	if data_custom.Blood then
 		npc:SetBloodColor(data_custom.Blood)
 	end
@@ -793,31 +787,12 @@ local function g_NPCSetup(ply, npc)
 		npc:SetColor(data_custom.Color)
 	end
 
-	if data_custom.Owner then
-		npc.Owner = ply
-	end
-
 	local func = data_custom.OnSpawn
 	if isfunction(func) then
 		func(npc, data)
 	end
 
 	npc.Is_SLIGWOLF_Addon = true
-
-	local dupedata = {}
-	dupedata.customclass = spawnname
-
-	duplicator.StoreEntityModifier(npc, "SLIGWOLF_Common_NPCDupe", dupedata)
-end
-
-local function g_NPCDupe(ply, npc, data)
-	if not IsValid(npc) then return end
-	if not data then return end
-	if not data.customclass then return end
-
-	npc.NPCName = data.customclass
-	g_NPCSetup(ply, npc)
-	npc.Is_SLIGWOLF_Duped = true
 end
 
 local g_NpcOrder = 0
@@ -862,6 +837,8 @@ function LIB.AddNPC(addonName, spawnname, obj)
 	npcListItem.Model = obj.model
 	npcListItem.Category = g_defaultNodeNameToBeRemoved
 	npcListItem.Weapons = obj.weapons
+	npcListItem.Health = obj.health
+	npcListItem.OnDuplicated = obj.onDuplicated
 	npcListItem.Is_SLIGWOLF = true
 
 	npcListItem.KeyValues = table.Copy(obj.keyValues or {})
@@ -870,129 +847,6 @@ function LIB.AddNPC(addonName, spawnname, obj)
 	list.Set("NPC", spawnname, npcListItem)
 
 	LIBHook.Add("PlayerSpawnedNPC", "Library_Spawnmenu_NPCSetup", g_NPCSetup, 20000)
-	duplicator.RegisterEntityModifier("SLIGWOLF_Common_NPCDupe", g_NPCDupe)
-end
-]]--
-
-local function g_NPCSetup(ply, npc)
-	if not IsValid(npc) then return end
-	if npc.Is_SLIGWOLF_Duped then return end
-
-	local kv = npc:GetKeyValues()
-	local name = kv["classname"] or ""
-
-	local tab = list.Get("NPC")
-	local data = tab[name]
-	if not data then return end
-	if not data.Is_SLIGWOLF then return end
-
-	local data_custom = data.SLIGWOLF_Custom or {}
-
-	if data_custom.Accuracy then
-		npc:SetCurrentWeaponProficiency(data_custom.Accuracy)
-	end
-
-	if data_custom.Health then
-		npc:SetHealth(data_custom.Health)
-	end
-
-	if data_custom.Blood then
-		npc:SetBloodColor(data_custom.Blood)
-	end
-
-	if data_custom.Color then
-		npc:SetColor(data_custom.Color)
-	end
-
-	if data_custom.Owner then
-		npc.Owner = ply
-	end
-
-	local func = data_custom.OnSpawn
-	if isfunction(func) then
-		func(npc, data)
-	end
-
-	npc.Is_SLIGWOLF_Addon = true
-	npc.Is_SLIGWOLF_Class = name
-
-	local class = tostring(data.Class or "Corrupt Class!")
-	npc:SetKeyValue("classname", class)
-
-	local dupedata = {}
-	dupedata.customclass = name
-
-	duplicator.StoreEntityModifier(npc, "SLIGWOLF_Common_NPCDupe", dupedata)
-end
-
-local function g_NPCDupe(ply, npc, data)
-	if not IsValid(npc) then return end
-	if not data then return end
-	if not data.customclass then return end
-
-	npc:SetKeyValue("classname", data.customclass)
-	g_NPCSetup(ply, npc)
-	npc.Is_SLIGWOLF_Duped = true
-end
-
-local g_NpcOrder = 0
-
-function LIB.AddNPC(addonName, spawnname, obj)
-	addonName = tostring(addonName or "")
-	if addonName == "" then
-		error("no addonName")
-		return
-	end
-
-	spawnname = tostring(spawnname or "")
-	if spawnname == "" then
-		error("no spawnname")
-		return
-	end
-
-	obj = obj or {}
-
-	g_NpcOrder = (g_NpcOrder % 1000000) + 1
-
-	AddSpawnMenuItem(
-		addonName,
-		"npc",
-		{
-			order = obj.order or g_NpcOrder * 100,
-			header = obj.header,
-			content = {
-				title = obj.title or spawnname,
-				spawnName = spawnname,
-				adminOnly = obj.adminOnly or false,
-				icon = obj.icon,
-				weapons = obj.weapons,
-			}
-		}
-	)
-
-	local npcListItem = {}
-
-	npcListItem.Name = tostring(obj.title or spawnname)
-	npcListItem.Class = obj.class or "npc_citizen"
-	npcListItem.Model = obj.model
-	npcListItem.Category = g_defaultNodeNameToBeRemoved
-	npcListItem.Weapons = obj.weapons
-	npcListItem.SpawnFlags = obj.spawnFlags
-	npcListItem.Health = obj.health
-	npcListItem.Is_SLIGWOLF = true
-
-	local keyValues = table.Copy(obj.keyValues or {})
-
-	-- Workaround to get back to custom NPC classname from the spawned NPC
-	npcListItem.KeyValues = keyValues
-	npcListItem.KeyValues.classname = spawnname
-	npcListItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
-
-	list.Set("NPC", spawnname, npcListItem)
-
-	LIBHook.Add("PlayerSpawnedNPC", "Library_Spawnmenu_NPCSetup", g_NPCSetup, 20000)
-
-	duplicator.RegisterEntityModifier("SLIGWOLF_Common_NPCDupe", g_NPCDupe)
 end
 
 local function PopulateNPClistContent(pnlContent, tree)

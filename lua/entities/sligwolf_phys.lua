@@ -43,14 +43,6 @@ function ENT:GetPhysgunCarriedEntities()
 	return LIBPhysgun.GetPhysgunCarriedEntities(self)
 end
 
-function ENT:CanApplyBodySystemMotionFrom(sourceEnt, motion)
-	return true
-end
-
-function ENT:CanApplyBodySystemMotionFor(targetEnt, motion)
-	return true
-end
-
 function ENT:OnPhysgunPickup(directlyCarried, ply)
 	-- override me
 end

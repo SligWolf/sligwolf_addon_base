@@ -996,7 +996,7 @@ function LIB.GetKeyValue(ent, key)
 	return kv[key]
 end
 
-function LIB.CanApplyBodySystemMotion(ent, srcEnt, motion)
+function LIB.CanApplyBodySystemMotion(ent)
 	if not IsValid(ent) then
 		return false
 	end
@@ -1021,6 +1021,31 @@ function LIB.CanApplyBodySystemMotion(ent, srcEnt, motion)
 	return true
 end
 
+function LIB.EnableSystemMotion(srcEnt, motion)
+	local root = LIB.GetSuperParent(srcEnt)
+
+	if not IsValid(root) then
+		return
+	end
+
+	local rootEntities = LIB.GetSystemEntities(root)
+
+	for _, thisent in ipairs(rootEntities) do
+		if not LIB.CanApplyBodySystemMotion(thisent) then
+			continue
+		end
+
+		-- @DEBUG: Color entities according to their motion state
+		-- if motion then
+		-- 	SligWolf_Addons.Debug.HighlightEntities(thisent, Color(0, 255, 0))
+		-- else
+		-- 	SligWolf_Addons.Debug.HighlightEntities(thisent, Color(255, 0, 0))
+		-- end
+
+		LIB.EnableMotion(thisent, motion)
+	end
+end
+
 function LIB.EnableBodySystemMotion(srcEnt, motion)
 	local body = LIB.GetNearstBody(srcEnt)
 
@@ -1031,7 +1056,7 @@ function LIB.EnableBodySystemMotion(srcEnt, motion)
 	local bodyEntities = LIB.GetBodyEntities(body)
 
 	for _, thisent in ipairs(bodyEntities) do
-		if not LIB.CanApplyBodySystemMotion(thisent, srcEnt, motion) then
+		if not LIB.CanApplyBodySystemMotion(thisent) then
 			continue
 		end
 
@@ -1058,7 +1083,7 @@ function LIB.UpdateBodySystemMotion(srcEnt, delayed)
 
 	local motion = phys:IsMotionEnabled()
 
-	if not LIB.CanApplyBodySystemMotion(srcEnt, nil, motion) then
+	if not LIB.CanApplyBodySystemMotion(srcEnt) then
 		return
 	end
 
