@@ -21,7 +21,7 @@ local LIBDebug = nil
 local LIBTimer = nil
 
 local g_maxAttachmentTraceDistance = 96
-local g_maxAttachmentDistanceSqr = 20 * 20
+local g_maxAttachmentDistanceSqr = 40 * 40
 
 local g_seatSpawnTrace = {}
 local g_seatSpawnTraceResult = {}

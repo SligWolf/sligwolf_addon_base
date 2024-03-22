@@ -390,10 +390,6 @@ function SLIGWOLF_ADDON:TrackAssamblerAddContent()
 	self:LuaInclude("trackasm_content.lua")
 
 	self.HasTrackAssamblerContent = true
-
-	if not LIBTrackasm.Exist() then
-		return
-	end
 end
 
 function SLIGWOLF_ADDON:TrackAssamblerContentAutoInclude()
