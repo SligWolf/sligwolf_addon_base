@@ -9,7 +9,6 @@ ENT.DoNotDuplicate 			= false
 
 ENT.sligwolf_noPickup = true
 ENT.sligwolf_blockedprop = true
-ENT.sligwolf_blockAllTools = true
 
 ENT.sligwolf_seatGroupEntity = true
 
