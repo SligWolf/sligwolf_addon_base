@@ -15,7 +15,6 @@ table.Empty(SligWolf_Addons.Vehicle)
 
 local LIB = SligWolf_Addons.Vehicle
 
-local LIBVehicleControl = nil
 local LIBEntities = nil
 local LIBCamera = nil
 local LIBTimer = nil
@@ -167,7 +166,6 @@ function LIB.ResetDriverMaxHealth(ply)
 end
 
 function LIB.Load()
-	LIBVehicleControl = SligWolf_Addons.VehicleControl
 	LIBEntities = SligWolf_Addons.Entities
 	LIBCamera = SligWolf_Addons.Camera
 	LIBTimer = SligWolf_Addons.Timer
@@ -214,7 +212,6 @@ function LIB.Load()
 		SligWolf_Addons.CallFunctionOnAddon(vehicle.sligwolf_Addonname, "LeaveVehicle", ply, vehicle)
 
 		LIB.ResetDriverMaxHealth(ply)
-		LIBVehicleControl.ExitSeat(vehicle, ply)
 		LIBCamera.ResetCamera(ply)
 	end
 

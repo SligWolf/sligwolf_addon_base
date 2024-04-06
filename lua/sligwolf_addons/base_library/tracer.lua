@@ -215,31 +215,6 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc)
 	return LIB.TracerChain(ent, TRACER_ATTACHMENT_CHAIN_BUFFER, filterfunc)
 end
 
-function LIB.CheckGround(ent, vec1, vec2)
-	-- @TODO: replace with LIBRail.IsSystemOnRail or others
-	if not IsValid(ent) then return false end
-
-	vec2 = vec2 or vec1
-	vec1 = vec1 or vec2
-
-	if not vec1 then return false end
-	if not vec2 then return false end
-
-	local vec1A = ent:LocalToWorld(Vector(vec1.x, vec1.y, vec1.z))
-	local vec2A = ent:LocalToWorld(Vector(vec2.x, -vec2.y, vec2.z))
-
-	local vec1B = ent:LocalToWorld(Vector(-vec1.x, vec1.y, vec1.z))
-	local vec2B = ent:LocalToWorld(Vector(-vec2.x, -vec2.y, vec2.z))
-
-	local tr1 = LIB.Tracer(ent, vec1A, vec2A)
-	if tr1 and tr1.Hit then return true end
-
-	local tr2 = LIB.Tracer(ent, vec1B, vec2B)
-	if tr2 and tr2.Hit then return true end
-
-	return false
-end
-
 function LIB.DoTrace(ply, maxdist, filter)
 	local camera = LIBCamera.GetCameraEnt(ply)
 

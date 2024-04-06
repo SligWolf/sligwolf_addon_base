@@ -16,11 +16,9 @@ table.Empty(SligWolf_Addons.VehicleControl)
 local LIB = SligWolf_Addons.VehicleControl
 
 local LIBEntities = nil
-local LIBTracer = nil
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
-	LIBTracer = SligWolf_Addons.Tracer
 end
 
 function LIB.GetControlledVehicle(ply)
@@ -48,67 +46,6 @@ function LIB.IsControllingVehicle(ply)
 	end
 
 	return true
-end
-
-local checkForEmptySpaceVectors = {
-	{ VecA = Vector(0, 0, 0), VecB = Vector(0, 0, 70) },
-	{ VecA = Vector(15, 0, 0), VecB = Vector(15, 0, 70) },
-	{ VecA = Vector(0, 15, 0), VecB = Vector(0, 15, 70) },
-	{ VecA = Vector(-15, 0, 0), VecB = Vector(-15, 0, 70) },
-	{ VecA = Vector(0, -15, 0), VecB = Vector(0, -15, 70) },
-	{ VecA = Vector(15, 15, 0), VecB = Vector(15, 15, 70) },
-	{ VecA = Vector(-15, 15, 0), VecB = Vector(-15, 15, 70) },
-	{ VecA = Vector(-15, -15, 0), VecB = Vector(-15, -15, 70) },
-	{ VecA = Vector(15, -15, 0), VecB = Vector(15, -15, 70) },
-}
-
-function LIB.ExitSeat(seat, ply)
-	--@TODO: Remove function and all usages of it
-	--       Use engine native method for exit or use LIBSeat.ExitSeat(ply)
-
-	if not IsValid(ply) then return false end
-	if not IsValid(seat) then return false end
-	
-	if seat.sligwolf_vehicleDynamicSeat then return false end
-
-	local tb = seat.sligwolf_ExitVectors or {}
-	local exitPlyVector = tb[1]
-	local exitEyeVector = tb[2]
-
-	if not isvector(exitPlyVector) then return false end
-	if not isvector(exitEyeVector) then return false end
-
-	-- local filter = function(veh, ent)
-	-- 	if not IsValid(ent) then return false end
-
-	-- 	if ent == veh then return false end
-	-- 	if ent.sligwolf_vehiclePod then return false end
-
-	-- 	return true
-	-- end
-
-	local seatPos 	= seat:GetPos()
-	-- local seatAng 	= seat:GetAngles()
-	-- local forward 	= seatAng:Forward()
-	-- local right 	= seatAng:Right()
-	-- local up 		= seatAng:Up()
-
-	local exitPos = seat:LocalToWorld(exitPlyVector)
-	--local eyePos = seat:LocalToWorld(exitEyeVector)
-
-	--local exitPos = seatPos + forward * exitPlyVector.x + right * exitPlyVector.y + up * exitPlyVector.z
-	--local eyePos  = seatPos - (seatPos + forward * exitEyeVector.x + right * exitEyeVector.y + up * exitEyeVector.z)
-
-	-- for _, v in ipairs(checkForEmptySpaceVectors) do
-	-- 	local tr = LIBTracer.Tracer(seat, exitPos + v.VecA, exitPos + v.VecB, filter)
-	-- 	if tr.Hit then return true end
-	-- end
-
-	//ply:SetPos(Vector(0,0,0))
-	ply:SetPos(exitPos)
-	--ply:SetEyeAngles(eyePos:Angle())
-
-	return false
 end
 
 function LIB.TrainDoorButtonToggle(button, mainvehicle, ply)
