@@ -842,6 +842,7 @@ function LIB.AddNPC(addonName, spawnname, obj)
 	npcListItem.OnDuplicated = obj.onDuplicated
 	npcListItem.Is_SLIGWOLF = true
 
+	npcListItem.SpawnFlags = obj.spawnFlags
 	npcListItem.KeyValues = table.Copy(obj.keyValues or {})
 	npcListItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
