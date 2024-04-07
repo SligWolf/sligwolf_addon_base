@@ -835,6 +835,7 @@ function LIB.AddNPC(addonName, spawnname, obj)
 	npcListItem.Name = tostring(obj.title or spawnname)
 	npcListItem.Class = obj.class or "npc_citizen"
 	npcListItem.Model = obj.model
+	npcListItem.Skin = obj.skin
 	npcListItem.Category = g_defaultNodeNameToBeRemoved
 	npcListItem.Weapons = obj.weapons
 	npcListItem.Health = obj.health
