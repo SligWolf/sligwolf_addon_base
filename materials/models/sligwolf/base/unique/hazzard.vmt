@@ -1,0 +1,16 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" 	"models/sligwolf/base/unique/hazzard"
+ 	"$model" "1"
+	"$additive" "1"
+	"$selfillum" 1
+
+	"Proxies"
+	{
+		"TextureScroll"
+		{
+			"texturescrollvar" "$basetexturetransform"
+			"texturescrollrate" 0.1
+		}
+	}
+}

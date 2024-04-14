@@ -94,14 +94,14 @@ CONSTANTS.sndMagnetRelease = Sound("Crane_magnet_release")
 CONSTANTS.sndATVskidLow = Sound("ATV_skid_lowfriction")
 
 -- models
-CONSTANTS.mdlCube1 = Model("models/sligwolf/unique_props/sw_cube_1x1x1.mdl")
-CONSTANTS.mdlSphere4 = Model("models/sligwolf/unique_props/sw_sphere_4x4x4.mdl")
-CONSTANTS.mdlCube4 = Model("models/sligwolf/unique_props/sw_cube_4x4x4.mdl")
-CONSTANTS.mdlSeat = Model("models/sligwolf/unique_props/seat.mdl")
-CONSTANTS.mdlDynamicSeat = Model("models/sligwolf/unique_props/seat.mdl")
-CONSTANTS.mdlConnectorButton = Model("models/sligwolf/unique_props/sw_cube_16x40x18.mdl")
-CONSTANTS.mdlSlider = Model("models/sligwolf/unique_props/sw_slider.mdl")
-CONSTANTS.mdlControlpanel = Model("models/sligwolf/unique_props/button_controlfield.mdl")
+CONSTANTS.mdlCube1 = Model("models/sligwolf/base/unique/sw_cube_1x1x1.mdl")
+CONSTANTS.mdlSphere4 = Model("models/sligwolf/base/unique/sw_sphere_4x4x4.mdl")
+CONSTANTS.mdlCube4 = Model("models/sligwolf/base/unique/sw_cube_4x4x4.mdl")
+CONSTANTS.mdlSeat = Model("models/sligwolf/base/unique/seat.mdl")
+CONSTANTS.mdlDynamicSeat = Model("models/sligwolf/base/unique/seat.mdl")
+CONSTANTS.mdlConnectorButton = Model("models/sligwolf/base/unique/sw_cube_16x40x18.mdl")
+CONSTANTS.mdlSlider = Model("models/sligwolf/base/unique/sw_slider.mdl")
+CONSTANTS.mdlControlpanel = Model("models/sligwolf/base/unique/button_controlfield.mdl")
 
 -- numbers
 CONSTANTS.skinError = 0

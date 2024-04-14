@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/sligwolf/base/unique/nodraw"
+	"$alphatest"    "1"
+}
