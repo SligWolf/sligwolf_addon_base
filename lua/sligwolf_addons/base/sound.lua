@@ -20,7 +20,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	volume = 0.5,
 	level = 75,
 	pitch = 100,
-	sound = "vehicles/sligwolf/generic/indicator_on.wav"
+	sound = "sligwolf/base/indicator_on.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
@@ -29,7 +29,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	volume = 0.5,
 	level = 75,
 	pitch = 75,
-	sound = "vehicles/sligwolf/generic/indicator_on.wav"
+	sound = "sligwolf/base/indicator_on.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
@@ -37,7 +37,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	channel = CHAN_STATIC,
 	volume = 1.5,
 	level = 70,
-	sound = "vehicles/sligwolf/generic/talk.wav"
+	sound = "sligwolf/base/talk.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
@@ -45,28 +45,28 @@ SLIGWOLF_ADDON:AddSoundScript({
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 70,
-	sound = "vehicles/sligwolf/generic/light.wav"
+	sound = "sligwolf/base/light.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "generic.carhorn",
 	channel = CHAN_STATIC,
 	level = 110,
-	sound = "vehicles/sligwolf/generic/carhorn.wav"
+	sound = "sligwolf/base/carhorn.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "generic.carhorn2",
 	channel = CHAN_STATIC,
 	level = 110,
-	sound = "vehicles/sligwolf/generic/carhorn2.wav"
+	sound = "sligwolf/base/carhorn2.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "generic.bikehorn",
 	channel = CHAN_STATIC,
 	level = 110,
-	sound = "vehicles/sligwolf/generic/bikehorn.wav"
+	sound = "sligwolf/base/bikehorn.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
@@ -74,7 +74,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	channel = CHAN_AUTO,
 	level = 75,
 	pitch = 100,
-	sound = "vehicles/sligwolf/generic/door01.wav"
+	sound = "sligwolf/base/door01.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
@@ -98,7 +98,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 90,
-	sound = "vehicles/sligwolf/generic/wagon_wheel_loop.wav"
+	sound = "sligwolf/base/wagon_wheel_loop.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
