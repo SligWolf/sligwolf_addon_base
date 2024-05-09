@@ -321,3 +321,46 @@ function ENT:EnableMotion(bool)
 	LIBEntities.EnableMotion(self, bool)
 end
 
+function ENT:SetSpawnProperties(spawnProperties)
+	if CLIENT then
+		return
+	end
+
+	self.spawnProperties = spawnProperties or {}
+end
+
+function ENT:GetSpawnProperties()
+	if CLIENT then
+		return
+	end
+
+	return self.spawnProperties or {}
+end
+
+function ENT:GetSpawnProperty(name)
+	return self:GetSpawnProperties()[name]
+end
+
+function ENT:GetSpawnName()
+	local spawnname = self.SpawnName
+	if spawnname then
+		return spawnname
+	end
+
+	local class = self:GetClass()
+	self.SpawnName = class
+
+	local keyValues = self.sligwolf_kv
+	if not keyValues then
+		return class
+	end
+
+	local spawnname = keyValues.sligwolf_spawnname
+	if not spawnname then
+		return class
+	end
+
+	self.SpawnName = spawnname
+	return spawnname
+end
+

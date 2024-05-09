@@ -616,19 +616,21 @@ function LIB.AddProp(addonName, model, obj)
 
 	g_PropOrder = (g_PropOrder % 1000000) + 1
 
-	AddSpawnMenuItem(
-		addonName,
-		"prop",
-		{
-			order = obj.order or g_PropOrder * 100,
-			header = obj.header,
-			content = {
-				model = model,
-				skin = tonumber(obj.skin or 0) or 0,
-				bodygroup = tostring(obj.bodygroup or "00000000"),
+	if not obj.hidden then
+		AddSpawnMenuItem(
+			addonName,
+			"prop",
+			{
+				order = obj.order or g_PropOrder * 100,
+				header = obj.header,
+				content = {
+					model = model,
+					skin = tonumber(obj.skin or 0) or 0,
+					bodygroup = tostring(obj.bodygroup or "00000000"),
+				}
 			}
-		}
-	)
+		)
+	end
 end
 
 local function PopulateProplistContent(pnlContent, tree)
@@ -651,6 +653,23 @@ LIBHook.Add("PopulateContent", "Library_Spawnmenu_PopulateProplistContent", Popu
 
 local g_EntityOrder = 0
 
+local function g_SENTSetup(ply, sent)
+	if not IsValid(sent) then return end
+	if not sent.sligwolf_baseEntity then return end
+
+	spawnname = sent:GetSpawnName()
+	if not spawnname then return end
+
+	local tab = list.Get("SpawnableEntities")
+	local data = tab[spawnname]
+
+	if not data then return end
+	if not data.Is_SLIGWOLF then return end
+
+	local data_custom = data.SLIGWOLF_Custom or {}
+	sent:SetSpawnProperties(data_custom)
+end
+
 function LIB.AddEntity(addonName, spawnname, obj)
 	addonName = tostring(addonName or "")
 	if addonName == "" then
@@ -668,20 +687,42 @@ function LIB.AddEntity(addonName, spawnname, obj)
 
 	g_EntityOrder = (g_EntityOrder % 1000000) + 1
 
-	AddSpawnMenuItem(
-		addonName,
-		"entity",
-		{
-			order = obj.order or g_EntityOrder * 100,
-			header = obj.header,
-			content = {
-				title = obj.title or spawnname,
-				spawnName = spawnname,
-				adminOnly = obj.adminOnly or false,
-				icon = obj.icon,
+	if not obj.hidden then
+		AddSpawnMenuItem(
+			addonName,
+			"entity",
+			{
+				order = obj.order or g_EntityOrder * 100,
+				header = obj.header,
+				content = {
+					title = obj.title or spawnname,
+					spawnName = spawnname,
+					adminOnly = obj.adminOnly or false,
+					icon = obj.icon,
+				}
 			}
-		}
-	)
+		)
+	end
+
+	local SpawnableEntities = list.Get("SpawnableEntities")
+	if not SpawnableEntities then return end
+
+	local entityItem = SpawnableEntities[spawnName] or {}
+
+	entityItem.PrintName = entityItem.PrintName or tostring(obj.title or spawnname)
+	entityItem.ClassName = entityItem.ClassName or obj.class or spawnname
+	entityItem.Is_SLIGWOLF = true
+
+	local keyValues = table.Copy(obj.keyValues or {})
+
+	entityItem.KeyValues = keyValues
+	entityItem.KeyValues.sligwolf_spawnname = spawnname
+
+	entityItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
+
+	list.Set("SpawnableEntities", spawnname, entityItem)
+
+	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 20000)
 end
 
 local function PopulateEntitylistContent(pnlContent, tree)
@@ -724,20 +765,22 @@ function LIB.AddWeapon(addonName, spawnname, obj)
 
 	g_WeaponOrder = (g_WeaponOrder % 1000000) + 1
 
-	AddSpawnMenuItem(
-		addonName,
-		"weapon",
-		{
-			order = obj.order or g_WeaponOrder * 100,
-			header = obj.header,
-			content = {
-				title = obj.title or spawnname,
-				spawnName = spawnname,
-				adminOnly = obj.adminOnly or false,
-				icon = obj.icon,
+	if not obj.hidden then
+		AddSpawnMenuItem(
+			addonName,
+			"weapon",
+			{
+				order = obj.order or g_WeaponOrder * 100,
+				header = obj.header,
+				content = {
+					title = obj.title or spawnname,
+					spawnName = spawnname,
+					adminOnly = obj.adminOnly or false,
+					icon = obj.icon,
+				}
 			}
-		}
-	)
+		)
+	end
 end
 
 local function PopulateWeaponlistContent(pnlContent, tree)
@@ -814,21 +857,23 @@ function LIB.AddNPC(addonName, spawnname, obj)
 
 	g_NpcOrder = (g_NpcOrder % 1000000) + 1
 
-	AddSpawnMenuItem(
-		addonName,
-		"npc",
-		{
-			order = obj.order or g_NpcOrder * 100,
-			header = obj.header,
-			content = {
-				title = obj.title or spawnname,
-				spawnName = spawnname,
-				adminOnly = obj.adminOnly or false,
-				icon = obj.icon,
-				weapons = obj.weapons,
+	if not obj.hidden then
+		AddSpawnMenuItem(
+			addonName,
+			"npc",
+			{
+				order = obj.order or g_NpcOrder * 100,
+				header = obj.header,
+				content = {
+					title = obj.title or spawnname,
+					spawnName = spawnname,
+					adminOnly = obj.adminOnly or false,
+					icon = obj.icon,
+					weapons = obj.weapons,
+				}
 			}
-		}
-	)
+		)
+	end
 
 	local npcListItem = {}
 
@@ -904,20 +949,22 @@ function LIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
 
 	g_VehicleOrder = (g_VehicleOrder % 1000000) + 1
 
-	AddSpawnMenuItem(
-		addonName,
-		"vehicle",
-		{
-			order = obj.order or g_VehicleOrder * 100,
-			header = obj.header,
-			content = {
-				title = obj.title or spawnname,
-				spawnName = spawnname,
-				adminOnly = obj.adminOnly or false,
-				icon = obj.icon,
+	if not obj.hidden then
+		AddSpawnMenuItem(
+			addonName,
+			"vehicle",
+			{
+				order = obj.order or g_VehicleOrder * 100,
+				header = obj.header,
+				content = {
+					title = obj.title or spawnname,
+					spawnName = spawnname,
+					adminOnly = obj.adminOnly or false,
+					icon = obj.icon,
+				}
 			}
-		}
-	)
+		)
+	end
 
 	local vehicleListItem = {}
 

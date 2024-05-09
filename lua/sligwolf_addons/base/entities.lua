@@ -268,9 +268,7 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 
 			entTable.Data = data or {}
 
-			if IsValid(superparent) then
-				postcopycallback(superparent)
-			end
+			postcopycallback(superparent)
 
 			return true
 		end)

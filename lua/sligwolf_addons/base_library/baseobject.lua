@@ -28,6 +28,13 @@ function SLIGWOLF_BASE_OBJ:RunPostInitialize()
 	end)
 end
 
+function SLIGWOLF_BASE_OBJ:KeyValue(key, value)
+	if not string.StartsWith(key, "sligwolf_") then return end
+
+	self.sligwolf_kv = self.sligwolf_kv or {}
+	self.sligwolf_kv[key] = value
+end
+
 local function extendErrorFormat(format, obj)
 	format = tostring(format or "")
 	format = string.format("[%s] %s", LIBPrint.FormatSafe(obj), format)
