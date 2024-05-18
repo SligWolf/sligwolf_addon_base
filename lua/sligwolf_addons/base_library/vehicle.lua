@@ -40,6 +40,68 @@ function LIB.ToString(vehicle)
 	return str
 end
 
+function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
+	if not spawnname then
+		ErrorNoHaltWithStack(
+			string.format(
+				"Vehicle spawnname is not set. Couldn't create vehicle!",
+				spawnname
+			)
+		)
+
+		return
+	end
+
+	local vehicleTable = LIB.GetVehicleTableFromSpawnname(spawnname)
+	if not vehicleTable then
+		ErrorNoHaltWithStack(
+			string.format(
+				"Invalid vehicle spawnname '%s'. Couldn't create vehicle!",
+				spawnname
+			)
+		)
+
+		return
+	end
+
+	local mdl = vehicleTable.Model
+	local keyValues = vehicleTable.KeyValues
+	local class = vehicleTable.Class
+
+	local veh = LIBEntities.MakeEnt(class, plyOwner, parent, name, addonname)
+	if not IsValid(veh) then return end
+
+	veh:SetModel(mdl)
+
+	for k, v in pairs(keyValues) do
+
+		local kLower = string.lower(k)
+
+		if (kLower == "vehiclescript" or
+			kLower == "limitview"     or
+			kLower == "vehiclelocked" or
+			kLower == "cargovisible"  or
+			kLower == "enablegun")
+		then
+			veh:SetKeyValue(k, v)
+		end
+	end
+
+	veh.VehicleName = spawnname
+	veh.VehicleTable = vehicleTable
+
+	veh:Spawn()
+	veh:Activate()
+
+	if veh.SetVehicleClass then
+		veh:SetVehicleClass(spawnname)
+	end
+
+	veh.ClassOverride = class
+
+	return veh
+end
+
 function LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
 	if not vehicleSpawnname then return nil end
 

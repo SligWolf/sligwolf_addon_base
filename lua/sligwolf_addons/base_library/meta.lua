@@ -45,6 +45,12 @@ function LIB.BuildGenericMetaFunctions(META, getTable)
 	end
 end
 
+function LIB.RemoveBadDupeData(data)
+	if not data then return end
+
+	data.sligwolf_internalTable = nil
+end
+
 LIB.BuildMetaEntity()
 
 return true

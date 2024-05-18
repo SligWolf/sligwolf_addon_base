@@ -36,6 +36,7 @@ local g_FailbackComponentsParams = {
 	motion = true,
 	colorFromParent = false,
 	isBody = false,
+	removeAllOnDelete = true,
 
 	typesParams = {
 		propParent = {
@@ -776,6 +777,12 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 	local ent = func(self, parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
+	local removeAllOnDelete = component.removeAllOnDelete
+
+	if removeAllOnDelete then
+		LIBEntities.RemoveSystemEntitesOnDelete(ent)
+	end
+
 	ent.sligwolf_denyToolReload = dtr
 
 	local hasSpawnedConstraints = self:CreateConstraints(ent, parent, component.constraints)
@@ -798,7 +805,7 @@ function SLIGWOLF_ADDON:SetUpVehicleProp(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	parent:DeleteOnRemove(ent)
+	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	return ent
 end
@@ -814,7 +821,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSlider(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	parent:DeleteOnRemove(ent)
+	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	return ent
 end
@@ -830,7 +837,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBogie(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	parent:DeleteOnRemove(ent)
+	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	return ent
 end
@@ -977,7 +984,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 	end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	parent:DeleteOnRemove(ent)
+	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	if isstring(soundOpen) then
 		ent:Set_OpenSound(soundOpen)
@@ -1020,7 +1027,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 
 	ent.sligwolf_connectorDirection = name
-	parent:DeleteOnRemove(ent)
+	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	ent.OnDisconnect = function(ConA, ConB)
 		local vehicleA = LIBEntities.GetSuperParent(ConA)
@@ -1415,8 +1422,8 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 
-	parentFront:DeleteOnRemove(ent)
-	parentRear:DeleteOnRemove(ent)
+	LIBEntities.RemoveEntitiesOnDelete(parentFront, {parentRear, ent})
+	LIBEntities.RemoveEntitiesOnDelete(parentRear, {parentFront, ent})
 
 	local WD1 = self:CreateConstraint(ent, parentFront, "Weld", {
 		bone1 = 1,

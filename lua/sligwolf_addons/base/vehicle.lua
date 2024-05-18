@@ -13,6 +13,32 @@ end
 local SligWolf_Addons = SligWolf_Addons
 local LIBVehicle = SligWolf_Addons.Vehicle
 
+function SLIGWOLF_ADDON:MakeVehicle(spawnname, plyOwner, parent, name)
+	local ent = LIBVehicle.MakeVehicle(spawnname, plyOwner, parent, name, self.Addonname)
+	if not ent then
+		return nil
+	end
+
+	return ent
+end
+
+function SLIGWOLF_ADDON:MakeVehicleEnsured(spawnname, plyOwner, parent, name)
+	local ent = self:MakeVehicle(spawnname, plyOwner, parent, name)
+	if not IsValid(ent) then
+		self:RemoveFaultyEntites(
+			{parent},
+			"Couldn't create '%s' vehicle entity named '%s' for %s. Removing entities.",
+			tostring(spawnname),
+			tostring(name or "<unnamed>"),
+			parent
+		)
+
+		return
+	end
+
+	return ent
+end
+
 function SLIGWOLF_ADDON:GuessFallbackVehicleSpawnname(model)
 	model = tostring(model or "")
 	if model == "" then return nil end

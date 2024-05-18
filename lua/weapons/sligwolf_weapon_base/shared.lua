@@ -75,3 +75,16 @@ function SWEP:MakeEnt(classname, name, parent)
 	return addon:MakeEnt(classname, plyOwner, parent, name)
 end
 
+function SWEP:MakeVehicle(spawnname, name, parent)
+	if CLIENT then return end
+
+	local addon = self:GetAddon()
+	if not addon then
+		return
+	end
+
+	local plyOwner = self:GetOwner()
+
+	return addon:MakeVehicle(spawnname, plyOwner, parent, name)
+end
+

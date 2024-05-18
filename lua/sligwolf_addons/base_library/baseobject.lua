@@ -31,8 +31,10 @@ end
 function SLIGWOLF_BASE_OBJ:KeyValue(key, value)
 	if not string.StartsWith(key, "sligwolf_") then return end
 
-	self.sligwolf_kv = self.sligwolf_kv or {}
-	self.sligwolf_kv[key] = value
+	local entTable = self:SligWolf_GetTable()
+
+	entTable.keyValues = entTable.keyValues or {}
+	entTable.keyValues[key] = value
 end
 
 local function extendErrorFormat(format, obj)
@@ -68,6 +70,23 @@ function SLIGWOLF_BASE_OBJ:MakeEntEnsured(classname, name, parent)
 		self:RemoveFaultyEntites(
 			{parent},
 			"Couldn't create '%s' entity named '%s' for %s. Removing entities.",
+			tostring(classname),
+			tostring(name or "<unnamed>"),
+			parent
+		)
+
+		return
+	end
+
+	return ent
+end
+
+function SLIGWOLF_BASE_OBJ:MakeVehicleEnsured(spawnname, name, parent)
+	local ent = self:MakeVehicle(spawnname, name, parent)
+	if not IsValid(ent) then
+		self:RemoveFaultyEntites(
+			{parent},
+			"Couldn't create '%s' vehicle entity named '%s' for %s. Removing entities.",
 			tostring(classname),
 			tostring(name or "<unnamed>"),
 			parent

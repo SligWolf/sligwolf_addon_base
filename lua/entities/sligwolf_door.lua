@@ -105,6 +105,8 @@ function ENT:Get_SpawnOpen()
 end
 
 function ENT:KeyValue(key, value)
+	BaseClass.KeyValue(self, key, value)
+
 	if key == "model" then
 		value = tostring(value or "")
 

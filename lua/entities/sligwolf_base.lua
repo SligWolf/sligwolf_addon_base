@@ -135,7 +135,7 @@ function ENT:AttachToEnt(parent, ...)
 	if not IsValid(parent) then return end
 
 	self:SetParent(parent, ...)
-	parent:DeleteOnRemove(self)
+	LIBEntities.RemoveEntitiesOnDelete(parent, self)
 
 	self.parent = parent
 end
@@ -253,6 +253,23 @@ function ENT:MakeEnt(classname, name, parent)
 	return addon:MakeEnt(classname, plyOwner, parent, name)
 end
 
+function ENT:MakeVehicle(spawnname, name, parent)
+	if CLIENT then return end
+
+	local addon = self:GetAddon()
+	if not addon then
+		return
+	end
+
+	if not parent then
+		parent = self
+	end
+
+	local plyOwner = self:GetOwningPlayer()
+
+	return addon:MakeVehicle(spawnname, plyOwner, parent, name)
+end
+
 function ENT:GetParentEntity()
 	local parentEntity = self:GetNetworkRVar("ParentEntity")
 
@@ -342,15 +359,17 @@ function ENT:GetSpawnProperty(name)
 end
 
 function ENT:GetSpawnName()
-	local spawnname = self.SpawnName
+	local spawnname = self.spawnname
 	if spawnname then
 		return spawnname
 	end
 
-	local class = self:GetClass()
-	self.SpawnName = class
+	local entTable = self:SligWolf_GetTable()
 
-	local keyValues = self.sligwolf_kv
+	local class = self:GetClass()
+	self.spawnname = class
+
+	local keyValues = entTable.keyValues
 	if not keyValues then
 		return class
 	end
@@ -360,7 +379,7 @@ function ENT:GetSpawnName()
 		return class
 	end
 
-	self.SpawnName = spawnname
+	self.spawnname = spawnname
 	return spawnname
 end
 

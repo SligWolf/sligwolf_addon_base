@@ -12,6 +12,7 @@ end
 
 local LIBEntities = SligWolf_Addons.Entities
 local LIBUtil = SligWolf_Addons.Util
+local LIBTimer = SligWolf_Addons.Timer
 
 function SLIGWOLF_ADDON:MakeEnt(classname, plyOwner, parent, name)
 	local ent = LIBEntities.MakeEnt(classname, plyOwner, parent, name, self.Addonname)
@@ -100,13 +101,13 @@ function SLIGWOLF_ADDON:GetVal(ent, name, default)
 	local superparent = LIBEntities.GetSuperParent(ent) or ent
 	if not IsValid(superparent) then return end
 
-	local entTable = superparent:SligWolf_GetTable()
+	local superparentEntTable = superparent:SligWolf_GetTable()
 	local path = LIBEntities.GetEntityPath(ent)
 
 	name = LIBUtil.ValidateName(name)
 	name = self.NetworkaddonID .. "/" .. path .. "/!" .. name
 
-	local data = entTable.Data
+	local data = superparentEntTable.Data
 	if not data then
 		return default
 	end
@@ -126,20 +127,22 @@ function SLIGWOLF_ADDON:SetVal(ent, name, value)
 	local superparent = LIBEntities.GetSuperParent(ent) or ent
 	if not IsValid(superparent) then return end
 
-	local entTable = superparent:SligWolf_GetTable()
+	local superparentEntTable = superparent:SligWolf_GetTable()
 	local path = LIBEntities.GetEntityPath(ent)
 
 	name = LIBUtil.ValidateName(name)
 	name = self.NetworkaddonID .. "/" .. path .. "/!" .. name
 
-	local data = entTable.Data or {}
-	entTable.Data = data
+	local data = superparentEntTable.Data or {}
+	superparentEntTable.Data = data
 
 	data[name] = value
 end
 
-function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(superparent)
-	if superparent.sligwolf_isDoneSpawningParts then
+function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
+	local superparentEntTable = superparent:SligWolf_GetTable()
+
+	if superparentEntTable.isDoneSpawningParts then
 		return
 	end
 
@@ -151,15 +154,15 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(superparent)
 			return
 		end
 
-		if superparent.sligwolf_isDoneSpawningParts then
+		if superparentEntTable.isDoneSpawningParts then
 			return
 		end
 
-		if not superparent.sligwolf_isSpawningParts then
+		if not superparentEntTable.isSpawningParts then
 			return
 		end
 
-		superparent.sligwolf_isSpawningParts = nil
+		superparentEntTable.isSpawningParts = nil
 
 		local owner = LIBEntities.GetOwner(superparent)
 
@@ -167,29 +170,29 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(superparent)
 
 		self:EntityTimerRemove(superparent, timernameEventTimeout)
 
-		superparent.sligwolf_isDoneSpawningParts = true
+		superparentEntTable.isDoneSpawningParts = true
 	end)
 
-	if not superparent.sligwolf_isSpawningParts then
-		superparent.sligwolf_isSpawningParts = true
+	if not superparentEntTable.isSpawningParts then
+		superparentEntTable.isSpawningParts = true
 
 		self:EntityTimerOnce(superparent, timernameEventTimeout, 2, function()
 			if superparent:IsMarkedForDeletion() then
 				return
 			end
 
-			if superparent.sligwolf_isDoneSpawningParts then
+			if superparentEntTable.isDoneSpawningParts then
 				return
 			end
 
-			if not superparent.sligwolf_isSpawningParts then
+			if not superparentEntTable.isSpawningParts then
 				return
 			end
 
 			self:EntityTimerRemove(superparent, timernameEvent)
 
-			superparent.sligwolf_isSpawningParts = nil
-			superparent.sligwolf_isDoneSpawningParts = nil
+			superparentEntTable.isSpawningParts = nil
+			superparentEntTable.isDoneSpawningParts = nil
 
 			if SERVER then
 				self:RemoveFaultyEntites(
@@ -202,6 +205,27 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(superparent)
 	end
 end
 
+function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(ent)
+	if not IsValid(ent) then return end
+
+	LIBTimer.SimpleNextFrame(function()
+		if not IsValid(ent) then return end
+
+		if ent:IsMarkedForDeletion() then
+			return
+		end
+
+		local superparent = LIBEntities.GetSuperParent(ent)
+		if not IsValid(superparent) then return end
+
+		if superparent:IsMarkedForDeletion() then
+			return
+		end
+
+		self:HandleSpawnFinishedEventInternal(superparent)
+	end)
+end
+
 function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopycallback)
 	if not IsValid(ent) then return end
 
@@ -211,8 +235,8 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	local superparent = LIBEntities.GetSuperParent(ent)
 	if not IsValid(superparent) then return end
 
-	local entTable = superparent:SligWolf_GetTable()
-	if entTable.duperegistered then return end
+	local superparentEntTable = superparent:SligWolf_GetTable()
+	if superparentEntTable.duperegistered then return end
 
 	if not isfunction(precopycallback) then
 		precopycallback = function() end
@@ -222,21 +246,34 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 		postcopycallback = function() end
 	end
 
-	local oldprecopy = superparent.PreEntityCopy or function() end
-	local dupename = "SLIGWOLF_Common_MakeEnt_Dupe_" .. self.NetworkaddonID  .. "_" .. name
-	entTable.dupename = dupename
+	local oldPreEntityCopy = superparent.PreEntityCopy or function() end
+	local oldOnEntityCopyTableFinish = superparent.OnEntityCopyTableFinish or function() end
 
-	superparent.PreEntityCopy = function(...)
-		if IsValid(superparent) then
-			precopycallback(superparent)
+	local dupename = "SLIGWOLF_Common_MakeEnt_Dupe_" .. self.NetworkaddonID  .. "_" .. name
+	superparentEntTable.dupename = dupename
+
+	superparent.PreEntityCopy = function(thisent, ...)
+		local thisSuperparent = LIBEntities.GetSuperParent(thisent)
+		if not IsValid(thisSuperparent) then return end
+
+		local thisSuperparentEntTable = thisSuperparent:SligWolf_GetTable()
+
+		if IsValid(thisSuperparent) then
+			precopycallback(thisSuperparent)
 		end
 
-		entTable.Data = entTable.Data or {}
-		duplicator.StoreEntityModifier(superparent, dupename, entTable.Data)
+		local data = table.Copy(thisSuperparentEntTable.Data or {})
+		duplicator.StoreEntityModifier(thisSuperparent, dupename, data)
 
-		return oldprecopy(...)
+		return oldPreEntityCopy(thisent, ...)
 	end
-	entTable.duperegistered = true
+
+	superparent.OnEntityCopyTableFinish = function(thisent, data, ...)
+		LIBEntities.RemoveBadDupeData(data)
+		return oldOnEntityCopyTableFinish(thisent, data, ...)
+	end
+
+	superparentEntTable.duperegistered = true
 
 	self.duperegistered = self.duperegistered or {}
 	if self.duperegistered[dupename] then
@@ -254,21 +291,21 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 		end
 
 		self:EntityTimerUntil(ent, timerName, 0.1, function()
-			local superparent = LIBEntities.GetSuperParent(ent)
-			if not IsValid(superparent) then
+			local thisSuperparent = LIBEntities.GetSuperParent(ent)
+			if not IsValid(thisSuperparent) then
 				return
 			end
 
-			local entTable = superparent:SligWolf_GetTable()
+			local thisSuperparentEntTable = thisSuperparent:SligWolf_GetTable()
 
 			-- delay the dupe modifier until the entire entity system has been spawned
-			if superparent.sligwolf_isSpawningParts then
+			if thisSuperparentEntTable.isSpawningParts then
 				return
 			end
 
-			entTable.Data = data or {}
+			thisSuperparentEntTable.Data = table.Copy(data or {})
 
-			postcopycallback(superparent)
+			postcopycallback(thisSuperparent)
 
 			return true
 		end)

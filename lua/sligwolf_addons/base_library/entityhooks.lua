@@ -25,8 +25,10 @@ function LIB.Load()
 			if not IsValid(ent) then return end
 			if not string.StartsWith(key, "sligwolf_") then return end
 
-			ent.sligwolf_kv = ent.sligwolf_kv or {}
-			ent.sligwolf_kv[key] = value
+			local entTable = ent:SligWolf_GetTable()
+
+			entTable.keyValues = entTable.keyValues or {}
+			entTable.keyValues[key] = value
 		end
 
 		LIBHook.Add("EntityKeyValue", "Library_EntityHooks_RegisterKeyValue", RegisterKeyValue, 20000)
@@ -62,7 +64,7 @@ function LIB.Load()
 
 	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinishedClearCaches", SpawnSystemFinishedClearCaches, 1000)
 
-	local function SpawnSystemFinished(ent, ply)
+	local function SpawnSystemEntitiesFinished(ent, ply)
 		if not IsValid(ent) then return end
 		if not ent.sligwolf_entity then return end
 
@@ -78,7 +80,21 @@ function LIB.Load()
 		end
 	end
 
-	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinished", SpawnSystemFinished, 19000)
+	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemEntitiesFinished", SpawnSystemEntitiesFinished, 19000)
+
+
+	local function SpawnSystemFinished(ent, ply)
+		if not IsValid(ent) then return end
+		if not ent.sligwolf_entity then return end
+		if not ent.sligwolf_baseEntity then return end
+
+		local addonname = ent:GetAddonID()
+		if not addonname then return end
+
+		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnSystemFinished", ent, ply)
+	end
+
+	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_Vehicle_SpawnSystemFinished", SpawnSystemFinished, 19100)
 end
 
 return true

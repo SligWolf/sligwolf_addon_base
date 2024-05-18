@@ -19,12 +19,14 @@ local LIBUtil = nil
 local LIBTimer = nil
 local LIBPrint = nil
 local LIBPosition = nil
+local LIBMeta = nil
 
 function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
 	LIBPosition = SligWolf_Addons.Position
+	LIBMeta = SligWolf_Addons.Meta
 end
 
 local function getCache(ent)
@@ -75,6 +77,21 @@ function LIB.ClearCache(ent)
 	if not cache then return end
 
 	table.Empty(cache.parents)
+end
+
+function LIB.RemoveBadDupeData(data)
+	if not data then return end
+
+	LIBMeta.RemoveBadDupeData(data)
+
+	if not data.sligwolf_entity then
+		return
+	end
+
+	data.sligwolf_Addonname = nil
+	data.spawnname = nil
+	data.addonCache = nil
+	data.addonIdCache = nil
 end
 
 function LIB.ToString(ent)
@@ -143,7 +160,7 @@ function LIB.SetupChildEntity(ent, parent, collision, attachmentid)
 	ent.sligwolf_noUnfreeze = true
 	ent.sligwolf_noBodySystemApplyMotion = true
 
-	parent:DeleteOnRemove(ent)
+	LIB.RemoveEntitiesOnDelete(parent, ent)
 
 	local phys = ent:GetPhysicsObject()
 	if IsValid(phys) then
@@ -238,6 +255,63 @@ end
 function LIB.RemoveFaultyEntites(entities, errReasonFormat, ...)
 	LIB.RemoveEntites(entities)
 	LIBPrint.ErrorNoHaltWithStack(errReasonFormat, ...)
+end
+
+function LIB.RemoveSystemEntites(superparent)
+	local entities = LIB.GetSystemEntities(superparent)
+	LIB.RemoveEntites(entities)
+end
+
+function LIB.RemoveSystemEntitesOnDelete(ent)
+	if not IsValid(ent) then
+		return
+	end
+
+	ent:CallOnRemove("SLIGWOLF_Library_Entities_RemoveSystemEntitesOnDelete", function(thisent)
+		LIB.RemoveSystemEntites(thisent)
+	end)
+end
+
+function LIB.RemoveEntitiesOnDelete(ent, entitiesToRemove)
+	if not IsValid(ent) then
+		return
+	end
+
+	if not entitiesToRemove then
+		return
+	end
+
+	if not istable(entitiesToRemove) then
+		entitiesToRemove = {entitiesToRemove}
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	entTable.entitiesToRemove = entTable.entitiesToRemove or {}
+	local removeList = entTable.entitiesToRemove
+
+	for k, v in pairs(entitiesToRemove) do
+		if isentity(v) and IsValid(v) then
+			removeList[v] = true
+		end
+
+		if k ~= v and isentity(k) and IsValid(k) then
+			removeList[k] = true
+		end
+	end
+
+	removeList[ent] = nil
+
+	ent:CallOnRemove("SLIGWOLF_Library_Entities_RemoveEntityOnDelete", function(thisent)
+		if not IsValid(thisent) then
+			return
+		end
+
+		local thisEntTable = thisent:SligWolf_GetTable()
+
+		LIB.RemoveEntites(thisEntTable.entitiesToRemove)
+		thisEntTable.entitiesToRemove = nil
+	end)
 end
 
 local function GenerateUnknownEntityName(ent)
@@ -988,7 +1062,8 @@ function LIB.FindPropInSphere(ent, radius, attachment, filterA, filterB)
 end
 
 function LIB.GetKeyValues(ent)
-	return ent.sligwolf_kv or {}
+	local entTable = ent:SligWolf_GetTable()
+	return entTable.keyValues or {}
 end
 
 function LIB.GetKeyValue(ent, key)
