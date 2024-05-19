@@ -150,7 +150,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 	local timernameEventTimeout = "HandleSpawnFinishedEventTimeout"
 
 	self:EntityTimerOnce(superparent, timernameEvent, 0.26, function()
-		if superparent:IsMarkedForDeletion() then
+		if LIBEntities.IsMarkedForDeletion(superparent) then
 			return
 		end
 
@@ -177,7 +177,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 		superparentEntTable.isSpawningParts = true
 
 		self:EntityTimerOnce(superparent, timernameEventTimeout, 2, function()
-			if superparent:IsMarkedForDeletion() then
+			if LIBEntities.IsMarkedForDeletion(superparent) then
 				return
 			end
 
@@ -206,19 +206,19 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 end
 
 function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(ent)
-	if not IsValid(ent) then return end
+	if LIBEntities.IsMarkedForDeletion(ent) then
+		return
+	end
 
 	LIBTimer.SimpleNextFrame(function()
-		if not IsValid(ent) then return end
-
-		if ent:IsMarkedForDeletion() then
+		if LIBEntities.IsMarkedForDeletion(ent) then
 			return
 		end
 
 		local superparent = LIBEntities.GetSuperParent(ent)
 		if not IsValid(superparent) then return end
 
-		if superparent:IsMarkedForDeletion() then
+		if LIBEntities.IsMarkedForDeletion(superparent) then
 			return
 		end
 

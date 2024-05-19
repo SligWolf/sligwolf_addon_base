@@ -222,19 +222,65 @@ function LIB.ConstraintIsAllowed(ent, ply, mode)
 	return true
 end
 
-function LIB.RemoveEntity(ent)
-	if not IsValid(ent) then
+function LIB.RemoveEntityWithEffects(ent)
+	if LIB.IsMarkedForDeletion(ent, true) then
 		return
 	end
 
+	constraint.RemoveAll(ent)
+
+	LIBTimer.Simple(1, function()
+		LIB.RemoveEntity(ent, false)
+	end)
+
+	ent:SetNotSolid(true)
+	ent:SetMoveType(MOVETYPE_NONE)
+	ent:SetNoDraw(true)
+
+	local ed = EffectData()
+	ed:SetOrigin( ent:GetPos() )
+	ed:SetEntity( ent )
+
+	util.Effect("entity_remove", ed, true, true)
+end
+
+function LIB.IsMarkedForDeletion(ent, withEffect)
+	if not IsValid(ent) then
+		return true
+	end
+
 	if ent:IsMarkedForDeletion() then
+		return true
+	end
+
+	if withEffect == false then
+		return false
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	if entTable.isMarkedForDeletionWithEffect then
+		return true
+	end
+
+	return false
+end
+
+function LIB.RemoveEntity(ent, withEffect)
+	withEffect = withEffect or false
+
+	if LIB.IsMarkedForDeletion(ent, withEffect) then
+		return
+	end
+
+	if withEffect then
+		LIB.RemoveEntityWithEffects(ent)
 		return
 	end
 
 	ent:Remove()
 end
 
-function LIB.RemoveEntites(entities)
+function LIB.RemoveEntites(entities, withEffect)
 	if not entities then
 		return
 	end
@@ -245,23 +291,23 @@ function LIB.RemoveEntites(entities)
 
 	for k, v in pairs(entities) do
 		if isentity(v) then
-			LIB.RemoveEntity(v)
+			LIB.RemoveEntity(v, withEffect)
 		end
 
 		if k ~= v and isentity(k) then
-			LIB.RemoveEntity(k)
+			LIB.RemoveEntity(k, withEffect)
 		end
 	end
 end
 
 function LIB.RemoveFaultyEntites(entities, errReasonFormat, ...)
-	LIB.RemoveEntites(entities)
+	LIB.RemoveEntites(entities, false)
 	LIBPrint.ErrorNoHaltWithStack(errReasonFormat, ...)
 end
 
-function LIB.RemoveSystemEntites(superparent)
+function LIB.RemoveSystemEntites(superparent, withEffect)
 	local entities = LIB.GetSystemEntities(superparent)
-	LIB.RemoveEntites(entities)
+	LIB.RemoveEntites(entities, withEffect)
 end
 
 function LIB.RemoveSystemEntitesOnDelete(ent)
@@ -269,8 +315,8 @@ function LIB.RemoveSystemEntitesOnDelete(ent)
 		return
 	end
 
-	ent:CallOnRemove("SLIGWOLF_Library_Entities_RemoveSystemEntitesOnDelete", function(thisent)
-		LIB.RemoveSystemEntites(thisent)
+	LIB.CallOnRemove(ent, "RemoveSystemEntitesOnDelete", function(thisent, withEffect)
+		LIB.RemoveSystemEntites(thisent, withEffect)
 	end)
 end
 
@@ -304,21 +350,70 @@ function LIB.RemoveEntitiesOnDelete(ent, entitiesToRemove)
 
 	removeList[ent] = nil
 
-	ent:CallOnRemove("SLIGWOLF_Library_Entities_RemoveEntityOnDelete", function(thisent)
-		if not IsValid(thisent) then
-			return
-		end
-
+	LIB.CallOnRemove(ent, "RemoveEntityOnDelete", function(thisent, withEffect)
 		local thisEntTable = thisent:SligWolf_GetTable()
-
-		LIB.RemoveEntites(thisEntTable.entitiesToRemove)
-		thisEntTable.entitiesToRemove = nil
+		LIB.RemoveEntites(thisEntTable.entitiesToRemove, withEffect)
 	end)
 end
 
+function LIB.CallOnRemove(ent, name, func)
+	if not IsValid(ent) then
+		return
+	end
+
+	name = tostring(name or "")
+	if name == "" then
+		error("name is missing")
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	entTable.callOnRemove = entTable.callOnRemove or {}
+	entTable.callOnRemove[name] = func
+end
+
+local function runCallOnRemoveList(ent, withEffect)
+	if not IsValid(ent) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	local callOnRemove = entTable.callOnRemove
+
+	if not callOnRemove then
+		return
+	end
+
+	for key, thisFunction in pairs(callOnRemove) do
+		ProtectedCall(function()
+			thisFunction(ent, withEffect)
+		end)
+
+		if not withEffect then
+			callOnRemove[key] = nil
+		end
+	end
+
+	if not withEffect then
+		entTable.callOnRemove = nil
+	end
+end
+
+function LIB.RunCallOnRemove(ent)
+	runCallOnRemoveList(ent, false)
+end
+
+function LIB.RunCallOnRemoveEffect(ent)
+	runCallOnRemoveList(ent, true)
+end
+
 function LIB.InheritSpawnEffectFromParent(ent)
-	if not IsValid(ent) then return end
 	if _G.DisablePropCreateEffect then return end
+
+	if LIB.IsMarkedForDeletion(ent, true) then
+		return
+	end
 
 	local parent = LIB.GetParent(ent)
 	local spawnEffect = ent:GetSpawnEffect()
@@ -331,8 +426,11 @@ function LIB.InheritSpawnEffectFromParent(ent)
 end
 
 function LIB.DoPropSpawnedEffect(ent)
-	if not IsValid(ent) then return end
 	if _G.DisablePropCreateEffect then return end
+
+	if LIB.IsMarkedForDeletion(ent, true) then
+		return
+	end
 
 	ent:SetSpawnEffect(true)
 end
@@ -1268,7 +1366,7 @@ function LIB.UnlockEntityFromMountPoint(selfEnt)
 		return false
 	end
 
-	LIB.RemoveEntity(selfEnt.sligwolf_lockConstraintWeld)
+	LIB.RemoveEntity(selfEnt.sligwolf_lockConstraintWeld, false)
 
 	-- @DEBUG: Color entity according to their lock state
 	-- SligWolf_Addons.Debug.HighlightEntities(selfEnt, Color(0, 255, 0))

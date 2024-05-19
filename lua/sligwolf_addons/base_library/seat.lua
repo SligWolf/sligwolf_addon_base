@@ -155,8 +155,10 @@ function LIB.TakeSeat(ply, seatGroup, attachmentName)
 
 	LIBTimer.SimpleNextFrame(function()
 		if not IsValid(ply) then return end
-		if not IsValid(seat) then return end
-		if seat:IsMarkedForDeletion() then return end
+
+		if LIBEntities.IsMarkedForDeletion(seat) then
+			return
+		end
 
 		LIB.DebounceSeatGroupUsage(ply)
 
@@ -261,7 +263,7 @@ function LIB.RemoveSeat(seat)
 
 	LIBEntities.SetParent(seat, nil)
 
-	LIBEntities.RemoveEntity(seat)
+	LIBEntities.RemoveEntity(seat, false)
 
 	LIBEntities.ClearChildrenCache(seatGroup)
 	LIBEntities.ClearChildrenCache(root)

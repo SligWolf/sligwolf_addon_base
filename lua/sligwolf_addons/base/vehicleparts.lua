@@ -459,11 +459,11 @@ local g_ConstraintCreateFunctions = {
 }
 
 function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraintInfos)
-	if not IsValid(ent) or ent:IsMarkedForDeletion() then
+	if LIBEntities.IsMarkedForDeletion(ent) then
 		return nil
 	end
 
-	if not IsValid(parent) or parent:IsMarkedForDeletion() then
+	if LIBEntities.IsMarkedForDeletion(parent) then
 		return nil
 	end
 
@@ -508,8 +508,13 @@ function SLIGWOLF_ADDON:CreateConstraints(ent, parent, componentConstraints)
 end
 
 local function ProceedVehicleSetUp(ent, tb)
-	if not IsValid(ent) then return false end
-	if not istable(tb) then return false end
+	if LIBEntities.IsMarkedForDeletion(ent) then
+		return false
+	end
+
+	if not istable(tb) then
+		return false
+	end
 
 	return true
 end

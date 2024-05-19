@@ -66,10 +66,6 @@ function ENT:InitializeModel()
 end
 
 function ENT:HandleSpawnFinishedEvent()
-	if self:IsMarkedForDeletion() then
-		return
-	end
-
 	local addon = self:GetAddon()
 	if not addon then
 		return
@@ -77,10 +73,6 @@ function ENT:HandleSpawnFinishedEvent()
 
 	local superparent = LIBEntities.GetSuperParent(self)
 	if not IsValid(superparent) then
-		return
-	end
-
-	if superparent:IsMarkedForDeletion() then
 		return
 	end
 

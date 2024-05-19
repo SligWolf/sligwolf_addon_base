@@ -15,6 +15,63 @@ table.Empty(SligWolf_Addons.Entityhooks)
 
 local LIB = SligWolf_Addons.Entityhooks
 
+function LIB.CreateRemoverToolHook()
+	if isfunction(SligWolf_Addons._oldUtilEffect) then
+		return
+	end
+
+	SligWolf_Addons._oldUtilEffect = util.Effect
+	local oldUtilEffect = SligWolf_Addons._oldUtilEffect
+
+	-- We override util.Effect, because that the only way to detect the entity
+	-- being removed by the remover toolgun.
+
+	util.Effect = function(name, effectData, ...)
+		if name ~= "entity_remove" then
+			return oldUtilEffect(name, effectData, ...)
+		end
+
+		if not effectData then
+			return oldUtilEffect(name, effectData, ...)
+		end
+
+		local ent = effectData:GetEntity()
+		if not IsValid(ent) then
+			return oldUtilEffect(name, effectData, ...)
+		end
+
+		if ent:IsMarkedForDeletion() then
+			return oldUtilEffect(name, effectData, ...)
+		end
+
+		-- Make sure we only affect entities spawned by our addon code
+		if not ent.sligwolf_entity then
+			return oldUtilEffect(name, effectData, ...)
+		end
+
+		-- Make sure the effect is emitted from inside the remover tool function
+		if not ent:GetNoDraw() then
+			return oldUtilEffect(name, effectData, ...)
+		end
+
+		local entTable = ent:SligWolf_GetTable()
+		if entTable.hasCalledRemoveEffectHook then
+			return oldUtilEffect(name, effectData, ...)
+		end
+
+		entTable.hasCalledRemoveEffectHook = true
+		entTable.isMarkedForDeletionWithEffect = true
+
+		hook.Run("SLIGWOLF_EntityRemovedByToolgun", ent)
+
+		return oldUtilEffect(name, effectData, ...)
+	end
+end
+
+if SERVER then
+	LIB.CreateRemoverToolHook()
+end
+
 function LIB.Load()
 	local LIBEntities = SligWolf_Addons.Entities
 
@@ -94,7 +151,26 @@ function LIB.Load()
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnSystemFinished", ent, ply)
 	end
 
-	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_Vehicle_SpawnSystemFinished", SpawnSystemFinished, 19100)
+	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinished", SpawnSystemFinished, 19100)
+
+	local function RunCallOnRemoveEffect(ent)
+		if not IsValid(ent) then return end
+
+		LIBEntities.RunCallOnRemoveEffect(ent)
+	end
+
+	LIBHook.Add("SLIGWOLF_EntityRemovedByToolgun", "Library_EntityHooks_RunCallOnRemoveEffect", RunCallOnRemoveEffect, 1000)
+
+	local function RunCallOnRemove(ent, fullUpdate)
+		if fullUpdate then return end
+
+		if not IsValid(ent) then return end
+		if not ent.sligwolf_entity then return end
+
+		LIBEntities.RunCallOnRemove(ent)
+	end
+
+	LIBHook.Add("EntityRemoved", "Library_EntityHooks_RunCallOnRemove", RunCallOnRemove, 1000)
 end
 
 return true
