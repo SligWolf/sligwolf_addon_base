@@ -13,6 +13,46 @@ end
 local LIBTrackasm = SligWolf_Addons.Trackasm
 local LIBPrint = SligWolf_Addons.Print
 
+local function isAttachmentString(var)
+	if not var then
+		return false
+	end
+
+	if var == "" then
+		return false
+	end
+
+	if var == "!" then
+		return nil
+	end
+
+	if var[1] ~= "!" then
+		return false
+	end
+
+	return true
+end
+
+local function toAttachmentString(var)
+	if not var then
+		return nil
+	end
+
+	if var == "" then
+		return nil
+	end
+
+	if var == "!" then
+		return nil
+	end
+
+	if isAttachmentString(var) then
+		return var
+	end
+
+	return "!" .. var
+end
+
 local function varToExportString(var)
 	if not var then
 		return nil
@@ -101,44 +141,69 @@ function ITEM_META:SetCategory(category)
 	return self
 end
 
-function ITEM_META:AddPoint(point, ...)
-	if point == nil then
-		error("point missing!")
+function ITEM_META:AddPoint(pointItem, ...)
+	if not pointItem then
+		error("pointItem missing!")
 		return
 	end
 
-	if not istable(point) then
-		point = {point, ...}
+	if not istable(pointItem) then
+		pointItem = {pointItem, ...}
 	end
 
-	local origin = varToExportString(point.origin or point[1])
-	local angle = varToExportString(point.angle or point[2])
-	local point = varToExportString(point.point or point[3])
+	local origin = varToExportString(pointItem.origin or pointItem[1])
+	local angle = varToExportString(pointItem.angle or pointItem[2])
+	local point = varToExportString(pointItem.point or pointItem[3])
 
 	if not origin then
 		error("missing origin!")
 		return
 	end
 
-	local point = {
+	local pointData = {
 		origin = origin,
 		angle = angle,
 		point = point,
 	}
 
-	table.insert(self.points, point)
+	table.insert(self.points, pointData)
 
 	return self
 end
 
-function ITEM_META:AddPoints(points, ...)
-	if points == nil then
+function ITEM_META:AddAttachment(originAttachment, pointAttachment)
+	originAttachment = tostring(originAttachment or "")
+	pointAttachment = tostring(pointAttachment or "")
+
+	originAttachment = toAttachmentString(originAttachment)
+	pointAttachment = toAttachmentString(pointAttachment)
+
+	if not originAttachment then
+		error("missing originAttachment!")
+		return
+	end
+
+	if pointAttachment == originAttachment then
+		pointAttachment = nil
+	end
+
+	self:AddPoint({
+		origin = originAttachment,
+		angle = originAttachment,
+		point = pointAttachment,
+	})
+
+	return self
+end
+
+function ITEM_META:AddPoints(pointItems, ...)
+	if pointItems == nil then
 		error("points missing!")
 		return
 	end
 
-	for i, point in ipairs(points) do
-		self:AddPoint(point)
+	for i, pointItem in ipairs(pointItems) do
+		self:AddPoint(pointItem)
 	end
 
 	return self
@@ -224,7 +289,11 @@ end
 
 --[[
 * Description of the export format from TrackAssemblyTool as from docs:
+* https://github.com/dvdvideo1234/TrackAssemblyTool/blob/master/data/trackassembly/set/z_autorun_%5Btrackassembly%5D.txt
 *
+* MODEL  > This string contains the path to your /*.mdl/ file. It is mandatory and
+*          taken in pairs with LINEID, it forms the unique identifier of every record.
+*          When used in /DSV/ mode ( like seen below ) is is used as a hash index.
 * TYPE   > This string is the name of the type your stuff will reside in the panel.
 *          Disabling this, makes it use the value of the /DEFAULT_TYPE/ variable.
 *          If it is empty uses the string /TYPE/, so make sure you fill this.
@@ -274,7 +343,7 @@ function SLIGWOLF_ADDON:TrackAssamblerExportPiece(modelOrItem)
 		end
 	end
 
-	local model = item:GetModel()
+	local model = item:GetModel() -- MODEL
 	local name = item:GetName() or g_gsSymOff
 	local class = item:GetClass() or g_gsMissDB
 	local points = item:GetPoints()
@@ -297,10 +366,10 @@ function SLIGWOLF_ADDON:TrackAssamblerExportPiece(modelOrItem)
 
 	local piece = {}
 
-	for lineid, point in ipairs(points) do
-		local origin = point.origin or g_gsMissDB
-		local angle = point.angle or g_gsMissDB
-		local point = point.point or g_gsMissDB
+	for lineid, pointItem in ipairs(points) do
+		local origin = pointItem.origin or g_gsMissDB
+		local angle = pointItem.angle or g_gsMissDB
+		local point = pointItem.point or g_gsMissDB
 
 		local pieceData = {
 			g_taType,  -- TYPE

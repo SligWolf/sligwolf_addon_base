@@ -17,6 +17,8 @@ local LIB = SligWolf_Addons.VR
 local LIBHook = nil
 
 local g_vrmod = nil
+local g_version = nil
+local g_versionErrorPrintedChecked = false
 
 function LIB.Exist()
 	local vrmod = g_vrmod or _G.vrmod
@@ -24,6 +26,8 @@ function LIB.Exist()
 
 	local isPlayerInVRFunc = vrmod.IsPlayerInVR
 	if not isfunction(isPlayerInVRFunc) then return false end
+
+	if not LIB.CheckVersion() then return false end
 
 	return true
 end
@@ -37,6 +41,64 @@ end
 
 function LIB.GetLib()
 	return g_vrmod
+end
+
+function LIB.GetLibVersion()
+	if g_version ~= nil then
+		if not g_version then
+			return nil
+		end
+
+		return g_version
+	end
+
+	local vrmod = g_vrmod or _G.vrmod
+	if not vrmod then
+		return nil
+	end
+
+	local success = ProtectedCall(function()
+		g_version = vrmod.GetVersion()
+	end)
+
+	if not success then
+		g_version = false
+		return nil
+	end
+
+	return g_version
+end
+
+function LIB.IsValidVersion()
+	local version = LIB.GetLibVersion()
+	if not version then
+		return false
+	end
+
+	if version < 133 then
+		return false
+	end
+
+	return true
+end
+
+function LIB.CheckVersion()
+	if LIB.IsValidVersion() then
+		return true
+	end
+
+	if g_versionErrorPrintedChecked then
+		return false
+	end
+
+	if not LIBPrint then
+		return false
+	end
+
+	g_versionErrorPrintedChecked = true
+	LIBPrint.ErrorNoHalt("VRMod is outdated! (vrmod.GetVersion() < 133)")
+
+	return false
 end
 
 local g_nextVRPoll = nil
