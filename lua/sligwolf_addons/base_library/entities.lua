@@ -138,6 +138,8 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 		LIB.SetOwner(ent, plyOwner)
 	end
 
+	LIB.InheritSpawnEffectFromParent(ent)
+
 	return ent
 end
 
@@ -312,6 +314,27 @@ function LIB.RemoveEntitiesOnDelete(ent, entitiesToRemove)
 		LIB.RemoveEntites(thisEntTable.entitiesToRemove)
 		thisEntTable.entitiesToRemove = nil
 	end)
+end
+
+function LIB.InheritSpawnEffectFromParent(ent)
+	if not IsValid(ent) then return end
+	if _G.DisablePropCreateEffect then return end
+
+	local parent = LIB.GetParent(ent)
+	local spawnEffect = ent:GetSpawnEffect()
+
+	if IsValid(parent) and parent ~= ent then
+		spawnEffect = parent:GetSpawnEffect()
+	end
+
+	ent:SetSpawnEffect(spawnEffect)
+end
+
+function LIB.DoPropSpawnedEffect(ent)
+	if not IsValid(ent) then return end
+	if _G.DisablePropCreateEffect then return end
+
+	ent:SetSpawnEffect(true)
 end
 
 local function GenerateUnknownEntityName(ent)
