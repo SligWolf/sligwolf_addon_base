@@ -10,6 +10,7 @@ if not SLIGWOLF_BASE_OBJ then
 end
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBPrint = SligWolf_Addons.Print
 local LIBDebug = SligWolf_Addons.Debug
 
@@ -26,6 +27,10 @@ function SLIGWOLF_BASE_OBJ:RunPostInitialize()
 			self.PostInitialized = true
 		end)
 	end)
+end
+
+function SLIGWOLF_BASE_OBJ:DelayNextSpawnForOwner()
+	LIBSpamprotection.DelayNextSpawnForOwner(self)
 end
 
 function SLIGWOLF_BASE_OBJ:KeyValue(key, value)

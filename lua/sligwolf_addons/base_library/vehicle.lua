@@ -105,8 +105,8 @@ end
 function LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
 	if not vehicleSpawnname then return nil end
 
-	local VehicleList = list.Get("Vehicles") or {}
-	local vehicleTable = VehicleList[vehicleSpawnname]
+	local vehicleList = list.Get("Vehicles") or {}
+	local vehicleTable = vehicleList[vehicleSpawnname]
 
 	if not vehicleTable then return nil end
 	return vehicleTable
@@ -326,7 +326,7 @@ function LIB.Load()
 
 			local mn, mx = vehicle:GetRenderBounds()
 			local radius = (mn - mx):Length()
-			local radius = radius + radius * vehicle:GetCameraDistance()
+			radius = radius + radius * vehicle:GetCameraDistance()
 
 			local TargetOrigin = view.origin + (view.angles:Forward() * -radius)
 			local WallOffset = 4

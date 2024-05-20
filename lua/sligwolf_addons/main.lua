@@ -10,9 +10,14 @@ AddCSLuaFile()
 ]]
 
 SligWolf_Addons = SligWolf_Addons or {}
-table.Empty(SligWolf_Addons)
-
 local SligWolf_Addons = SligWolf_Addons
+
+do
+	-- clear old instance of SligWolf_Addons, but keep the detourBackups
+	local detourBackups = table.Copy(SligWolf_Addons._detourBackups or {})
+	table.Empty(SligWolf_Addons)
+	SligWolf_Addons._detourBackups = detourBackups
+end
 
 SligWolf_Addons.BaseVersion = "2023-07-28"
 

@@ -660,7 +660,7 @@ local function g_SENTSetup(ply, sent)
 	local entTable = sent:SligWolf_GetTable()
 	if entTable.isDuped then return end
 
-	spawnname = sent:GetSpawnName()
+	local spawnname = sent:GetSpawnName()
 	if not spawnname then return end
 
 	local tab = list.Get("SpawnableEntities")
@@ -745,7 +745,7 @@ function LIB.AddEntity(addonName, spawnname, obj)
 
 	list.Set("SpawnableEntities", spawnname, entityItem)
 
-	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 20000)
+	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 2000)
 
 	duplicator.RegisterEntityModifier("SLIGWOLF_Common_SENTDupe", g_SENTDupe)
 end
@@ -1000,6 +1000,7 @@ function LIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
 	vehicleListItem.Class = obj.class or "prop_vehicle_prisoner_pod"
 	vehicleListItem.Category = g_defaultNodeNameToBeRemoved
 	vehicleListItem.Model = model
+	vehicleListItem.Is_SLIGWOLF = true
 
 	vehicleListItem.Members = members
 

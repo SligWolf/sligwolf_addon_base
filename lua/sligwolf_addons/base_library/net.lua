@@ -38,14 +38,46 @@ end
 function LIB.Start(identifier, ...)
 	local name = getName(identifier)
 
+	if SERVER then
+		util.AddNetworkString(name)
+	end
+
 	return net.Start(name, ...)
 end
 
--- function LIB.Start(identifier, ...)
--- 	local name = getName(identifier)
+function LIB.Receive(identifier, ...)
+	local name = getName(identifier)
 
--- 	return net.Start(name, ...)
--- end
+	if SERVER then
+		util.AddNetworkString(name)
+	end
+
+	return net.Receive(name, ...)
+end
+
+function LIB.Send(...)
+	return net.Send(...)
+end
+
+function LIB.SendOmit(...)
+	return net.SendOmit(...)
+end
+
+function LIB.SendPAS(...)
+	return net.SendPAS(...)
+end
+
+function LIB.SendPVS(...)
+	return net.SendPVS(...)
+end
+
+function LIB.SendAll(...)
+	return net.Broadcast(...)
+end
+
+function LIB.SendToServer(...)
+	return net.SendToServer(...)
+end
 
 return true
 

@@ -16,15 +16,21 @@ if not SligWolf_Addons.IsLoaded() then return end
 
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPhysgun = SligWolf_Addons.Physgun
+local LIBPhysics = SligWolf_Addons.Physics
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
+	LIBPhysics.InitializeAsPhysEntity(self)
 end
 
 function ENT:InitializePhysics()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
+end
+
+function ENT:PhysicsCollide(colData, collider)
+	-- override me
 end
 
 function ENT:UpdateBodySystemMotion(delayed)

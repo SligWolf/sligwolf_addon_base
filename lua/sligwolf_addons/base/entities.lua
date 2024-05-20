@@ -13,6 +13,7 @@ end
 local LIBEntities = SligWolf_Addons.Entities
 local LIBUtil = SligWolf_Addons.Util
 local LIBTimer = SligWolf_Addons.Timer
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 
 function SLIGWOLF_ADDON:MakeEnt(classname, plyOwner, parent, name)
 	local ent = LIBEntities.MakeEnt(classname, plyOwner, parent, name, self.Addonname)
@@ -149,6 +150,8 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 	local timernameEvent = "HandleSpawnFinishedEvent"
 	local timernameEventTimeout = "HandleSpawnFinishedEventTimeout"
 
+	LIBSpamprotection.DelayNextSpawnForOwner(superparent)
+
 	self:EntityTimerOnce(superparent, timernameEvent, 0.26, function()
 		if LIBEntities.IsMarkedForDeletion(superparent) then
 			return
@@ -165,6 +168,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 		superparentEntTable.isSpawningParts = nil
 
 		local owner = LIBEntities.GetOwner(superparent)
+		LIBSpamprotection.DelayNextSpawn(owner)
 
 		hook.Run("SLIGWOLF_SpawnSystemFinished", superparent, owner)
 

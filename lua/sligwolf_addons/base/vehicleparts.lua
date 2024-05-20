@@ -16,6 +16,8 @@ local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPosition = SligWolf_Addons.Position
 local LIBCoupling = SligWolf_Addons.Coupling
+local LIBPhysics = SligWolf_Addons.Physics
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBUtil = SligWolf_Addons.Util
 
 local g_FailbackComponentsParams = {
@@ -727,6 +729,8 @@ function SLIGWOLF_ADDON:SetUpVehiclePartsDelayed(parent, components, dtr, ply, s
 
 	local timername = "SetUpVehicleParts"
 
+	LIBSpamprotection.DelayNextSpawn(ply)
+
 	self:EntityTimerOnce(parent, timername, 0.125, function()
 		-- Delay the spawning of the next level of sub entities by at least 0.125 seconds. 
 		-- This will prevent positioning issues from happening.
@@ -795,7 +799,9 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 		return
 	end
 
+	LIBSpamprotection.DelayNextSpawn(ply)
 	self:SetUpVehiclePartsDelayed(ent, component.children, dtr, ply, superparent)
+
 	return ent
 end
 
@@ -1342,9 +1348,10 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
 
-	ent.sligwolf_physEntity = true
 	ent.sligwolf_vehicle = true
 	ent.sligwolf_vehiclePod = true
+
+	LIBPhysics.InitializeAsPhysEntity(ent)
 
 	ent.sligwolf_ExitVectors = component.exitVectors
 
@@ -1458,7 +1465,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 
 	parent.sligwolf_constraintWeld2 = WD2
 
-	ent.sligwolf_physEntity = true
+	LIBPhysics.InitializeAsPhysEntity(ent)
 
 	return ent
 end
@@ -1466,8 +1473,9 @@ end
 function SLIGWOLF_ADDON:SetUpVehicle(ent, parent, component, attachment, superparent)
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 
-	ent.sligwolf_physEntity = true
 	ent.sligwolf_vehicle = true
+
+	LIBPhysics.InitializeAsPhysEntity(ent)
 
 	ent.sligwolf_ExitVectors = component.exitVectors
 end
@@ -1518,7 +1526,7 @@ function SLIGWOLF_ADDON:SetUpVehicleHoverball(parent, component, ply, superparen
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 
-	ent.sligwolf_physEntity = true
+	LIBPhysics.InitializeAsPhysEntity(ent)
 
 	ent:SetSpeed(speed)
 	ent:SetAirResistance(airResistance)

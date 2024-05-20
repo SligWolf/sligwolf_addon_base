@@ -18,11 +18,25 @@ local LIB = SligWolf_Addons.Print
 local LIBVehicle = nil
 local LIBEntities = nil
 local LIBDebug = nil
+local LIBNet = nil
 
 function LIB.Load()
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBEntities = SligWolf_Addons.Entities
 	LIBDebug = SligWolf_Addons.Debug
+	LIBNet = SligWolf_Addons.Net
+
+	LIBNet.AddNetworkString("Notify")
+
+	if CLIENT then
+		LIBNet.Receive("Notify", function()
+			local mode = net.ReadUInt(8)
+			local message = net.ReadString()
+			local len = net.ReadFloat()
+
+			LIB.Notify(mode, message, len)
+		end)
+	end
 end
 
 local function formatEntity(ent)
@@ -83,6 +97,10 @@ function LIB.FormatSafe(format)
 
 	format = string.Replace(format, "%", "$")
 	return format
+end
+
+function LIB.FormatMessage(format, ...)
+	return formatMessage(format, ...)
 end
 
 function LIB.Error(format, ...)
@@ -146,6 +164,47 @@ function LIB.Debug(format, ...)
 
 	local message = formatMessage("[DEBUG] " .. format, ...)
 	MsgN(message)
+end
+
+local g_soundMap = {
+	[NOTIFY_ERROR] = Sound("buttons/button10.wav"),
+}
+
+function LIB.Notify(mode, message, len, ply)
+	mode = mode or NOTIFY_GENERIC
+
+	message = tostring(message or "")
+	if message == "" then
+		message = "Empty message!"
+	end
+
+	len = tonumber(len or 0) or 0
+	if len <= 0 then
+		len = 3
+	end
+
+	if CLIENT then
+		notification.AddLegacy(message, mode, len)
+
+		local soundName = g_soundMap[mode]
+		if soundName then
+			surface.PlaySound(soundName)
+		end
+
+		return
+	end
+
+	LIBNet.Start("Notify")
+
+	net.WriteUInt(mode, 8)
+	net.WriteString(message)
+	net.WriteFloat(len)
+
+	if ply then
+		LIBNet.Send(ply)
+	else
+		LIBNet.SendAll()
+	end
 end
 
 return true

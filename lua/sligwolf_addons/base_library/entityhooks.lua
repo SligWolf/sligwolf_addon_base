@@ -15,63 +15,6 @@ table.Empty(SligWolf_Addons.Entityhooks)
 
 local LIB = SligWolf_Addons.Entityhooks
 
-function LIB.CreateRemoverToolHook()
-	if isfunction(SligWolf_Addons._oldUtilEffect) then
-		return
-	end
-
-	SligWolf_Addons._oldUtilEffect = util.Effect
-	local oldUtilEffect = SligWolf_Addons._oldUtilEffect
-
-	-- We override util.Effect, because that the only way to detect the entity
-	-- being removed by the remover toolgun.
-
-	util.Effect = function(name, effectData, ...)
-		if name ~= "entity_remove" then
-			return oldUtilEffect(name, effectData, ...)
-		end
-
-		if not effectData then
-			return oldUtilEffect(name, effectData, ...)
-		end
-
-		local ent = effectData:GetEntity()
-		if not IsValid(ent) then
-			return oldUtilEffect(name, effectData, ...)
-		end
-
-		if ent:IsMarkedForDeletion() then
-			return oldUtilEffect(name, effectData, ...)
-		end
-
-		-- Make sure we only affect entities spawned by our addon code
-		if not ent.sligwolf_entity then
-			return oldUtilEffect(name, effectData, ...)
-		end
-
-		-- Make sure the effect is emitted from inside the remover tool function
-		if not ent:GetNoDraw() then
-			return oldUtilEffect(name, effectData, ...)
-		end
-
-		local entTable = ent:SligWolf_GetTable()
-		if entTable.hasCalledRemoveEffectHook then
-			return oldUtilEffect(name, effectData, ...)
-		end
-
-		entTable.hasCalledRemoveEffectHook = true
-		entTable.isMarkedForDeletionWithEffect = true
-
-		hook.Run("SLIGWOLF_EntityRemovedByToolgun", ent)
-
-		return oldUtilEffect(name, effectData, ...)
-	end
-end
-
-if SERVER then
-	LIB.CreateRemoverToolHook()
-end
-
 function LIB.Load()
 	local LIBEntities = SligWolf_Addons.Entities
 

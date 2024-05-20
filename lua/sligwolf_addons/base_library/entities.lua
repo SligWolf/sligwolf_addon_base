@@ -102,12 +102,28 @@ function LIB.ToString(ent)
 	end
 
 	local name = LIB.GetName(ent) or ""
-	if name == "" then
-		name = "<unknown>"
+	local addonname = ""
+
+	if name ~= "" then
+		name = string.format("[name: %s]", name)
 	end
 
-	local str = string.format("%s[name: %s]", entStr, name)
+	if ent.sligwolf_Addonname then
+		addonname = string.format("[addon: %s]", ent.sligwolf_Addonname)
+	end
+
+	local str = string.format("%s%s%s", entStr, addonname, name)
 	return str
+end
+
+function LIB.GetSentTableFromSpawnname(sentSpawnname)
+	if not sentSpawnname then return nil end
+
+	local sentList = list.Get("SpawnableEntities") or {}
+	local sentTable = sentList[sentSpawnname]
+
+	if not sentTable then return nil end
+	return sentTable
 end
 
 function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
@@ -497,7 +513,7 @@ function LIB.GetParent(ent)
 			return parent
 		end
 
-		local parent = ent:GetNWEntity("sligwolf_parent")
+		parent = ent:GetNWEntity("sligwolf_parent")
 
 		if IsValid(parent) and parent ~= ent then
 			return parent
@@ -712,8 +728,8 @@ function LIB.GetParentBody(ent)
 
 	local body = LIB.GetNearstBody(ent)
 	local bodyParent = LIB.GetParent(body)
-	local parentBody = LIB.GetNearstBody(bodyParent)
 
+	parentBody = LIB.GetNearstBody(bodyParent)
 	if not IsValid(parentBody) then
 		parentBody = LIB.GetSuperParent(ent)
 	end
@@ -1108,7 +1124,7 @@ function LIB.GetSystemEntitiesFiltered(ent, cacheName, filterFunc)
 		return nil
 	end
 
-	local filterFunc = filterFunc or function()
+	filterFunc = filterFunc or function()
 		return true
 	end
 
@@ -1147,7 +1163,7 @@ function LIB.GetBodyEntitiesFiltered(ent, cacheName, filterFunc)
 		return nil
 	end
 
-	local filterFunc = filterFunc or function()
+	filterFunc = filterFunc or function()
 		return true
 	end
 

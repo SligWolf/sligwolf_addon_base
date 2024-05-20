@@ -11,7 +11,9 @@ if not SLIGWOLF_ADDON then
 end
 
 local SligWolf_Addons = SligWolf_Addons
+
 local LIBVehicle = SligWolf_Addons.Vehicle
+local LIBPhysics = SligWolf_Addons.Physics
 
 function SLIGWOLF_ADDON:MakeVehicle(spawnname, plyOwner, parent, name)
 	local ent = LIBVehicle.MakeVehicle(spawnname, plyOwner, parent, name, self.Addonname)
@@ -85,10 +87,11 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 	vehicleTable = table.Copy(vehicleTable)
 
 	vehicle.sligwolf_entity = true
-	vehicle.sligwolf_physEntity = true
 	vehicle.sligwolf_vehicle = true
 
 	vehicle.sligwolf_Addonname = self.Addonname
+
+	LIBPhysics.InitializeAsPhysEntity(vehicle)
 
 	local ply = vehicle.sligwolf_SpawnerPlayer
 	vehicle.sligwolf_SpawnerPlayer = nil
