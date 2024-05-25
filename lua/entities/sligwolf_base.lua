@@ -6,11 +6,12 @@ DEFINE_BASECLASS("base_anim")
 ENT.Spawnable				= false
 ENT.AdminOnly				= false
 ENT.RenderGroup 			= RENDERGROUP_BOTH
-ENT.AutomaticFrameAdvance 	= true
+ENT.AutomaticFrameAdvance 	= false
 ENT.DoNotDuplicate 			= true
 
 ENT.sligwolf_entity			= true
 ENT.sligwolf_baseEntity		= true
+ENT.sligwolf_allowAnimation	= false
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
@@ -168,33 +169,33 @@ function ENT:Debug(Size, Col, Time)
 end
 
 function ENT:SetAnim(anim, frame, rate)
-	if not self.Animated then
-		self.Animated = true
+	self:ActivateAnimation()
+	LIBBones.SetAnim(self, anim, frame, rate)
+end
 
-		local oldThink = self.Think
-		local newThink = nil
-
-		if oldThink then
-			newThink = function(this)
-				oldThink(this)
-				this:NextThink(CurTime())
-				return true
-			end
-		else
-			newThink = function(this)
-				this:NextThink(CurTime())
-				return true
-			end
-		end
-
-		self.Think = newThink
+function ENT:ActivateAnimation()
+	if not self.sligwolf_allowAnimation then
+		error("ent.sligwolf_allowAnimation is not set, can not animate!")
+		return
 	end
 
-	LIBBones.SetAnim(self, anim, frame, rate)
+	if self.isAnimated then
+		return
+	end
+
+	self.isAnimated = true
+	self:SetAutomaticFrameAdvance(true)
+	self:NextThink(CurTime())
+end
+
+function ENT:ThinkInternal()
+	-- override me
 end
 
 function ENT:Think()
 	BaseClass.Think(self)
+
+	local result = self:ThinkInternal()
 
 	local nextSlowThink = self.NextSlowThink or 0
 	local now = CurTime()
@@ -202,6 +203,15 @@ function ENT:Think()
 	if nextSlowThink < now then
 		self:SlowThink()
 		self.NextSlowThink = now + 0.5
+	end
+
+	if self.isAnimated then
+		self:NextThink(CurTime())
+		return true
+	end
+
+	if result then
+		return true
 	end
 end
 

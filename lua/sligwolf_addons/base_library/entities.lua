@@ -277,8 +277,8 @@ function LIB.RemoveEntityWithEffects(ent)
 	ent:SetNoDraw(true)
 
 	local ed = EffectData()
-	ed:SetOrigin( ent:GetPos() )
-	ed:SetEntity( ent )
+	ed:SetOrigin(ent:GetPos())
+	ed:SetEntity(ent)
 
 	util.Effect("entity_remove", ed, true, true)
 end
@@ -1468,8 +1468,8 @@ function LIB.SetUnsolidToPlayerRecursive(ent, unsolid)
 	end
 end
 
-function LIB.GetDrivableVehicle(ent)
-	local root = LIB.GetSuperParent(srcEnt)
+function LIB.GetHeadVehicle(ent)
+	local root = LIB.GetSuperParent(ent)
 
 	if not IsValid(root) then
 		return
@@ -1486,7 +1486,7 @@ function LIB.GetDrivableVehicle(ent)
 			continue
 		end
 
-		if not thisent.sligwolf_drivableVehicle then
+		if not thisent.sligwolf_headVehicle then
 			continue
 		end
 
@@ -1497,7 +1497,7 @@ function LIB.GetDrivableVehicle(ent)
 end
 
 function LIB.GetDriver(ent)
-	local vehicle = LIB.GetDrivableVehicle(ent)
+	local vehicle = LIB.GetHeadVehicle(ent)
 
 	if not IsValid(vehicle) then
 		return
@@ -1512,7 +1512,7 @@ function LIB.GetDriver(ent)
 end
 
 function LIB.GetPassengers(ent, includeDriver)
-	local root = LIB.GetSuperParent(srcEnt)
+	local root = LIB.GetSuperParent(ent)
 
 	if not IsValid(root) then
 		return
@@ -1531,12 +1531,12 @@ function LIB.GetPassengers(ent, includeDriver)
 			continue
 		end
 
-		local thispassenger = vehicle:GetDriver()
+		local thispassenger = thisent:GetDriver()
 		if not IsValid(thispassenger) then
 			continue
 		end
 
-		if not includeDriver and thisent.sligwolf_drivableVehicle then
+		if not includeDriver and thisent.sligwolf_headVehicle then
 			continue
 		end
 
@@ -1544,6 +1544,7 @@ function LIB.GetPassengers(ent, includeDriver)
 	end
 
 	passengers = table.ClearKeys(passengers)
+
 	return passengers
 end
 

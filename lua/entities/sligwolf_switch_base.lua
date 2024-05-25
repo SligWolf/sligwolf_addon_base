@@ -6,10 +6,11 @@ DEFINE_BASECLASS("sligwolf_phys")
 ENT.Spawnable				= false
 ENT.AdminOnly				= false
 ENT.RenderGroup 			= RENDERGROUP_BOTH
-ENT.AutomaticFrameAdvance 	= true
 ENT.DoNotDuplicate 			= true
 
 ENT.WireDebugName			= "sligwolf_switch"
+
+ENT.sligwolf_allowAnimation	= true
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
@@ -145,7 +146,9 @@ function ENT:SpawnCollision(model, pos, ang)
 	return Prop
 end
 
-function ENT:Think()
+function ENT:ThinkInternal()
+	BaseClass.ThinkInternal(self)
+
 	if not self.Statedata then return end
 
 	local state = self.State or 1

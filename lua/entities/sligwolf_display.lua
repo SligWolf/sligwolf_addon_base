@@ -99,7 +99,9 @@ function ENT:OnRemove()
 	BaseClass.OnRemove(self)
 end
 
-function ENT:Think()
+function ENT:ThinkInternal()
+	BaseClass.ThinkInternal(self)
+
 	local isON = self:IsOn()
 
 	if not isON then

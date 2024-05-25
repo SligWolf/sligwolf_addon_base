@@ -220,7 +220,9 @@ function ENT:OnRemove()
 	self:Disconnect(self.connected)
 end
 
-function ENT:Think()
+function ENT:ThinkInternal()
+	BaseClass.ThinkInternal(self)
+
 	if IsValid(self.connected) and not IsValid(self.constraint) then
 		self:Disconnect(self.connected)
 	end

@@ -180,8 +180,6 @@ function LIB.RemoveSpamCollisionEntities(ent)
 			return
 		end
 
-		LIBEntities.RemoveSystemEntites(ent, true)
-
 		local printName = LIBEntities.GetPrintName(ent)
 
 		local owner = LIBEntities.GetOwner(ent)
@@ -194,19 +192,23 @@ function LIB.RemoveSpamCollisionEntities(ent)
 		local carringPlayers = LIBPhysgun.GetPhysgunCarringPlayers(ent) or {}
 		local passengers = LIBEntities.GetPassengers(ent, true) or {}
 
-		LIBTimer.Once("NotifyRemovedSpamCollisionEntities", 0.25, function()
-			local rf = RecipientFilter()
+		local rf = RecipientFilter()
+
+		if IsValid(owner) then
 			rf:AddPlayer(owner)
-			rf:AddPlayers(carringPlayers)
-			rf:AddPlayers(passengers)
+		end
 
-			local message = LIBPrint.FormatMessage(
-				"Removed %s! Stuck or laggy physics!",
-				printName
-			)
+		rf:AddPlayers(carringPlayers)
+		rf:AddPlayers(passengers)
 
-			LIBPrint.Notify(NOTIFY_ERROR, message, 5, rf)
-		end)
+		local message = LIBPrint.FormatMessage(
+			"Removed %s! Stuck or laggy physics!",
+			printName
+		)
+
+		LIBPrint.Notify(NOTIFY_ERROR, message, 5, rf)
+
+		LIBEntities.RemoveSystemEntites(ent, true)
 	end)
 end
 

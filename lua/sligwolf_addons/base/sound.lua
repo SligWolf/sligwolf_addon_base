@@ -114,7 +114,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 90,
-	sound = "vehicles/Crane/crane_startengine1.wav"
+	sound = "vehicles/crane/crane_startengine1.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
@@ -122,7 +122,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	channel = CHAN_STATIC,
 	volume = 1.0,
 	level = 90,
-	sound = "vehicles/Crane/crane_turn_loop2.wav"
+	sound = "vehicles/crane/crane_turn_loop2.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
@@ -131,7 +131,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 	volume = 1.0,
 	level = 90,
 	pitch = {90, 120},
-	sound = "vehicles/Crane/crane_extend_loop1.wav"
+	sound = "vehicles/crane/crane_extend_loop1.wav"
 })
 
 return true

@@ -103,7 +103,9 @@ function ENT:CreateProjectedTexture()
 	self.flashlighttex = ProjectedTexture()
 end
 
-function ENT:Think()
+function ENT:ThinkInternal()
+	BaseClass.ThinkInternal(self)
+
 	local isON = self:IsOn()
 
 	if not IsValid(self.flashlighttex) and isON then

@@ -1,7 +1,7 @@
 AddCSLuaFile()
 local SligWolf_Addons = SligWolf_Addons
 
-DEFINE_BASECLASS("sligwolf_base")
+DEFINE_BASECLASS("sligwolf_animatable")
 
 ENT.Spawnable			= false
 ENT.RenderGroup 		= RENDERGROUP_OPAQUE
@@ -175,8 +175,8 @@ function ENT:UpdateRotation()
 	self:InvalidateBoneCache()
 end
 
-function ENT:Think()
-	BaseClass.Think(self)
+function ENT:ThinkInternal()
+	BaseClass.ThinkInternal(self)
 
 	if SERVER then return end
 	self:UpdateRotation()

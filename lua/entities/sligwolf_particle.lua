@@ -149,7 +149,8 @@ function ENT:Get_EndLength()
 	return self:GetNetworkRVarNumber("EndLength", 0)
 end
 
-function ENT:Think()
+function ENT:ThinkInternal()
+	BaseClass.ThinkInternal(self)
 
 	local Delay = self.Delay or 0
 	local Time = self:Get_SpawnTime() or EmitTime

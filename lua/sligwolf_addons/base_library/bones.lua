@@ -47,13 +47,16 @@ function LIB.GetBoneArray(ent)
 		Positions = BonePosArray,
 	}
 
-	ent.SLIGWOLF_EntArray_Bone_Ang_Pos = EntArray
+	local entTable = ent:SligWolf_GetTable()
+	entTable.Bone_Ang_Pos = EntArray
 end
 
 function LIB.CheckBoneArray(ent)
 	if not IsValid(ent) then return false end
 
-	local tb0 = ent.SLIGWOLF_EntArray_Bone_Ang_Pos
+	local entTable = ent:SligWolf_GetTable()
+
+	local tb0 = entTable.Bone_Ang_Pos
 	if not istable(tb0) then return false end
 
 	local Check = table.GetKeys(tb0)
@@ -84,7 +87,8 @@ function LIB.BoneEdit(ent, name, ang, vec)
 	local Check = LIB.CheckBoneArray(ent)
 	if not Check then return end
 
-	local TB = ent.SLIGWOLF_EntArray_Bone_Ang_Pos
+	local entTable = ent:SligWolf_GetTable()
+	local TB = entTable.Bone_Ang_Pos
 
 	name = name or nil
 	local Bone = ent:LookupBone(name)

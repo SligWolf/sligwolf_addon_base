@@ -7,6 +7,8 @@ ENT.Spawnable 				= false
 ENT.AdminOnly 				= false
 ENT.DoNotDuplicate 			= false
 
+ENT.sligwolf_allowAnimation	= true
+
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
