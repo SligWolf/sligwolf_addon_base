@@ -1,0 +1,46 @@
+//=============================================================================
+//===================== Game data for SW Base Vehicles ========================
+//============================= Made by SligWolf ==============================
+
+@include "garrysmod.fgd"
+
+@BaseClass = SligwolfSpawnname
+[
+	sligwolf_spawnname(string) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW vehicle that you want to spawn. " +
+		"Be sure to use the correct spawnname to the correct vehicle class!"
+]
+
+@BaseClass base(SligwolfSpawnname) = SligwolfVehicle
+[
+]
+
+@BaseClass base(prop_vehicle_prisoner_pod, SligwolfVehicle) = SligwolfVehicle_prop_vehicle_prisoner_pod
+[
+]
+
+@BaseClass base(prop_vehicle_airboat, SligwolfVehicle) = SligwolfVehicle_prop_vehicle_airboat
+[
+]
+
+@BaseClass base(prop_vehicle_jeep, SligwolfVehicle) = SligwolfVehicle_prop_vehicle_jeep
+[
+]
+
+
+@PointClass base(SligwolfVehicle_prop_vehicle_prisoner_pod) studioprop() = prop_vehicle_prisoner_pod :
+	"Combine prisoner pod that the player can ride in."
+[
+]
+
+@PointClass base(SligwolfVehicle_prop_vehicle_airboat) studioprop() = prop_vehicle_airboat :
+	"Driveable studiomodel airboat."
+[
+]
+
+@PointClass base(SligwolfVehicle_prop_vehicle_jeep) studioprop() = prop_vehicle_jeep :
+	"Driveable studiomodel jeep."
+[
+]
+
