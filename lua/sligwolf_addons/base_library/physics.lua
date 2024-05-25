@@ -49,9 +49,7 @@ local function runCallOnCollideList(ent, data)
 	end
 
 	for key, thisFunction in pairs(callOnCollide) do
-		ProtectedCall(function()
-			thisFunction(ent, superparent, data)
-		end)
+		thisFunction(ent, superparent, data)
 	end
 end
 

@@ -116,6 +116,29 @@ function LIB.ToString(ent)
 	return str
 end
 
+function LIB.GetPrintName(ent)
+	if not IsValid(ent) then
+		return "No Entity"
+	end
+
+	local name = string.Trim(ent.PrintName or "")
+	if name ~= "" then
+		return name
+	end
+
+	name = string.Trim(ent.NPCData and ent.NPCData.Name or "")
+	if name ~= "" then
+		return name
+	end
+
+	name = string.Trim(ent.VehicleTable and ent.VehicleTable.Name or "")
+	if name ~= "" then
+		return name
+	end
+
+	return ent:GetClass()
+end
+
 function LIB.GetSentTableFromSpawnname(sentSpawnname)
 	if not sentSpawnname then return nil end
 
@@ -1240,9 +1263,9 @@ function LIB.EnableSystemMotion(srcEnt, motion)
 		return
 	end
 
-	local rootEntities = LIB.GetSystemEntities(root)
+	local systemEntities = LIB.GetSystemEntities(root)
 
-	for _, thisent in ipairs(rootEntities) do
+	for _, thisent in ipairs(systemEntities) do
 		if not LIB.CanApplyBodySystemMotion(thisent) then
 			continue
 		end
@@ -1443,6 +1466,85 @@ function LIB.SetUnsolidToPlayerRecursive(ent, unsolid)
 		child:SetCollisionGroup(oldCollisionGroup)
 		entTable.sligwolf_oldCollisionGroupForPlayers = nil
 	end
+end
+
+function LIB.GetDrivableVehicle(ent)
+	local root = LIB.GetSuperParent(srcEnt)
+
+	if not IsValid(root) then
+		return
+	end
+
+	local systemEntities = LIB.GetSystemEntities(root)
+
+	for _, thisent in ipairs(systemEntities) do
+		if not thisent:IsVehicle() then
+			continue
+		end
+
+		if not thisent:IsValidVehicle() then
+			continue
+		end
+
+		if not thisent.sligwolf_drivableVehicle then
+			continue
+		end
+
+		return thisent
+	end
+
+	return
+end
+
+function LIB.GetDriver(ent)
+	local vehicle = LIB.GetDrivableVehicle(ent)
+
+	if not IsValid(vehicle) then
+		return
+	end
+
+	local driver = vehicle:GetDriver()
+	if not IsValid(driver) then
+		return
+	end
+
+	return driver
+end
+
+function LIB.GetPassengers(ent, includeDriver)
+	local root = LIB.GetSuperParent(srcEnt)
+
+	if not IsValid(root) then
+		return
+	end
+
+	local systemEntities = LIB.GetSystemEntities(root)
+
+	local passengers = {}
+
+	for _, thisent in ipairs(systemEntities) do
+		if not thisent:IsVehicle() then
+			continue
+		end
+
+		if not thisent:IsValidVehicle() then
+			continue
+		end
+
+		local thispassenger = vehicle:GetDriver()
+		if not IsValid(thispassenger) then
+			continue
+		end
+
+		if not includeDriver and thisent.sligwolf_drivableVehicle then
+			continue
+		end
+
+		passengers[thispassenger] = thispassenger
+	end
+
+	passengers = table.ClearKeys(passengers)
+	return passengers
 end
 
 return true

@@ -88,6 +88,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 
 	vehicle.sligwolf_entity = true
 	vehicle.sligwolf_vehicle = true
+	vehicle.sligwolf_drivableVehicle = true
 
 	vehicle.sligwolf_Addonname = self.Addonname
 

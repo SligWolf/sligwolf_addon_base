@@ -16,7 +16,7 @@ table.Empty(SligWolf_Addons.Spamprotection)
 local LIB = SligWolf_Addons.Spamprotection
 
 local g_maxCollisionSpamCount = 30
-local g_maxStableTime = 10
+local g_stableAfterTime = 10
 
 local LIBEntities = nil
 local LIBPhysics = nil
@@ -67,7 +67,7 @@ function LIB.DelayNextSpawn(ply)
 	end
 
 	local now = RealTime()
-	LIB.SetNextAllowedSpawnTime(ply, now + 0.15)
+	LIB.SetNextAllowedSpawnTime(ply, now + 0.05)
 end
 
 function LIB.DelayNextSpawnForOwner(ent)
@@ -124,18 +124,7 @@ function LIB.CanSpawn(ply, spawnTable)
 		return true
 	end
 
-	local now = RealTime()
-	local nextSpawnTime = LIB.GetNextAllowedSpawnTime(ply)
-	local left = math.max(nextSpawnTime - now, 0)
-
-	local message = nil
-
-	if left <= 1 then
-		message = LIBPrint.FormatMessage("You are spawning too often, please slow down!")
-	else
-		message = LIBPrint.FormatMessage("You are spawning too often, please slow down! (%0.2f sec left)", left)
-	end
-
+	local message = LIBPrint.FormatMessage("You are spawning too often, please slow down!")
 	LIBPrint.Notify(NOTIFY_ERROR, message, 3, ply)
 
 	return false
@@ -145,6 +134,9 @@ function LIB.AddCollisionHooks(ent)
 	if not IsValid(ent) then
 		return
 	end
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.stableAfterTick = engine.TickCount() + 66 * g_stableAfterTime
 
 	LIBPhysics.CallOnCollide(ent, "SpamCount", function(thisent, superparent, data)
 		if not superparent then
@@ -177,40 +169,51 @@ function LIB.AddCollisionHooks(ent)
 end
 
 function LIB.RemoveSpamCollisionEntities(ent)
-	if not IsValid(ent) then
+	if LIBEntities.IsMarkedForDeletion(ent) then
 		return
 	end
 
 	LIBEntities.EnableSystemMotion(ent, false)
-	LIBEntities.RemoveSystemEntites(ent, true)
 
-	local owner = LIBEntities.GetOwner(ent)
-	if IsValid(owner) then
-		LIBPrint.Print("Removed entity, because of stuck or laggy physics!\n  Entity: %s\n  Owner: %s", ent, owner)
-	else
-		LIBPrint.Print("Removed entity, because of stuck or laggy physics!\n  Entity: %s", ent)
-	end
-
-	LIBTimer.Once("NotifyRemovedSpamCollisionEntities", 0.25, function()
-		if not IsValid(ent) then
+	LIBTimer.SimpleNextFrame(function()
+		if LIBEntities.IsMarkedForDeletion(ent) then
 			return
 		end
 
-		local thisOwner = LIBEntities.GetOwner(ent)
-		if not IsValid(thisOwner) then
-			return
+		LIBEntities.RemoveSystemEntites(ent, true)
+
+		local printName = LIBEntities.GetPrintName(ent)
+
+		local owner = LIBEntities.GetOwner(ent)
+		if IsValid(owner) then
+			LIBPrint.Print("Removed %s, because of stuck or laggy physics!\n  Entity: %s\n  Owner: %s\n", printName, ent, owner)
+		else
+			LIBPrint.Print("Removed %s, because of stuck or laggy physics!\n  Entity: %s\n", printName, ent)
 		end
 
-		local message = LIBPrint.FormatMessage("Removed stuck and laggy physics!")
-		LIBPrint.Notify(NOTIFY_ERROR, message, 2, thisOwner)
+		local carringPlayers = LIBPhysgun.GetPhysgunCarringPlayers(ent) or {}
+		local passengers = LIBEntities.GetPassengers(ent, true) or {}
+
+		LIBTimer.Once("NotifyRemovedSpamCollisionEntities", 0.25, function()
+			local rf = RecipientFilter()
+			rf:AddPlayer(owner)
+			rf:AddPlayers(carringPlayers)
+			rf:AddPlayers(passengers)
+
+			local message = LIBPrint.FormatMessage(
+				"Removed %s! Stuck or laggy physics!",
+				printName
+			)
+
+			LIBPrint.Notify(NOTIFY_ERROR, message, 5, rf)
+		end)
 	end)
-
-	return
 end
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPhysics = SligWolf_Addons.Physics
+	LIBPhysgun = SligWolf_Addons.Physgun
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
@@ -260,51 +263,55 @@ function LIB.Load()
 
 		LIBHook.Add("PlayerSpawnSENT", "Library_SpamProtection_AntiSentSpam", AntiSentSpam, 1000)
 
-		local function CalcSystemCollisionCountDelta()
-			if g_maxCollisionSpamCount <= 0 then
-				return
+		if g_maxCollisionSpamCount > 0 then
+			local function removeCandidatesSorter(a, b)
+				-- Newest entity first
+				return a:GetCreationTime() > b:GetCreationTime()
 			end
 
-			local collidingSystems = LIBPhysics.GetCollidingSystems(ent)
+			local function RemoveSpamCollisions()
+				local collidingSystems = LIBPhysics.GetCollidingSystems(ent)
 
-			local removed = false
+				local removeCandidates = {}
+				local nowTick = engine.TickCount()
 
-			for id, superparent in pairs(collidingSystems) do
-				if not IsValid(superparent) then
-					continue
+				for _, superparent in pairs(collidingSystems) do
+					if LIBEntities.IsMarkedForDeletion(superparent) then
+						continue
+					end
+
+					local superparentTable = superparent:SligWolf_GetTable()
+
+					local delta = superparentTable.systemCollisionSpamCount or 0
+					superparentTable.systemCollisionSpamCount = 0
+
+					if delta < g_maxCollisionSpamCount then
+						continue
+					end
+
+					local stableAfterTick = superparentTable.stableAfterTick
+					if stableAfterTick and stableAfterTick <= nowTick then
+						-- Entities living long enough ticks are considered as stable.
+						return
+					end
+
+					table.insert(removeCandidates, superparent)
 				end
 
-				local superparentTable = superparent:SligWolf_GetTable()
+				if not table.IsEmpty(removeCandidates) then
+					-- Remove the newest entity first
+					table.sort(removeCandidates, removeCandidatesSorter)
 
-				local delta = superparentTable.systemCollisionSpamCount or 0
-				superparentTable.systemCollisionSpamCount = 0
-
-				if removed then
-					-- only remove one at a time
-					continue
+					for _, removeCandidate in ipairs(removeCandidates) do
+						-- Remove only one entity at a time
+						LIB.RemoveSpamCollisionEntities(removeCandidate)
+						break
+					end
 				end
-
-				if delta < g_maxCollisionSpamCount then
-					continue
-				end
-
-				local now = CurTime()
-				local creationTime = superparent:GetCreationTime()
-				local age = math.max(now - creationTime, 0)
-
-				if age >= g_maxStableTime then
-					-- Entities older than 10 sec are considered as stable.
-					return
-				end
-
-				LIB.RemoveSpamCollisionEntities(superparent)
-				removed = true
 			end
 
-			-- @TODO always remove the newest entity first
+			LIBHook.Add("Tick", "Library_SpamProtection_RemoveSpamCollisions", RemoveSpamCollisions, 2000)
 		end
-
-		LIBHook.Add("Tick", "Library_SpamProtection_CalcSystemCollisionCountDelta", CalcSystemCollisionCountDelta, 2000)
 	end
 end
 

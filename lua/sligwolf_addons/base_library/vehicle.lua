@@ -184,13 +184,14 @@ function LIB.SetDriverMaxHealth(ply, maxHealth, thresholdAsFull)
 
 	local oldMaxHealth = ply:GetMaxHealth()
 	local curHealth = ply:Health()
+	local plyTable = ply:SligWolf_GetTable()
 
-	if not ply.__SLIGWOLF_oldMaxHealth then
-		ply.__SLIGWOLF_oldMaxHealth = oldMaxHealth
+	if not plyTable.driverOldMaxHealth then
+		plyTable.driverOldMaxHealth = oldMaxHealth
 	end
 
-	if not ply.__SLIGWOLF_oldHealth then
-		ply.__SLIGWOLF_oldHealth = curHealth
+	if not plyTable.driverOldHealth then
+		plyTable.driverOldHealth = curHealth
 	end
 
 	if curHealth > maxHealth then
@@ -209,22 +210,24 @@ end
 function LIB.ResetDriverMaxHealth(ply)
 	if not IsValid(ply) then return end
 
-	local maxHP = ply.__SLIGWOLF_oldMaxHealth
+	local plyTable = ply:SligWolf_GetTable()
+
+	local maxHP = plyTable.driverOldMaxHealth
 	if not maxHP then return end
 
 	local curHealth = ply:Health()
 
 	LIB.SetDriverMaxHealth(ply, maxHP, 1)
 
-	ply.__SLIGWOLF_oldMaxHealth = nil
+	plyTable.driverOldMaxHealth = nil
 
-	local oldHP = ply.__SLIGWOLF_oldHealth
+	local oldHP = plyTable.driverOldHealth
 	if not oldHP then return end
 
 	local hp = math.min(curHealth, oldHP, maxHP)
 	ply:SetHealth(hp)
 
-	ply.__SLIGWOLF_oldHealth = nil
+	plyTable.driverOldHealth = nil
 end
 
 function LIB.Load()

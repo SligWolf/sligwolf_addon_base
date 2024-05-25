@@ -166,44 +166,56 @@ function LIB.Debug(format, ...)
 	MsgN(message)
 end
 
-local g_soundMap = {
-	[NOTIFY_ERROR] = Sound("buttons/button10.wav"),
-}
+if CLIENT then
+	local g_soundMap = {
+		[NOTIFY_ERROR] = Sound("buttons/button10.wav"),
+	}
 
-function LIB.Notify(mode, message, len, ply)
-	mode = mode or NOTIFY_GENERIC
+	function LIB.Notify(mode, message, len)
+		mode = mode or NOTIFY_GENERIC
 
-	message = tostring(message or "")
-	if message == "" then
-		message = "Empty message!"
-	end
+		message = tostring(message or "")
+		if message == "" then
+			message = "Empty message!"
+		end
 
-	len = tonumber(len or 0) or 0
-	if len <= 0 then
-		len = 3
-	end
+		len = tonumber(len or 0) or 0
+		if len <= 0 then
+			len = 3
+		end
 
-	if CLIENT then
 		notification.AddLegacy(message, mode, len)
 
 		local soundName = g_soundMap[mode]
 		if soundName then
 			surface.PlaySound(soundName)
 		end
-
-		return
 	end
+else
+	function LIB.Notify(mode, message, len, recipientFilterOrPly)
+		mode = mode or NOTIFY_GENERIC
 
-	LIBNet.Start("Notify")
+		message = tostring(message or "")
+		if message == "" then
+			message = "Empty message!"
+		end
 
-	net.WriteUInt(mode, 8)
-	net.WriteString(message)
-	net.WriteFloat(len)
+		len = tonumber(len or 0) or 0
+		if len <= 0 then
+			len = 3
+		end
 
-	if ply then
-		LIBNet.Send(ply)
-	else
-		LIBNet.SendAll()
+		LIBNet.Start("Notify")
+
+		net.WriteUInt(mode, 8)
+		net.WriteString(message)
+		net.WriteFloat(len)
+
+		if recipientFilterOrPly then
+			LIBNet.Send(recipientFilterOrPly)
+		else
+			LIBNet.SendAll()
+		end
 	end
 end
 
