@@ -133,6 +133,27 @@ function LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 	return vehicleSpawnname
 end
 
+function LIB.IsSpawnedByEngine(vehicle)
+	if not IsValid(vehicle) then return false end
+	if not vehicle:IsVehicle() then return false end
+
+	local entTable = vehicle:SligWolf_GetTable()
+	if entTable.isSpawnedByEngine then
+		return true
+	end
+
+	if vehicle:CreatedByMap() then
+		return true
+	end
+
+	local vehicleSpawnname = tostring(vehicle.VehicleName or "")
+	if vehicleSpawnname == "" then
+		return true
+	end
+
+	return false
+end
+
 function LIB.GetVehicleTableFromVehicle(vehicle)
 	local vehicleSpawnname = LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 	if not vehicleSpawnname then

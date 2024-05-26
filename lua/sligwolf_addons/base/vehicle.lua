@@ -84,6 +84,11 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 		return
 	end
 
+	local entTable = vehicle:SligWolf_GetTable()
+
+	local isSpawnedByEngine = LIBVehicle.IsSpawnedByEngine(vehicle)
+	entTable.isSpawnedByEngine = isSpawnedByEngine
+
 	vehicleTable = table.Copy(vehicleTable)
 
 	vehicle.sligwolf_entity = true
@@ -96,6 +101,24 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 
 	local ply = vehicle.sligwolf_SpawnerPlayer
 	vehicle.sligwolf_SpawnerPlayer = nil
+
+	if isSpawnedByEngine then
+		local keyValues = vehicleTable.KeyValues
+
+		for k, v in pairs(keyValues) do
+
+			local kLower = string.lower(k)
+
+			if (kLower == "vehiclescript" or
+				kLower == "limitview"     or
+				kLower == "vehiclelocked" or
+				kLower == "cargovisible"  or
+				kLower == "enablegun")
+			then
+				vehicle:SetKeyValue(k, v)
+			end
+		end
+	end
 
 	vehicle.VehicleName = vehicleSpawnname
 	vehicle.VehicleTable = vehicleTable
