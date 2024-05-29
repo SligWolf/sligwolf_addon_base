@@ -139,7 +139,7 @@ function ENT:Get_StartLength()
 	return self:GetNetworkRVarNumber("StartLength", 0)
 end
 
-function ENT:EndLength(num)
+function ENT:Set_EndLength(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("EndLength", num)

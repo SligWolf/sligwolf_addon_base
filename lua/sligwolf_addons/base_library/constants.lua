@@ -106,8 +106,8 @@ CONSTANTS.mdlControlpanel = Model("models/sligwolf/base/unique/button_controlfie
 -- numbers
 CONSTANTS.skinError = 0
 CONSTANTS.numAutoBrake = 150
-CONSTANTS.numAcceleration = 150
-CONSTANTS.numEmergencyBrake = 450
+CONSTANTS.numAcceleration = 75
+CONSTANTS.numEmergencyBrake = 250
 CONSTANTS.numConMass = 5000
 CONSTANTS.numConRadius = 17
 CONSTANTS.numBlinkInterval1 = 0.4

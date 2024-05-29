@@ -15,30 +15,6 @@ table.Empty(SligWolf_Addons.Util)
 
 local LIB = SligWolf_Addons.Util
 
-local LIBConvar = nil
-local LIBPrint = nil
-
-function LIB.Load()
-	LIBConvar = SligWolf_Addons.Convar
-	LIBPrint = SligWolf_Addons.Print
-end
-
-function LIB.IsDeveloper()
-	-- @TODO: replace with LIBDebug.IsDeveloper
-
-	if not LIBConvar then
-		return false
-	end
-
-	local isdebug = LIBConvar.IsDebug()
-	if not isdebug then
-		return false
-	end
-
-	LIBPrint.ErrorNoHaltWithStack("SligWolf_Addons.Util.IsDeveloper() is deprecated use SligWolf_Addons.Debug.IsDeveloper() instead.")
-	return isdebug
-end
-
 function LIB.ValidateName(name)
 	name = tostring(name or "")
 	name = string.gsub(name, "^!", "", 1)
