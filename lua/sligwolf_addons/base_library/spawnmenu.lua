@@ -1012,7 +1012,7 @@ function LIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
 
 	vehicleListItem.KeyValues = keyValues
 	vehicleListItem.KeyValues.vehiclescript = vehiclescript
-	vehicleListItem.KeyValues.limitview = keyValues.limitview and 1 or 0
+	vehicleListItem.KeyValues.limitview = tobool(keyValues.limitview) and 1 or 0
 
 	vehicleListItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
