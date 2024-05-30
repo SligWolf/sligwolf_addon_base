@@ -150,6 +150,8 @@ function LIB.GetSentTableFromSpawnname(sentSpawnname)
 end
 
 function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
+	if not SERVER then return end
+
 	local ent = ents.Create(classname)
 	if not IsValid(ent) then
 		return nil
@@ -1227,8 +1229,8 @@ function LIB.GetKeyValues(ent)
 end
 
 function LIB.GetKeyValue(ent, key)
-	local kv = LIB.GetKeyValues(ent)
-	return kv[key]
+	local keyValues = LIB.GetKeyValues(ent)
+	return keyValues[key]
 end
 
 function LIB.CanApplyBodySystemMotion(ent)

@@ -214,7 +214,9 @@ local function GetColor(superparent, colorOrColorName)
 		return colorOrColorName
 	end
 
-	local customProperties = superparent.sligwolf_customProperties or {}
+	local superparentTable = superparent:SligWolf_GetTable()
+
+	local customProperties = superparentTable.customSpawnProperties or {}
 	local colors = customProperties.colors or {}
 
 	local color = colors[colorOrColorName]
@@ -254,11 +256,13 @@ local function GetSkin(superparent, skinOrSkinName)
 		return skinOrSkinName
 	end
 
-	local customProperties = superparent.sligwolf_customProperties or {}
+	local superparentTable = superparent:SligWolf_GetTable()
+
+	local customProperties = superparentTable.customSpawnProperties or {}
 	local skins = customProperties.skins or {}
 
-	local skin = skins[skinOrSkinName]
-	if not skin or not isnumber(skin)  then
+	local skinValue = skins[skinOrSkinName]
+	if not skinValue or not isnumber(skinValue)  then
 		ErrorNoHaltWithStack(
 			string.format(
 				"Skin named '%s' is invalid or missing at entity '%s', replaced with a fallback skin!",
@@ -270,7 +274,7 @@ local function GetSkin(superparent, skinOrSkinName)
 		return CONSTANTS.skinError
 	end
 
-	return skin
+	return skinValue
 end
 
 local function SetPartKeyValues(ent, keyValues)

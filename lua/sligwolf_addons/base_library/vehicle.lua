@@ -31,7 +31,7 @@ function LIB.ToString(vehicle)
 		return vehicleStr
 	end
 
-	local vehicleName = tostring(vehicle.VehicleName or "")
+	local vehicleName = LIB.GetVehicleSpawnnameFromVehicle(vehicle) or ""
 	if vehicleName == "" then
 		vehicleName = "<unknown>"
 	end
@@ -41,6 +41,8 @@ function LIB.ToString(vehicle)
 end
 
 function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
+	if not SERVER then return end
+
 	if not spawnname then
 		ErrorNoHaltWithStack(
 			string.format(
@@ -67,39 +69,62 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	local mdl = vehicleTable.Model
 	local keyValues = vehicleTable.KeyValues
 	local class = vehicleTable.Class
+	local members = vehicleTable.Members
 
-	local veh = LIBEntities.MakeEnt(class, plyOwner, parent, name, addonname)
-	if not IsValid(veh) then return end
+	local vehicle = LIBEntities.MakeEnt(class, plyOwner, parent, name, addonname)
+	if not IsValid(vehicle) then return end
 
-	veh:SetModel(mdl)
+	vehicle:SetModel(mdl)
 
-	for k, v in pairs(keyValues) do
+	LIB.SetupVehicleKeyValues(vehicle, keyValues)
 
-		local kLower = string.lower(k)
+	vehicle.VehicleName = spawnname
+	vehicle.VehicleTable = vehicleTable
 
-		if (kLower == "vehiclescript" or
-			kLower == "limitview"     or
-			kLower == "vehiclelocked" or
-			kLower == "cargovisible"  or
-			kLower == "enablegun")
-		then
-			veh:SetKeyValue(k, v)
+	vehicle:Spawn()
+	vehicle:Activate()
+
+	if vehicle.SetVehicleClass then
+		vehicle:SetVehicleClass(spawnname)
+	end
+
+	vehicle.ClassOverride = class
+
+	if members then
+		table.Merge(vehicle, members)
+
+		if SERVER then
+			duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
 		end
 	end
 
-	veh.VehicleName = spawnname
-	veh.VehicleTable = vehicleTable
+	return vehicle
+end
 
-	veh:Spawn()
-	veh:Activate()
+local g_allowedVehicleKeyValues = {
+	vehiclescript = true,
+	limitview = true,
+	vehiclelocked = true,
+	cargovisible = true,
+	enablegun = true,
+}
 
-	if veh.SetVehicleClass then
-		veh:SetVehicleClass(spawnname)
+function LIB.SetupVehicleKeyValues(vehicle, keyValues)
+	if not SERVER then return end
+
+	if not IsValid(vehicle) then return end
+	if not vehicle:IsVehicle() then return end
+	if not keyValues then return end
+
+	for k, v in pairs(keyValues) do
+		local kLower = string.lower(k)
+
+		if not g_allowedVehicleKeyValues[kLower] then
+			continue
+		end
+
+		vehicle:SetKeyValue(k, v)
 	end
-
-	veh.ClassOverride = class
-
-	return veh
 end
 
 function LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
@@ -116,21 +141,34 @@ function LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 	if not IsValid(vehicle) then return nil end
 	if not vehicle:IsVehicle() then return nil end
 
-	local vehicleSpawnname = tostring(vehicle.VehicleName or "")
-	if vehicleSpawnname == "" then
-		if CLIENT then
-			return nil
-		end
+	local vehicleSpawnname = ""
 
-		vehicleSpawnname = LIBEntities.GetKeyValue(vehicle, "sligwolf_spawnname")
+	if vehicle.GetVehicleClass then
+		vehicleSpawnname = vehicle:GetVehicleClass()
 		vehicleSpawnname = tostring(vehicleSpawnname or "")
+
+		if vehicleSpawnname ~= "" then
+			return vehicleSpawnname
+		end
 	end
 
-	if vehicleSpawnname == "" then
+	vehicleSpawnname = tostring(vehicle.VehicleName or "")
+	if vehicleSpawnname ~= "" then
+		return vehicleSpawnname
+	end
+
+	if CLIENT then
 		return nil
 	end
 
-	return vehicleSpawnname
+	vehicleSpawnname = LIBEntities.GetKeyValue(vehicle, "sligwolf_spawnname")
+	vehicleSpawnname = tostring(vehicleSpawnname or "")
+
+	if vehicleSpawnname ~= "" then
+		return vehicleSpawnname
+	end
+
+	return nil
 end
 
 function LIB.IsSpawnedByEngine(vehicle)
@@ -138,9 +176,11 @@ function LIB.IsSpawnedByEngine(vehicle)
 	if not vehicle:IsVehicle() then return false end
 
 	local entTable = vehicle:SligWolf_GetTable()
-	if entTable.isSpawnedByEngine then
-		return true
+	if entTable.isSpawnedByEngine ~= nil then
+		return entTable.isSpawnedByEngine
 	end
+
+	entTable.isSpawnedByEngine = true
 
 	if vehicle:CreatedByMap() then
 		return true
@@ -151,6 +191,7 @@ function LIB.IsSpawnedByEngine(vehicle)
 		return true
 	end
 
+	entTable.isSpawnedByEngine = false
 	return false
 end
 

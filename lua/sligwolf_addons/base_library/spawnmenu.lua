@@ -734,7 +734,9 @@ function LIB.AddEntity(addonName, spawnname, obj)
 
 	entityItem.PrintName = entityItem.PrintName or tostring(obj.title or spawnname)
 	entityItem.ClassName = entityItem.ClassName or obj.class or spawnname
+
 	entityItem.Is_SLIGWOLF = true
+	entityItem.SLIGWOLF_Addonname = addonName
 
 	local keyValues = table.Copy(obj.keyValues or {})
 
@@ -910,7 +912,9 @@ function LIB.AddNPC(addonName, spawnname, obj)
 	npcListItem.Weapons = obj.weapons
 	npcListItem.Health = obj.health
 	npcListItem.OnDuplicated = obj.onDuplicated
+
 	npcListItem.Is_SLIGWOLF = true
+	npcListItem.SLIGWOLF_Addonname = addonName
 
 	npcListItem.SpawnFlags = obj.spawnFlags
 	npcListItem.KeyValues = table.Copy(obj.keyValues or {})
@@ -1000,13 +1004,15 @@ function LIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
 	vehicleListItem.Class = obj.class or "prop_vehicle_prisoner_pod"
 	vehicleListItem.Category = g_defaultNodeNameToBeRemoved
 	vehicleListItem.Model = model
+
 	vehicleListItem.Is_SLIGWOLF = true
+	vehicleListItem.SLIGWOLF_Addonname = addonName
 
 	vehicleListItem.Members = members
 
 	vehicleListItem.KeyValues = keyValues
 	vehicleListItem.KeyValues.vehiclescript = vehiclescript
-	vehicleListItem.KeyValues.limitview = keyValues.limitview or 0
+	vehicleListItem.KeyValues.limitview = keyValues.limitview and 1 or 0
 
 	vehicleListItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
