@@ -12,6 +12,7 @@ end
 
 local SligWolf_Addons = SligWolf_Addons
 
+local LIBEntities = SligWolf_Addons.Entities
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
 
@@ -84,7 +85,7 @@ function SLIGWOLF_ADDON:ValidateVehicleTable(vehicle, vehicleTable)
 	end
 
 	if SERVER then
-		local vehicleKeyValues = vehicle:GetKeyValues() or {}
+		local vehicleKeyValues = LIBEntities.GetKeyValues(vehicle)
 		local tableKeyValues = vehicleTable.KeyValues or {}
 
 		local vehicleScript = vehicleKeyValues.vehiclescript or ""
@@ -163,9 +164,6 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 
 	LIBPhysics.InitializeAsPhysEntity(vehicle)
 
-	local ply = entTable.sligwolf_SpawnerPlayer
-	entTable.sligwolf_SpawnerPlayer = nil
-
 	if isSpawnedByEngine then
 		-- We must not change the vehicle script after spawn
 		keyValues.vehiclescript = nil
@@ -195,7 +193,12 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 		end
 	end
 
-	self:CallAddonFunctionWithErrorNoHalt("SpawnVehicle", ply, vehicle, customSpawnProperties)
+	self:CallAddonFunctionWithErrorNoHalt(
+		"SpawnVehicle",
+		entTable.spawnerPlayer,
+		vehicle,
+		customSpawnProperties
+	)
 end
 
 return true

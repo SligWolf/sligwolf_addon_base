@@ -192,11 +192,14 @@ function LIB.SetupChildEntity(ent, parent, collision, attachmentid)
 		attachmentid = parent:LookupAttachment(attachmentid) or 0
 	end
 
-	collision = collision or COLLISION_GROUP_NONE
 	attachmentid = tonumber(attachmentid or 0)
 
 	ent:SetParent(parent, attachmentid)
-	ent:SetCollisionGroup(collision)
+
+	if collision then
+		ent:SetCollisionGroup(collision)
+	end
+
 	ent:SetMoveType(MOVETYPE_NONE)
 
 	ent.DoNotDuplicate = true
@@ -1224,11 +1227,26 @@ function LIB.FindPropInSphere(ent, radius, attachment, filterA, filterB)
 end
 
 function LIB.GetKeyValues(ent)
+	local keyValues = {}
+
+	for key, value in pairs(ent:GetKeyValues() or {}) do
+		key = string.lower(key)
+		keyValues[key] = value
+	end
+
 	local entTable = ent:SligWolf_GetTable()
-	return entTable.keyValues or {}
+
+	for key, value in pairs(entTable.keyValues or {}) do
+		key = string.lower(key)
+		keyValues[key] = value
+	end
+
+	return keyValues
 end
 
 function LIB.GetKeyValue(ent, key)
+	key = string.lower(key)
+
 	local keyValues = LIB.GetKeyValues(ent)
 	return keyValues[key]
 end

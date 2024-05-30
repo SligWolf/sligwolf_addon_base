@@ -361,7 +361,8 @@ function LIB.Load()
 		if not IsValid(ply) then return end
 		if not IsValid(vehicle) then return end
 
-		vehicle.sligwolf_SpawnerPlayer = ply
+		local entTable = vehicle:SligWolf_GetTable()
+		entTable.spawnerPlayer = ply
 	end
 
 	LIBHook.Add("PlayerSpawnedVehicle", "Library_Vehicle_PlayerSpawnedVehicle", PlayerSpawnedVehicle, 10000)

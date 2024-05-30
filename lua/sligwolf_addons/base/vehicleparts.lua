@@ -28,6 +28,7 @@ local g_FailbackComponentsParams = {
 	bodygroups = {},
 	shadow = false,
 	nodraw = false,
+	customPhysics = false,
 	solid = SOLID_VPHYSICS,
 	collision = COLLISION_GROUP_NONE,
 	blocked = true,
@@ -46,6 +47,9 @@ local g_FailbackComponentsParams = {
 			boneMerge = false,
 		},
 		trigger = {
+			customPhysics = true,
+			minSize = Vector(-4, -4, -4),
+			maxSize = Vector(4, 4, 4),
 		},
 		door = {
 			autoClose = true,
@@ -583,6 +587,11 @@ local function SetUnsetComponentsValuesToDefaults(component)
 	end
 	component.class = class
 
+	if component.customPhysics then
+		component.solid = nil
+		component.collision = nil
+	end
+
 	return component
 end
 
@@ -676,8 +685,15 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	end
 
 	ent:DrawShadow(shadow)
-	ent:SetSolid(solid)
-	ent:SetCollisionGroup(collision)
+
+	if solid then
+		ent:SetSolid(solid)
+	end
+
+	if collision then
+		ent:SetCollisionGroup(collision)
+	end
+
 	ent:SetNoDraw(nodraw)
 
 	if colorFromParent and ent.sligwolf_baseEntity then
@@ -958,9 +974,23 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent)
 
 	local name = component.name
 	local class = component.class
+	local minSize = component.minSize
+	local maxSize = component.maxSize
+	local filterFunc = component.filterFunc
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_trigger_search", ply, parent, "Trigger_" .. name)
+	if filterFunc and not isfunction(filterFunc) then
+		error("component.filterFunc is not a function!")
+		return
+	end
+
+	local ent = self:MakeEntEnsured(class or "sligwolf_trigger", ply, parent, "Trigger_" .. name)
 	if not IsValid(ent) then return end
+
+	ent:SetTriggerAABB(minSize, maxSize)
+
+	if filterFunc then
+		ent.PassesTriggerFilters = filterFunc
+	end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
