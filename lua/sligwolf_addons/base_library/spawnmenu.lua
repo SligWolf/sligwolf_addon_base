@@ -278,8 +278,7 @@ function LIB.GetSpawnMenuItemsOrdered(itemClass)
 				headersByAddon.headersCount = headersCount + 1
 			end
 
-			local items = itemsByHeader.items
-			table.insert(items, item)
+			table.insert(itemsByHeader.items, item)
 		end
 	end
 
@@ -599,10 +598,10 @@ end
 
 local g_PropOrder = 0
 
-function LIB.AddProp(addonName, model, obj)
-	addonName = tostring(addonName or "")
-	if addonName == "" then
-		error("no addonName")
+function LIB.AddProp(addonname, model, obj)
+	addonname = tostring(addonname or "")
+	if addonname == "" then
+		error("no addonname")
 		return
 	end
 
@@ -618,7 +617,7 @@ function LIB.AddProp(addonName, model, obj)
 
 	if not obj.hidden then
 		AddSpawnMenuItem(
-			addonName,
+			addonname,
 			"prop",
 			{
 				order = obj.order or g_PropOrder * 100,
@@ -693,10 +692,10 @@ local function g_SENTDupe(ply, sent, data)
 	entTable.isDuped = true
 end
 
-function LIB.AddEntity(addonName, spawnname, obj)
-	addonName = tostring(addonName or "")
-	if addonName == "" then
-		error("no addonName")
+function LIB.AddEntity(addonname, spawnname, obj)
+	addonname = tostring(addonname or "")
+	if addonname == "" then
+		error("no addonname")
 		return
 	end
 
@@ -712,7 +711,7 @@ function LIB.AddEntity(addonName, spawnname, obj)
 
 	if not obj.hidden then
 		AddSpawnMenuItem(
-			addonName,
+			addonname,
 			"entity",
 			{
 				order = obj.order or g_EntityOrder * 100,
@@ -736,7 +735,8 @@ function LIB.AddEntity(addonName, spawnname, obj)
 	entityItem.ClassName = entityItem.ClassName or obj.class or spawnname
 
 	entityItem.Is_SLIGWOLF = true
-	entityItem.SLIGWOLF_Addonname = addonName
+	entityItem.SLIGWOLF_Addonname = addonname
+	entityItem.SLIGWOLF_Hidden = hidden
 
 	local keyValues = table.Copy(obj.keyValues or {})
 
@@ -775,10 +775,10 @@ LIBHook.Add("PopulateEntities", "Library_Spawnmenu_PopulateEntitylistContent", P
 
 local g_WeaponOrder = 0
 
-function LIB.AddWeapon(addonName, spawnname, obj)
-	addonName = tostring(addonName or "")
-	if addonName == "" then
-		error("no addonName")
+function LIB.AddWeapon(addonname, spawnname, obj)
+	addonname = tostring(addonname or "")
+	if addonname == "" then
+		error("no addonname")
 		return
 	end
 
@@ -794,7 +794,7 @@ function LIB.AddWeapon(addonName, spawnname, obj)
 
 	if not obj.hidden then
 		AddSpawnMenuItem(
-			addonName,
+			addonname,
 			"weapon",
 			{
 				order = obj.order or g_WeaponOrder * 100,
@@ -867,10 +867,10 @@ end
 
 local g_NpcOrder = 0
 
-function LIB.AddNPC(addonName, spawnname, obj)
-	addonName = tostring(addonName or "")
-	if addonName == "" then
-		error("no addonName")
+function LIB.AddNPC(addonname, spawnname, obj)
+	addonname = tostring(addonname or "")
+	if addonname == "" then
+		error("no addonname")
 		return
 	end
 
@@ -886,7 +886,7 @@ function LIB.AddNPC(addonName, spawnname, obj)
 
 	if not obj.hidden then
 		AddSpawnMenuItem(
-			addonName,
+			addonname,
 			"npc",
 			{
 				order = obj.order or g_NpcOrder * 100,
@@ -914,7 +914,8 @@ function LIB.AddNPC(addonName, spawnname, obj)
 	npcListItem.OnDuplicated = obj.onDuplicated
 
 	npcListItem.Is_SLIGWOLF = true
-	npcListItem.SLIGWOLF_Addonname = addonName
+	npcListItem.SLIGWOLF_Addonname = addonname
+	npcListItem.SLIGWOLF_Hidden = hidden
 
 	npcListItem.SpawnFlags = obj.spawnFlags
 	npcListItem.KeyValues = table.Copy(obj.keyValues or {})
@@ -949,10 +950,10 @@ LIBHook.Add("PopulateNPCs", "Library_Spawnmenu_PopulateNPClistContent", Populate
 
 local g_VehicleOrder = 0
 
-function LIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
-	addonName = tostring(addonName or "")
-	if addonName == "" then
-		error("no addonName")
+function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
+	addonname = tostring(addonname or "")
+	if addonname == "" then
+		error("no addonname")
 		return
 	end
 
@@ -980,7 +981,7 @@ function LIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
 
 	if not obj.hidden then
 		AddSpawnMenuItem(
-			addonName,
+			addonname,
 			"vehicle",
 			{
 				order = obj.order or g_VehicleOrder * 100,
@@ -1006,7 +1007,8 @@ function LIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
 	vehicleListItem.Model = model
 
 	vehicleListItem.Is_SLIGWOLF = true
-	vehicleListItem.SLIGWOLF_Addonname = addonName
+	vehicleListItem.SLIGWOLF_Addonname = addonname
+	vehicleListItem.SLIGWOLF_Hidden = hidden
 
 	vehicleListItem.Members = members
 

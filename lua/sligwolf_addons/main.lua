@@ -944,6 +944,38 @@ function SligWolf_Addons.AutoLoadAddon(funcobj)
 	return sligwolfAddons.LoadAddon(name, true)
 end
 
+function SligWolf_Addons.GetLoadedAddonsCount()
+	local sligwolfAddons = _G.SligWolf_Addons
+	if not sligwolfAddons then
+		return 0
+	end
+
+	if not sligwolfAddons.IsLoaded then
+		return 0
+	end
+
+	if not sligwolfAddons.IsLoaded() then
+		return 0
+	end
+
+	local addondata = sligwolfAddons.Addondata
+	if not addondata then
+		return 0
+	end
+
+	local count = 0
+
+	for _, addon in pairs(addondata) do
+		if not addon.Loaded then
+			continue
+		end
+
+		count = count + 1
+	end
+
+	return count
+end
+
 function SligWolf_Addons.GetAddon(name)
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then
@@ -952,16 +984,16 @@ function SligWolf_Addons.GetAddon(name)
 
 	local addondata = sligwolfAddons.Addondata
 	if not addondata then
-		return false
+		return nil
 	end
 
 	local addon = addondata[name]
 	if not addon then
-		return false
+		return nil
 	end
 
 	if not addon.Loaded then
-		return false
+		return nil
 	end
 
 	return addon
