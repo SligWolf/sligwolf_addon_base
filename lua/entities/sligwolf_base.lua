@@ -345,7 +345,7 @@ function ENT:SetSpawnProperties(spawnProperties)
 		return
 	end
 
-	self.spawnProperties = spawnProperties or {}
+	self.spawnProperties = spawnProperties
 end
 
 function ENT:GetSpawnProperties()
@@ -353,11 +353,18 @@ function ENT:GetSpawnProperties()
 		return
 	end
 
-	return self.spawnProperties or {}
+	return self.spawnProperties or self.defaultSpawnProperties or {}
 end
 
 function ENT:GetSpawnProperty(name)
-	return self:GetSpawnProperties()[name]
+	local spawnProperties = self:GetSpawnProperties()
+
+	if spawnProperties[name] ~= nil then
+		return spawnProperties[name]
+	end
+
+	local defaultSpawnProperties = self.defaultSpawnProperties or {}
+	return defaultSpawnProperties[name]
 end
 
 function ENT:GetSpawnName()
