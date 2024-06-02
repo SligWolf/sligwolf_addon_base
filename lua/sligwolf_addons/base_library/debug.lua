@@ -17,10 +17,14 @@ local LIB = SligWolf_Addons.Debug
 
 local LIBConvar = nil
 local LIBPrint = nil
+local LIBUtil = nil
+local LIBFile = nil
 
 function LIB.Load()
 	LIBConvar = SligWolf_Addons.Convar
 	LIBPrint = SligWolf_Addons.Print
+	LIBUtil = SligWolf_Addons.Util
+	LIBFile = SligWolf_Addons.File
 end
 
 function LIB.IsDeveloper()
@@ -226,6 +230,203 @@ function LIB.HighlightEntities(entities, color)
 	else
 		LIB.Print("Debug.HighlightEntities: Highlighting %i Entities", count)
 	end
+end
+
+local g_fgdFile = [[
+//=============================================================================
+//===================== Game data for SW Base Vehicles ========================
+//============================= Made by SligWolf ==============================
+
+// Please also also include garrymod.fgd or halflife2.fgd in Hammer for optimal results.
+// Generated file:
+//   Date:     {{SW_GENERATED_AT}}
+//   Addons:   {{SW_ADDON_COUNT}}
+//   Vehicles: {{SW_VEHICLE_COUNT}}
+
+@BaseClass base(prop_vehicle_prisoner_pod) = SligwolfVehicle_prop_vehicle_prisoner_pod
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+{{SW_SPAWNNAME_PROP_VEHICLE_PRISONER_POD_OPTIONS}}
+	]
+]
+
+@BaseClass base(prop_vehicle_airboat) = SligwolfVehicle_prop_vehicle_airboat
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+{{SW_SPAWNNAME_PROP_VEHICLE_AIRBOAT_OPTIONS}}
+	]
+]
+
+@BaseClass base(prop_vehicle_jeep) = SligwolfVehicle_prop_vehicle_jeep
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+{{SW_SPAWNNAME_PROP_VEHICLE_JEEP_OPTIONS}}
+	]
+]
+
+
+@PointClass base(SligwolfVehicle_prop_vehicle_prisoner_pod) studioprop() = prop_vehicle_prisoner_pod :
+	"Combine prisoner pod that the player can ride in."
+[
+]
+
+@PointClass base(SligwolfVehicle_prop_vehicle_airboat) studioprop() = prop_vehicle_airboat :
+	"Driveable studiomodel airboat."
+[
+]
+
+@PointClass base(SligwolfVehicle_prop_vehicle_jeep) studioprop() = prop_vehicle_jeep :
+	"Driveable studiomodel jeep."
+[
+]
+
+]]
+
+local function getVehicleTablesByClass()
+	local result = {}
+
+	local vehicleTables = list.Get("Vehicles")
+
+	local count = 0
+
+	for spawnname, vehicleTable in pairs(vehicleTables) do
+		if not istable(vehicleTable) then
+			continue
+		end
+
+		if not vehicleTable.Is_SLIGWOLF then
+			continue
+		end
+
+		if vehicleTable.SLIGWOLF_Hidden then
+			continue
+		end
+
+		local class = tostring(vehicleTable.Class or "")
+		if class == "" then
+			continue
+		end
+
+		result[class] = result[class] or {}
+		local items = result[class]
+
+		table.insert(items, {
+			spawnname = spawnname,
+			title = vehicleTable.Name,
+			addontitle = SligWolf_Addons.GetAddonTitle(vehicleTable.SLIGWOLF_Addonname) or vehicleTable.SLIGWOLF_Addonname,
+		})
+
+		count = count + 1
+	end
+
+	return result, count
+end
+
+local function spawnnameOptionsListSorter(a, b)
+	if a.addontitle ~= b.addontitle then
+		return a.addontitle < b.addontitle
+	end
+
+	if a.title ~= b.title then
+		return a.title < b.title
+	end
+
+	return a.spawnname < b.spawnname
+end
+
+local function getSpawnnameOptionsList(options)
+	options = options or {}
+
+	local lines = {}
+	table.insert(lines, [[\t\t"" : "Nothing (No SW-ADDON Vehicle)"]])
+
+	table.sort(options, spawnnameOptionsListSorter)
+
+	for _, item in ipairs(options) do
+		local title = item.title
+		local addontitle = item.addontitle
+		local spawnname = item.spawnname
+
+		local line = string.format(
+			[[\t\t"%s" : "%s | %s (%s)"]],
+			spawnname,
+			addontitle,
+			title,
+			spawnname
+		)
+
+		table.insert(lines, line)
+	end
+
+	lines = table.concat(lines, "\n")
+	return lines
+end
+
+function LIB.GenerateFGD()
+	local fgd = g_fgdFile
+
+	local vehicleTables, vehicleTablesCount = getVehicleTablesByClass()
+
+	fgd = string.Replace(fgd, "{{SW_GENERATED_AT}}", os.date("%Y-%m-%d %H:%M:%S"))
+	fgd = string.Replace(fgd, "{{SW_ADDON_COUNT}}", SligWolf_Addons.GetLoadedAddonsCount())
+	fgd = string.Replace(fgd, "{{SW_VEHICLE_COUNT}}", vehicleTablesCount)
+
+	fgd = string.Replace(
+		fgd,
+		"{{SW_SPAWNNAME_PROP_VEHICLE_PRISONER_POD_OPTIONS}}",
+		getSpawnnameOptionsList(vehicleTables["prop_vehicle_prisoner_pod"])
+	)
+
+	fgd = string.Replace(
+		fgd,
+		"{{SW_SPAWNNAME_PROP_VEHICLE_AIRBOAT_OPTIONS}}",
+		getSpawnnameOptionsList(vehicleTables["prop_vehicle_airboat"])
+	)
+
+	fgd = string.Replace(
+		fgd,
+		"{{SW_SPAWNNAME_PROP_VEHICLE_JEEP_OPTIONS}}",
+		getSpawnnameOptionsList(vehicleTables["prop_vehicle_jeep"])
+	)
+
+	fgd = LIBUtil.NormalizeNewlines(fgd, "\n\r")
+	fgd = string.Replace(fgd, "\\t", "\t")
+
+	local fileName = "debug/sligwolf_base.fgd.txt"
+
+	local success = LIBFile.Write(fileName, fgd)
+	local path = LIBFile.GetAbsolutePath(fileName)
+
+	if success then
+		LIBPrint.Print("Debug.GenerateFGD: Written to 'data/%s'. Ready for copy and paste.", path)
+	else
+		LIBPrint.Print("Debug.GenerateFGD: Could not Write to 'data/%s'", path)
+	end
+end
+
+if SERVER then
+	concommand.Add("sv_sligwolf_debug_generate_fgd", function(ply)
+		if not LIBUtil.IsAdminForCMD(ply) then
+			return
+		end
+
+		LIB.GenerateFGD()
+	end)
 end
 
 return true

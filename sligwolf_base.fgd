@@ -2,30 +2,68 @@
 //===================== Game data for SW Base Vehicles ========================
 //============================= Made by SligWolf ==============================
 
-@include "garrysmod.fgd"
+// Please also also include garrymod.fgd or halflife2.fgd in Hammer for optimal results.
+// Generated file:
+//   Date:     2024-06-02 01:54:38
+//   Addons:   3
+//   Vehicles: 22
 
-@BaseClass = SligwolfSpawnname
+@BaseClass base(prop_vehicle_prisoner_pod) = SligwolfVehicle_prop_vehicle_prisoner_pod
 [
-	sligwolf_spawnname(string) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
 		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
-		"Enter the desired spawnname of the SW vehicle that you want to spawn. " +
-		"Be sure to use the correct spawnname to the correct vehicle class!"
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+		"" : "Nothing (No SW-ADDON Vehicle)"
+		"sligwolf_train_2_blue" : "Green-T7 | Green-T7L (sligwolf_train_2_blue)"
+		"sligwolf_train_2_green" : "Green-T7 | Green-T7L (sligwolf_train_2_green)"
+		"sligwolf_train_2_red" : "Green-T7 | Green-T7L (sligwolf_train_2_red)"
+		"sligwolf_train_1_blue" : "Green-T7 | Green-T7S (sligwolf_train_1_blue)"
+		"sligwolf_train_1_green" : "Green-T7 | Green-T7S (sligwolf_train_1_green)"
+		"sligwolf_train_1_red" : "Green-T7 | Green-T7S (sligwolf_train_1_red)"
+		"sligwolf_train_bogie" : "Green-T7 | Train Wagon Bogie (sligwolf_train_bogie)"
+		"sligwolf_train_wagon_2_blue" : "Green-T7 | Train Wagon Long (sligwolf_train_wagon_2_blue)"
+		"sligwolf_train_wagon_2_green" : "Green-T7 | Train Wagon Long (sligwolf_train_wagon_2_green)"
+		"sligwolf_train_wagon_2_red" : "Green-T7 | Train Wagon Long (sligwolf_train_wagon_2_red)"
+		"sligwolf_train_wagon_1_blue" : "Green-T7 | Train Wagon Short (sligwolf_train_wagon_1_blue)"
+		"sligwolf_train_wagon_1_green" : "Green-T7 | Train Wagon Short (sligwolf_train_wagon_1_green)"
+		"sligwolf_train_wagon_1_red" : "Green-T7 | Train Wagon Short (sligwolf_train_wagon_1_red)"
+		"sligwolf_wpsuspensiontrain_g15_bogie" : "Suspension Train | Bogie G15 (sligwolf_wpsuspensiontrain_g15_bogie)"
+		"sligwolf_wpsuspensiontrain_g15_darkblue" : "Suspension Train | Train G15 (sligwolf_wpsuspensiontrain_g15_darkblue)"
+		"sligwolf_wpsuspensiontrain_g15_green" : "Suspension Train | Train G15 (sligwolf_wpsuspensiontrain_g15_green)"
+		"sligwolf_wpsuspensiontrain_g15_skyblue" : "Suspension Train | Train G15 (sligwolf_wpsuspensiontrain_g15_skyblue)"
+		"sligwolf_wpsuspensiontrain_g15_yellow" : "Suspension Train | Train G15 (sligwolf_wpsuspensiontrain_g15_yellow)"
+		"sligwolf_wpsuspensiontrain_g15_turntablecabin_darkblue_internal" : "Suspension Train | Turntable Cabin (sligwolf_wpsuspensiontrain_g15_turntablecabin_darkblue_internal)"
+		"sligwolf_wpsuspensiontrain_g15_turntablecabin_green_internal" : "Suspension Train | Turntable Cabin (sligwolf_wpsuspensiontrain_g15_turntablecabin_green_internal)"
+		"sligwolf_wpsuspensiontrain_g15_turntablecabin_skyblue_internal" : "Suspension Train | Turntable Cabin (sligwolf_wpsuspensiontrain_g15_turntablecabin_skyblue_internal)"
+		"sligwolf_wpsuspensiontrain_g15_turntablecabin_yellow_internal" : "Suspension Train | Turntable Cabin (sligwolf_wpsuspensiontrain_g15_turntablecabin_yellow_internal)"
+	]
 ]
 
-@BaseClass base(SligwolfSpawnname) = SligwolfVehicle
+@BaseClass base(prop_vehicle_airboat) = SligwolfVehicle_prop_vehicle_airboat
 [
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+		"" : "Nothing (No SW-ADDON Vehicle)"
+	]
 ]
 
-@BaseClass base(prop_vehicle_prisoner_pod, SligwolfVehicle) = SligwolfVehicle_prop_vehicle_prisoner_pod
+@BaseClass base(prop_vehicle_jeep) = SligwolfVehicle_prop_vehicle_jeep
 [
-]
-
-@BaseClass base(prop_vehicle_airboat, SligwolfVehicle) = SligwolfVehicle_prop_vehicle_airboat
-[
-]
-
-@BaseClass base(prop_vehicle_jeep, SligwolfVehicle) = SligwolfVehicle_prop_vehicle_jeep
-[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+		"" : "Nothing (No SW-ADDON Vehicle)"
+	]
 ]
 
 

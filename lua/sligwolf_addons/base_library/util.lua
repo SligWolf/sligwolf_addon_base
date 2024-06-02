@@ -146,5 +146,58 @@ function LIB.SetDFrameButtonProperties(ent, posx, posy, sizex, sizey, text, cmd,
 	ent:SetConsoleCommand("say", cmd)
 end
 
+function LIB.NormalizeNewlines(text, nl)
+	nl = tostring(nl or "")
+	text = tostring(text or "")
+
+	local replacemap = {
+		["\r\n"] = true,
+		["\r"] = true,
+		["\n"] = true,
+	}
+
+	if not replacemap[nl] then
+		nl = "\n"
+	end
+
+	replacemap[nl] = nil
+
+	for k, v in pairs(replacemap) do
+		replacemap[k] = nl
+	end
+
+	text = string.gsub(text, "([\r]?[\n]?)", replacemap)
+
+	return text
+end
+
+function LIB.IsAdmin(ply)
+	if CLIENT and not IsValid(ply) then
+		ply = LocalPlayer()
+	end
+
+	if not IsValid(ply) then
+		return false
+	end
+
+	if not ply:IsAdmin() then
+		return false
+	end
+
+	return true
+end
+
+function LIB.IsAdminForCMD(ply)
+	if not IsValid(ply) then
+		return true
+	end
+
+	if not LIB.IsAdmin(ply) then
+		return false
+	end
+
+	return true
+end
+
 return true
 
