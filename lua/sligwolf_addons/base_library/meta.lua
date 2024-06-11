@@ -31,9 +31,11 @@ end
 function LIB.BuildGenericMetaFunctions(META, getTable)
 	META.SligWolf_GetTable = function(thisEnt)
 		local entTable = getTable(thisEnt)
+		if not entTable then
+			return
+		end
 
 		local tab = entTable.sligwolf_internalTable
-
 		if tab then
 			return tab
 		end
