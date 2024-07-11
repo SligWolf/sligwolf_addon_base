@@ -19,6 +19,7 @@ local LIBEntities = nil
 local LIBCamera = nil
 local LIBTimer = nil
 local LIBHook = nil
+local LIBUtil = nil
 
 function LIB.ToString(vehicle)
 	local vehicleStr = LIBEntities.ToString(vehicle)
@@ -130,7 +131,7 @@ end
 function LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
 	if not vehicleSpawnname then return nil end
 
-	local vehicleList = list.Get("Vehicles") or {}
+	local vehicleList = LIBUtil.GetList("Vehicles")
 	local vehicleTable = vehicleList[vehicleSpawnname]
 
 	if not vehicleTable then return nil end
@@ -297,6 +298,7 @@ function LIB.Load()
 	LIBCamera = SligWolf_Addons.Camera
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
+	LIBUtil = SligWolf_Addons.Util
 
 	local function SpawnVehicleFinished(vehicle, ply)
 		if not IsValid(vehicle) then return end

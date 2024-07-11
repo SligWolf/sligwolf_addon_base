@@ -7,6 +7,7 @@ ENT.Spawnable				= false
 ENT.AdminOnly				= false
 ENT.RenderGroup 			= RENDERGROUP_BOTH
 ENT.AutomaticFrameAdvance 	= false
+ENT.PhysicsSounds			= false
 ENT.DoNotDuplicate 			= true
 
 ENT.sligwolf_entity			= true

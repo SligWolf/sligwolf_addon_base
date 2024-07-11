@@ -5,6 +5,7 @@ DEFINE_BASECLASS("sligwolf_base")
 
 ENT.Spawnable 				= false
 ENT.AdminOnly 				= false
+ENT.PhysicsSounds			= true
 ENT.DoNotDuplicate 			= false
 
 ENT.sligwolf_physEntity     = true

@@ -32,8 +32,8 @@ function LIB.IsValidModelEntity(ent)
 	return true
 end
 
-LIB._IsValidModelCache = {}
-LIB._IsValidModelFileCache = {}
+local g_IsValidModelCache = {}
+local g_IsValidModelFileCache = {}
 
 local g_modelInvalid = {}
 g_modelInvalid[""] = true
@@ -46,11 +46,11 @@ function LIB.IsValidModel(model)
 		return false
 	end
 
-	if LIB._IsValidModelCache[model] then
+	if g_IsValidModelCache[model] then
 		return true
 	end
 
-	LIB._IsValidModelCache[model] = nil
+	g_IsValidModelCache[model] = nil
 
 	if not LIB.IsValidModelFile(model) then
 		return false
@@ -62,7 +62,7 @@ function LIB.IsValidModel(model)
 		return false
 	end
 
-	LIB._IsValidModelCache[model] = true
+	g_IsValidModelCache[model] = true
 	return true
 end
 
@@ -73,11 +73,11 @@ function LIB.IsValidModelFile(model)
 		return false
 	end
 
-	if LIB._IsValidModelFileCache[model] then
+	if g_IsValidModelFileCache[model] then
 		return true
 	end
 
-	LIB._IsValidModelFileCache[model] = nil
+	g_IsValidModelFileCache[model] = nil
 
 	if model == "" then
 		return false
@@ -91,14 +91,14 @@ function LIB.IsValidModelFile(model)
 		return false
 	end
 
-	LIB._IsValidModelFileCache[model] = true
+	g_IsValidModelFileCache[model] = true
 	return true
 end
 
-LIB._MatCache = {}
+local g_MatCache = {}
 
 function LIB.GetMaterialData(PNGname, RGB, TexX, TexY, W, H)
-	local texturedata = LIB._MatCache[PNGname]
+	local texturedata = g_MatCache[PNGname]
 
 	if texturedata then
 		texturedata.color = RGB
@@ -110,8 +110,8 @@ function LIB.GetMaterialData(PNGname, RGB, TexX, TexY, W, H)
 		return texturedata
 	end
 
-	LIB._MatCache[PNGname] = {Textur = Material(PNGname), color = RGB, x = TexX, y = TexY, w = W, h = H}
-	return LIB._MatCache[PNGname]
+	g_MatCache[PNGname] = {Textur = Material(PNGname), color = RGB, x = TexX, y = TexY, w = W, h = H}
+	return g_MatCache[PNGname]
 end
 
 function LIB.DrawMaterial(texturedata)
@@ -197,6 +197,19 @@ function LIB.IsAdminForCMD(ply)
 	end
 
 	return true
+end
+
+local g_listCache = {}
+
+function LIB.GetList(name)
+	if g_listCache[name] then
+		return g_listCache[name]
+	end
+
+	local listItem = list.GetForEdit(name)
+
+	g_listCache[name] = listItem
+	return listItem
 end
 
 return true

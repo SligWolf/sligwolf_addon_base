@@ -300,7 +300,7 @@ local g_fgdFile = [[
 local function getVehicleTablesByClass()
 	local result = {}
 
-	local vehicleTables = list.Get("Vehicles")
+	local vehicleTables = LIBUtil.GetList("Vehicles")
 
 	local count = 0
 

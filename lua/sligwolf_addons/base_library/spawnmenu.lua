@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Spawnmenu)
 local LIB = SligWolf_Addons.Spawnmenu
 local LIBHook = SligWolf_Addons.Hook
 local LIBTimer = SligWolf_Addons.Timer
+local LIBUtil = SligWolf_Addons.Util
 
 local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Hidden)"
 
@@ -662,7 +663,7 @@ local function g_SENTSetup(ply, sent)
 	local spawnname = sent:GetSpawnName()
 	if not spawnname then return end
 
-	local tab = list.Get("SpawnableEntities")
+	local tab = LIBUtil.GetList("SpawnableEntities")
 	local data = tab[spawnname]
 
 	if not data then return end
@@ -726,7 +727,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 		)
 	end
 
-	local SpawnableEntities = list.Get("SpawnableEntities")
+	local SpawnableEntities = LIBUtil.GetList("SpawnableEntities")
 	if not SpawnableEntities then return end
 
 	local entityItem = SpawnableEntities[spawnName] or {}
@@ -837,7 +838,7 @@ local function g_NPCSetup(ply, npc)
 	local spawnname = npc.NPCName
 	if not spawnname then return end
 
-	local tab = list.Get("NPC")
+	local tab = LIBUtil.GetList("NPC")
 	local data = tab[spawnname]
 
 	if not data then return end

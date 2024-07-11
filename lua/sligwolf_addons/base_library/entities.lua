@@ -142,7 +142,7 @@ end
 function LIB.GetSentTableFromSpawnname(sentSpawnname)
 	if not sentSpawnname then return nil end
 
-	local sentList = list.Get("SpawnableEntities") or {}
+	local sentList = LIBUtil.GetList("SpawnableEntities")
 	local sentTable = sentList[sentSpawnname]
 
 	if not sentTable then return nil end
