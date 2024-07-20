@@ -9,8 +9,8 @@ AddCSLuaFile()
 			Leave this code as it is, do not support such a bad behavior.
 ]]
 
-SligWolf_Addons = SligWolf_Addons or {}
-local SligWolf_Addons = SligWolf_Addons
+local SligWolf_Addons = _G.SligWolf_Addons or {}
+_G.SligWolf_Addons = nil
 
 do
 	-- clear old instance of SligWolf_Addons, but keep the detourBackups
@@ -552,6 +552,10 @@ local function saveIncludeAddonInit(luafile)
 		return true
 	end
 
+	if result == ENUM_ERROR_NOT_LOADED then
+		return false, result
+	end
+
 	result = result or ENUM_ERROR
 
 	local resultStr = tostring(result)
@@ -623,6 +627,14 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then
+		return false
+	end
+
+	if not sligwolfAddons.IsLoadingAddon then
+		return false
+	end
+
+	if not sligwolfAddons.HasLoadedAddon then
 		return false
 	end
 
@@ -1159,14 +1171,31 @@ else
 	end)
 end
 
-SligWolf_Addons.ReloadLibraries()
-SligWolf_Addons.BASE_ADDON = nil
+local status = ProtectedCall(function()
+	-- Make sure addons are globally accessible when everything is ready
+	_G.SligWolf_Addons = SligWolf_Addons
 
-inValidateSortedAddondata()
-include("sligwolf_addons/base/init.lua")
-inValidateSortedAddondata()
+	SligWolf_Addons.ReloadLibraries()
+	SligWolf_Addons.BASE_ADDON = nil
 
-SligWolf_Addons.BASE_ADDON = SligWolf_Addons.GetAddon("base")
+	inValidateSortedAddondata()
+	include("sligwolf_addons/base/init.lua")
+	inValidateSortedAddondata()
+
+	SligWolf_Addons.BASE_ADDON = SligWolf_Addons.GetAddon("base")
+end)
+
+if not status then
+	-- In case of an error, destroy the corrupted SW addon system
+	table.Empty(SligWolf_Addons)
+
+	if istable(_G.SligWolf_Addons) then
+		table.Empty(_G.SligWolf_Addons)
+	end
+
+	_G.SligWolf_Addons = nil
+	return
+end
 
 return true
 

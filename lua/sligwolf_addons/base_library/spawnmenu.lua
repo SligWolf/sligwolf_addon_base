@@ -18,7 +18,8 @@ local LIBHook = SligWolf_Addons.Hook
 local LIBTimer = SligWolf_Addons.Timer
 local LIBUtil = SligWolf_Addons.Util
 
-local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Hidden)"
+-- Tell the user something is wrong ("Broken") with the addons in case they see the usually hidden placeholder node.
+local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Broken)"
 
 local g_registeredSpawnMenuItems = {}
 local g_registeredSpawnMenuItemsOrdered = {}

@@ -15,3 +15,4 @@ SLIGWOLF_ADDON.NiceName = "Base"
 SLIGWOLF_ADDON.Version = SligWolf_Addons.BaseVersion
 
 return true
+

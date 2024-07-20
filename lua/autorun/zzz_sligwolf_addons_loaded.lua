@@ -15,4 +15,7 @@ if SligWolf_Addons.CallAddonsLoadedEvent then
 	return
 end
 
-SligWolf_Addons.CallAllAddonsLoadedHook()
+if SligWolf_Addons.CallAllAddonsLoadedHook then
+	SligWolf_Addons.CallAllAddonsLoadedHook()
+end
+
