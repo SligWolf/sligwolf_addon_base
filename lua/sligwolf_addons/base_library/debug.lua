@@ -237,11 +237,12 @@ local g_fgdFile = [[
 //===================== Game data for SW Base Vehicles ========================
 //============================= Made by SligWolf ==============================
 
-// Please also also include garrymod.fgd or halflife2.fgd in Hammer for optimal results.
+// Please also include garrymod.fgd or halflife2.fgd in Hammer for optimal results.
 // Generated file:
-//   Date:     {{SW_GENERATED_AT}}
-//   Addons:   {{SW_ADDON_COUNT}}
-//   Vehicles: {{SW_VEHICLE_COUNT}}
+//   Base Version:  {{SW_VERSION}}
+//   Generated At:  {{SW_GENERATED_AT}}
+//   Addons Count:  {{SW_ADDON_COUNT}}
+//   Vehicle Count: {{SW_VEHICLE_COUNT}}
 
 @BaseClass base(prop_vehicle_prisoner_pod) = SligwolfVehicle_prop_vehicle_prisoner_pod
 [
@@ -382,6 +383,7 @@ function LIB.GenerateFGD()
 
 	local vehicleTables, vehicleTablesCount = getVehicleTablesByClass()
 
+	fgd = string.Replace(fgd, "{{SW_VERSION}}", SligWolf_Addons.BaseVersion)
 	fgd = string.Replace(fgd, "{{SW_GENERATED_AT}}", os.date("%Y-%m-%d %H:%M:%S"))
 	fgd = string.Replace(fgd, "{{SW_ADDON_COUNT}}", SligWolf_Addons.GetLoadedAddonsCount())
 	fgd = string.Replace(fgd, "{{SW_VEHICLE_COUNT}}", vehicleTablesCount)
