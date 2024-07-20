@@ -19,7 +19,7 @@ do
 	SligWolf_Addons._detourBackups = detourBackups
 end
 
-SligWolf_Addons.BaseVersion = "2023-07-28"
+SligWolf_Addons.BaseVersion = "2024-07-21"
 
 SligWolf_Addons.MinGameVersionServer = 230628
 SligWolf_Addons.MinGameVersionClient = 230904
