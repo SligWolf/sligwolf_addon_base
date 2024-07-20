@@ -4,7 +4,7 @@ set uploader=gmpublish.exe
 set zipper=gma_to_zip.bat
 
 set addonid=2866238940
-set addonname=sw_base
+set addonname=sligwolf_addon_base
 
 rem Compress
 :Compress
