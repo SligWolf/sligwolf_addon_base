@@ -21,8 +21,8 @@ end
 
 SligWolf_Addons.BaseVersion = "2024-07-21"
 
-SligWolf_Addons.MinGameVersionServer = 230628
-SligWolf_Addons.MinGameVersionClient = 230904
+SligWolf_Addons.MinGameVersionServer = 240321
+SligWolf_Addons.MinGameVersionClient = 240321
 
 SligWolf_Addons.Addondata = SligWolf_Addons.Addondata or {}
 SligWolf_Addons.AddondataSorted = nil
