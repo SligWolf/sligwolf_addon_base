@@ -12,6 +12,7 @@
 		"*.gma",
 		"*.zip",
 		"*.tmp",
+		"*.fgd",
 		"_deployment/*",
 		"*.md",
 		"LICENSE"
