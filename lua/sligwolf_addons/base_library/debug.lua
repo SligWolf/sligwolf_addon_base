@@ -237,7 +237,9 @@ local g_fgdFile = [[
 //===================== Game data for SW Base Vehicles ========================
 //============================= Made by SligWolf ==============================
 
-// Please also include garrymod.fgd or halflife2.fgd in Hammer for optimal results.
+// Please also include garrysmod.fgd or halflife2.fgd in Hammer for optimal results.
+// It is not recommended to edit this file as it is automaticly generated.
+
 // Generated file:
 //   Base Version:  {{SW_VERSION}}
 //   Generated At:  {{SW_GENERATED_AT}}
