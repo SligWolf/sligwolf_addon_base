@@ -162,10 +162,6 @@ local function CanTool(ply, trace, mode, tool, button)
 			return false
 		end
 	end
-
-	if ent.sligwolf_allowOnlyThisTool == tool then
-		return false
-	end
 end
 
 LIBHook.Add("CanTool", "Library_Protection_CanTool", CanTool, 10000)
