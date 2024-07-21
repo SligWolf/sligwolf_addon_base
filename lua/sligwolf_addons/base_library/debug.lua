@@ -246,8 +246,23 @@ local g_fgdFile = [[
 //   Addons Count:  {{SW_ADDON_COUNT}}
 //   Vehicle Count: {{SW_VEHICLE_COUNT}}
 
-@BaseClass base(prop_vehicle_prisoner_pod) = SligwolfVehicle_prop_vehicle_prisoner_pod
+@PointClass base(BaseDriveableVehicle, Parentname) studioprop() = prop_vehicle_prisoner_pod :
+	"Combine prisoner pod that the player can ride in."
 [
+	model(studio) : "World model" : "models/vehicles/prisoner_pod.mdl"
+	vehiclescript(string) : "Vehicle Script File" : "scripts/vehicles/prisoner_pod.txt"
+	
+	input Open(void) : "Plays the pod's open animation and unlocks the pod for entry or exit."
+	input Close(void) : "Plays the pod's close animation and locks the pod for entry or exit."
+	input EnterVehicle(void) : "Forces the activator (or player) into the pod."
+	input EnterVehicleImmediate(void) : "Forces the activator (or player) into the pod without enter/exit animations."
+	input ExitVehicle(void) : "Boots the prisoner out of the pod."
+	
+	output OnOpen(void) : "Fired when the pod is open enough to enter."
+	output OnClose(void) : "Fired when the pod too closed to enter."
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
 		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
 		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
@@ -258,8 +273,22 @@ local g_fgdFile = [[
 	]
 ]
 
-@BaseClass base(prop_vehicle_airboat) = SligwolfVehicle_prop_vehicle_airboat
+@PointClass base(BaseDriveableVehicle) studioprop() = prop_vehicle_airboat :
+	"Driveable studiomodel airboat."
 [
+	model(studio) : "World model" : "models/airboat.mdl"
+	vehiclescript(string) : "Vehicle Script File" : "scripts/vehicles/airboat.txt"
+	EnableGun(choices) : "Has Gun" : 0 : "Whether the airboat's gun is enabled or disabled." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	input EnableGun(bool) : "Enables or disables the airboat gun and associated crosshair."
+	input InputStartRotorWashForces(void) : "The airboat will start to be blown around by the helicopter rotor wash."
+	input InputStopRotorWashForces(void) : "The airboat will no longer be blown around by the helicopter rotor wash."
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
 		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
 		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
@@ -270,8 +299,50 @@ local g_fgdFile = [[
 	]
 ]
 
-@BaseClass base(prop_vehicle_jeep) = SligwolfVehicle_prop_vehicle_jeep
+@PointClass base(BaseDriveableVehicle) studioprop() = prop_vehicle_jeep :
+	"Driveable studiomodel jeep."
 [
+	input StartRemoveTauCannon(void) : "Start the tau removal sequence."
+	input FinishRemoveTauCannon(void) : "Finish the tau removal sequence."
+	
+	// FIXME: These will move into episodic
+	input LockEntrance( void ) : "Stops NPC's from entering the vehicle until unlocked."
+	input UnlockEntrance( void ) : "Allows NPC's to enter the vehicle."
+	input LockExit( void ) : "Stops NPC's from exiting the vehicle until unlocked."
+	input UnlockExit( void ) : "Allows NPC's to exit the vehicle."
+	input EnableRadar( void ) : "Turn on the Jalopy radar"
+	input DisableRadar( void ) : "Turn off the Jalopy radar"
+	input EnableRadarDetectEnemies( void ) : "Enable Jalopy radar to detect Striders and Hunters"
+	input AddBusterToCargo( void ) : "Put a striderbuster in the cargo trigger"
+	input SetCargoHopperVisibility ( bool ) : "Set the strider buster hopper thingy to be visible, or invisible."
+
+	input DisablePhysGun(void) : "Disable Gravity Gun interactions with the jeep."
+	input EnablePhysGun(void) : "Enable Gravity Gun interactions with the jeep (default)."
+
+	input CreateLinkController(void) : "Automatically builds and attaches a link controller to the car, which cuts the node connections under the car while the car is standing still."
+	input DestroyLinkController(void) : "Destroys the link controller created by CreateLinkController."
+
+	
+	CargoVisible(choices): "Hopper Visible" : 0 : "Is the striderbuster cargo hopper visible?" =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	spawnflags(Flags) = 
+	[
+		1 : "HUD Locator Precache" : 0
+	]
+
+	
+	// FIXME: These are going to change!
+	output OnCompanionEnteredVehicle(void) : "Companion has entered the vehicle."
+	output OnCompanionExitedVehicle(void) : "Companion has exited the vehicle."
+	output OnHostileEnteredVehicle(void) : "Hostile has entered the vehicle."
+	output OnHostileExitedVehicle(void) : "Hostile has exited the vehicle."
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
 		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
 		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
@@ -281,23 +352,6 @@ local g_fgdFile = [[
 {{SW_SPAWNNAME_PROP_VEHICLE_JEEP_OPTIONS}}
 	]
 ]
-
-
-@PointClass base(SligwolfVehicle_prop_vehicle_prisoner_pod) studioprop() = prop_vehicle_prisoner_pod :
-	"Combine prisoner pod that the player can ride in."
-[
-]
-
-@PointClass base(SligwolfVehicle_prop_vehicle_airboat) studioprop() = prop_vehicle_airboat :
-	"Driveable studiomodel airboat."
-[
-]
-
-@PointClass base(SligwolfVehicle_prop_vehicle_jeep) studioprop() = prop_vehicle_jeep :
-	"Driveable studiomodel jeep."
-[
-]
-
 ]]
 
 local function getVehicleTablesByClass()
