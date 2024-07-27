@@ -122,6 +122,7 @@ local g_WorkshopIDWhitelist = {
 	["vrhl2weapons"] = "3008753645",
 	["wagons"] = "379538128",
 	["westernloco"] = "132174849",
+	["wpsuspensiontrain"] = "3297918081",
 }
 
 local g_realmText = SERVER and "server" or "client"
