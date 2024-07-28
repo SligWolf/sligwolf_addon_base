@@ -19,24 +19,33 @@ do
 	SligWolf_Addons._detourBackups = detourBackups
 end
 
-SligWolf_Addons.BaseVersion = "2024-07-21"
 
+-- Check sum of SW Base validation script "sligwolf_addons/basecheck.lua".
+-- It contains logic to validate the SW Base addon being installed, up to date and active.
+local BASECHECK_SCRIPT_CHECKSUM = "246238a4e3f7436b357879faf6586325e74f3911edab1e70f868ec288899fe51"
+
+-- Version validation requirements to make sure everything is up to date.
+SligWolf_Addons.BaseVersion = "2024-07-28"
+
+-- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 240321
 SligWolf_Addons.MinGameVersionClient = 240321
+
+
 
 SligWolf_Addons.Addondata = SligWolf_Addons.Addondata or {}
 SligWolf_Addons.AddondataSorted = nil
 
 SligWolf_Addons.IsManuallyReloading = false
 
-local ENUM_ERROR = "ERROR"
+local ENUM_ERROR_UNSPECIFIED = "ERROR_UNSPECIFIED"
 local ENUM_ERROR_BAD_VERSION = "ERROR_BAD_VERSION"
 local ENUM_ERROR_BAD_GAME_VERSION = "ERROR_BAD_GAME_VERSION"
 local ENUM_ERROR_CONFLICTING_ADDON = "ERROR_CONFLICTING_ADDON"
 local ENUM_ERROR_UNKNOWN_ADDON = "ERROR_UNKNOWN_ADDON"
 local ENUM_ERROR_NOT_LOADED = "ERROR_NOT_LOADED"
 
-SligWolf_Addons.ERROR = ENUM_ERROR
+SligWolf_Addons.ERROR_UNSPECIFIED = ENUM_ERROR_UNSPECIFIED
 SligWolf_Addons.ERROR_BAD_VERSION = ENUM_ERROR_BAD_VERSION
 SligWolf_Addons.ERROR_BAD_GAME_VERSION = ENUM_ERROR_BAD_GAME_VERSION
 SligWolf_Addons.ERROR_CONFLICTING_ADDON = ENUM_ERROR_CONFLICTING_ADDON
@@ -194,6 +203,47 @@ local function AddHooks(addon)
 
 		buildHookCaller(functionName, eventName)
 	end
+end
+
+local g_validBase = nil
+
+local function ValidateBaseCheckScript()
+	if g_validBase ~= nil then
+		return g_validBase
+	end
+
+	g_validBase = nil
+
+	if not BASECHECK_SCRIPT_CHECKSUM then
+		return true
+	end
+
+	if BASECHECK_SCRIPT_CHECKSUM == "" then
+		return true
+	end
+
+	local sligwolfAddons = _G.SligWolf_Addons
+	if not sligwolfAddons then
+		return false
+	end
+
+	if not sligwolfAddons.LibrariesLoaded then
+		return false
+	end
+
+	local hash = sligwolfAddons.Util.CheckSumOfFile("sligwolf_addons/basecheck.lua", "LUA")
+	if not hash then
+		g_validBase = true
+		return true
+	end
+
+	if hash ~= BASECHECK_SCRIPT_CHECKSUM then
+		g_validBase = false
+		return false
+	end
+
+	g_validBase = true
+	return true
 end
 
 local function GetPathOfFunction(funcobj)
@@ -381,7 +431,7 @@ local function MsgCError(text, errorCode)
 	end
 
 	if errorCode == "" then
-		errorCode = SligWolf_Addons.ERROR
+		errorCode = ENUM_ERROR_UNSPECIFIED
 	end
 
 	MsgCInfo(g_errorColor, text, g_errorColor, " [", errorCode, "]")
@@ -401,7 +451,7 @@ local function MsgCUnapprovedAddons(unapprovedWsAddons, name)
 	if name == "" then return end
 
 	local errorText = string.format("Addon '%s' could not be loaded at %s!", name, g_realmText)
-	MsgCError(errorText, SligWolf_Addons.ERROR_CONFLICTING_ADDON)
+	MsgCError(errorText, ENUM_ERROR_CONFLICTING_ADDON)
 
 	local errorText = "  Unapproved or conflicting addon detected. Please uninstall this addon:\n"
 	MsgC(g_errorColor, errorText)
@@ -540,7 +590,7 @@ local function saveIncludeAddonInit(luafile)
 	luafile = string.lower(luafile or "")
 
 	if luafile == "" then
-		return nil, ENUM_ERROR
+		return nil, ENUM_ERROR_UNSPECIFIED
 	end
 
 	local status, result = saveInclude(luafile)
@@ -553,16 +603,16 @@ local function saveIncludeAddonInit(luafile)
 		return true
 	end
 
-	if result == ENUM_ERROR_NOT_LOADED then
+	if string.StartsWith(result, "ERROR_") then
 		return false, result
 	end
 
-	result = result or ENUM_ERROR
+	result = result or ENUM_ERROR_UNSPECIFIED
 
 	local resultStr = tostring(result)
 
 	if resultStr == "" then
-		resultStr = ENUM_ERROR
+		resultStr = ENUM_ERROR_UNSPECIFIED
 	end
 
 	local err = string.format("Included file '%s' returned in a bad state! (state: %s)", luafile, resultStr)
@@ -648,6 +698,16 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	end
 
 	sligwolfAddons.Addondata = sligwolfAddons.Addondata or {}
+
+	if name ~= "base" and not ValidateBaseCheckScript() then
+		local errorText = string.format("SW Base validation script corrupted or outdated, make sure this addon and 'SW Base' is up to date. Can not load addon '%s' at %s!", name, g_realmText)
+		MsgCError(errorText, sligwolfAddons.ERROR_BAD_VERSION)
+
+		ErrorNoHaltWithStack(errorText)
+
+		sligwolfAddons.Addondata[name] = nil
+		return false
+	end
 
 	local initFile = "sligwolf_addons/" .. name .. "/init.lua"
 
@@ -880,6 +940,8 @@ function SligWolf_Addons.ReloadLibraries()
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then return end
 
+	g_validBase = nil
+
 	sligwolfAddons.BASE_ADDON = nil
 
 	sligwolfAddons.LoadingLibraries = true
@@ -896,6 +958,8 @@ function SligWolf_Addons.ReloadAllAddons()
 	if not sligwolfAddons then return end
 	if not sligwolfAddons.Addondata then return end
 	if not sligwolfAddons.LoadAddon then return end
+
+	g_validBase = nil
 
 	sligwolfAddons.ReloadLibraries()
 
@@ -1151,6 +1215,8 @@ if SERVER then
 		local name = tostring(args[1] or "")
 
 		runAdminOnly(ply, function()
+			g_validBase = nil
+
 			SligWolf_Addons.IsManuallyReloading = true
 			SligWolf_Addons.LoadAddon(name, true)
 			OnBaseReload(name)
@@ -1164,6 +1230,8 @@ if SERVER then
 else
 	net.Receive("sligwolf_reload_addon", function(length)
 		local name = net.ReadString()
+
+		g_validBase = nil
 
 		SligWolf_Addons.IsManuallyReloading = true
 		SligWolf_Addons.LoadAddon(name, true)

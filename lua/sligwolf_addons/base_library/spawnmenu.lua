@@ -731,10 +731,11 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	local SpawnableEntities = LIBUtil.GetList("SpawnableEntities")
 	if not SpawnableEntities then return end
 
-	local entityItem = SpawnableEntities[spawnName] or {}
+	local entityItem = table.Copy(SpawnableEntities[spawnName] or {})
 
 	entityItem.PrintName = entityItem.PrintName or tostring(obj.title or spawnname)
 	entityItem.ClassName = entityItem.ClassName or obj.class or spawnname
+	entityItem.Category = g_defaultNodeNameToBeRemoved
 
 	entityItem.Is_SLIGWOLF = true
 	entityItem.SLIGWOLF_Addonname = addonname
@@ -810,6 +811,28 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 			}
 		)
 	end
+
+	local SpawnableWeapons = LIBUtil.GetList("Weapon")
+	if not SpawnableWeapons then return end
+
+	local weaponItem = table.Copy(SpawnableWeapons[spawnName] or {})
+
+	weaponItem.PrintName = weaponItem.PrintName or tostring(obj.title or spawnname)
+	weaponItem.ClassName = weaponItem.ClassName or obj.class or spawnname
+	weaponItem.Category = g_defaultNodeNameToBeRemoved
+
+	weaponItem.Is_SLIGWOLF = true
+	weaponItem.SLIGWOLF_Addonname = addonname
+	weaponItem.SLIGWOLF_Hidden = hidden
+
+	local keyValues = table.Copy(obj.keyValues or {})
+
+	weaponItem.KeyValues = keyValues
+	weaponItem.KeyValues.sligwolf_spawnname = spawnname
+
+	weaponItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
+
+	list.Set("Weapon", spawnname, weaponItem)
 end
 
 local function PopulateWeaponlistContent(pnlContent, tree)

@@ -212,5 +212,19 @@ function LIB.GetList(name)
 	return listItem
 end
 
+function LIB.CheckSumOfFile(filePath, gamePath)
+	local data = file.Read(filePath, gamePath)
+	if not data then
+		return nil
+	end
+
+	if data == "" then
+		return nil
+	end
+
+	local hash = util.SHA256(data)
+	return hash
+end
+
 return true
 
