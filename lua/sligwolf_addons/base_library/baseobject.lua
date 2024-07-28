@@ -64,15 +64,15 @@ function SLIGWOLF_BASE_OBJ:ErrorNoHaltWithStack(format, ...)
 	LIBPrint.ErrorNoHaltWithStack(format, ...)
 end
 
-function SLIGWOLF_BASE_OBJ:RemoveFaultyEntites(entities, format, ...)
+function SLIGWOLF_BASE_OBJ:RemoveFaultyEntities(entities, format, ...)
 	format = extendErrorFormat(format, self)
-	LIBEntities.RemoveFaultyEntites(entities, format, ...)
+	LIBEntities.RemoveFaultyEntities(entities, format, ...)
 end
 
 function SLIGWOLF_BASE_OBJ:MakeEntEnsured(classname, name, parent)
 	local ent = self:MakeEnt(classname, name, parent)
 	if not IsValid(ent) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent},
 			"Couldn't create '%s' entity named '%s' for %s. Removing entities.",
 			tostring(classname),
@@ -89,7 +89,7 @@ end
 function SLIGWOLF_BASE_OBJ:MakeVehicleEnsured(spawnname, name, parent)
 	local ent = self:MakeVehicle(spawnname, name, parent)
 	if not IsValid(ent) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent},
 			"Couldn't create '%s' vehicle entity named '%s' for %s. Removing entities.",
 			tostring(classname),

@@ -27,7 +27,7 @@ end
 function SLIGWOLF_ADDON:MakeEntEnsured(classname, plyOwner, parent, name)
 	local ent = self:MakeEnt(classname, plyOwner, parent, name)
 	if not IsValid(ent) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent},
 			"Couldn't create '%s' entity named '%s' for %s. Removing entities.",
 			tostring(classname),
@@ -41,8 +41,8 @@ function SLIGWOLF_ADDON:MakeEntEnsured(classname, plyOwner, parent, name)
 	return ent
 end
 
-function SLIGWOLF_ADDON:RemoveFaultyEntites(tb, errReasonFormat, ...)
-	LIBEntities.RemoveEntites(tb)
+function SLIGWOLF_ADDON:RemoveFaultyEntities(tb, errReasonFormat, ...)
+	LIBEntities.RemoveEntities(tb)
 	self:ErrorNoHaltWithStack(errReasonFormat, ...)
 end
 
@@ -199,7 +199,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 			superparentEntTable.isDoneSpawningParts = nil
 
 			if SERVER then
-				self:RemoveFaultyEntites(
+				self:RemoveFaultyEntities(
 					{superparent},
 					"Infinite spawn loop detected at entity %s. Timeout after 2 seconds. Removing entities.",
 					superparent

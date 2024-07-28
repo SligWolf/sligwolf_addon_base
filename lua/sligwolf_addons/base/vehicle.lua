@@ -28,7 +28,7 @@ end
 function SLIGWOLF_ADDON:MakeVehicleEnsured(spawnname, plyOwner, parent, name)
 	local ent = self:MakeVehicle(spawnname, plyOwner, parent, name)
 	if not IsValid(ent) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent},
 			"Couldn't create '%s' vehicle entity named '%s' for %s. Removing entities.",
 			tostring(spawnname),

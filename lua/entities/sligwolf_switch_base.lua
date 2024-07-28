@@ -129,7 +129,7 @@ function ENT:SpawnCollision(model, pos, ang)
 
 	local WD = constraint.Weld(Prop, self, 0, 0, 0, 0, true)
 	if not IsValid(WD) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{self, Prop},
 			"Couldn't create weld constraint 'WD' between %s <===> %s. Removing entities.",
 			self,

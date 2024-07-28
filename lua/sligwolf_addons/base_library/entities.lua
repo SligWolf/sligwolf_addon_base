@@ -324,7 +324,7 @@ function LIB.RemoveEntity(ent, withEffect)
 	ent:Remove()
 end
 
-function LIB.RemoveEntites(entities, withEffect)
+function LIB.RemoveEntities(entities, withEffect)
 	if not entities then
 		return
 	end
@@ -344,23 +344,23 @@ function LIB.RemoveEntites(entities, withEffect)
 	end
 end
 
-function LIB.RemoveFaultyEntites(entities, errReasonFormat, ...)
-	LIB.RemoveEntites(entities, false)
+function LIB.RemoveFaultyEntities(entities, errReasonFormat, ...)
+	LIB.RemoveEntities(entities, false)
 	LIBPrint.ErrorNoHaltWithStack(errReasonFormat, ...)
 end
 
-function LIB.RemoveSystemEntites(superparent, withEffect)
+function LIB.RemoveSystemEntities(superparent, withEffect)
 	local entities = LIB.GetSystemEntities(superparent)
-	LIB.RemoveEntites(entities, withEffect)
+	LIB.RemoveEntities(entities, withEffect)
 end
 
-function LIB.RemoveSystemEntitesOnDelete(ent)
+function LIB.RemoveSystemEntitiesOnDelete(ent)
 	if not IsValid(ent) then
 		return
 	end
 
-	LIB.CallOnRemove(ent, "RemoveSystemEntitesOnDelete", function(thisent, withEffect)
-		LIB.RemoveSystemEntites(thisent, withEffect)
+	LIB.CallOnRemove(ent, "RemoveSystemEntitiesOnDelete", function(thisent, withEffect)
+		LIB.RemoveSystemEntities(thisent, withEffect)
 	end)
 end
 
@@ -396,7 +396,7 @@ function LIB.RemoveEntitiesOnDelete(ent, entitiesToRemove)
 
 	LIB.CallOnRemove(ent, "RemoveEntityOnDelete", function(thisent, withEffect)
 		local thisEntTable = thisent:SligWolf_GetTable()
-		LIB.RemoveEntites(thisEntTable.entitiesToRemove, withEffect)
+		LIB.RemoveEntities(thisEntTable.entitiesToRemove, withEffect)
 	end)
 end
 

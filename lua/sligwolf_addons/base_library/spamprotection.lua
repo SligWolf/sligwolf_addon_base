@@ -208,7 +208,7 @@ function LIB.RemoveSpamCollisionEntities(ent)
 
 		LIBPrint.Notify(NOTIFY_ERROR, message, 5, rf)
 
-		LIBEntities.RemoveSystemEntites(ent, true)
+		LIBEntities.RemoveSystemEntities(ent, true)
 	end)
 end
 

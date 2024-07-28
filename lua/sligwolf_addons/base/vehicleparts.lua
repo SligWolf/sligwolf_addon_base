@@ -487,7 +487,7 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 	local constraintEnt = func(ent, parent, constraintInfos)
 
 	if not IsValid(constraintEnt) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{ent, parent},
 			"Couldn't create %s constraint between %s <===> %s. Removing entities.",
 			constraintName,
@@ -645,7 +645,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local model = ent:GetModel()
 
 	if not LIBUtil.IsValidModel(model) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Invalid model ('%s') on entity %s. Removing entities.",
 			model,
@@ -656,7 +656,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	end
 
 	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
 			ent,
@@ -809,7 +809,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 	local removeAllOnDelete = component.removeAllOnDelete
 
 	if removeAllOnDelete then
-		LIBEntities.RemoveSystemEntitesOnDelete(ent)
+		LIBEntities.RemoveSystemEntitiesOnDelete(ent)
 	end
 
 	ent.sligwolf_denyToolReload = dtr
@@ -1237,7 +1237,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	ent:Activate()
 
 	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
 			ent,
@@ -1292,7 +1292,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	ent:Activate()
 
 	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
 			ent,
@@ -1343,7 +1343,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 	ent:Activate()
 
 	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
-		self:RemoveFaultyEntites(
+		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
 			ent,
@@ -1479,7 +1479,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 	})
 
 	if not IsValid(WD1) then
-		LIBEntities.RemoveEntites({ent, parentFront, parentRear})
+		LIBEntities.RemoveEntities({ent, parentFront, parentRear})
 		return
 	end
 
@@ -1493,7 +1493,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 	})
 
 	if not IsValid(WD2) then
-		LIBEntities.RemoveEntites({ent, parentFront, parentRear})
+		LIBEntities.RemoveEntities({ent, parentFront, parentRear})
 		return
 	end
 
