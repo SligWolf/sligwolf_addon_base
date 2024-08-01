@@ -91,6 +91,11 @@ local function doIsOnRailTrace(ent)
 			continue
 		end
 
+		local hitEnt = tr.Entity
+		if IsValid(hitEnt) and hitEnt.sligwolf_ignoreOnRailCheck then
+			continue
+		end
+
 		return true
 	end
 
