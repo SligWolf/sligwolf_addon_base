@@ -385,7 +385,7 @@ function LIB.GenerateFGD()
 
 	local vehicleTables, vehicleTablesCount = getVehicleTablesByClass()
 
-	fgd = string.Replace(fgd, "{{SW_VERSION}}", SligWolf_Addons.BaseVersion)
+	fgd = string.Replace(fgd, "{{SW_VERSION}}", SligWolf_Addons.BaseApiVersion)
 	fgd = string.Replace(fgd, "{{SW_GENERATED_AT}}", os.date("%Y-%m-%d %H:%M:%S"))
 	fgd = string.Replace(fgd, "{{SW_ADDON_COUNT}}", SligWolf_Addons.GetLoadedAddonsCount())
 	fgd = string.Replace(fgd, "{{SW_VEHICLE_COUNT}}", vehicleTablesCount)

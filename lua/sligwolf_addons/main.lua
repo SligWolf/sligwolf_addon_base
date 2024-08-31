@@ -21,16 +21,15 @@ end
 
 
 -- Check sum of SW Base validation script "sligwolf_addons/basecheck.lua".
--- It contains logic to validate the SW Base addon being installed, up to date and active.
-local BASECHECK_SCRIPT_CHECKSUM = "246238a4e3f7436b357879faf6586325e74f3911edab1e70f868ec288899fe51"
+-- It contains logic to validate the SW Base addon being installed, up to date and active. (SHA256)
+local BASECHECK_SCRIPT_CHECKSUM = "88064a2443f9ca35a0be0b6b60477035d0bc0c342b9259fb32f4d75525202670"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseVersion = "2024-07-28"
+SligWolf_Addons.BaseApiVersion = "1.0.0"
 
 -- Minimum supported game version.
-SligWolf_Addons.MinGameVersionServer = 240321
-SligWolf_Addons.MinGameVersionClient = 240321
-
+SligWolf_Addons.MinGameVersionServer = 240809
+SligWolf_Addons.MinGameVersionClient = 240809
 
 
 SligWolf_Addons.Addondata = SligWolf_Addons.Addondata or {}

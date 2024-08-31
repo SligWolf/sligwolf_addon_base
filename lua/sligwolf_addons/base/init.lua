@@ -12,7 +12,7 @@ end
 
 SLIGWOLF_ADDON.Author = "SligWolf"
 SLIGWOLF_ADDON.NiceName = "Base"
-SLIGWOLF_ADDON.Version = SligWolf_Addons.BaseVersion
+SLIGWOLF_ADDON.Version = SligWolf_Addons.BaseApiVersion
 
 return true
 
