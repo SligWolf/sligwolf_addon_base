@@ -24,11 +24,7 @@ ENT.FailbackModel = CONSTANTS.mdlSphere4
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
-	if SERVER then
-		self:SetNoDraw(true)
-	end
-
-	self:AddEFlags(EFL_SERVER_ONLY)
+	self:SetNoDraw(true)
 
 	self.allowedtypes = nil
 	self.gender = GENDER_NEUTRAL

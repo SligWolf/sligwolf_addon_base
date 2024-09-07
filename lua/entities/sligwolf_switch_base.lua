@@ -60,6 +60,8 @@ function ENT:Initialize()
 	self.Statedata = {}
 	self.Statedata[1] = {}
 
+	self._oldState = nil
+
 	if SERVER then
 		ChangeWireOutputs(self)
 	end
@@ -100,22 +102,21 @@ end
 function ENT:SpawnCollision(model, pos, ang)
 	if CLIENT then return end
 
-	if IsValid(self.CollisionProp) then
-		self.CollisionProp:Remove()
-		self.CollisionProp = nil
+	if IsValid(self._collisionProp) then
+		self._collisionProp:Remove()
 	end
 
-	if IsValid(self.CollisionPropConst) then
-		self.CollisionPropConst:Remove()
-		self.CollisionPropConst = nil
+	if IsValid(self._collisionPropConst) then
+		self._collisionPropConst:Remove()
 	end
 
-	self.CollisionProp = self:MakeEntEnsured("sligwolf_phys", "CollisionProp")
-	if not IsValid(self.CollisionProp) then
+	self._collisionProp = nil
+	self._collisionPropConst = nil
+
+	local Prop = self:MakeEntEnsured("sligwolf_phys", "CollisionProp")
+	if not IsValid(Prop) then
 		return
 	end
-
-	local Prop = self.CollisionProp
 
 	Prop.sligwolf_denyToolReload = dtr
 	Prop.DoNotDuplicate = true
@@ -140,7 +141,9 @@ function ENT:SpawnCollision(model, pos, ang)
 	end
 
 	WD.DoNotDuplicate = true
-	self.CollisionPropConst = WD
+
+	self._collisionProp = Prop
+	self._collisionPropConst = WD
 
 	self:UpdateBodySystemMotion()
 	return Prop
@@ -149,17 +152,21 @@ end
 function ENT:ThinkInternal()
 	BaseClass.ThinkInternal(self)
 
+	if CLIENT then return end
 	if not self.Statedata then return end
 
 	local state = self.State or 1
 	local statedata = self.Statedata[state] or self.Statedata[1]
 	if not statedata then return end
 
-	if state == self.oldState then return end
-	self.oldState = state
+	if self._oldState and state == self._oldState then
+		return
+	end
+
+	self._oldState = state
 
 	local model = statedata.model
-	local sound = statedata.sound or "phx/hmetal1.wav"
+	local soundName = statedata.sound or "phx/hmetal1.wav"
 	local soundPitch = statedata.soundPitch or 100
 	local soundLevel = statedata.soundLevel or 80
 	local pos = statedata.pos
@@ -168,26 +175,26 @@ function ENT:ThinkInternal()
 
 	local Prop = self:SpawnCollision(model, pos, ang)
 	if not IsValid(Prop) then
-		self.oldState = nil
 		return
 	end
 
-	self:EmitSound(sound, soundLevel, soundPitch)
+	self:EmitSound(soundName, soundLevel, soundPitch)
 	local seq = self:LookupSequence(sequence) or 0
 
 	self:ResetSequence(seq)
 end
 
 function ENT:OnRemove()
-	if IsValid(self.CollisionProp) then
-		self.CollisionProp:Remove()
-		self.CollisionProp = nil
+	if IsValid(self._collisionProp) then
+		self._collisionProp:Remove()
 	end
 
-	if IsValid(self.CollisionPropConst) then
-		self.CollisionPropConst:Remove()
-		self.CollisionPropConst = nil
+	if IsValid(self._collisionPropConst) then
+		self._collisionPropConst:Remove()
 	end
+
+	self._collisionProp = nil
+	self._collisionPropConst = nil
 
 	BaseClass.OnRemove(self)
 end

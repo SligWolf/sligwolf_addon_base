@@ -393,3 +393,7 @@ function ENT:GetSpawnName()
 	return spawnname
 end
 
+function ENT:OnEntityCopyTableFinish(data)
+	LIBEntities.RemoveBadDupeData(data)
+end
+

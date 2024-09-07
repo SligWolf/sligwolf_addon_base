@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Timer)
 local LIB = SligWolf_Addons.Timer
 
 local g_nameprefix = "SLIGWOLF_ADDONS_Timer_"
+local g_epsilon = 0.001
 
 local function getName(identifier)
 	identifier = g_nameprefix .. tostring(identifier or "")
@@ -28,10 +29,7 @@ function LIB.Interval(identifier, delay, repetitions, func)
 
 	repetitions = tonumber(repetitions or 0)
 	delay = tonumber(delay or 0)
-
-	if delay < 0 then
-		delay = 0
-	end
+	delay = math.max(delay, g_epsilon)
 
 	timer.Remove(name)
 	timer.Create(name, delay, repetitions, func)
@@ -42,10 +40,7 @@ function LIB.Once(identifier, delay, func)
 	local name = getName(identifier)
 
 	delay = tonumber(delay or 0)
-
-	if delay < 0 then
-		delay = 0
-	end
+	delay = math.max(delay, g_epsilon)
 
 	timer.Remove(name)
 	timer.Create(name, delay, 1, function()
@@ -59,10 +54,7 @@ function LIB.Until(identifier, delay, func)
 	local name = getName(identifier)
 
 	delay = tonumber(delay or 0)
-
-	if delay < 0 then
-		delay = 0
-	end
+	delay = math.max(delay, g_epsilon)
 
 	timer.Remove(name)
 	timer.Create(name, delay, 0, function()
@@ -76,7 +68,7 @@ function LIB.Until(identifier, delay, func)
 end
 
 function LIB.NextFrame(identifier, func)
-	LIB.Once(identifier, 0, func)
+	LIB.Once(identifier, g_epsilon, func)
 end
 
 function LIB.Remove(identifier)
@@ -89,7 +81,7 @@ function LIB.Simple(delay, func)
 end
 
 function LIB.SimpleNextFrame(func)
-	LIB.Simple(0, func)
+	LIB.Simple(g_epsilon, func)
 end
 
 return true

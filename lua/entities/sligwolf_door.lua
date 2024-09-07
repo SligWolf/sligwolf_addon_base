@@ -20,10 +20,10 @@ function ENT:Initialize()
 
 	self:TurnOn(true)
 
-	self:Set_AutoClose(true)
-	self:Set_OpenTime(3)
-	self:Set_OpenSound(CONSTANTS.sndMetaldoorOpen)
-	self:Set_CloseSound(CONSTANTS.sndMetaldoorClose)
+	self:SetAutoClose(true)
+	self:SetOpenTime(3)
+	self:SetOpenSound(CONSTANTS.sndMetaldoorOpen)
+	self:SetCloseSound(CONSTANTS.sndMetaldoorClose)
 
 	if SERVER then
 		self:SetUseType(SIMPLE_USE)
@@ -39,109 +39,141 @@ end
 function ENT:PostInitialize()
 	BaseClass.PostInitialize(self)
 
-	if self:Get_SpawnOpen() then
+	if self:GetSpawnOpen() then
 		self:OpenInternal()
 	end
 
 	self:CallStateEvent()
 end
 
-function ENT:Set_AutoClose(bool)
-	if CLIENT then return end
-	self.AutoClose = bool or false
+function ENT:ReinitializeModel()
+	self:InitializePhysics()
+
+	self:TimerNextFrame("ReinitializeModelRemount", function()
+		self:OnModelReinitialized()
+	end)
 end
 
-function ENT:Get_AutoClose()
-	if CLIENT then return end
-	return self.AutoClose or false
+function ENT:OnModelReinitialized()
+	-- Override me
 end
 
-function ENT:Set_OpenTime(num)
+function ENT:SetAutoClose(bool)
 	if CLIENT then return end
-	self.OpenTime = num or 3
+	self._autoClose = bool or false
 end
 
-function ENT:Get_OpenTime()
+function ENT:GetAutoClose()
 	if CLIENT then return end
-	return self.OpenTime or 3
+	return self._autoClose or false
 end
 
-function ENT:Set_OpenSound(snd)
+function ENT:SetOpenTime(num)
 	if CLIENT then return end
-	self.OpenSound = snd or CONSTANTS.sndNull
+	self._openTime = num or 3
 end
 
-function ENT:Get_OpenSound()
+function ENT:GetOpenTime()
 	if CLIENT then return end
-	return self.OpenSound or CONSTANTS.sndNull
+	return self._openTime or 3
 end
 
-function ENT:Set_CloseSound(snd)
+function ENT:SetOpenModel(mdl)
 	if CLIENT then return end
-	self.CloseSound = snd or CONSTANTS.sndNull
+	self._openModel = mdl or ""
 end
 
-function ENT:Get_CloseSound()
+function ENT:GetOpenModel()
 	if CLIENT then return end
-	return self.CloseSound or CONSTANTS.sndNull
+	return self._openModel or ""
 end
 
-function ENT:Set_DisableUse(disableUse)
+function ENT:SetCloseModel(mdl)
 	if CLIENT then return end
-	self.DisableUse = disableUse or false
+	self._closeModel = mdl or ""
 end
 
-function ENT:Get_DisableUse()
+function ENT:GetCloseModel()
 	if CLIENT then return end
-	return self.DisableUse or false
+	return self._closeModel or ""
 end
 
-function ENT:Set_SpawnOpen(spawnOpen)
+function ENT:SetOpenSound(snd)
 	if CLIENT then return end
-	self.SpawnOpen = spawnOpen or false
+	self._openSound = snd or CONSTANTS.sndNull
 end
 
-function ENT:Get_SpawnOpen()
+function ENT:GetOpenSound()
 	if CLIENT then return end
-	return self.SpawnOpen or false
+	return self._openSound or CONSTANTS.sndNull
 end
 
-function ENT:KeyValue(key, value)
-	BaseClass.KeyValue(self, key, value)
+function ENT:SetCloseSound(snd)
+	if CLIENT then return end
+	self._closeSound = snd or CONSTANTS.sndNull
+end
 
-	if key == "model" then
-		value = tostring(value or "")
+function ENT:GetCloseSound()
+	if CLIENT then return end
+	return self._closeSound or CONSTANTS.sndNull
+end
 
-		if value == "" then
-			value = self:GetModel()
-		end
+function ENT:SetDisableUse(disableUse)
+	if CLIENT then return end
+	self._disableUse = disableUse or false
+end
 
-		self:SetModel(value)
+function ENT:GetDisableUse()
+	if CLIENT then return end
+	return self._disableUse or false
+end
+
+function ENT:SetSpawnOpen(spawnOpen)
+	if CLIENT then return end
+	self._spawnOpen = spawnOpen or false
+end
+
+function ENT:GetSpawnOpen()
+	if CLIENT then return end
+	return self._spawnOpen or false
+end
+
+function ENT:SetDoorModel(mdl)
+	mdl = tostring(mdl or "")
+
+	if mdl == "" then
 		return
 	end
 
-	if key == "skin" then
-		value = tonumber(value) or self:GetSkin()
-		self:SetSkin(value)
+	if self._oldDoorModel and mdl == self._oldDoorModel then
 		return
 	end
 
-	if key == "addonname" then
-		value = tostring(value or "")
-		self:SetAddonID(value)
-		return
-	end
+	self:SetModel(mdl)
+	self:ReinitializeModel()
+
+	self._oldDoorModel = mdl
 end
 
 function ENT:Use(activator, caller, useType, value)
 	if CLIENT then return end
-	if self:Get_DisableUse() then return end
+	if self:GetDisableUse() then return end
 
-	self:Open()
+	self:Toggle()
 end
 
 function ENT:IsOpen()
-	return self.isOpen or false
+	return self._isOpen or false
+end
+
+function ENT:Toggle()
+	if CLIENT then return end
+
+	if self:IsOpen() then
+		self:Close()
+	else
+		self:Open()
+	end
 end
 
 function ENT:Open()
@@ -151,30 +183,13 @@ function ENT:Open()
 
 	self:OpenInternal()
 
-	if self:Get_AutoClose() then
-		local opentime = self:Get_OpenTime()
+	if self:GetAutoClose() then
+		local opentime = self:GetOpenTime()
 
-		self:TimerOnce("CloseDoor", opentime, function()
+		self:TimerOnce("AutoCloseDoor", opentime, function()
 			self:Close()
 		end)
 	end
-end
-
-function ENT:OpenInternal()
-	if CLIENT then return end
-	if self:IsOpen() then return end
-	if not self:IsOn() then return end
-
-	local osnd = self:Get_OpenSound()
-
-	self:TimerRemove("CloseDoor")
-
-	self:SetAnim("open")
-	self:SetNotSolid(true)
-	self:EmitSound(osnd)
-	self.isOpen = true
-
-	self:CallStateEvent()
 end
 
 function ENT:Close()
@@ -182,14 +197,53 @@ function ENT:Close()
 	if not self:IsOpen() then return end
 	if not self:IsOn() then return end
 
-	local csnd = self:Get_CloseSound()
+	self:CloseInternal()
+end
 
-	self:TimerRemove("CloseDoor")
+function ENT:OpenInternal()
+	if CLIENT then return end
+	if self:IsOpen() then return end
+	if not self:IsOn() then return end
+
+	local osnd = self:GetOpenSound()
+	local omdl = self:GetOpenModel()
+
+	self:TimerRemove("AutoCloseDoor")
+	self:TimerRemove("ReinitializeModelRemount")
+
+	self:SetDoorModel(omdl)
+
+	self:SetAnim("open")
+	self:EmitSound(osnd)
+	self._isOpen = true
+
+	if omdl == "" then
+		self:SetNotSolid(true)
+	else
+		self:SetNotSolid(false)
+	end
+
+	self:CallStateEvent()
+end
+
+function ENT:CloseInternal()
+	if CLIENT then return end
+	if not self:IsOpen() then return end
+	if not self:IsOn() then return end
+
+	local csnd = self:GetCloseSound()
+	local cmdl = self:GetCloseModel()
+
+	self:TimerRemove("AutoCloseDoor")
+	self:TimerRemove("ReinitializeModelRemount")
+
+	self:SetDoorModel(cmdl)
 
 	self:SetAnim("close")
-	self:SetNotSolid(false)
 	self:EmitSound(csnd)
-	self.isOpen = false
+	self._isOpen = false
+
+	self:SetNotSolid(false)
 
 	self:CallStateEvent()
 end
@@ -198,10 +252,10 @@ function ENT:CallStateEvent()
 	if CLIENT then return end
 
 	local open = self:IsOpen()
-	local lastOpen = self.lastIsOpen
-	self.lastIsOpen = open
+	local lastOpen = self._lastIsOpen
+	self._lastIsOpen = open
 
-	if open == lastOpen then
+	if lastOpen ~= nil and open == lastOpen then
 		return
 	end
 

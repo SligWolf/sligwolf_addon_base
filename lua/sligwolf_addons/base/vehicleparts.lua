@@ -314,9 +314,9 @@ end
 local function SetUnsetConstraintsValuesToDefaults(constraints)
 	constraints = constraints or {}
 
-	for constraint, constraintInfo in pairs(constraints) do
-		constraintInfo = SetUnsetConstraintValuesToDefaults(constraint, constraintInfo)
-		constraints[constraint] = constraintInfo
+	for constraintName, constraintInfo in pairs(constraints) do
+		constraintInfo = SetUnsetConstraintValuesToDefaults(constraintName, constraintInfo)
+		constraints[constraintName] = constraintInfo
 	end
 
 	return constraints
@@ -498,11 +498,26 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 		return nil
 	end
 
+	local parentTable = parent:SligWolf_GetTable()
+
+	local vehiclePartsConstraint = parentTable.vehiclePartsConstraint or {}
+	parentTable.vehiclePartsConstraint = vehiclePartsConstraint
+
+	vehiclePartsConstraint[constraintName] = constraintInfos
+
 	return constraintEnt
 end
 
 
 function SLIGWOLF_ADDON:CreateConstraints(ent, parent, componentConstraints)
+	if LIBEntities.IsMarkedForDeletion(ent) then
+		return false
+	end
+
+	if LIBEntities.IsMarkedForDeletion(parent) then
+		return false
+	end
+
 	componentConstraints = componentConstraints or {}
 	componentConstraints = SetUnsetConstraintsValuesToDefaults(componentConstraints)
 
@@ -515,6 +530,21 @@ function SLIGWOLF_ADDON:CreateConstraints(ent, parent, componentConstraints)
 	end
 
 	return true
+end
+
+function SLIGWOLF_ADDON:RecreateConstraints(ent, parent)
+	if LIBEntities.IsMarkedForDeletion(ent) then
+		return false
+	end
+
+	if LIBEntities.IsMarkedForDeletion(parent) then
+		return false
+	end
+
+	local parentTable = parent:SligWolf_GetTable()
+	local vehiclePartsConstraint = parentTable.vehiclePartsConstraint or {}
+
+	return self:CreateConstraints(ent, parent, vehiclePartsConstraint)
 end
 
 local function ProceedVehicleSetUp(ent, tb)
@@ -1005,6 +1035,8 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 	local name = component.name
 	local class = component.class
 	local disableUse = component.disableUse
+	local model = component.model
+	local modelOpen = component.modelOpen
 	local soundOpen = component.soundOpen
 	local soundClose = component.soundClose
 	local autoClose = component.autoClose
@@ -1031,18 +1063,35 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
+	if isstring(modelOpen) then
+		if not LIBUtil.IsValidModel(modelOpen) then
+			self:RemoveFaultyEntities(
+				{parent, ent},
+				"Invalid modelOpen ('%s') on entity %s. Removing entities.",
+				modelOpen,
+				ent
+			)
+
+			return
+		end
+
+		ent:SetOpenModel(modelOpen)
+	end
+
+	ent:SetCloseModel(model)
+
 	if isstring(soundOpen) then
-		ent:Set_OpenSound(soundOpen)
+		ent:SetOpenSound(soundOpen)
 	end
 
 	if isstring(soundClose) then
-		ent:Set_CloseSound(soundClose)
+		ent:SetCloseSound(soundClose)
 	end
 
-	ent:Set_OpenTime(openTime)
-	ent:Set_AutoClose(autoClose)
-	ent:Set_SpawnOpen(spawnOpen)
-	ent:Set_DisableUse(disableUse)
+	ent:SetOpenTime(openTime)
+	ent:SetAutoClose(autoClose)
+	ent:SetSpawnOpen(spawnOpen)
+	ent:SetDisableUse(disableUse)
 	ent:TurnOn(true)
 
 	if funcOnOpen then
@@ -1051,6 +1100,20 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 
 	if funcOnClose then
 		ent.OnClose = funcOnClose
+	end
+
+	ent.OnModelReinitialized = function(thisent)
+		local remounted = LIBPosition.RemountToMountPoint(thisent)
+		if not remounted then
+			self:RemoveFaultyEntities(
+				{parent, thisent},
+				"Couldn't remount entity %s. Removing entities.",
+				thisent
+			)
+			return
+		end
+
+		self:RecreateConstraints(thisent, parent)
 	end
 
 	return ent
