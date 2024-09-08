@@ -63,12 +63,12 @@ function LIB.TrainDoorButtonToggle(button, mainvehicle, ply)
 	door.sligwolf_doorState = not door.sligwolf_doorState
 
 	if door.sligwolf_doorState then
-		door:SetAutoClose(false)
-		door:Open()
+		door:SetDoorAutoClose(false)
+		door:DoorOpen()
 		return
 	else
-		door:SetAutoClose(true)
-		door:Close()
+		door:SetDoorAutoClose(true)
+		door:DoorClose()
 		return
 	end
 end

@@ -34,47 +34,47 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Float", "RestRate")
 end
 
-function ENT:Brake(set)
+function ENT:WheelBrake(set)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Braking", set)
 end
 
-function ENT:IsBraking()
+function ENT:WheelIsBraking()
 	return self:GetNetworkRVar("Braking", false)
 end
 
-function ENT:SetSize(num)
+function ENT:SetWheelSize(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Size", num)
 end
 
-function ENT:GetSize()
+function ENT:GetWheelSize()
 	return self:GetNetworkRVarNumber("Size", 0)
 end
 
-function ENT:SetRestRate(num)
+function ENT:SetWheelRestRate(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("RestRate", num)
 end
 
-function ENT:GetRestRate()
+function ENT:GetWheelRestRate()
 	return self:GetNetworkRVarNumber("RestRate", 0)
 end
 
-function ENT:SetPoseName(name)
+function ENT:SetWheelPoseName(name)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("PoseName", name)
 end
 
-function ENT:GetPoseName()
+function ENT:GetWheelPoseName()
 	return self:GetNetworkRVarString("PoseName", "spinloop")
 end
 
-function ENT:SetMessureEntity(ent)
+function ENT:SetWheelMessureEntity(ent)
 	if CLIENT then return end
 
 	if not IsValid(ent) then
@@ -84,7 +84,7 @@ function ENT:SetMessureEntity(ent)
 	self:SetNetworkRVar("MessureEntity", ent)
 end
 
-function ENT:GetMessureEntity()
+function ENT:GetWheelMessureEntity()
 	local ent = self:GetNetworkRVar("MessureEntity")
 
 	if not IsValid(ent) then
@@ -95,7 +95,7 @@ function ENT:GetMessureEntity()
 end
 
 function ENT:GetRelativeVelocity()
-	local vent = self:GetMessureEntity()
+	local vent = self:GetWheelMessureEntity()
 
 	if not IsValid(vent) then
 		return Vector()
@@ -117,7 +117,7 @@ function ENT:GetForwardVelocity()
 
 	local now = CurTime()
 
-	if self:IsBraking() then
+	if self:WheelIsBraking() then
 		self.LastForwardSpeedTime = now
 		self.LastForwardSpeed = v
 
@@ -130,7 +130,7 @@ function ENT:GetForwardVelocity()
 
 		local oldv = self.LastForwardSpeed or 0
 		if oldv ~= 0 then
-			local factor = 1 - ((diff * self:GetRestRate()) / math.abs(oldv))
+			local factor = 1 - ((diff * self:GetWheelRestRate()) / math.abs(oldv))
 
 			if factor <= 0.0001 then
 				factor = 0
@@ -149,7 +149,7 @@ function ENT:GetForwardVelocity()
 end
 
 function ENT:GetRotationSpeed()
-	local r = self:GetSize()
+	local r = self:GetWheelSize()
 	local v = self:GetForwardVelocity()
 
 	if r <= 0 then return 0 end
@@ -171,7 +171,7 @@ function ENT:UpdateRotation()
 	self.Rot = (self.Rot % 360)
 	self.LastRot = now
 
-	self:SetPoseParameter(self:GetPoseName(), self.Rot)
+	self:SetPoseParameter(self:GetWheelPoseName(), self.Rot)
 	self:InvalidateBoneCache()
 end
 

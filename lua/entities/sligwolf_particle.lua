@@ -49,103 +49,103 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Float", "Velocity")
 end
 
-function ENT:SetSpawnTime(num)
+function ENT:SetParticleSpawnTime(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("SpawnTime", num)
 end
 
-function ENT:GetSpawnTime()
+function ENT:GetParticleSpawnTime()
 	return self:GetNetworkRVarNumber("SpawnTime", 0.005)
 end
 
-function ENT:SetVelocity(vel)
+function ENT:SetParticleVelocity(vel)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Velocity", vel)
 end
 
-function ENT:GetVelocity()
+function ENT:GetParticleVelocity()
 	return self:GetNetworkRVarNumber("Velocity", 20)
 end
 
-function ENT:SetLifeTime(num)
+function ENT:SetParticleLifeTime(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("LifeTime", num)
 end
 
-function ENT:GetLifeTime()
+function ENT:GetParticleLifeTime()
 	return self:GetNetworkRVarNumber("LifeTime", 0)
 end
 
-function ENT:SetDieTime(num)
+function ENT:SetParticleDieTime(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("DieTime", num)
 end
 
-function ENT:GetDieTime()
+function ENT:GetParticleDieTime()
 	return self:GetNetworkRVarNumber("DieTime", 3)
 end
 
-function ENT:SetStartAlpha(num)
+function ENT:SetParticleStartAlpha(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("StartAlpha", num)
 end
 
-function ENT:GetStartAlpha()
+function ENT:GetParticleStartAlpha()
 	return self:GetNetworkRVarNumber("StartAlpha", 50)
 end
 
-function ENT:SetEndAlpha(num)
+function ENT:SetParticleEndAlpha(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("EndAlpha", num)
 end
 
-function ENT:GetEndAlpha()
+function ENT:GetParticleEndAlpha()
 	return self:GetNetworkRVarNumber("EndAlpha", 0)
 end
 
-function ENT:SetStartSize(num)
+function ENT:SetParticleStartSize(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("StartSize", num)
 end
 
-function ENT:GetStartSize()
+function ENT:GetParticleStartSize()
 	return self:GetNetworkRVarNumber("StartSize", 10)
 end
 
-function ENT:SetEndSize(num)
+function ENT:SetParticleEndSize(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("EndSize", num)
 end
 
-function ENT:GetEndSize()
+function ENT:GetParticleEndSize()
 	return self:GetNetworkRVarNumber("EndSize", 20)
 end
 
-function ENT:SetStartLength(num)
+function ENT:SetParticleStartLength(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("StartLength", num)
 end
 
-function ENT:GetStartLength()
+function ENT:GetParticleStartLength()
 	return self:GetNetworkRVarNumber("StartLength", 0)
 end
 
-function ENT:SetEndLength(num)
+function ENT:SetParticleEndLength(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("EndLength", num)
 end
 
-function ENT:GetEndLength()
+function ENT:GetParticleEndLength()
 	return self:GetNetworkRVarNumber("EndLength", 0)
 end
 
@@ -153,7 +153,7 @@ function ENT:ThinkInternal()
 	BaseClass.ThinkInternal(self)
 
 	local Delay = self.Delay or 0
-	local Time = self:GetSpawnTime() or EmitTime
+	local Time = self:GetParticleSpawnTime() or EmitTime
 	if (CurTime() - Delay) < Time then return end
 
 	self.Delay = CurTime()
@@ -211,15 +211,15 @@ function ENT:EmitterThink()
 	if SERVER then return end
 	if not self:IsOn() then return end
 
-	local E_Vel	 	= self:GetVelocity()
-	local E_LTime 	= self:GetLifeTime()
-	local E_DTime 	= self:GetDieTime()
-	local E_SAlpha 	= self:GetStartAlpha()
-	local E_EAlpha 	= self:GetEndAlpha()
-	local E_SSize 	= self:GetStartSize()
-	local E_ESize 	= self:GetEndSize()
-	local E_SLength	= self:GetStartLength()
-	local E_ELength	= self:GetEndLength()
+	local E_Vel	 	= self:GetParticleVelocity()
+	local E_LTime 	= self:GetParticleLifeTime()
+	local E_DTime 	= self:GetParticleDieTime()
+	local E_SAlpha 	= self:GetParticleStartAlpha()
+	local E_EAlpha 	= self:GetParticleEndAlpha()
+	local E_SSize 	= self:GetParticleStartSize()
+	local E_ESize 	= self:GetParticleEndSize()
+	local E_SLength	= self:GetParticleStartLength()
+	local E_ELength	= self:GetParticleEndLength()
 
 	self:Debug(E_SSize, E_Col)
 	self:SetUpEmitter(E_Vel, E_LTime, E_DTime, E_SAlpha, E_EAlpha, E_SSize, E_ESize, E_SLength, E_ELength)

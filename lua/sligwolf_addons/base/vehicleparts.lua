@@ -982,12 +982,12 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	ent:SetMinSpeed(minSpeed)
-	ent:SetMaxSpeed(maxSpeed)
-	ent:SetMinPoseValue(minPoseValue)
-	ent:SetMaxPoseValue(maxPoseValue)
-	ent:SetPoseName(poseName)
-	ent:SetMessureEntity(parent)
+	ent:SetSpeedoMinSpeed(minSpeed)
+	ent:SetSpeedoMaxSpeed(maxSpeed)
+	ent:SetSpeedoMinPoseValue(minPoseValue)
+	ent:SetSpeedoMaxPoseValue(maxPoseValue)
+	ent:SetSpeedoPoseName(poseName)
+	ent:SetSpeedoMessureEntity(parent)
 
 	ent:AttachToEnt(parent, attachment)
 
@@ -1075,23 +1075,23 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 			return
 		end
 
-		ent:SetOpenModel(modelOpen)
+		ent:SetDoorOpenModel(modelOpen)
 	end
 
-	ent:SetCloseModel(model)
+	ent:SetDoorCloseModel(model)
 
 	if isstring(soundOpen) then
-		ent:SetOpenSound(soundOpen)
+		ent:SetDoorOpenSound(soundOpen)
 	end
 
 	if isstring(soundClose) then
-		ent:SetCloseSound(soundClose)
+		ent:SetDoorCloseSound(soundClose)
 	end
 
-	ent:SetOpenTime(openTime)
-	ent:SetAutoClose(autoClose)
-	ent:SetSpawnOpen(spawnOpen)
-	ent:SetDisableUse(disableUse)
+	ent:SetDoorOpenTime(openTime)
+	ent:SetDoorAutoClose(autoClose)
+	ent:SetDoorSpawnOpen(spawnOpen)
+	ent:SetDoorDisableUse(disableUse)
 	ent:TurnOn(true)
 
 	if funcOnOpen then
@@ -1313,15 +1313,15 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	end
 
 	ent:AttachToEnt(parent, attachment)
-	ent:SetSpawnTime(spawnTime)
-	ent:SetVelocity(velocity)
+	ent:SetParticleSpawnTime(spawnTime)
+	ent:SetParticleVelocity(velocity)
 	ent:SetColor(color)
-	ent:SetStartSize(startSize)
-	ent:SetEndSize(endSize)
-	ent:SetLifeTime(lifeTime)
-	ent:SetDieTime(dieTime)
-	ent:SetStartAlpha(startAlpha)
-	ent:SetEndAlpha(endAlpha)
+	ent:SetParticleStartSize(startSize)
+	ent:SetParticleEndSize(endSize)
+	ent:SetParticleLifeTime(lifeTime)
+	ent:SetParticleDieTime(dieTime)
+	ent:SetParticleStartAlpha(startAlpha)
+	ent:SetParticleEndAlpha(endAlpha)
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
@@ -1368,10 +1368,10 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	end
 
 	ent:AttachToEnt(parent, attachment)
-	ent:SetFOV(fov)
-	ent:SetFarZ(farZ)
+	ent:SetLightConeFOV(fov)
+	ent:SetLightConeFarZ(farZ)
 	ent:SetColor(color)
-	ent:SetShadowRenderDist(shadowRenderDist)
+	ent:SetLightConeShadowRenderDist(shadowRenderDist)
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
@@ -1420,10 +1420,10 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 
 	ent:SetColor(color)
 	ent:AttachToEnt(parent, attachment)
-	ent:SetSize(size)
-	ent:SetEnlarge(enlarge)
-	ent:SetCount(count)
-	ent:SetAlphaReduce(alphaReduce)
+	ent:SetGlowSize(size)
+	ent:SetGlowEnlarge(enlarge)
+	ent:SetGlowCount(count)
+	ent:SetGlowAlphaReduce(alphaReduce)
 	ent:TurnOn(false)
 
 	ent.sligwolf_blockedprop = true
@@ -1474,9 +1474,9 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superp
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	ent:SetSize(size)
-	ent:SetRestRate(restrate)
-	ent:SetMessureEntity(parent)
+	ent:SetWheelSize(size)
+	ent:SetWheelRestRate(restrate)
+	ent:SetWheelMessureEntity(parent)
 	ent:AttachToEnt(parent, attachment)
 
 	if boneMerge then
@@ -1502,7 +1502,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	ent:SetDisplayOriginName("displaypos01")
 	ent:AttachToEnt(parent, attachment)
 	ent:TurnOn(true)
-	ent:SetScale(scale)
+	ent:SetDisplayScale(scale)
 	ent:SetDisplayFunctionName(functionName)
 
 	return ent

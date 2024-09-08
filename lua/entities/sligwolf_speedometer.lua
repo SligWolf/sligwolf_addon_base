@@ -14,13 +14,13 @@ if not SligWolf_Addons.IsLoaded() then return end
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
-	self:SetMinSpeed(0)
-	self:SetMaxSpeed(1312)
-	self:SetMinPoseValue(0)
-	self:SetMaxPoseValue(1)
+	self:SetSpeedoMinSpeed(0)
+	self:SetSpeedoMaxSpeed(1312)
+	self:SetSpeedoMinPoseValue(0)
+	self:SetSpeedoMaxPoseValue(1)
 
-	self:SetMessureEntity(self)
-	self:SetPoseName("vehicle_guage")
+	self:SetSpeedoMessureEntity(self)
+	self:SetSpeedoPoseName("vehicle_guage")
 end
 
 function ENT:SetupDataTables()
@@ -35,7 +35,7 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Float", "MaxPoseValue")
 end
 
-function ENT:SetMinSpeed(speed)
+function ENT:SetSpeedoMinSpeed(speed)
 	if CLIENT then return end
 
 	speed = tonumber(speed or 0) or 0
@@ -47,11 +47,11 @@ function ENT:SetMinSpeed(speed)
 	self:SetNetworkRVar("MinSpeed", speed)
 end
 
-function ENT:GetMinSpeed()
+function ENT:GetSpeedoMinSpeed()
 	return self:GetNetworkRVarNumber("MinSpeed", 0)
 end
 
-function ENT:SetMaxSpeed(speed)
+function ENT:SetSpeedoMaxSpeed(speed)
 	if CLIENT then return end
 
 	speed = tonumber(speed or 0) or 0
@@ -63,11 +63,11 @@ function ENT:SetMaxSpeed(speed)
 	self:SetNetworkRVar("MaxSpeed", speed)
 end
 
-function ENT:GetMaxSpeed()
+function ENT:GetSpeedoMaxSpeed()
 	return self:GetNetworkRVarNumber("MaxSpeed", 0)
 end
 
-function ENT:SetMinPoseValue(poseValue)
+function ENT:SetSpeedoMinPoseValue(poseValue)
 	if CLIENT then return end
 
 	poseValue = tonumber(poseValue or 0) or 0
@@ -75,11 +75,11 @@ function ENT:SetMinPoseValue(poseValue)
 	self:SetNetworkRVar("MinPoseValue", poseValue)
 end
 
-function ENT:GetMinPoseValue()
+function ENT:GetSpeedoMinPoseValue()
 	return self:GetNetworkRVarNumber("MinPoseValue", 0)
 end
 
-function ENT:SetMaxPoseValue(poseValue)
+function ENT:SetSpeedoMaxPoseValue(poseValue)
 	if CLIENT then return end
 
 	poseValue = tonumber(poseValue or 0) or 0
@@ -87,22 +87,22 @@ function ENT:SetMaxPoseValue(poseValue)
 	self:SetNetworkRVar("MaxPoseValue", poseValue)
 end
 
-function ENT:GetMaxPoseValue()
+function ENT:GetSpeedoMaxPoseValue()
 	return self:GetNetworkRVarNumber("MaxPoseValue", 0)
 end
 
-function ENT:SetPoseName(poseName)
+function ENT:SetSpeedoPoseName(poseName)
 	if CLIENT then return end
 
 	poseName = tostring(poseName or "")
 	self:SetNetworkRVar("PoseName", poseName)
 end
 
-function ENT:GetPoseName()
+function ENT:GetSpeedoPoseName()
 	return self:GetNetworkRVarString("PoseName", "vehicle_guage")
 end
 
-function ENT:SetMessureEntity(ent)
+function ENT:SetSpeedoMessureEntity(ent)
 	if CLIENT then return end
 
 	if not IsValid(ent) then
@@ -112,7 +112,7 @@ function ENT:SetMessureEntity(ent)
 	self:SetNetworkRVar("MessureEntity", ent)
 end
 
-function ENT:GetMessureEntity()
+function ENT:GetSpeedoMessureEntity()
 	local ent = self:GetNetworkRVar("MessureEntity")
 
 	if not IsValid(ent) then
@@ -123,7 +123,7 @@ function ENT:GetMessureEntity()
 end
 
 function ENT:GetRelativeVelocity()
-	local vent = self:GetMessureEntity()
+	local vent = self:GetSpeedoMessureEntity()
 
 	if not IsValid(vent) then
 		return Vector()
@@ -149,15 +149,15 @@ end
 function ENT:GuagePose()
 	local speed = self:GetSpeed()
 
-	local minSpeed = self:GetMinSpeed()
-	local maxSpeed = self:GetMaxSpeed()
+	local minSpeed = self:GetSpeedoMinSpeed()
+	local maxSpeed = self:GetSpeedoMaxSpeed()
 
 	if minSpeed >= maxSpeed then
 		return nil
 	end
 
-	local minPoseValue = self:GetMinPoseValue()
-	local maxPoseValue = self:GetMaxPoseValue()
+	local minPoseValue = self:GetSpeedoMinPoseValue()
+	local maxPoseValue = self:GetSpeedoMaxPoseValue()
 
 	local pose = math.Remap(speed, minSpeed, maxSpeed, minPoseValue, maxPoseValue)
 	return pose
@@ -169,7 +169,7 @@ function ENT:UpdateGuagePose()
 		return
 	end
 
-	local poseName = self:GetPoseName()
+	local poseName = self:GetSpeedoPoseName()
 
 	self:SetPoseParameter(poseName, pose)
 	self:InvalidateBoneCache()

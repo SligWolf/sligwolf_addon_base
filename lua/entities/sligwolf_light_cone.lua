@@ -29,63 +29,63 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Float", "FOV")
 end
 
-function ENT:SetTexture(text)
+function ENT:SetLightConeTexture(text)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Texture", text)
 end
 
-function ENT:GetTexture()
+function ENT:GetLightConeTexture()
 	return self:GetNetworkRVarString("Texture", "effects/flashlight001")
 end
 
-function ENT:SetBrightness(num)
+function ENT:SetLightConeBrightness(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Brightness", num)
 end
 
-function ENT:GetBrightness()
+function ENT:GetLightConeBrightness()
 	return self:GetNetworkRVarNumber("Brightness", 4)
 end
 
-function ENT:SetFOV(num)
+function ENT:SetLightConeFOV(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("FOV", num)
 end
 
-function ENT:GetFOV()
+function ENT:GetLightConeFOV()
 	return self:GetNetworkRVarNumber("FOV", 90)
 end
 
-function ENT:SetFarZ(num)
+function ENT:SetLightConeFarZ(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("FarZ", num)
 end
 
-function ENT:GetFarZ()
+function ENT:GetLightConeFarZ()
 	return self:GetNetworkRVarNumber("FarZ", 1024)
 end
 
-function ENT:SetNearZ(num)
+function ENT:SetLightConeNearZ(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("NearZ", num)
 end
 
-function ENT:GetNearZ()
+function ENT:GetLightConeNearZ()
 	return self:GetNetworkRVarNumber("NearZ", 8)
 end
 
-function ENT:SetShadowRenderDist(num)
+function ENT:SetLightConeShadowRenderDist(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("ShadowRenderDist", num)
 end
 
-function ENT:GetShadowRenderDist()
+function ENT:GetLightConeShadowRenderDist()
 	return self:GetNetworkRVarNumber("ShadowRenderDist", 0)
 end
 
@@ -122,11 +122,11 @@ function ENT:ThinkInternal()
 	local pos = self:GetPos()
 	local ang = self:GetAngles()
 	local col = self:GetColor()
-	local bright = self:GetBrightness()
-	local fov = self:GetFOV()
-	local farz = self:GetFarZ()
-	local nearz = self:GetNearZ()
-	local maxdist = self:GetShadowRenderDist()
+	local bright = self:GetLightConeBrightness()
+	local fov = self:GetLightConeFOV()
+	local farz = self:GetLightConeFarZ()
+	local nearz = self:GetLightConeNearZ()
+	local maxdist = self:GetLightConeShadowRenderDist()
 	local maxdistSqr = maxdist * maxdist
 
 	if maxdist > 0 then
@@ -144,7 +144,7 @@ function ENT:ThinkInternal()
 
 	flashlighttex:SetPos(pos)
 	flashlighttex:SetAngles(ang)
-	flashlighttex:SetTexture(self:GetTexture())
+	flashlighttex:SetTexture(self:GetLightConeTexture())
 	flashlighttex:SetColor(col)
 	flashlighttex:SetBrightness(bright)
 	flashlighttex:SetFOV(fov)

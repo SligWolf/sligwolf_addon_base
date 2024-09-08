@@ -79,7 +79,7 @@ function ENT:UpdateRenderBounds(size)
 	end
 
 	local min, max = self:GetMinMax()
-	local size = self:GetSize() / 2
+	local size = self:GetGlowSize() / 2
 
 	self:SetRenderBounds(min, max, Vector(size, size, size))
 end
@@ -96,53 +96,53 @@ function ENT:SetupDataTables()
 	self:GetNetworkRVarNotify("Size", self.UpdateRenderBounds)
 end
 
-function ENT:SetSize(num)
+function ENT:SetGlowSize(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Size", num)
 end
 
-function ENT:GetSize()
+function ENT:GetGlowSize()
 	return self:GetNetworkRVarNumber("Size", 1)
 end
 
-function ENT:SetEnlarge(num)
+function ENT:SetGlowEnlarge(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Enlarge", num)
 end
 
-function ENT:GetEnlarge()
+function ENT:GetGlowEnlarge()
 	return self:GetNetworkRVarNumber("Enlarge", 1)
 end
 
-function ENT:SetCount(num)
+function ENT:SetGlowCount(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Count", num)
 end
 
-function ENT:GetCount()
+function ENT:GetGlowCount()
 	return self:GetNetworkRVarNumber("Count", 1)
 end
 
-function ENT:SetAlphaReduce(num)
+function ENT:SetGlowAlphaReduce(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Alpha_Reduce", num)
 end
 
-function ENT:GetAlphaReduce()
+function ENT:GetGlowAlphaReduce()
 	return self:GetNetworkRVarNumber("Alpha_Reduce", 1)
 end
 
-function ENT:SetMaterial(mat)
+function ENT:SetGlowMaterial(mat)
 	if CLIENT then return end
 
 	self:SetNetworkRVarMaterial("Material", mat)
 end
 
-function ENT:GetMaterial()
+function ENT:GetGlowMaterial()
 	return self:GetNetworkRVarMaterial("Material", "sprites/light_ignorez")
 end
 
@@ -228,12 +228,12 @@ function ENT:DrawTranslucent(...)
 		return
 	end
 
-	local Size = self:GetSize()
-	local Enlarge = self:GetEnlarge()
-	local Count = self:GetCount()
+	local Size = self:GetGlowSize()
+	local Enlarge = self:GetGlowEnlarge()
+	local Count = self:GetGlowCount()
 	local Col = self:GetColor()
-	local AlphaReduce = self:GetAlphaReduce()
-	local LightMat = self:GetMaterial()
+	local AlphaReduce = self:GetGlowAlphaReduce()
+	local LightMat = self:GetGlowMaterial()
 
 	self:Debug(Col)
 
