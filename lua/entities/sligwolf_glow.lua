@@ -79,7 +79,7 @@ function ENT:UpdateRenderBounds(size)
 	end
 
 	local min, max = self:GetMinMax()
-	local size = self:Get_Size() / 2
+	local size = self:GetSize() / 2
 
 	self:SetRenderBounds(min, max, Vector(size, size, size))
 end
@@ -96,53 +96,53 @@ function ENT:SetupDataTables()
 	self:GetNetworkRVarNotify("Size", self.UpdateRenderBounds)
 end
 
-function ENT:Set_Size(num)
+function ENT:SetSize(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Size", num)
 end
 
-function ENT:Get_Size()
+function ENT:GetSize()
 	return self:GetNetworkRVarNumber("Size", 1)
 end
 
-function ENT:Set_Enlarge(num)
+function ENT:SetEnlarge(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Enlarge", num)
 end
 
-function ENT:Get_Enlarge()
+function ENT:GetEnlarge()
 	return self:GetNetworkRVarNumber("Enlarge", 1)
 end
 
-function ENT:Set_Count(num)
+function ENT:SetCount(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Count", num)
 end
 
-function ENT:Get_Count()
+function ENT:GetCount()
 	return self:GetNetworkRVarNumber("Count", 1)
 end
 
-function ENT:Set_Alpha_Reduce(num)
+function ENT:SetAlphaReduce(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Alpha_Reduce", num)
 end
 
-function ENT:Get_Alpha_Reduce()
+function ENT:GetAlphaReduce()
 	return self:GetNetworkRVarNumber("Alpha_Reduce", 1)
 end
 
-function ENT:Set_Material(mat)
+function ENT:SetMaterial(mat)
 	if CLIENT then return end
 
 	self:SetNetworkRVarMaterial("Material", mat)
 end
 
-function ENT:Get_Material()
+function ENT:GetMaterial()
 	return self:GetNetworkRVarMaterial("Material", "sprites/light_ignorez")
 end
 
@@ -228,12 +228,12 @@ function ENT:DrawTranslucent(...)
 		return
 	end
 
-	local Size = self:Get_Size()
-	local Enlarge = self:Get_Enlarge()
-	local Count = self:Get_Count()
+	local Size = self:GetSize()
+	local Enlarge = self:GetEnlarge()
+	local Count = self:GetCount()
 	local Col = self:GetColor()
-	local AlphaReduce = self:Get_Alpha_Reduce()
-	local LightMat = self:Get_Material()
+	local AlphaReduce = self:GetAlphaReduce()
+	local LightMat = self:GetMaterial()
 
 	self:Debug(Col)
 

@@ -1313,15 +1313,15 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	end
 
 	ent:AttachToEnt(parent, attachment)
-	ent:Set_SpawnTime(spawnTime)
-	ent:Set_Velocity(velocity)
+	ent:SetSpawnTime(spawnTime)
+	ent:SetVelocity(velocity)
 	ent:SetColor(color)
-	ent:Set_StartSize(startSize)
-	ent:Set_EndSize(endSize)
-	ent:Set_LifeTime(lifeTime)
-	ent:Set_DieTime(dieTime)
-	ent:Set_StartAlpha(startAlpha)
-	ent:Set_EndAlpha(endAlpha)
+	ent:SetStartSize(startSize)
+	ent:SetEndSize(endSize)
+	ent:SetLifeTime(lifeTime)
+	ent:SetDieTime(dieTime)
+	ent:SetStartAlpha(startAlpha)
+	ent:SetEndAlpha(endAlpha)
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
@@ -1368,10 +1368,10 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	end
 
 	ent:AttachToEnt(parent, attachment)
-	ent:Set_FOV(fov)
-	ent:Set_FarZ(farZ)
+	ent:SetFOV(fov)
+	ent:SetFarZ(farZ)
 	ent:SetColor(color)
-	ent:Set_ShadowRenderDist(shadowRenderDist)
+	ent:SetShadowRenderDist(shadowRenderDist)
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
@@ -1420,10 +1420,10 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 
 	ent:SetColor(color)
 	ent:AttachToEnt(parent, attachment)
-	ent:Set_Size(size)
-	ent:Set_Enlarge(enlarge)
-	ent:Set_Count(count)
-	ent:Set_Alpha_Reduce(alphaReduce)
+	ent:SetSize(size)
+	ent:SetEnlarge(enlarge)
+	ent:SetCount(count)
+	ent:SetAlphaReduce(alphaReduce)
 	ent:TurnOn(false)
 
 	ent.sligwolf_blockedprop = true
@@ -1502,7 +1502,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	ent:SetDisplayOriginName("displaypos01")
 	ent:AttachToEnt(parent, attachment)
 	ent:TurnOn(true)
-	ent:Set_Scale(scale)
+	ent:SetScale(scale)
 	ent:SetDisplayFunctionName(functionName)
 
 	return ent

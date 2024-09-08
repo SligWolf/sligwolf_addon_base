@@ -27,12 +27,12 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Float", "Scale")
 end
 
-function ENT:Set_Scale(num)
+function ENT:SetScale(num)
 	if CLIENT then return end
 	self:SetNetworkRVar("Scale", num)
 end
 
-function ENT:Get_Scale()
+function ENT:GetScale()
 	return self:GetNetworkRVarNumber("Scale", 1)
 end
 
@@ -122,7 +122,7 @@ function ENT:DrawTranslucent(...)
 	if not func then return end
 
 	local pos, ang = self:GetDisplayPos()
-	local scale = self:Get_Scale()
+	local scale = self:GetScale()
 
 	cam.Start3D2D(pos, ang, scale)
 		func(self, scale)

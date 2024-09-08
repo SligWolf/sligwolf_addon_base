@@ -49,103 +49,103 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Float", "Velocity")
 end
 
-function ENT:Set_SpawnTime(num)
+function ENT:SetSpawnTime(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("SpawnTime", num)
 end
 
-function ENT:Get_SpawnTime()
+function ENT:GetSpawnTime()
 	return self:GetNetworkRVarNumber("SpawnTime", 0.005)
 end
 
-function ENT:Set_Velocity(vel)
+function ENT:SetVelocity(vel)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Velocity", vel)
 end
 
-function ENT:Get_Velocity()
+function ENT:GetVelocity()
 	return self:GetNetworkRVarNumber("Velocity", 20)
 end
 
-function ENT:Set_LifeTime(num)
+function ENT:SetLifeTime(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("LifeTime", num)
 end
 
-function ENT:Get_LifeTime()
+function ENT:GetLifeTime()
 	return self:GetNetworkRVarNumber("LifeTime", 0)
 end
 
-function ENT:Set_DieTime(num)
+function ENT:SetDieTime(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("DieTime", num)
 end
 
-function ENT:Get_DieTime()
+function ENT:GetDieTime()
 	return self:GetNetworkRVarNumber("DieTime", 3)
 end
 
-function ENT:Set_StartAlpha(num)
+function ENT:SetStartAlpha(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("StartAlpha", num)
 end
 
-function ENT:Get_StartAlpha()
+function ENT:GetStartAlpha()
 	return self:GetNetworkRVarNumber("StartAlpha", 50)
 end
 
-function ENT:Set_EndAlpha(num)
+function ENT:SetEndAlpha(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("EndAlpha", num)
 end
 
-function ENT:Get_EndAlpha()
+function ENT:GetEndAlpha()
 	return self:GetNetworkRVarNumber("EndAlpha", 0)
 end
 
-function ENT:Set_StartSize(num)
+function ENT:SetStartSize(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("StartSize", num)
 end
 
-function ENT:Get_StartSize()
+function ENT:GetStartSize()
 	return self:GetNetworkRVarNumber("StartSize", 10)
 end
 
-function ENT:Set_EndSize(num)
+function ENT:SetEndSize(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("EndSize", num)
 end
 
-function ENT:Get_EndSize()
+function ENT:GetEndSize()
 	return self:GetNetworkRVarNumber("EndSize", 20)
 end
 
-function ENT:Set_StartLength(num)
+function ENT:SetStartLength(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("StartLength", num)
 end
 
-function ENT:Get_StartLength()
+function ENT:GetStartLength()
 	return self:GetNetworkRVarNumber("StartLength", 0)
 end
 
-function ENT:Set_EndLength(num)
+function ENT:SetEndLength(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("EndLength", num)
 end
 
-function ENT:Get_EndLength()
+function ENT:GetEndLength()
 	return self:GetNetworkRVarNumber("EndLength", 0)
 end
 
@@ -153,7 +153,7 @@ function ENT:ThinkInternal()
 	BaseClass.ThinkInternal(self)
 
 	local Delay = self.Delay or 0
-	local Time = self:Get_SpawnTime() or EmitTime
+	local Time = self:GetSpawnTime() or EmitTime
 	if (CurTime() - Delay) < Time then return end
 
 	self.Delay = CurTime()
@@ -211,15 +211,15 @@ function ENT:EmitterThink()
 	if SERVER then return end
 	if not self:IsOn() then return end
 
-	local E_Vel	 	= self:Get_Velocity()
-	local E_LTime 	= self:Get_LifeTime()
-	local E_DTime 	= self:Get_DieTime()
-	local E_SAlpha 	= self:Get_StartAlpha()
-	local E_EAlpha 	= self:Get_EndAlpha()
-	local E_SSize 	= self:Get_StartSize()
-	local E_ESize 	= self:Get_EndSize()
-	local E_SLength	= self:Get_StartLength()
-	local E_ELength	= self:Get_EndLength()
+	local E_Vel	 	= self:GetVelocity()
+	local E_LTime 	= self:GetLifeTime()
+	local E_DTime 	= self:GetDieTime()
+	local E_SAlpha 	= self:GetStartAlpha()
+	local E_EAlpha 	= self:GetEndAlpha()
+	local E_SSize 	= self:GetStartSize()
+	local E_ESize 	= self:GetEndSize()
+	local E_SLength	= self:GetStartLength()
+	local E_ELength	= self:GetEndLength()
 
 	self:Debug(E_SSize, E_Col)
 	self:SetUpEmitter(E_Vel, E_LTime, E_DTime, E_SAlpha, E_EAlpha, E_SSize, E_ESize, E_SLength, E_ELength)

@@ -29,63 +29,63 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Float", "FOV")
 end
 
-function ENT:Set_Texture(text)
+function ENT:SetTexture(text)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Texture", text)
 end
 
-function ENT:Get_Texture()
+function ENT:GetTexture()
 	return self:GetNetworkRVarString("Texture", "effects/flashlight001")
 end
 
-function ENT:Set_Brightness(num)
+function ENT:SetBrightness(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("Brightness", num)
 end
 
-function ENT:Get_Brightness()
+function ENT:GetBrightness()
 	return self:GetNetworkRVarNumber("Brightness", 4)
 end
 
-function ENT:Set_FOV(num)
+function ENT:SetFOV(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("FOV", num)
 end
 
-function ENT:Get_FOV()
+function ENT:GetFOV()
 	return self:GetNetworkRVarNumber("FOV", 90)
 end
 
-function ENT:Set_FarZ(num)
+function ENT:SetFarZ(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("FarZ", num)
 end
 
-function ENT:Get_FarZ()
+function ENT:GetFarZ()
 	return self:GetNetworkRVarNumber("FarZ", 1024)
 end
 
-function ENT:Set_NearZ(num)
+function ENT:SetNearZ(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("NearZ", num)
 end
 
-function ENT:Get_NearZ()
+function ENT:GetNearZ()
 	return self:GetNetworkRVarNumber("NearZ", 8)
 end
 
-function ENT:Set_ShadowRenderDist(num)
+function ENT:SetShadowRenderDist(num)
 	if CLIENT then return end
 
 	self:SetNetworkRVar("ShadowRenderDist", num)
 end
 
-function ENT:Get_ShadowRenderDist()
+function ENT:GetShadowRenderDist()
 	return self:GetNetworkRVarNumber("ShadowRenderDist", 0)
 end
 
@@ -122,11 +122,11 @@ function ENT:ThinkInternal()
 	local pos = self:GetPos()
 	local ang = self:GetAngles()
 	local col = self:GetColor()
-	local bright = self:Get_Brightness()
-	local fov = self:Get_FOV()
-	local farz = self:Get_FarZ()
-	local nearz = self:Get_NearZ()
-	local maxdist = self:Get_ShadowRenderDist()
+	local bright = self:GetBrightness()
+	local fov = self:GetFOV()
+	local farz = self:GetFarZ()
+	local nearz = self:GetNearZ()
+	local maxdist = self:GetShadowRenderDist()
 	local maxdistSqr = maxdist * maxdist
 
 	if maxdist > 0 then
@@ -144,7 +144,7 @@ function ENT:ThinkInternal()
 
 	flashlighttex:SetPos(pos)
 	flashlighttex:SetAngles(ang)
-	flashlighttex:SetTexture(self:Get_Texture())
+	flashlighttex:SetTexture(self:GetTexture())
 	flashlighttex:SetColor(col)
 	flashlighttex:SetBrightness(bright)
 	flashlighttex:SetFOV(fov)
