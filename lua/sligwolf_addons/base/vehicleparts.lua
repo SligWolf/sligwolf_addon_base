@@ -508,7 +508,6 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 	return constraintEnt
 end
 
-
 function SLIGWOLF_ADDON:CreateConstraints(ent, parent, componentConstraints)
 	if LIBEntities.IsMarkedForDeletion(ent) then
 		return false
@@ -1036,7 +1035,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 	local class = component.class
 	local disableUse = component.disableUse
 	local model = component.model
-	local modelOpen = component.modelOpen
+	local openPhysModel = component.openPhysModel
 	local soundOpen = component.soundOpen
 	local soundClose = component.soundClose
 	local autoClose = component.autoClose
@@ -1063,23 +1062,6 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
-	if isstring(modelOpen) then
-		if not LIBUtil.IsValidModel(modelOpen) then
-			self:RemoveFaultyEntities(
-				{parent, ent},
-				"Invalid modelOpen ('%s') on entity %s. Removing entities.",
-				modelOpen,
-				ent
-			)
-
-			return
-		end
-
-		ent:SetDoorOpenModel(modelOpen)
-	end
-
-	ent:SetDoorCloseModel(model)
-
 	if isstring(soundOpen) then
 		ent:SetDoorOpenSound(soundOpen)
 	end
@@ -1088,6 +1070,8 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 		ent:SetDoorCloseSound(soundClose)
 	end
 
+	ent:SetModel(model)
+	ent:SetDoorOpenPhysModel(openPhysModel)
 	ent:SetDoorOpenTime(openTime)
 	ent:SetDoorAutoClose(autoClose)
 	ent:SetDoorSpawnOpen(spawnOpen)
@@ -1100,20 +1084,6 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 
 	if funcOnClose then
 		ent.OnClose = funcOnClose
-	end
-
-	ent.OnModelReinitialized = function(thisent)
-		local remounted = LIBPosition.RemountToMountPoint(thisent)
-		if not remounted then
-			self:RemoveFaultyEntities(
-				{parent, thisent},
-				"Couldn't remount entity %s. Removing entities.",
-				thisent
-			)
-			return
-		end
-
-		self:RecreateConstraints(thisent, parent)
 	end
 
 	return ent
@@ -1455,7 +1425,6 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
 	end
-
 
 	return ent
 end

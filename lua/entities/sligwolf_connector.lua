@@ -4,7 +4,7 @@ local SligWolf_Addons = SligWolf_Addons
 DEFINE_BASECLASS("sligwolf_phys")
 
 ENT.Spawnable			= false
-ENT.RenderGroup 		= RENDERMODE_NONE
+ENT.RenderGroup 		= RENDERGROUP_OPAQUE
 ENT.DoNotDuplicate 		= true
 
 ENT.sligwolf_isConnector = true

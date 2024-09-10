@@ -100,7 +100,7 @@ CONSTANTS.mdlCube4 = Model("models/sligwolf/base/unique/sw_cube_4x4x4.mdl")
 CONSTANTS.mdlSeat = Model("models/sligwolf/base/unique/seat.mdl")
 CONSTANTS.mdlDynamicSeat = Model("models/sligwolf/base/unique/seat.mdl")
 CONSTANTS.mdlConnectorButton = Model("models/sligwolf/base/unique/sw_cube_16x40x18.mdl")
-CONSTANTS.mdlSlider = Model("models/sligwolf/base/unique/sw_slider.mdl")
+CONSTANTS.mdlSlider = Model("models/sligwolf/base/slider/sw_slider.mdl")
 CONSTANTS.mdlControlpanel = Model("models/sligwolf/base/unique/button_controlfield.mdl")
 
 -- numbers

@@ -1,11 +1,11 @@
 AddCSLuaFile()
 local SligWolf_Addons = SligWolf_Addons
 
-DEFINE_BASECLASS("sligwolf_phys")
+DEFINE_BASECLASS("sligwolf_door_phys")
 
-ENT.Spawnable 				= false
-ENT.AdminOnly 				= false
-ENT.DoNotDuplicate 			= false
+ENT.Spawnable 			= false
+ENT.AdminOnly 			= false
+ENT.DoNotDuplicate 		= false
 
 ENT.sligwolf_allowAnimation	= true
 
@@ -14,6 +14,13 @@ if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
 local CONSTANTS = SligWolf_Addons.Constants
+
+local LIBEntities = SligWolf_Addons.Entities
+
+local dtr = {
+	weld = "",
+	remover = "",
+}
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
@@ -28,6 +35,8 @@ function ENT:Initialize()
 	if SERVER then
 		self:SetUseType(SIMPLE_USE)
 	end
+
+	self:SetDoorPhysSolid(true)
 end
 
 function ENT:InitializePhysics()
@@ -39,23 +48,13 @@ end
 function ENT:PostInitialize()
 	BaseClass.PostInitialize(self)
 
+	self:UpdateCollisionEntity()
+
 	if self:GetDoorSpawnOpen() then
 		self:OpenInternal()
 	end
 
 	self:CallStateEvent()
-end
-
-function ENT:ReinitializeModel()
-	self:InitializePhysics()
-
-	self:TimerNextFrame("ReinitializeModelRemount", function()
-		self:OnModelReinitialized()
-	end)
-end
-
-function ENT:OnModelReinitialized()
-	-- Override me
 end
 
 function ENT:SetDoorAutoClose(bool)
@@ -78,24 +77,16 @@ function ENT:GetDoorOpenTime()
 	return self._openTime or 3
 end
 
-function ENT:SetDoorOpenModel(mdl)
+function ENT:SetDoorOpenPhysModel(mdl)
 	if CLIENT then return end
-	self._openModel = mdl or ""
+
+	self._openPhysModel = mdl or ""
+	self:UpdateCollisionEntity()
 end
 
-function ENT:GetDoorOpenModel()
+function ENT:GetDoorOpenPhysModel()
 	if CLIENT then return end
-	return self._openModel or ""
-end
-
-function ENT:SetDoorCloseModel(mdl)
-	if CLIENT then return end
-	self._closeModel = mdl or ""
-end
-
-function ENT:GetDoorCloseModel()
-	if CLIENT then return end
-	return self._closeModel or ""
+	return self._openPhysModel or ""
 end
 
 function ENT:SetDoorOpenSound(snd)
@@ -138,28 +129,103 @@ function ENT:GetDoorSpawnOpen()
 	return self._spawnOpen or false
 end
 
-function ENT:SetDoorModel(mdl)
-	mdl = tostring(mdl or "")
-
-	if mdl == "" then
-		return
-	end
-
-	if self._oldDoorModel and mdl == self._oldDoorModel then
-		return
-	end
-
-	self:SetModel(mdl)
-	self:ReinitializeModel()
-
-	self._oldDoorModel = mdl
-end
-
 function ENT:Use(activator, caller, useType, value)
 	if CLIENT then return end
 	if self:GetDoorDisableUse() then return end
 
 	self:Toggle()
+end
+
+function ENT:UpdateCollisionEntity()
+	if CLIENT then return end
+
+	local mdl = self:GetDoorOpenPhysModel()
+	local oldmdl = self._oldOpenModel or ""
+
+	if mdl ~= oldmdl then
+		self:SpawnCollisionEntity(mdl)
+	end
+
+	self._oldOpenModel = mdl
+end
+
+function ENT:RemoveCollisionEntity()
+	if IsValid(self._collisionProp) then
+		self._collisionProp:Remove()
+	end
+
+	if IsValid(self._collisionPropConst) then
+		self._collisionPropConst:Remove()
+	end
+
+	self._collisionProp = nil
+	self._collisionPropConst = nil
+end
+
+function ENT:GetCollisionEntity()
+	if not IsValid(self._collisionProp) then
+		return
+	end
+
+	return self._collisionProp
+end
+
+function ENT:SpawnCollisionEntity(mdl)
+	if CLIENT then return end
+
+	mdl = mdl or ""
+
+	self:RemoveCollisionEntity()
+
+	if mdl == "" then
+		return
+	end
+
+	local Prop = self:MakeEntEnsured("sligwolf_door_phys", "CollisionProp")
+	if not IsValid(Prop) then
+		return
+	end
+
+	Prop.sligwolf_denyToolReload = dtr
+	Prop.DoNotDuplicate = true
+
+	Prop:SetModel(mdl)
+	Prop:SetPos(self:GetPos())
+	Prop:SetAngles(self:GetAngles())
+
+	Prop:Spawn()
+	Prop:Activate()
+
+	local doorParent = LIBEntities.GetParent(self)
+
+	local WD = constraint.Weld(Prop, doorParent, 0, 0, 0, 0, true)
+	if not IsValid(WD) then
+		self:RemoveFaultyEntities(
+			{self, doorParent, Prop},
+			"Couldn't create weld constraint 'WD' between %s <===> %s. Removing entities.",
+			doorParent,
+			Prop
+		)
+
+		return
+	end
+
+	WD.DoNotDuplicate = true
+
+	self._collisionProp = Prop
+	self._collisionPropConst = WD
+
+	self:UpdateBodySystemMotion()
+	return Prop
+end
+
+function ENT:SetDoorPhysSolid(solid)
+	BaseClass.SetDoorPhysSolid(self, solid)
+
+	local collision = self:GetCollisionEntity()
+	if not collision then return end
+
+	collision:SetDoorPhysSolid(not solid)
 end
 
 function ENT:DoorIsOpen()
@@ -206,22 +272,13 @@ function ENT:OpenInternal()
 	if not self:IsOn() then return end
 
 	local osnd = self:GetDoorOpenSound()
-	local omdl = self:GetDoorOpenModel()
 
 	self:TimerRemove("AutoCloseDoor")
-	self:TimerRemove("ReinitializeModelRemount")
-
-	self:SetDoorModel(omdl)
 
 	self:SetAnim("open")
 	self:EmitSound(osnd)
+	self:SetDoorPhysSolid(false)
 	self._isOpen = true
-
-	if omdl == "" then
-		self:SetNotSolid(true)
-	else
-		self:SetNotSolid(false)
-	end
 
 	self:CallStateEvent()
 end
@@ -232,18 +289,13 @@ function ENT:CloseInternal()
 	if not self:IsOn() then return end
 
 	local csnd = self:GetDoorCloseSound()
-	local cmdl = self:GetDoorCloseModel()
 
 	self:TimerRemove("AutoCloseDoor")
-	self:TimerRemove("ReinitializeModelRemount")
-
-	self:SetDoorModel(cmdl)
 
 	self:SetAnim("close")
 	self:EmitSound(csnd)
+	self:SetDoorPhysSolid(true)
 	self._isOpen = false
-
-	self:SetNotSolid(false)
 
 	self:CallStateEvent()
 end

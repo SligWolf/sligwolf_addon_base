@@ -1,6 +1,0 @@
-"VertexLitGeneric"
-{
-	"$baseTexture" 	"models/sligwolf/base/unique/hazzard_border"
- 	"$model" "1"
-	"$nocull" "1"
-}

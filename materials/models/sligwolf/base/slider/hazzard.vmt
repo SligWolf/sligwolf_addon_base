@@ -1,6 +1,6 @@
 "VertexLitGeneric"
 {
-	"$baseTexture" 	"models/sligwolf/base/unique/hazzard"
+	"$baseTexture" 	"models/sligwolf/base/slider/hazzard"
  	"$model" "1"
 	"$additive" "1"
 	"$selfillum" 1
