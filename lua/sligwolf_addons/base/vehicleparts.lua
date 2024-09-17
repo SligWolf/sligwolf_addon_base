@@ -45,6 +45,7 @@ local g_FailbackComponentsParams = {
 		propParent = {
 			collision = COLLISION_GROUP_IN_VEHICLE,
 			boneMerge = false,
+			motion = false,
 		},
 		trigger = {
 			customPhysics = true,
@@ -79,22 +80,26 @@ local g_FailbackComponentsParams = {
 			endAlpha = 10,
 			lifeTime = 0,
 			dieTime = 3,
+			motion = false,
 		},
 		light = {
 			fov = 120,
 			farZ = 2048,
 			shadowRenderDist = 2048,
+			motion = false,
 		},
 		glow = {
 			size = 30,
 			enlarge = 10,
 			count = 2,
 			alphaReduce = 100,
+			motion = false,
 		},
 		animatedWheel = {
 			size = 8,
 			restrate = 16,
 			boneMerge = false,
+			motion = false,
 			collision = COLLISION_GROUP_WEAPON,
 		},
 		speedometer = {
@@ -107,6 +112,7 @@ local g_FailbackComponentsParams = {
 		display = {
 			scale = 0.25,
 			functionName = "",
+			motion = false,
 		},
 		bendi = {
 			parentNameFront = "",
@@ -115,6 +121,7 @@ local g_FailbackComponentsParams = {
 		pod = {
 			collision = COLLISION_GROUP_WORLD,
 			boneMerge = false,
+			motion = false,
 			keyValues = {
 				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
 				limitview = 0,
@@ -918,6 +925,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
+		ent:AddEffects(EF_BONEMERGE_FASTCULL)
 	end
 
 	return ent
@@ -960,6 +968,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
+		ent:AddEffects(EF_BONEMERGE_FASTCULL)
 	end
 
 	return ent
@@ -992,6 +1001,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
+		ent:AddEffects(EF_BONEMERGE_FASTCULL)
 	end
 
 	return ent
@@ -1424,6 +1434,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
+		ent:AddEffects(EF_BONEMERGE_FASTCULL)
 	end
 
 	return ent
@@ -1450,6 +1461,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superp
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
+		ent:AddEffects(EF_BONEMERGE_FASTCULL)
 	end
 
 	return ent
