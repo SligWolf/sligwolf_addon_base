@@ -95,6 +95,10 @@ function LIB.RemoveBadDupeData(data)
 
 	-- Remove values whose names starting with "_"
 	for key, _ in pairs(data) do
+		if not isstring(key) then
+			continue
+		end
+
 		if key == "" then
 			continue
 		end

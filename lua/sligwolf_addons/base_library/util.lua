@@ -95,6 +95,23 @@ function LIB.IsValidModelFile(model)
 	return true
 end
 
+function LIB.GuessAddonIDByModelName(model)
+	if not LIB.IsValidModel(model) then
+		return
+	end
+
+	local addonid = string.match(model, "^models/sligwolf/([%w%s_]+)/" ) or ""
+	if addonid == "" then
+		return
+	end
+
+	if not SligWolf_Addons.HasLoadedAddon(addonid) then
+		return
+	end
+
+	return addonid
+end
+
 local g_MatCache = {}
 
 function LIB.GetMaterialData(PNGname, RGB, TexX, TexY, W, H)

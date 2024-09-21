@@ -299,6 +299,117 @@ function LIB.GetBogie(ent)
 	return nil
 end
 
+local g_switchModels = {}
+
+function LIB.AddSwitchModelStates(mainModel, states, printName)
+	mainModel = tostring(mainModel or "")
+	printName = tostring(printName or "")
+
+	states = states or {}
+
+	g_switchModels[mainModel] = g_switchModels[mainModel] or {}
+	local statesOfModel = g_switchModels[mainModel]
+
+	statesOfModel.ordered = statesOfModel.ordered or {}
+	statesOfModel.indexed = statesOfModel.indexed or {}
+
+	local ordered = statesOfModel.ordered
+	local indexed = statesOfModel.indexed
+
+	for name, item in pairs(states) do
+		if not isstring(name) or name == "" then
+			error(string.format("invalid model state name given for '%s'", mainModel))
+			return
+		end
+
+		if indexed[name] then
+			continue
+		end
+
+		local model = tostring(item.model or "")
+
+		if model == "" then
+			error(string.format("model for state '%s' was not given for '%s'", name, mainModel))
+			return
+		end
+
+		local isDefault = name == "default"
+
+		local order = tonumber(item.order or 0) or 0
+
+		if isDefault then
+			order = 0
+		end
+
+		item.order = order
+
+		if not item.id or not isDefault then
+			item.id = -1
+		end
+
+		if not item.name or not isDefault then
+			item.name = name
+		end
+
+		item.model = model
+
+		if order ~= 0 then
+			table.insert(ordered, item)
+		end
+
+		indexed[name] = item
+	end
+
+	table.SortByMember(ordered, "order", true)
+
+	for i, item in ipairs(ordered) do
+		item.id = i
+	end
+
+	statesOfModel.count = #ordered
+	statesOfModel.printName = printName
+end
+
+function LIB.GetSwitchModelStates(mainModel)
+	mainModel = tostring(mainModel or "")
+
+	local statesOfModel = g_switchModels[mainModel]
+	if not statesOfModel then
+		return
+	end
+
+	local count = statesOfModel.count or 0
+	if count <= 0 then
+		return
+	end
+
+	local ordered = statesOfModel.ordered
+	local indexed = statesOfModel.indexed
+
+	if not ordered then
+		return
+	end
+
+	if not indexed then
+		return
+	end
+
+	if table.IsEmpty(ordered) then
+		return
+	end
+
+	if table.IsEmpty(indexed) then
+		return
+	end
+
+	if not indexed["default"] then
+		error(string.format("default state missing for '%s'", mainModel))
+		return
+	end
+
+	return statesOfModel
+end
+
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBTracer = SligWolf_Addons.Tracer

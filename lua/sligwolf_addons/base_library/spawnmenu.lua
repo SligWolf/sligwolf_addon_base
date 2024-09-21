@@ -670,6 +670,9 @@ local function g_SENTSetup(ply, sent)
 	if not data then return end
 	if not data.Is_SLIGWOLF then return end
 
+	local addonname = data.SLIGWOLF_Addonname or ""
+	sent:SetAddonID(addonname)
+
 	local data_custom = data.SLIGWOLF_Custom or {}
 	sent:SetSpawnProperties(data_custom)
 
@@ -735,6 +738,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 
 	entityItem.PrintName = entityItem.PrintName or tostring(obj.title or spawnname)
 	entityItem.ClassName = entityItem.ClassName or obj.class or spawnname
+	entityItem.Model = entityItem.Model or tostring(obj.model or "")
 	entityItem.Category = g_defaultNodeNameToBeRemoved
 
 	entityItem.Is_SLIGWOLF = true

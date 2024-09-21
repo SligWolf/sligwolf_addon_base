@@ -291,6 +291,10 @@ function SLIGWOLF_BASE_OBJ:GetAddonID()
 
 	local addonid = self:GetNetworkRVarString("AddonID", "")
 
+	if addonid == "" and self.GetAddonIDFallback then
+		addonid = tostring(self:GetAddonIDFallback() or "")
+	end
+
 	if addonid == "" then
 		if SERVER then
 			self:ErrorNoHaltWithStack("AddonID was not set yet!")

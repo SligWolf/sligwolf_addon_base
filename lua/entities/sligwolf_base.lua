@@ -60,11 +60,62 @@ function ENT:PostInitialize()
 end
 
 function ENT:InitializeModel()
-	local model = self:GetModel()
+	local currentModel = self:GetModel()
+	if not LIBUtil.IsValidModel(currentModel) then
+		currentModel = nil
+	end
 
-	if not LIBUtil.IsValidModel(model) then
+	local spawndata = self:GetSpawnData()
+	if spawndata then
+		local model = tostring(spawndata.Model or "")
+
+		if model ~= "" then
+			if not LIBUtil.IsValidModel(model) then
+				model = self.FailbackModel or CONSTANTS.mdlCube1
+			end
+
+			if currentModel ~= model then
+				self:SetModel(model)
+			end
+		end
+	end
+
+	if not LIBUtil.IsValidModel(self:GetModel()) then
 		self:SetModel(self.FailbackModel or CONSTANTS.mdlCube1)
 	end
+end
+
+function ENT:GetSpawnData()
+	local spawnname = self:GetSpawnName()
+	if not spawnname then return end
+
+	local tab = LIBUtil.GetList("SpawnableEntities")
+	local data = tab[spawnname]
+
+	if not data then return end
+	if not data.Is_SLIGWOLF then return end
+
+	return data
+end
+
+function ENT:GuessAddonIDByModelName()
+	local currentModel = self:GetModel()
+	return LIBUtil.GuessAddonIDByModelName(currentModel)
+end
+
+function ENT:GetAddonIDFallback()
+	local data = self:GetSpawnData()
+
+	if not data then
+		return self:GuessAddonIDByModelName()
+	end
+
+	local addonid = data.SLIGWOLF_Addonname or ""
+	if addonid == "" then
+		return self:GuessAddonIDByModelName()
+	end
+
+	return addonid
 end
 
 function ENT:HandleSpawnFinishedEvent()

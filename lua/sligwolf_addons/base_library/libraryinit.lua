@@ -77,6 +77,7 @@ loadLib("seat")
 loadLib("rail")
 loadLib("trackasm")
 loadLib("vr")
+loadLib("wire")
 loadLib("vgui")
 loadLib("convar")
 
