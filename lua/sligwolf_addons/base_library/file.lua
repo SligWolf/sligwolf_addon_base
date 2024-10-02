@@ -18,7 +18,15 @@ local LIB = SligWolf_Addons.File
 local g_dataDirectoryMain = "sligwolf_addons/common"
 local g_dataDirectoryAddons = "sligwolf_addons/addon"
 
-local g_data = "DATA"
+local g_dataStaticDirectoryMain = "data_static/" .. g_dataDirectoryMain
+local g_dataStaticDirectoryAddons = "data_static/" .. g_dataDirectoryAddons
+
+local g_dataRealm = "DATA"
+local g_dataStaticRealm = "GAME"
+
+LIB.ENUM_NO_ADDON = ""
+LIB.ENUM_DATA = false
+LIB.ENUM_DATA_STATIC = true
 
 local function sanitizePath(path)
 	path = string.lower(path)
@@ -85,7 +93,7 @@ local function joinAndNormalizePaths(...)
 	return joinAndNormalizePathsArray({...})
 end
 
-function LIB.GetAbsolutePath(fileName, addon)
+function LIB.GetAbsolutePath(fileName, addon, isStatic)
 	fileName = tostring(fileName or "")
 
 	if fileName == "" then
@@ -97,32 +105,45 @@ function LIB.GetAbsolutePath(fileName, addon)
 		addon = addon.Addonname
 	end
 
-	addon = tostring(addon or "")
+	isStatic = isStatic or LIB.ENUM_DATA
 
+	addon = tostring(addon or LIB.ENUM_NO_ADDON)
 	if addon == "" then
-		return joinAndNormalizePaths(g_dataDirectoryMain, fileName)
+		addon = nil
+	end
+
+	if isStatic then
+		if not addon then
+			return joinAndNormalizePaths(g_dataStaticDirectoryMain, fileName), g_dataStaticRealm
+		else
+			return joinAndNormalizePaths(g_dataStaticDirectoryAddons, addon, fileName), g_dataStaticRealm
+		end
+	end
+
+	if not addon then
+		return joinAndNormalizePaths(g_dataDirectoryMain, fileName), g_dataRealm
 	else
-		return joinAndNormalizePaths(g_dataDirectoryAddons, addon, fileName)
+		return joinAndNormalizePaths(g_dataDirectoryAddons, addon, fileName), g_dataRealm
 	end
 end
 
-function LIB.Exists(fileName, addon)
-	fileName = LIB.GetAbsolutePath(fileName, addon)
-	return file.Exists(fileName, g_data)
+function LIB.Exists(fileName, addon, isStatic)
+	local fileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
+	return file.Exists(fileName, realm)
 end
 
-function LIB.IsDir(path, addon)
-	path = LIB.GetAbsolutePath(path, addon)
-	return file.IsDir(path, g_data)
+function LIB.IsDir(path, addon, isStatic)
+	local path, realm = LIB.GetAbsolutePath(path, addon, isStatic)
+	return file.IsDir(path, realm)
 end
 
 function LIB.CreateDir(path, addon)
 	path = LIB.GetAbsolutePath(path, addon)
 
-	if not file.IsDir(path, g_data) then
-		file.CreateDir(path, g_data)
+	if not file.IsDir(path, g_dataRealm) then
+		file.CreateDir(path, g_dataRealm)
 
-		if not file.IsDir(path, g_data) then
+		if not file.IsDir(path, g_dataRealm) then
 			return false
 		end
 	end
@@ -130,38 +151,38 @@ function LIB.CreateDir(path, addon)
 	return true
 end
 
-function LIB.Open(fileName, fileMode, addon)
-	fileName = LIB.GetAbsolutePath(fileName, addon)
-	return file.Open(fileName, fileMode, g_data)
+function LIB.Open(fileName, fileMode, addon, isStatic)
+	local fileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
+	return file.Open(fileName, fileMode, realm)
 end
 
-function LIB.Read(fileName, addon)
-	fileName = LIB.GetAbsolutePath(fileName, addon)
+function LIB.Read(fileName, addon, isStatic)
+	local fileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
 
-	if not file.Exists(fileName, g_data) then
+	if not file.Exists(fileName, realm) then
 		return nil
 	end
 
-	return file.Read(fileName, g_data)
+	return file.Read(fileName, realm)
 end
 
 function LIB.Write(fileName, fileContent, addon)
 	fileContent = tostring(fileContent or "")
 	fileName = LIB.GetAbsolutePath(fileName, addon)
 
-	if file.Exists(fileName, g_data) then
+	if file.Exists(fileName, g_dataRealm) then
 		file.Delete(fileName)
 
-		if file.Exists(fileName, g_data) then
+		if file.Exists(fileName, g_dataRealm) then
 			return false
 		end
 	else
 		local path = string.GetPathFromFilename(fileName)
 
-		if not file.IsDir(path, g_data) then
-			file.CreateDir(path, g_data)
+		if not file.IsDir(path, g_dataRealm) then
+			file.CreateDir(path, g_dataRealm)
 
-			if not file.IsDir(path, g_data) then
+			if not file.IsDir(path, g_dataRealm) then
 				return false
 			end
 		end
@@ -169,7 +190,7 @@ function LIB.Write(fileName, fileContent, addon)
 
 	file.Write(fileName, fileContent)
 
-	if not file.Exists(fileName, g_data) then
+	if not file.Exists(fileName, g_dataRealm) then
 		return false
 	end
 
@@ -179,10 +200,10 @@ end
 function LIB.Delete(fileName, addon)
 	fileName = LIB.GetAbsolutePath(fileName, addon)
 
-	if file.Exists(fileName, g_data) then
+	if file.Exists(fileName, g_dataRealm) then
 		file.Delete(fileName)
 
-		if file.Exists(fileName, g_data) then
+		if file.Exists(fileName, g_dataRealm) then
 			return false
 		end
 	end

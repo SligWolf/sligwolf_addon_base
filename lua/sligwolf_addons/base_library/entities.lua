@@ -341,6 +341,17 @@ function LIB.RemoveEntity(ent, withEffect)
 	ent:Remove()
 end
 
+function LIB.RemoveEntityWithNoCallback(ent)
+	if LIB.IsMarkedForDeletion(ent, false) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.ignoreCallOnRemove = true
+
+	ent:Remove()
+end
+
 function LIB.RemoveEntities(entities, withEffect)
 	if not entities then
 		return
@@ -434,12 +445,7 @@ function LIB.CallOnRemove(ent, name, func)
 	entTable.callOnRemove[name] = func
 end
 
-local function runCallOnRemoveList(ent, withEffect)
-	if not IsValid(ent) then
-		return
-	end
-
-	local entTable = ent:SligWolf_GetTable()
+local function runCallOnRemoveList(ent, entTable, withEffect)
 	local callOnRemove = entTable.callOnRemove
 
 	if not callOnRemove then
@@ -462,11 +468,29 @@ local function runCallOnRemoveList(ent, withEffect)
 end
 
 function LIB.RunCallOnRemove(ent)
-	runCallOnRemoveList(ent, false)
+	if not IsValid(ent) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	if entTable.ignoreCallOnRemove then
+		entTable.ignoreCallOnRemove = nil
+		return
+	end
+
+	runCallOnRemoveList(ent, entTable, false)
+
+	entTable.ignoreCallOnRemove = nil
 end
 
 function LIB.RunCallOnRemoveEffect(ent)
-	runCallOnRemoveList(ent, true)
+	if not IsValid(ent) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	runCallOnRemoveList(ent, entTable, true)
 end
 
 function LIB.InheritSpawnEffectFromParent(ent)

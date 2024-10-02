@@ -80,6 +80,7 @@ loadLib("vr")
 loadLib("wire")
 loadLib("vgui")
 loadLib("convar")
+loadLib("mapping")
 
 callLoaders()
 

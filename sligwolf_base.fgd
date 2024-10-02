@@ -1,15 +1,15 @@
 //=============================================================================
-//===================== Game data for SW Base Vehicles ========================
+//======================= Game data for SW Base Addons ========================
 //============================= Made by SligWolf ==============================
 
 // Please also include garrysmod.fgd or halflife2.fgd in Hammer for optimal results.
 // It is not recommended to edit this file as it is automaticly generated.
 
 // Generated file:
-//   Base Version:  2024-07-21
-//   Generated At:  2024-07-21 16:16:10
+//   Base Version:  1.0.0
+//   Generated At:  2024-10-02 22:35:26
 //   Addons Count:  60
-//   Vehicle Count: 523
+//   Vehicle Count: 538
 
 @BaseClass base(prop_vehicle_prisoner_pod) = SligwolfVehicle_prop_vehicle_prisoner_pod
 [
@@ -122,42 +122,42 @@
 		"sligwolf_train_wagon_1_red" : "Green-T7 | Train Wagon Short (sligwolf_train_wagon_1_red)"
 		"sligwolf_tank_v2_gunner" : "Leopard 2 Tank | Tank Leopard Gunner (sligwolf_tank_v2_gunner)"
 		"sligwolf_tank_v2_passenger" : "Leopard 2 Tank | Tank Leopard Seat (sligwolf_tank_v2_passenger)"
-		"sligwolf_minitrain01" : "Mini Trains | Minitrain 01 (sligwolf_minitrain01)"
-		"sligwolf_minitrain02" : "Mini Trains | Minitrain 02 (sligwolf_minitrain02)"
-		"sligwolf_minitrain03" : "Mini Trains | Minitrain 03 (sligwolf_minitrain03)"
-		"sligwolf_minitrain04" : "Mini Trains | Minitrain 04 (sligwolf_minitrain04)"
-		"sligwolf_minitrain05" : "Mini Trains | Minitrain 05 (sligwolf_minitrain05)"
-		"sligwolf_minitrain06" : "Mini Trains | Minitrain 06 (sligwolf_minitrain06)"
-		"sligwolf_minitrain07" : "Mini Trains | Minitrain 07 (sligwolf_minitrain07)"
-		"sligwolf_minitrain08" : "Mini Trains | Minitrain 08 (sligwolf_minitrain08)"
-		"sligwolf_minitrain09" : "Mini Trains | Minitrain 09 (sligwolf_minitrain09)"
-		"sligwolf_minitrain10" : "Mini Trains | Minitrain 10 (sligwolf_minitrain10)"
-		"sligwolf_minitrain11" : "Mini Trains | Minitrain 11 (sligwolf_minitrain11)"
-		"sligwolf_miniwagon01" : "Mini Trains | Miniwagon 01 (sligwolf_miniwagon01)"
-		"sligwolf_miniwagon02" : "Mini Trains | Miniwagon 02 (sligwolf_miniwagon02)"
-		"sligwolf_miniwagon03" : "Mini Trains | Miniwagon 03 (sligwolf_miniwagon03)"
-		"sligwolf_miniwagon04" : "Mini Trains | Miniwagon 04 (sligwolf_miniwagon04)"
-		"sligwolf_miniwagon05" : "Mini Trains | Miniwagon 05 (sligwolf_miniwagon05)"
-		"sligwolf_miniwagon06" : "Mini Trains | Miniwagon 06 (sligwolf_miniwagon06)"
-		"sligwolf_miniwagon07" : "Mini Trains | Miniwagon 07 (sligwolf_miniwagon07)"
-		"sligwolf_miniwagon08" : "Mini Trains | Miniwagon 08 (sligwolf_miniwagon08)"
-		"sligwolf_miniwagon09" : "Mini Trains | Miniwagon 09 (sligwolf_miniwagon09)"
-		"sligwolf_miniwagon10" : "Mini Trains | Miniwagon 10 (sligwolf_miniwagon10)"
-		"sligwolf_miniwagon11" : "Mini Trains | Miniwagon 11 (sligwolf_miniwagon11)"
-		"sligwolf_miniwagon12" : "Mini Trains | Miniwagon 12 (sligwolf_miniwagon12)"
-		"sligwolf_miniwagon13" : "Mini Trains | Miniwagon 13 (sligwolf_miniwagon13)"
-		"sligwolf_miniwagon14" : "Mini Trains | Miniwagon 14 (sligwolf_miniwagon14)"
-		"sligwolf_miniwagon15" : "Mini Trains | Miniwagon 15 (sligwolf_miniwagon15)"
-		"sligwolf_miniwagon16" : "Mini Trains | Miniwagon 16 (sligwolf_miniwagon16)"
-		"sligwolf_miniwagon17" : "Mini Trains | Miniwagon 17 (sligwolf_miniwagon17)"
-		"sligwolf_miniwagon18" : "Mini Trains | Miniwagon 18 (sligwolf_miniwagon18)"
-		"sligwolf_miniwagon19" : "Mini Trains | Miniwagon 19 (sligwolf_miniwagon19)"
-		"sligwolf_miniwagon20" : "Mini Trains | Miniwagon 20 (sligwolf_miniwagon20)"
-		"sligwolf_miniwagon21" : "Mini Trains | Miniwagon 21 (sligwolf_miniwagon21)"
-		"sligwolf_miniwagon22" : "Mini Trains | Miniwagon 22 (sligwolf_miniwagon22)"
-		"sligwolf_miniwagon23" : "Mini Trains | Miniwagon 23 (sligwolf_miniwagon23)"
-		"sligwolf_miniwagon24" : "Mini Trains | Miniwagon 24 (sligwolf_miniwagon24)"
-		"sligwolf_miniwagon25" : "Mini Trains | Miniwagon 25 (sligwolf_miniwagon25)"
+		"sligwolf_loco_blueline" : "Mini Trains | Minitrain 01 (sligwolf_loco_blueline)"
+		"sligwolf_loco_ice" : "Mini Trains | Minitrain 02 (sligwolf_loco_ice)"
+		"sligwolf_loco_ludmilla" : "Mini Trains | Minitrain 03 (sligwolf_loco_ludmilla)"
+		"sligwolf_loco_ice_diesel" : "Mini Trains | Minitrain 04 (sligwolf_loco_ice_diesel)"
+		"sligwolf_loco_diesel_green" : "Mini Trains | Minitrain 05 (sligwolf_loco_diesel_green)"
+		"sligwolf_loco_diesel_yellow" : "Mini Trains | Minitrain 06 (sligwolf_loco_diesel_yellow)"
+		"sligwolf_loco_steam_black" : "Mini Trains | Minitrain 07 (sligwolf_loco_steam_black)"
+		"sligwolf_loco_steam_green" : "Mini Trains | Minitrain 08 (sligwolf_loco_steam_green)"
+		"sligwolf_loco_steam_blue" : "Mini Trains | Minitrain 09 (sligwolf_loco_steam_blue)"
+		"sligwolf_loco_diesel_blueline" : "Mini Trains | Minitrain 10 (sligwolf_loco_diesel_blueline)"
+		"sligwolf_loco_subway" : "Mini Trains | Minitrain 11 (sligwolf_loco_subway)"
+		"sligwolf_wagon_blueline" : "Mini Trains | Miniwagon 01 (sligwolf_wagon_blueline)"
+		"sligwolf_wagon_blueline_end" : "Mini Trains | Miniwagon 02 (sligwolf_wagon_blueline_end)"
+		"sligwolf_wagon_ludmilla" : "Mini Trains | Miniwagon 03 (sligwolf_wagon_ludmilla)"
+		"sligwolf_wagon_ludmilla_end" : "Mini Trains | Miniwagon 04 (sligwolf_wagon_ludmilla_end)"
+		"sligwolf_wagon_ice" : "Mini Trains | Miniwagon 05 (sligwolf_wagon_ice)"
+		"sligwolf_wagon_medicine" : "Mini Trains | Miniwagon 06 (sligwolf_wagon_medicine)"
+		"sligwolf_wagon_boxcar_brown" : "Mini Trains | Miniwagon 07 (sligwolf_wagon_boxcar_brown)"
+		"sligwolf_wagon_boxcar_yellow" : "Mini Trains | Miniwagon 08 (sligwolf_wagon_boxcar_yellow)"
+		"sligwolf_wagon_boxcar_green" : "Mini Trains | Miniwagon 09 (sligwolf_wagon_boxcar_green)"
+		"sligwolf_wagon_subway" : "Mini Trains | Miniwagon 10 (sligwolf_wagon_subway)"
+		"sligwolf_wagon_passenger_green" : "Mini Trains | Miniwagon 11 (sligwolf_wagon_passenger_green)"
+		"sligwolf_wagon_passenger_caboose" : "Mini Trains | Miniwagon 12 (sligwolf_wagon_passenger_caboose)"
+		"sligwolf_wagon_cooler" : "Mini Trains | Miniwagon 13 (sligwolf_wagon_cooler)"
+		"sligwolf_wagon_gondola_red" : "Mini Trains | Miniwagon 14 (sligwolf_wagon_gondola_red)"
+		"sligwolf_wagon_gondola_brown" : "Mini Trains | Miniwagon 15 (sligwolf_wagon_gondola_brown)"
+		"sligwolf_wagon_gondola_yellow" : "Mini Trains | Miniwagon 16 (sligwolf_wagon_gondola_yellow)"
+		"sligwolf_wagon_tanker_white" : "Mini Trains | Miniwagon 17 (sligwolf_wagon_tanker_white)"
+		"sligwolf_wagon_tanker_black" : "Mini Trains | Miniwagon 18 (sligwolf_wagon_tanker_black)"
+		"sligwolf_wagon_tanker_brown" : "Mini Trains | Miniwagon 19 (sligwolf_wagon_tanker_brown)"
+		"sligwolf_wagon_container_red" : "Mini Trains | Miniwagon 20 (sligwolf_wagon_container_red)"
+		"sligwolf_wagon_container_blue" : "Mini Trains | Miniwagon 21 (sligwolf_wagon_container_blue)"
+		"sligwolf_wagon_container_green" : "Mini Trains | Miniwagon 22 (sligwolf_wagon_container_green)"
+		"sligwolf_wagon_container_brown" : "Mini Trains | Miniwagon 23 (sligwolf_wagon_container_brown)"
+		"sligwolf_wagon_logs" : "Mini Trains | Miniwagon 24 (sligwolf_wagon_logs)"
+		"sligwolf_wagon_steel" : "Mini Trains | Miniwagon 25 (sligwolf_wagon_steel)"
 		"sligwolf_st3_tram" : "ST-3 Tram | ST3 Tram (sligwolf_st3_tram)"
 		"sligwolf_seat_normal" : "Seats | Seat - Normal (sligwolf_seat_normal)"
 		"sligwolf_seat_normal_race" : "Seats | Seat - Normal (sligwolf_seat_normal_race)"
@@ -529,6 +529,9 @@
 		"sligwolf_truck_a1_black" : "Trucks | Truck - A1 (sligwolf_truck_a1_black)"
 		"sligwolf_truck_a1_blue" : "Trucks | Truck - A1 (sligwolf_truck_a1_blue)"
 		"sligwolf_truck_a1_red" : "Trucks | Truck - A1 (sligwolf_truck_a1_red)"
+		"sligwolf_truck_heavy_a1_black" : "Trucks | Truck - A1 (sligwolf_truck_heavy_a1_black)"
+		"sligwolf_truck_heavy_a1_blue" : "Trucks | Truck - A1 (sligwolf_truck_heavy_a1_blue)"
+		"sligwolf_truck_heavy_a1_red" : "Trucks | Truck - A1 (sligwolf_truck_heavy_a1_red)"
 		"sligwolf_truck_a2_black" : "Trucks | Truck - A2 (sligwolf_truck_a2_black)"
 		"sligwolf_truck_a2_blue" : "Trucks | Truck - A2 (sligwolf_truck_a2_blue)"
 		"sligwolf_truck_a2_red" : "Trucks | Truck - A2 (sligwolf_truck_a2_red)"
@@ -541,10 +544,22 @@
 		"sligwolf_truck_a5_black" : "Trucks | Truck - A5 (sligwolf_truck_a5_black)"
 		"sligwolf_truck_a5_blue" : "Trucks | Truck - A5 (sligwolf_truck_a5_blue)"
 		"sligwolf_truck_a5_red" : "Trucks | Truck - A5 (sligwolf_truck_a5_red)"
+		"sligwolf_truck_heavy_p1_black" : "Trucks | Truck - P1 (sligwolf_truck_heavy_p1_black)"
 		"sligwolf_truck_p1_black" : "Trucks | Truck - P1 (sligwolf_truck_p1_black)"
+		"sligwolf_truck_heavy_p2_red" : "Trucks | Truck - P2 (sligwolf_truck_heavy_p2_red)"
 		"sligwolf_truck_p2_red" : "Trucks | Truck - P2 (sligwolf_truck_p2_red)"
+		"sligwolf_truck_heavy_p3_blue" : "Trucks | Truck - P3 (sligwolf_truck_heavy_p3_blue)"
 		"sligwolf_truck_p3_blue" : "Trucks | Truck - P3 (sligwolf_truck_p3_blue)"
 		"sligwolf_trailer_dolly" : "Trucks | Trucktrailer - Dolly (sligwolf_trailer_dolly)"
+		"sligwolf_trailer_h1_black" : "Trucks | Trucktrailer - H1 (sligwolf_trailer_h1_black)"
+		"sligwolf_trailer_h1_blue" : "Trucks | Trucktrailer - H1 (sligwolf_trailer_h1_blue)"
+		"sligwolf_trailer_h1_red" : "Trucks | Trucktrailer - H1 (sligwolf_trailer_h1_red)"
+		"sligwolf_trailer_h2_black" : "Trucks | Trucktrailer - H2 (sligwolf_trailer_h2_black)"
+		"sligwolf_trailer_h2_blue" : "Trucks | Trucktrailer - H2 (sligwolf_trailer_h2_blue)"
+		"sligwolf_trailer_h2_red" : "Trucks | Trucktrailer - H2 (sligwolf_trailer_h2_red)"
+		"sligwolf_trailer_h3_black" : "Trucks | Trucktrailer - H3 (sligwolf_trailer_h3_black)"
+		"sligwolf_trailer_h3_blue" : "Trucks | Trucktrailer - H3 (sligwolf_trailer_h3_blue)"
+		"sligwolf_trailer_h3_red" : "Trucks | Trucktrailer - H3 (sligwolf_trailer_h3_red)"
 		"sligwolf_trailer_s1_black" : "Trucks | Trucktrailer - S1 (sligwolf_trailer_s1_black)"
 		"sligwolf_trailer_s1_blue" : "Trucks | Trucktrailer - S1 (sligwolf_trailer_s1_blue)"
 		"sligwolf_trailer_s1_red" : "Trucks | Trucktrailer - S1 (sligwolf_trailer_s1_red)"
@@ -570,7 +585,6 @@
 	]
 ]
 
-
 @PointClass base(SligwolfVehicle_prop_vehicle_prisoner_pod) studioprop() = prop_vehicle_prisoner_pod :
 	"Combine prisoner pod that the player can ride in."
 [
@@ -583,6 +597,34 @@
 
 @PointClass base(SligwolfVehicle_prop_vehicle_jeep) studioprop() = prop_vehicle_jeep :
 	"Driveable studiomodel jeep."
+[
+]
+
+@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = SligwolfSwitch_sligwolf_railway_switch
+[
+	SetBodyGroup(integer) : "Body Group" : 0
+
+	// Inputs
+	input SetBodyGroup(integer) : "Set the visible bodygroup, by index."
+	input Switch(void) : ""
+	input Reset(void) : ""
+	input SetStateByID(integer) : ""
+	input SetStateByName(string) : ""
+
+	// Outputs
+	output OnSwitch(void) : ""
+	output OnReset(void) : ""
+	output OnSwitchById(integer) : ""
+	output OnSwitchByName(string) : ""
+]
+
+@PointClass base(SligwolfSwitch_sligwolf_railway_switch) studioprop() = sligwolf_railway_switch_static :
+	""
+[
+]
+
+@PointClass base(SligwolfSwitch_sligwolf_railway_switch) studioprop() = sligwolf_railway_switch_phys :
+	""
 [
 ]
 

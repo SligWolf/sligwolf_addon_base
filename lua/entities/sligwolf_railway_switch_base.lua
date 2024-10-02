@@ -15,13 +15,9 @@ if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
 local LIBWire = SligWolf_Addons.Wire
+local LIBEntities = SligWolf_Addons.Entities
 
 LIBWire.ApplyWiremodTrait(ENT)
-
-local dtr = {
-	weld = "",
-	remover = "",
-}
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
@@ -107,6 +103,25 @@ function ENT:ApplyWireOutputs()
 	self:TriggerWireOutput("State Name", state.name)
 end
 
+function ENT:ApplyHammerOutputs()
+	local state = self._state
+	if not state then return end
+
+	local activator = self._lastActivator
+
+	if not IsValid(activator) then
+		activator = self
+	end
+
+	if self._reset then
+		self:TriggerOutput("onreset", activator)
+	end
+
+	self:TriggerOutput("onswitch", activator)
+	self:TriggerOutput("onswitchbyid", activator, state.id)
+	self:TriggerOutput("onswitchbyname", activator, state.name)
+end
+
 function ENT:OnWireInputTrigger(name, value, wired)
 	if name == "Switch" and value == 1 then
 		self:SwitchState()
@@ -127,7 +142,37 @@ end
 
 function ENT:Use(activator, caller, useType, value)
 	if CLIENT then return end
+
+	self._lastActivator = activator
+	self._lastCaller = caller
+
 	self:SwitchState()
+
+	self._lastActivator = nil
+	self._lastCaller = nil
+end
+
+function ENT:KeyValue(key, value)
+	BaseClass.Initialize(self, key, value)
+
+	key = string.lower(tostring(key or ""))
+	value = tostring(value or "")
+
+	if key == "onswitch" then
+		self:StoreOutput(key, value)
+	end
+
+	if key == "onreset" then
+		self:StoreOutput(key, value)
+	end
+
+	if key == "onswitchbyid" then
+		self:StoreOutput(key, value)
+	end
+
+	if key == "onswitchbyname" then
+		self:StoreOutput(key, value)
+	end
 end
 
 function ENT:ApplyState(state)
@@ -135,6 +180,10 @@ function ENT:ApplyState(state)
 
 	self._state = state
 	self:ApplyWireOutputs()
+
+	if self._oldStateId then
+		self:ApplyHammerOutputs()
+	end
 end
 
 function ENT:SetStateByID(stateId)
@@ -223,19 +272,16 @@ function ENT:ResetState()
 		return
 	end
 
+	self._reset = true
 	self:ApplyState(state)
+	self._reset = nil
 end
 
 function ENT:SpawnCollision(model, pos, ang)
 	if CLIENT then return end
 
-	if IsValid(self._collisionProp) then
-		self._collisionProp:Remove()
-	end
-
-	if IsValid(self._collisionPropConst) then
-		self._collisionPropConst:Remove()
-	end
+	LIBEntities.RemoveEntityWithNoCallback(self._collisionProp)
+	LIBEntities.RemoveEntityWithNoCallback(self._collisionPropConst)
 
 	self._collisionProp = nil
 	self._collisionPropConst = nil
@@ -245,8 +291,10 @@ function ENT:SpawnCollision(model, pos, ang)
 		return
 	end
 
-	Prop.sligwolf_denyToolReload = dtr
 	Prop.DoNotDuplicate = true
+
+	Prop.sligwolf_blockAllTools = true
+	Prop:SetNWBool("sligwolf_blockAllTools", true)
 
 	Prop:SetModel(model or "")
 	Prop:SetPos(self:LocalToWorld(pos or Vector()))
@@ -270,11 +318,35 @@ function ENT:SpawnCollision(model, pos, ang)
 
 	WD.DoNotDuplicate = true
 
+	local respawn = function(thisent, withEffect)
+		if withEffect then
+			return
+		end
+
+		if LIBEntities.IsMarkedForDeletion(self) then
+			return
+		end
+
+		self._oldStateId = nil
+	end
+
+	LIBEntities.RemoveEntitiesOnDelete(self, Prop)
+	LIBEntities.RemoveEntitiesOnDelete(WD, Prop)
+
+	LIBEntities.CallOnRemove(Prop, "RespawnCollision", respawn)
+
 	self._collisionProp = Prop
 	self._collisionPropConst = WD
 
 	self:UpdateBodySystemMotion()
+
+	self:OnSpawnedCollision(Prop)
+
 	return Prop
+end
+
+function ENT:OnSpawnedCollision(prop)
+	-- override me
 end
 
 function ENT:RunCurrentState()
@@ -298,10 +370,12 @@ function ENT:RunCurrentState()
 		return
 	end
 
-	self:EmitSound(soundName, soundLevel, soundPitch)
-	local seq = self:LookupSequence(sequence) or 0
+	if self._oldStateId then
+		self:EmitSound(soundName, soundLevel, soundPitch)
 
-	self:ResetSequence(seq)
+		local seq = self:LookupSequence(sequence) or 0
+		self:ResetSequence(seq)
+	end
 end
 
 function ENT:ThinkInternal()
@@ -322,9 +396,9 @@ function ENT:ThinkInternal()
 		return
 	end
 
-	self._oldStateId = stateid
-
 	self:RunCurrentState()
+
+	self._oldStateId = stateid
 end
 
 if CLIENT then
@@ -349,12 +423,7 @@ function ENT:OnRemove()
 	BaseClass.OnRemove(self)
 end
 
-function ENT:AcceptInput(name, activator, caller, data)
-	name = string.lower(tostring(name or ""))
-	if name == "" then return false end
-
-	data = tostring(data or "")
-
+function ENT:AcceptInputInteral(name, activator, caller, data)
 	if name == "switch" then
 		self:SwitchState()
 		return true
@@ -365,7 +434,7 @@ function ENT:AcceptInput(name, activator, caller, data)
 		return true
 	end
 
-	if name == "setstateId" then
+	if name == "setstatebyId" then
 		data = tonumber(data or 0) or 0
 
 		if data > 0 then
@@ -375,7 +444,7 @@ function ENT:AcceptInput(name, activator, caller, data)
 		return true
 	end
 
-	if name == "setstatename" then
+	if name == "setstatebyname" then
 		if data ~= "" then
 			self:SetStateByName(data)
 		end
@@ -384,6 +453,23 @@ function ENT:AcceptInput(name, activator, caller, data)
 	end
 
 	return false
+end
+
+function ENT:AcceptInput(name, activator, caller, data)
+	name = string.lower(tostring(name or ""))
+	if name == "" then return false end
+
+	data = tostring(data or "")
+
+	self._lastActivator = activator
+	self._lastCaller = caller
+
+	local result = self:AcceptInputInteral(name, activator, caller, data)
+
+	self._lastActivator = nil
+	self._lastCaller = nil
+
+	return result
 end
 
 function ENT:OnRestore()

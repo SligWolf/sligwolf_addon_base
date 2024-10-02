@@ -697,6 +697,51 @@ local function g_SENTDupe(ply, sent, data)
 	entTable.isDuped = true
 end
 
+local g_entityAliases = {}
+
+function LIB.AddEntityAlias(alias, class)
+	alias = tostring(alias or "")
+	if alias == "" then
+		error("no alias")
+		return
+	end
+
+	class = tostring(class or "")
+	if class == "" then
+		error("no class")
+		return
+	end
+
+	if alias == class then
+		return
+	end
+
+	if g_entityAliases[alias] == class then
+		return
+	end
+
+	g_entityAliases[alias] = class
+	scripted_ents.Alias(alias, class)
+end
+
+function LIB.GetEntityClassFromAlias(alias)
+	alias = tostring(alias or "")
+	if alias == "" then
+		return
+	end
+
+	local class = g_entityAliases[alias]
+	if class == "" then
+		return
+	end
+
+	if class == alias then
+		return
+	end
+
+	return class
+end
+
 function LIB.AddEntity(addonname, spawnname, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then
@@ -753,6 +798,8 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	entityItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
 	list.Set("SpawnableEntities", spawnname, entityItem)
+
+	LIB.AddEntityAlias(spawnname, entityItem.ClassName)
 
 	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 2000)
 

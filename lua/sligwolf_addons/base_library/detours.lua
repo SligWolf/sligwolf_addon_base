@@ -15,6 +15,8 @@ table.Empty(SligWolf_Addons.Detours)
 
 local LIB = SligWolf_Addons.Detours
 
+local LIBSpawnmenu = nil
+
 local g_detourBackups = SligWolf_Addons._detourBackups
 
 if not g_detourBackups then
@@ -121,9 +123,35 @@ function LIB.CreateAdvDuplicater1PasteHooks()
 	end
 end
 
+function LIB.FixSENTAliases()
+	g_detourBackups.scriptedentsGetMember = g_detourBackups.scriptedentsGetMember or scripted_ents.GetMember
+	local oldFunc = g_detourBackups.scriptedentsGetMember
+
+	-- The affected functions do not respect scripted_ents.Alias(), so we had to add a substitute for it.
+
+	scripted_ents.GetMember = function(name, membername, ...)
+		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
+		return oldFunc(name, membername, ...)
+	end
+
+	g_detourBackups.scriptedentsGetStored = g_detourBackups.scriptedentsGetStored or scripted_ents.GetStored
+	local oldFunc = g_detourBackups.scriptedentsGetStored
+
+	scripted_ents.GetStored = function(name, ...)
+		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
+		return oldFunc(name, ...)
+	end
+end
+
 if SERVER then
 	LIB.CreateRemoverToolHook()
 	LIB.CreateDuplicaterPasteHooks()
+end
+
+LIB.FixSENTAliases()
+
+function LIB.Load()
+	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 end
 
 function LIB.AllAddonsLoaded()

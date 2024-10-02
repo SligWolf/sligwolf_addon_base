@@ -1,0 +1,92 @@
+//=============================================================================
+//======================= Game data for SW Base Addons ========================
+//============================= Made by SligWolf ==============================
+
+// Please also include garrysmod.fgd or halflife2.fgd in Hammer for optimal results.
+// It is not recommended to edit this file as it is automaticly generated.
+
+// Generated file:
+//   Base Version:  {{SW_VERSION}}
+//   Generated At:  {{SW_GENERATED_AT}}
+//   Addons Count:  {{SW_ADDON_COUNT}}
+//   Vehicle Count: {{SW_VEHICLE_COUNT}}
+
+@BaseClass base(prop_vehicle_prisoner_pod) = SligwolfVehicle_prop_vehicle_prisoner_pod
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+//      {{SW_SPAWNNAME_PROP_VEHICLE_PRISONER_POD_OPTIONS}}
+	]
+]
+
+@BaseClass base(prop_vehicle_airboat) = SligwolfVehicle_prop_vehicle_airboat
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+//      {{SW_SPAWNNAME_PROP_VEHICLE_AIRBOAT_OPTIONS}}
+	]
+]
+
+@BaseClass base(prop_vehicle_jeep) = SligwolfVehicle_prop_vehicle_jeep
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
+		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
+		"Enter the desired spawnname of the SW-ADDON vehicle that you would like to spawn. " +
+		"Be sure the model, vehicle class and vehicle script matches the choosen spawnname! " +
+		"In case of any mismatches issues, the game will tell what's wrong via an error." =
+	[
+//      {{SW_SPAWNNAME_PROP_VEHICLE_JEEP_OPTIONS}}
+	]
+]
+
+@PointClass base(SligwolfVehicle_prop_vehicle_prisoner_pod) studioprop() = prop_vehicle_prisoner_pod :
+	"Combine prisoner pod that the player can ride in."
+[
+]
+
+@PointClass base(SligwolfVehicle_prop_vehicle_airboat) studioprop() = prop_vehicle_airboat :
+	"Driveable studiomodel airboat."
+[
+]
+
+@PointClass base(SligwolfVehicle_prop_vehicle_jeep) studioprop() = prop_vehicle_jeep :
+	"Driveable studiomodel jeep."
+[
+]
+
+@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = SligwolfSwitch_sligwolf_railway_switch
+[
+	SetBodyGroup(integer) : "Body Group" : 0
+
+	// Inputs
+	input SetBodyGroup(integer) : "Set the visible bodygroup, by index."
+	input Switch(void) : ""
+	input Reset(void) : ""
+	input SetStateByID(integer) : ""
+	input SetStateByName(string) : ""
+
+	// Outputs
+	output OnSwitch(void) : ""
+	output OnReset(void) : ""
+	output OnSwitchById(integer) : ""
+	output OnSwitchByName(string) : ""
+]
+
+@PointClass base(SligwolfSwitch_sligwolf_railway_switch) studioprop() = sligwolf_railway_switch_static :
+	""
+[
+]
+
+@PointClass base(SligwolfSwitch_sligwolf_railway_switch) studioprop() = sligwolf_railway_switch_phys :
+	""
+[
+]
+

@@ -944,7 +944,7 @@ function SligWolf_Addons.ReloadLibraries()
 	sligwolfAddons.BASE_ADDON = nil
 
 	sligwolfAddons.LoadingLibraries = true
-	sligwolfAddons.Include("sligwolf_addons/base_library/libraryinit.lua")
+	sligwolfAddons.Include("sligwolf_addons/base_library/_libraryinit.lua")
 	sligwolfAddons.LoadingLibraries = nil
 
 	sligwolfAddons.LibrariesLoaded = sligwolfAddons.HasNoIncludeErrors()
