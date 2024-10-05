@@ -11,7 +11,7 @@
 //   Addons Count:  {{SW_ADDON_COUNT}}
 //   Vehicle Count: {{SW_VEHICLE_COUNT}}
 
-@BaseClass base(prop_vehicle_prisoner_pod) = SligwolfVehicle_prop_vehicle_prisoner_pod
+@BaseClass base(prop_vehicle_prisoner_pod) = Sligwolf_base_prop_vehicle_prisoner_pod
 [
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
 		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
@@ -23,7 +23,7 @@
 	]
 ]
 
-@BaseClass base(prop_vehicle_airboat) = SligwolfVehicle_prop_vehicle_airboat
+@BaseClass base(prop_vehicle_airboat) = Sligwolf_base_prop_vehicle_airboat
 [
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
 		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
@@ -35,7 +35,7 @@
 	]
 ]
 
-@BaseClass base(prop_vehicle_jeep) = SligwolfVehicle_prop_vehicle_jeep
+@BaseClass base(prop_vehicle_jeep) = Sligwolf_base_prop_vehicle_jeep
 [
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon vehicle spawnname: \n" +
 		"If not set, the game will spawn the standard variant of the vehicle found by its model. " +
@@ -47,22 +47,22 @@
 	]
 ]
 
-@PointClass base(SligwolfVehicle_prop_vehicle_prisoner_pod) studioprop() = prop_vehicle_prisoner_pod :
+@PointClass base(Sligwolf_base_prop_vehicle_prisoner_pod) studioprop() = prop_vehicle_prisoner_pod :
 	"Combine prisoner pod that the player can ride in."
 [
 ]
 
-@PointClass base(SligwolfVehicle_prop_vehicle_airboat) studioprop() = prop_vehicle_airboat :
+@PointClass base(Sligwolf_base_prop_vehicle_airboat) studioprop() = prop_vehicle_airboat :
 	"Driveable studiomodel airboat."
 [
 ]
 
-@PointClass base(SligwolfVehicle_prop_vehicle_jeep) studioprop() = prop_vehicle_jeep :
+@PointClass base(Sligwolf_base_prop_vehicle_jeep) studioprop() = prop_vehicle_jeep :
 	"Driveable studiomodel jeep."
 [
 ]
 
-@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = SligwolfSwitch_sligwolf_railway_switch
+@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = Sligwolf_base_railway_switch_base
 [
 	SetBodyGroup(integer) : "Body Group" : 0
 
@@ -80,12 +80,27 @@
 	output OnSwitchByName(string) : ""
 ]
 
-@PointClass base(SligwolfSwitch_sligwolf_railway_switch) studioprop() = sligwolf_railway_switch_static :
+@PointClass base(Sligwolf_base_railway_switch_base) studioprop() = sligwolf_railway_switch_static :
 	""
 [
 ]
 
-@PointClass base(SligwolfSwitch_sligwolf_railway_switch) studioprop() = sligwolf_railway_switch_phys :
+@PointClass base(Sligwolf_base_railway_switch_base) studioprop() = sligwolf_railway_switch_phys :
+	""
+[
+]
+
+@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = Sligwolf_minitrains_building_base
+[
+	SetBodyGroup(integer) : "Body Group" : 0
+]
+
+@PointClass base(Sligwolf_minitrains_building_base) studioprop() = sligwolf_minitrain_building_static :
+	""
+[
+]
+
+@PointClass base(Sligwolf_minitrains_building_base) studioprop() = sligwolf_minitrain_building_phys :
 	""
 [
 ]

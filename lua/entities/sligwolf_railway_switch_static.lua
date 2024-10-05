@@ -14,34 +14,14 @@ ENT.DoNotDuplicate 			= true
 
 ENT.WireDebugName			= "Railway Switch"
 
-ENT.sligwolf_blockAllTools  = true
-ENT.sligwolf_blockedprop    = true
-ENT.sligwolf_noPickup       = true
-ENT.sligwolf_denyToolReload = true
-ENT.sligwolf_noUnfreeze     = true
-ENT.sligwolf_noFreeze       = true
-
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBProtection = SligWolf_Addons.Protection
 
-function ENT:InitializePhysics()
-	self:PhysicsInit(SOLID_VPHYSICS)
-	self:SetMoveType(MOVETYPE_VPHYSICS)
-	self:SetCollisionGroup(COLLISION_GROUP_NONE)
-
-	LIBEntities.EnableMotion(self, false)
-end
-
-function ENT:OnPhysgunPickup()
-	LIBEntities.EnableMotion(self, false)
-end
-
-function ENT:OnPhysgunDrop()
-	LIBEntities.EnableMotion(self, false)
-end
+LIBProtection.ApplyStaticEntityTrait(ENT)
 
 function ENT:OnSpawnedCollision(prop)
 	LIBEntities.EnableMotion(self, false)

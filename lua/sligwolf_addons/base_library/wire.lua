@@ -44,6 +44,22 @@ function LIB.Render(ent)
 	g_Wire_Render(ent)
 end
 
+local g_toolWhiteList = {
+	wire = true,
+	wire_adv = true,
+	wire_debugger = true,
+	wire_wirelink = true,
+	gui_wiring = true,
+	multi_wire = true,
+}
+
+function LIB.IsWireTool(toolname)
+	if not g_HasWiremod then return false end
+	if not g_toolWhiteList[toolname] then return false end
+
+	return true
+end
+
 function LIB.UpdateRenderBounds(ent)
 	if not CLIENT then return end
 	if not g_HasWiremod then return end
