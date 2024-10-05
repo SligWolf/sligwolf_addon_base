@@ -1609,5 +1609,80 @@ function LIB.GetPassengers(ent, includeDriver)
 	return passengers
 end
 
+function LIB.GetBodygroup(ent, idOrName)
+	if not IsValid(ent) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	local bodyGroupsCache = entTable.bodyGroupCache
+
+	if not bodyGroupsCache or not bodyGroupsCache.byId or not bodyGroupsCache.byName then
+		bodyGroupsCache = {}
+		entTable.bodyGroupCache = bodyGroupsCache
+
+		local byId = {}
+		local byName = {}
+
+		bodyGroupsCache.byId = byId
+		bodyGroupsCache.byName = byName
+
+		local bodyGroups = ent:GetBodyGroups()
+
+		for _, bodyGroup in ipairs(bodyGroups) do
+			local id = bodyGroup.id
+			local name = bodyGroup.name
+
+			if not id then
+				continue
+			end
+
+			if not name then
+				continue
+			end
+
+			local item = table.Copy(bodyGroup)
+
+			byId[id] = item
+			byName[name] = item
+		end
+	end
+
+	if isnumber(idOrName) then
+		return bodyGroupsCache.byId[idOrName]
+	end
+
+	return bodyGroupsCache.byName[idOrName]
+end
+
+function LIB.GetBodygroupSubId(ent, idOrName)
+	if not IsValid(ent) then
+		return
+	end
+
+	local bodyGroup = LIB.GetBodygroup(ent, idOrName)
+	if not bodyGroup then
+		return
+	end
+
+	return ent:GetBodygroup(bodyGroup.id)
+end
+
+function LIB.SetBodygroupSubId(ent, idOrName, subId)
+	if not IsValid(ent) then
+		return
+	end
+
+	subId = tonumber(subId or 0) or 0
+
+	local bodyGroup = LIB.GetBodygroup(ent, idOrName)
+	if not bodyGroup then
+		return
+	end
+
+	ent:SetBodygroup(bodyGroup.id, subId)
+end
+
 return true
 

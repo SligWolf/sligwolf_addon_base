@@ -1480,7 +1480,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	ent:SetDisplayOriginName("displaypos01")
+	ent:SetDisplayOriginName("displaypos")
 	ent:AttachToEnt(parent, attachment)
 	ent:TurnOn(true)
 	ent:SetDisplayScale(scale)

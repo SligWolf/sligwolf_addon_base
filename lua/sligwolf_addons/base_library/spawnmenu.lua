@@ -722,6 +722,7 @@ function LIB.AddEntityAlias(alias, class)
 
 	g_entityAliases[alias] = class
 	scripted_ents.Alias(alias, class)
+	duplicator.Allow(alias)
 end
 
 function LIB.GetEntityClassFromAlias(alias)
