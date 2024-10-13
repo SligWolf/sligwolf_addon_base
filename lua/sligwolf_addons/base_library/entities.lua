@@ -93,6 +93,8 @@ function LIB.RemoveBadDupeData(data)
 	data.addonCache = nil
 	data.addonIdCache = nil
 
+	data.DoNotDuplicate = nil
+
 	-- Remove values whose names starting with "_"
 	for key, _ in pairs(data) do
 		if not isstring(key) then

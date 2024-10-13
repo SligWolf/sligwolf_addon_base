@@ -34,6 +34,7 @@ ENT.FailbackModel = CONSTANTS.mdlCube1
 
 function ENT:Initialize()
 	self:InitializeModel()
+	self:SetApplyDupe(true)
 
 	if SERVER then
 		self:InitializePhysics()
@@ -448,3 +449,90 @@ function ENT:OnEntityCopyTableFinish(data)
 	LIBEntities.RemoveBadDupeData(data)
 end
 
+function ENT:SetDupeData(key, value)
+	if self.DoNotDuplicate then
+		return
+	end
+
+	self._dupeData = self._dupeData or {}
+	self._dupeData[key] = value
+end
+
+function ENT:GetDupeData(key)
+	if self.DoNotDuplicate then
+		return nil
+	end
+
+	if not self._dupeData then
+		return nil
+	end
+
+	return self._dupeData[key]
+end
+
+function ENT:PreDupeCopy(dupedata)
+	-- override me
+end
+
+function ENT:PostDupePaste(ply, ent, entities, dupedata)
+	-- override me
+end
+
+function ENT:CanApplyDupe()
+	return self._applyDupe or false
+end
+
+function ENT:SetApplyDupe(bool)
+	self._applyDupe = bool
+end
+
+function ENT:IsDupeContext()
+	return self._dupeContext or false
+end
+
+function ENT:PreEntityCopy()
+	if self.DoNotDuplicate then
+		return
+	end
+
+	self._dupeData = self._dupeData or {}
+	self:PreDupeCopy(self._dupeData)
+
+	duplicator.StoreEntityModifier(self, "sligwolf_dupedata", table.Copy(self._dupeData))
+end
+
+function ENT:PostEntityPaste(ply, ent, entities)
+	if not IsValid(ent) then return end
+
+	if ent.DoNotDuplicate then
+		return
+	end
+
+	local entities = table.Copy(entities)
+	local entityMods = table.Copy(ent.EntityMods or {})
+	local dupedata = entityMods.sligwolf_dupedata or {}
+
+	local applied = false
+
+	local applyDupe = function(thisEnt)
+		if not thisEnt:CanApplyDupe() then
+			return false
+		end
+
+		applied = true
+		thisEnt:TimerRemove("PostEntityPaste")
+
+		thisEnt._dupeContext = true
+		thisEnt:PostDupePaste(ply, ent, entities, dupedata)
+		thisEnt._dupeContext = nil
+
+		return true
+	end
+
+	self:TimerRemove("PostEntityPaste")
+	applyDupe(self)
+
+	if not applied then
+		self:TimerUntil("PostEntityPaste", 0, applyDupe)
+	end
+end

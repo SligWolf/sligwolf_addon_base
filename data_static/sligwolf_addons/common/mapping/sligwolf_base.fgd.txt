@@ -4,12 +4,17 @@
 
 // Please also include garrysmod.fgd or halflife2.fgd in Hammer for optimal results.
 // It is not recommended to edit this file as it is automaticly generated.
+// Generated via concommand: sv_sligwolf_mapping_generate_fgd <rebuildCache (0/1)>
 
-// Generated file:
-//   Base Version:  {{SW_VERSION}}
-//   Generated At:  {{SW_GENERATED_AT}}
-//   Addons Count:  {{SW_ADDON_COUNT}}
-//   Vehicle Count: {{SW_VEHICLE_COUNT}}
+// Generated:
+//   API Version:   {{SW_VERSION}}
+//   Generated at:  {{SW_GENERATED_AT}}
+//
+// Cached:
+//   API Version:   {{SW_CACHE_VERSION}}
+//   Generated at:  {{SW_CACHE_GENERATED_AT}}
+//   Addons count:  {{SW_CACHE_ADDON_COUNT}}
+//   Vehicle count: {{SW_CACHE_VEHICLE_COUNT}}
 
 @BaseClass base(prop_vehicle_prisoner_pod) = Sligwolf_base_prop_vehicle_prisoner_pod
 [

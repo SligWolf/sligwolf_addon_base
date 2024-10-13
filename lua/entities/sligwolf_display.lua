@@ -11,6 +11,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local LIBCamera = SligWolf_Addons.Camera
+
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 	self:TurnOn(false)
@@ -25,6 +27,7 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("String", "DisplayFunctionName")
 	self:AddNetworkRVar("String", "DisplayOriginName")
 	self:AddNetworkRVar("Float", "Scale")
+	self:AddNetworkRVar("Float", "MaxDrawDistance")
 end
 
 function ENT:SetDisplayScale(num)
@@ -34,6 +37,15 @@ end
 
 function ENT:GetDisplayScale()
 	return self:GetNetworkRVarNumber("Scale", 1)
+end
+
+function ENT:SetDisplayMaxDrawDistance(num)
+	if CLIENT then return end
+	self:SetNetworkRVar("MaxDrawDistance", num)
+end
+
+function ENT:GetDisplayMaxDrawDistance()
+	return self:GetNetworkRVarNumber("MaxDrawDistance", 2048)
 end
 
 function ENT:SetDisplayFunctionName(name)
@@ -117,6 +129,15 @@ function ENT:DrawTranslucent(...)
 
 	local isON = self:IsOn()
 	if not isON then return end
+
+	local maxDist = self:GetDisplayMaxDrawDistance()
+	local maxDistSqr = maxDist * maxDist
+
+	if maxDistSqr > 0 then
+		local distSqr = LIBCamera.GetCameraDistanceSqr(self:GetPos())
+		if not distSqr then return end
+		if distSqr > maxDistSqr then return end
+	end
 
 	local func = self:GetDisplayFunction()
 	if not func then return end

@@ -10,7 +10,7 @@ ENT.Category				= "SligWolf's Addons (Broken)"
 ENT.PrintName 				= "Railway Switch"
 ENT.Spawnable 				= false
 ENT.AdminOnly 				= false
-ENT.DoNotDuplicate 			= true
+ENT.DoNotDuplicate 			= false
 
 ENT.WireDebugName			= "Railway Switch"
 

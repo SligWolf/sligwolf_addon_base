@@ -102,6 +102,26 @@ function LIB.GetCameraPos(ply)
 	return viewpos
 end
 
+function LIB.GetCameraDistance(targetPos, ply)
+	local cameraPos = LIB.GetCameraPos(ply)
+	if not cameraPos then
+		return nil
+	end
+
+	local dist = cameraPos:Distance(targetPos)
+	return dist
+end
+
+function LIB.GetCameraDistanceSqr(targetPos, ply)
+	local cameraPos = LIB.GetCameraPos(ply)
+	if not cameraPos then
+		return nil
+	end
+
+	local distSqr = cameraPos:DistToSqr(targetPos)
+	return distSqr
+end
+
 function LIB.Load()
 	local LIBHook = SligWolf_Addons.Hook
 	LIBPosition = SligWolf_Addons.Position

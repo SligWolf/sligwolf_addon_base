@@ -112,6 +112,7 @@ local g_FailbackComponentsParams = {
 		display = {
 			scale = 0.25,
 			functionName = "",
+			maxDrawDistance = 2048,
 			motion = false,
 		},
 		bendi = {
@@ -1474,6 +1475,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	local name = component.name
 	local class = component.class
 	local scale = component.scale
+	local maxDrawDistance = component.maxDrawDistance
 	local functionName = component.functionName
 
 	local ent = self:MakeEntEnsured(class or "sligwolf_display", ply, parent, "Display_" .. name)
@@ -1484,6 +1486,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	ent:AttachToEnt(parent, attachment)
 	ent:TurnOn(true)
 	ent:SetDisplayScale(scale)
+	ent:SetDisplayMaxDrawDistance(maxDrawDistance)
 	ent:SetDisplayFunctionName(functionName)
 
 	return ent

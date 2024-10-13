@@ -21,6 +21,7 @@ LIBWire.ApplyWiremodTrait(ENT)
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
+	self:SetApplyDupe(false)
 
 	self:TurnOn(true)
 	self:SetAnim()
@@ -47,11 +48,7 @@ function ENT:InitializePhysics()
 end
 
 function ENT:SetupSwitchStatesInternal()
-	local states = self:SetupSwitchStates()
-	if not states then
-		return
-	end
-
+	local states = self:SetupSwitchStates() or {}
 	local printName = tostring(states.printName or "")
 
 	if printName ~= "" then
@@ -75,6 +72,8 @@ function ENT:SetupSwitchStatesInternal()
 			self:SetStateByName(setStateName)
 		end
 	end
+
+	self:SetApplyDupe(true)
 end
 
 function ENT:SetupSwitchStates()
@@ -372,10 +371,10 @@ function ENT:RunCurrentState()
 
 	if self._oldStateId then
 		self:EmitSound(soundName, soundLevel, soundPitch)
-
-		local seq = self:LookupSequence(sequence) or 0
-		self:ResetSequence(seq)
 	end
+
+	local seq = self:LookupSequence(sequence) or 0
+	self:ResetSequence(seq)
 end
 
 function ENT:ThinkInternal()
@@ -476,24 +475,22 @@ function ENT:OnRestore()
 	LIBWire.Restore(self)
 end
 
-function ENT:PreEntityCopy()
+function ENT:PreDupeCopy(dupedata)
 	local state = self._state or {}
 
-	duplicator.StoreEntityModifier(self, "Wire", LIBWire.BuildDupeInfo(self))
-	duplicator.StoreEntityModifier(self, "State", {
+	dupedata.Wire = LIBWire.BuildDupeInfo(self)
+	dupedata.State = {
 		name = state.name,
-	})
+	}
 end
 
-function ENT:PostEntityPaste(ply, ent, entities)
-	if not IsValid(ent) then return end
-	if not ent.EntityMods then return end
-
-	local dupeData = table.Copy(ent.EntityMods or {})
-	local wire = dupeData.Wire
-	local state = dupeData.State
+function ENT:PostDupePaste(ply, ent, entities, dupedata)
+	local wire = dupedata.Wire
+	local state = dupedata.State or {}
 
 	LIBWire.ApplyDupeInfo(ply, ent, wire, entities)
+
+	self._oldStateId = nil
 	self:SetStateByName(state.name)
 end
 
