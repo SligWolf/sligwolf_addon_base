@@ -33,7 +33,7 @@ end
 function SWEP:SetupDataTables()
 	self:AddNetworkRVar("String", "AddonID")
 
-	self:GetNetworkRVarNotify("AddonID", self.ClearAddonCache)
+	self:RegisterNetworkRVarNotify("AddonID", self.ClearAddonCache)
 end
 
 function SWEP:ActToTime(act)

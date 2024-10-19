@@ -743,6 +743,20 @@ function LIB.GetEntityClassFromAlias(alias)
 	return class
 end
 
+function LIB.GetEntityAliasList()
+	local result = {}
+
+	for alias, class in pairs(g_entityAliases) do
+		if alias == class then
+			continue
+		end
+
+		result[alias] = class
+	end
+
+	return result
+end
+
 function LIB.AddEntity(addonname, spawnname, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then

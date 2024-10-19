@@ -132,13 +132,17 @@ function SLIGWOLF_BASE_OBJ:GetNetworkRFunc(name, setter)
 	return NW
 end
 
-function SLIGWOLF_BASE_OBJ:GetNetworkRVarNotify(name, func)
+function SLIGWOLF_BASE_OBJ:RegisterNetworkRVarNotify(name, func)
 	name = tostring(name or "")
 	if name == "" then return end
 
 	local nwname = "NWVR_" .. name
 
 	self:NetworkVarNotify(nwname, function(thisent, _, oldVar, newVar)
+		if not IsValid(thisent) then
+			return
+		end
+
 		func(thisent, name, oldVar, newVar)
 	end)
 end

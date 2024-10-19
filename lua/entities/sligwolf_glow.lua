@@ -93,7 +93,7 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Int", "Count")
 	self:AddNetworkRVar("Int", "Alpha_Reduce")
 
-	self:GetNetworkRVarNotify("Size", self.UpdateRenderBounds)
+	self:RegisterNetworkRVarNotify("Size", self.UpdateRenderBounds)
 end
 
 function ENT:SetGlowSize(num)

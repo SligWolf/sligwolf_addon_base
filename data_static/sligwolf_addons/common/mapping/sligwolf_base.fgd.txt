@@ -98,6 +98,16 @@
 @BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = Sligwolf_minitrains_building_base
 [
 	SetBodyGroup(integer) : "Body Group" : 0
+
+	// Inputs
+	input SetBodyGroup(integer) : "Set the visible bodygroup, by index."
+
+	// Outputs
+	output OnSizeChange(integer) : ""
+	output OnSizeMax(integer) : ""
+	output OnWagon(string) : ""
+	output OnWagonLoad(string) : ""
+	output OnWagonUnload(string) : ""
 ]
 
 @PointClass base(Sligwolf_minitrains_building_base) studioprop() = sligwolf_minitrain_building_static :

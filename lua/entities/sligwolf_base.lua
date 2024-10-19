@@ -147,8 +147,8 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Entity", "OwningPlayer")
 	self:AddNetworkRVar("Entity", "ParentEntity")
 
-	self:GetNetworkRVarNotify("AddonID", self.ClearAddonCache)
-	self:GetNetworkRVarNotify("ParentEntity", self.UpdateChildren)
+	self:RegisterNetworkRVarNotify("AddonID", self.ClearAddonCache)
+	self:RegisterNetworkRVarNotify("ParentEntity", self.UpdateChildren)
 end
 
 function ENT:UpdateChildren(_, oldparent, newparent)
