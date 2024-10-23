@@ -1,17 +1,12 @@
 AddCSLuaFile()
 local SligWolf_Addons = SligWolf_Addons
 
-if not SligWolf_Addons then
-	return
-end
-
-if not SLIGWOLF_ADDON then
-	return
-end
+if not SligWolf_Addons then return end
+if not SLIGWOLF_ADDON then return end
 
 local LIBTrackasm = SligWolf_Addons.Trackasm
-
 local taSettings = SLIGWOLF_ADDON.TrackAssamblerSettings
+
 if not taSettings then
 	error("SLIGWOLF_ADDON.TrackAssamblerSettings missing")
 	return
@@ -23,99 +18,320 @@ if not asmlib then
 	return
 end
 
-local myAddon = taSettings.Addon
+--[[
+ * This is your addon name. It is mandatory and it must be string.
+ * It is used by TA in order to classify the content you are creating
+ * It must NOT be an empty string nil or any other type regarding
+ * The value will be automatically pattern converted to a index prefix
+]]
+local myAddon = taSettings.Addon -- The type your addon resides in the tool with
+
+-- Log messages identifier. Leave DSV here or change it if you like
+local mySource = taSettings.Source
 local myError = taSettings.Error
+
+-- This is used for addon relation prefix. Fingers away from it
 local myPrefix = myAddon:gsub("[^%w]", "_")
 
+-- This is the script path. It tells TA who wants to add these models
+-- Do not touch this also, it is used for debugging
 local myScript = tostring(debug.getinfo(1).source or "N/A")
 myScript = "@" .. myScript:gsub("^%W+", ""):gsub("\\", "/")
+mySource = tostring(mySource or ""):gsub("^%W+", "")
+mySource = asmlib.IsBlank(mySource) and "DSV" or mySource
 
-local function myThrowError(vMesg)
-	local sMesg = (myScript .. " > (" .. myAddon .. "): " .. tostring(vMesg))
-
+--[[
+ * This function defines what happens when there is an error present
+ * Usually you can tell Gmod that you want it to generate an error
+ * and throw the message to the log also. In this case you will not
+ * have to change the function name in lots of places
+ * when you need it to do something else.
+--]]
+local function ThrowError(vMesg)
+	local sMesg = myScript .. " > (" .. myAddon .. "): " .. tostring(vMesg)
 	asmlib.LogInstance(sMesg)
-
 	myError(sMesg)
 end
 
-local function mySyncTable(sName, tData, bRepl)
-	if not asmlib.IsEmpty(tData) then
-		asmlib.LogInstance("SynchronizeDSV START <" .. myPrefix .. ">")
+--[[
+ * This logic statement is needed for reporting the error
+ * in the console if the process fails.
+ *
+ @ bSuccess = SynchronizeDSV(sTable, tData, bRepl, sPref, sDelim)
+ * sTable > The table you want to sync
+ * tData  > A data table like the one described above
+ * bRepl  > If set to /true/, makes the API replace the repeating models with
+            these of your addon. This is nice when you are constantly updating your track packs
+            If set to /false/ keeps the current model in the
+            database and ignores yours if they are the same file.
+ * sPref  > An export file custom prefix. For synchronizing it must be related to your addon
+ * sDelim > The delimiter used by the server/client ( default is a tab symbol )
+ *
+ @ bSuccess = TranslateDSV(sTable, sPref, sDelim)
+ * sTable > The table you want to translate to Lua script
+ * sPref  > An export file custom prefix. For synchronizing it must be related to your addon
+ * sDelim > The delimiter used by the server/client ( default is a tab symbol )
+--]]
+local function SyncTable(sName, tData, bRepl)
+	local sRep = asmlib.GetReport(myPrefix, sName) -- Generate report if error is present
 
-		if not asmlib.SynchronizeDSV(sName, tData, bRepl, myPrefix) then
-			myThrowError("Failed to synchronize: " .. sName)
-		else
-			asmlib.LogInstance("TranslateDSV START <" .. myPrefix .. ">")
+	if not asmlib.IsEmpty(tData) then -- Something to be processed. Do stuff when the table is not empty
+		asmlib.LogInstance("Synchronization START " .. sRep, mySource) -- Signal start synchronization
 
-			if not asmlib.TranslateDSV(sName, myPrefix) then
-				myThrowError("Failed to translate DSV: " .. sName)
+		if not asmlib.SynchronizeDSV(sName, tData, bRepl, myPrefix) then -- Attempt to synchronize
+			ThrowError("Failed to synchronize content") -- Raise error when fails to sync tracks data
+		else -- Successful. You are saving me from all the work for manually generating these
+			asmlib.LogInstance("Translation START " .. sRep, mySource) -- Signal start translation
+			if not asmlib.TranslateDSV(sName, myPrefix) then -- Attempt to translate the DSV to Lua source
+				ThrowError("Failed to translate content") -- Raise error when fails
 			end
 
-			asmlib.LogInstance("TranslateDSV OK <" .. myPrefix .. ">")
+			asmlib.LogInstance("Translation OK " .. sRep, mySource) -- Translation is successful
 		end
+		-- Now we have Lua inserts and DSV. Otherwise sent empty table and print status in logs
 	else
-		asmlib.LogInstance("SynchronizeDSV EMPTY <" .. myPrefix .. ">")
+		asmlib.LogInstance("Synchronization EMPTY " .. sRep, mySource)
+	end
+	-- Nothing to be done
+end
+
+--[[
+ * Register the addon to the auto-load prefix list when the
+ * PIECES file is missing. The auto-load list is located in
+ * (/garrysmod/data/trackassembly/set/trackasmlib_dsv.txt)
+ * a.k.a the DATA folder of Garry's mod.
+ *
+ * @bSuccess = RegisterDSV(sProg, sPref, sDelim)
+ * sProg  > The program which registered the DSV
+ * sPref  > The external data prefix to be added ( default instance prefix )
+ * sDelim > The delimiter to be used for processing ( default tab )
+ * bSkip  > Skip addition for the DSV prefix if exists ( default `false` )
+--]]
+local function RegisterDSV(bSkip)
+	local sRep = asmlib.GetReport(myPrefix, bSkip) -- Generate report if error is present
+	asmlib.LogInstance("Registration START " .. sRep, mySource)
+
+	if bSkip then -- Your DSV must be registered only once when loading for the first time
+		asmlib.LogInstance("Registration SKIP " .. sRep, mySource)
+	else -- If the locking file is not located that means this is the first run of your script
+		if not asmlib.RegisterDSV(myScript, myPrefix) then -- Register the DSV prefix and check for error
+			ThrowError("Failed to register content") -- Throw the error if fails
+		end
+
+		-- Third argument is the delimiter. The default tab is used
+		asmlib.LogInstance("Registration OK " .. sRep, mySource)
 	end
 end
 
-local function myRegisterDSV(bSkip)
-	asmlib.LogInstance("RegisterDSV START <" .. myPrefix .. ">")
+--[[
+ * This logic statement is needed for reporting the error in the console if the
+ * process fails.
+ *
+ @ bSuccess = ExportCategory(nInd, tData, sPref)
+ * nInd   > The index equal indent format to be stored with ( generally = 3 )
+ * tData  > The category functional definition you want to use to divide your stuff with
+ * sPref  > An export file custom prefix. For synchronizing
+ *          it must be related to your addon ( default is instance prefix )
+--]]
+local function ExportCategory(tCatg)
+	local sRep = asmlib.GetReport(myPrefix, bSkip) -- Generate report if error is present
+	asmlib.LogInstance("Category export START " .. sRep, mySource)
 
-	if bSkip then
-		asmlib.LogInstance("RegisterDSV SKIP <" .. myPrefix .. ">")
-	else
-		if not asmlib.RegisterDSV(myScript, myPrefix) then
-			myThrowError("Failed to register DSV")
-		end
-
-		asmlib.LogInstance("RegisterDSV OK <" .. myPrefix .. ">")
-	end
-end
-
-local function myExportCategory(tCatg)
-	asmlib.LogInstance("ExportCategory START <" .. myPrefix .. ">")
-
-	if CLIENT then
+	if CLIENT then -- Category handling is client side only
 		if not asmlib.IsEmpty(tCatg) then
 			if not asmlib.ExportCategory(3, tCatg, myPrefix) then
-				myThrowError("Failed to synchronize category")
+				ThrowError("Failed to synchronize category")
 			end
 
-			asmlib.LogInstance("ExportCategory OK <" .. myPrefix .. ">")
+			asmlib.LogInstance("Category export OK " .. sRep, mySource)
 		else
-			asmlib.LogInstance("ExportCategory SKIP <" .. myPrefix .. ">")
+			asmlib.LogInstance("Category export SKIP " .. sRep, mySource)
 		end
 	else
-		asmlib.LogInstance("ExportCategory SERVER <" .. myPrefix .. ">")
+		asmlib.LogInstance("Category export SERVER " .. sRep, mySource)
 	end
 end
 
+-- Store a reference to disable symbol
+local gsMissDB = asmlib.GetOpVar("MISS_NOSQL")
 local gsToolPF = asmlib.GetOpVar("TOOLNAME_PU")
+local gsSymOff = asmlib.GetOpVar("OPSYM_DISABLE")
 local gsFormPF = asmlib.GetOpVar("FORM_PREFIXDSV")
 
-local myDsv = asmlib.GetOpVar("DIRPATH_BAS") .. asmlib.GetOpVar("DIRPATH_DSV") .. gsFormPF:format(myPrefix, gsToolPF .. "PIECES")
+-- This is the path to your DSV
+local myDsv = asmlib.GetOpVar("DIRPATH_BAS") ..
+			  asmlib.GetOpVar("DIRPATH_DSV") ..
+			  gsFormPF:format(myPrefix, gsToolPF .. "PIECES")
+
+--[[
+ * This flag is used when the track pieces list needs to be processed.
+ * It generally represents the locking file persistence flag. It is
+ * bound to finding a "PIECES" DSV external database for the prefix
+ * of your addon. You can use it for boolean value deciding whenever
+ * or not to run certain events. For example you can stop exporting
+ * your local database every time Gmod loads, but then the user will
+ * skip the available updates of your addon until he/she deletes the DSVs.
+--]]
 local myFlag = file.Exists(myDsv, "DATA")
 
-asmlib.LogInstance(">>> " .. myScript .. " (" .. tostring(myFlag) .. "): {" .. myAddon .. ", " .. myPrefix .. "}")
+-- Tell TA what custom script we just called don't touch it
+asmlib.LogInstance(">>> " .. myScript .. " (" .. tostring(myFlag) .. "): {" .. myAddon .. ", " .. myPrefix .. "}", mySource)
 
+-- Register the addon to the workshop ID list
 local myAddonWsId = taSettings.WorkshopID
 if myAddonWsId then
 	asmlib.WorkshopID(myAddon, myAddonWsId)
 end
 
-myRegisterDSV(myFlag)
+-- Register the addon to the plugable DSV list
+local bS, vO = pcall(RegisterDSV, myFlag)
+if not bS then
+	ThrowError("Retistration error: " .. vO)
+end
 
+--[[
+ * This is used if you want to make internal categories for your addon
+ * You must make a function as a string under the hash of your addon
+ * The function must take only one argument and that is the model
+ * For every sub-category of your track pieces, you must return a table
+ * with that much elements or return a /nil/ value to add the piece to
+ * the root of your branch. You can also return a second value if you
+ * want to override the track piece name. If you need to use categories
+ * for multiple track types, just put their hashes in  the table below
+ * and make every track point to its dedicated category handler.
+--]]
 local myCategory = SLIGWOLF_ADDON:TrackAssamblerExportCategories()
 if myCategory then
-	myExportCategory(myCategory)
+	-- Register the addon category to the plugable DSV list
+	local bS, vO = pcall(ExportCategory, myCategory)
+	if not bS then
+		ThrowError("Category error: " .. vO)
+	end
 end
 
+--[[
+ * Create a table and populate it as shown below
+ * In the square brackets goes your MODEL,
+ * and then for every active point, you must have one array of
+ * strings, where the elements match the following data settings.
+ * You can use the disable event /#/ to make TA auto-fill
+ * the value provided and you can also add multiple track types myType[1-n].
+ * If you need to use piece origin/angle with model attachment, you must use
+ * the attachment extraction event /!/. The model attachment format is
+ * /!<attachment_name>/ and it depends what attachment name you gave it when you
+ * created the model. If you need TA to extract the origin/angle from an attachment named
+ * /test/ for example, you just need to put the string /!test/ in the origin/angle column for that model.
+ * {MODEL, TYPE, NAME, LINEID, POINT, ORIGIN, ANGLE, CLASS}
+ * MODEL  > This string contains the path to your /*.mdl/ file. It is mandatory and
+ *          taken in pairs with LINEID, it forms the unique identifier of every record.
+ *          When used in /DSV/ mode ( like seen below ) it is used as a hash index.
+ * TYPE   > This string is the name of the type your stuff will reside in the panel.
+ *          Disabling this, makes it use the value of the /DEFAULT_TYPE/ variable.
+ *          If it is empty uses the string /TYPE/, so make sure you fill this.
+ * NAME   > This is the name of your track piece. Put /#/ here to be auto-generated from
+ *          the model ( from the last slash to the file extension ).
+ * LINEID > This is the ID of the point that can be selected for building. They must be
+ *          sequential and mandatory. If provided, the ID must the same as the row index under
+ *          a given model key. Disabling this, makes it use the the index of the current line.
+ *          Use that to swap the active points around by only moving the desired row up or down.
+ *          For the example table definition below, the line ID in the database will be the same.
+ * POINT  > This is the location vector that TA searches and selects the related ORIGIN for.
+ *          An empty string is treated as taking the ORIGIN when assuming player traces can hit the origin
+ *          Disabling via /#/ makes it take the ORIGIN. Used to disable a point but keep original data
+ *          You can also fill it with attachment event /!/ followed by your attachment name.
+ * ORIGIN > This is the origin relative to which the next track piece position is calculated
+ *          An empty string is treated as {0,0,0}. Disabling via /#/ also makes it use {0,0,0}
+ *          You can also fill it with attachment event /!/ followed by your attachment name. It's mandatory
+ * ANGLE  > This is the angle relative to which the forward and up vectors are calculated.
+ *          An empty string is treated as {0,0,0}. Disabling via /#/ also makes it use {0,0,0}
+ *          You can also fill it with attachment event /!/ followed by your attachment name. It's mandatory
+ * CLASS  > This string is populated up when your entity class is not /prop_physics/ but something else
+ *          used by ents.Create of the gmod ents API library. Keep this empty if your stuff is a normal prop.
+ *          Disabling via /#/ makes it take the NULL value. In this case the model is spawned as a prop
+--]]
 local myPieces = SLIGWOLF_ADDON:TrackAssamblerExportPieces()
 if myPieces then
-	mySyncTable("PIECES", myPieces, true)
+	-- Register the addon PIECES to the plugable DSV list
+	local bS, vO = pcall(SyncTable, "PIECES", myPieces, true)
+	if not bS then
+		ThrowError("PIECES error: " .. vO)
+	end
 end
 
-asmlib.LogInstance("<<< " .. myScript)
+--[[
+ * Create a table and populate it as shown below
+ * In the square brackets goes your MODELBASE,
+ * and then for every active point, you must have one array of
+ * strings and numbers, where the elements match the following data settings.
+ * {MODELBASE, MODELADD, ENTCLASS, LINEID, POSOFF, ANGOFF, MOVETYPE, PHYSINIT, DRSHADOW, PHMOTION, PHYSLEEP, SETSOLID}
+ * MODELBASE > This string contains the path to your base /*.mdl/ file the additions are gonna be attached to.
+ *             It is mandatory and taken in pairs with LINEID, it forms the unique identifier of every record.
+ *             When used in /DSV/ mode ( like seen below ) is is used as a hash index.
+ * MODELADD  > This is the /*.mdl/ path of the addition entity. It is mandatory and cannot be disabled.
+ * ENTCLASS  > This is the class of the addition entity. When disabled or missing it defaults to a normal prop.
+ * LINEID    > This is the ID of the point that can be selected for building. They must be
+ *             sequential and mandatory. If provided, the ID must the same as the row index under
+ *             a given model key. Disabling this, makes it use the the index of the current line.
+ *             Use that to swap the active points around by only moving the desired row up or down.
+ *             For the example table definition below, the line ID in the database will be the same.
+ * POSOFF    > This is the local position vector offset that TA uses to place the addition relative to MODELBASE.
+ *             A NULL, empty, disabled or not available string is treated as taking {0,0,0}.
+ * ANGOFF    > This is the local angle offset that TA uses to place the addition.
+ *             A NULL, empty, disabled or not available string is treated as taking {0,0,0}.
+ * MOVETYPE  > This internally calls /Entity:SetMoveType/ if the database parameter is zero or greater.
+ * PHYSINIT  > This internally calls /Entity:PhysicsInit/ if the database parameter is zero or greater.
+ * DRSHADOW  > This internally calls /Entity:DrawShadow/ if the database parameter is not zero.
+ *             The call evaluates to /true/ for positive numbers and /false/ for negative.
+ *             When the parameter is equal to zero skips the call of /Entity:DrawShadow/
+ * PHMOTION  > This internally calls /PhysObj:EnableMotion/ if the database parameter is not zero on the validated physics object.
+ *             The call evaluates to /true/ for positive numbers and /false/ for negative.
+ *             When the parameter is equal to zero skips the call of /Entity:EnableMotion/
+ * PHYSLEEP  > This internally calls /PhysObj:Sleep/ if the database parameter is grater than zero on the validated physics object.
+ *             When the parameter is equal or less than zero skips the call of /Entity:Sleep/
+ * SETSOLID  > This internally calls /Entity:SetSolid/ if the database parameter is zero or greater.
+--]]
+local myAdditions = {
+	-- placeholder
+}
+
+-- Register the addon ADDITIONS to the plugable DSV list
+if myAdditions then
+	local bS, vO = pcall(SyncTable, "ADDITIONS", myAdditions, true)
+	if not bS then
+		ThrowError("ADDITIONS error: " .. vO)
+	end
+end
+
+--[[
+* Create a table and populate it as shown below
+* In the square brackets goes your TYPE,
+* and then for every active point, you must have one array of
+* strings and numbers, where the elements match the following data settings.
+* {TYPE, LINEID, NAME}
+* TYPE   > This is the category under your physical properties are stored internally.
+*          It is mandatory and taken in pairs with LINEID, it forms the unique identifier of every record.
+*          When used in /DSV/ mode ( like seen below ) is is used as a hash index.
+* LINEID > This is the ID of the point that can be selected for building. They must be
+*          sequential and mandatory. If provided, the ID must the same as the row index under
+*          a given model key. Disabling this, makes it use the the index of the current line.
+*          Use that to swap the active points around by only moving the desired row up or down.
+*          For the example table definition below, the line ID in the database will be the same.
+* NAME   > This stores the name of the physical property. It must an actual physical property.
+]]
+--
+local myPhysproperties = {
+	-- placeholder
+}
+
+-- Register the addon PHYSPROPERTIES to the plugable DSV list
+if myPhysproperties then
+	local bS, vO = pcall(SyncTable, "PHYSPROPERTIES", myPhysproperties, true)
+	if not bS then
+		ThrowError("PHYSPROPERTIES error: " .. vO)
+	end
+end
+
+asmlib.LogInstance("<<< " .. myScript, mySource)
 
 return true
 

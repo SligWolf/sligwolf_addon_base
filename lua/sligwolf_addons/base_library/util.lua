@@ -15,6 +15,8 @@ table.Empty(SligWolf_Addons.Util)
 
 local LIB = SligWolf_Addons.Util
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 function LIB.ValidateName(name)
 	name = tostring(name or "")
 	name = string.gsub(name, "^!", "", 1)
@@ -93,6 +95,83 @@ function LIB.IsValidModelFile(model)
 
 	g_IsValidModelFileCache[model] = true
 	return true
+end
+
+local g_IsValidTextureCache = {}
+local g_IsValidTextureFileCache = {}
+
+function LIB.IsValidTextureFile(path)
+	path = tostring(path or "")
+
+	if g_IsValidTextureFileCache[path] then
+		return true
+	end
+
+	g_IsValidTextureFileCache[path] = nil
+
+	if path == "" then
+		return false
+	end
+
+	if not file.Exists(path, "GAME") then
+		return false
+	end
+
+	g_IsValidTextureFileCache[path] = true
+	return true
+end
+
+function LIB.LoadPngMaterial(path, params, fallbackPath)
+	path = tostring(path or "")
+	params = tostring(params or "")
+	fallbackPath = tostring(fallbackPath or "")
+
+	local err = CONSTANTS.errorPngMaterial
+
+	if path == "" then
+		path = err
+	end
+
+	if fallbackPath == "" then
+		fallbackPath = err
+	end
+
+	if path == err then
+		path = fallbackPath
+	end
+
+	if path == fallbackPath then
+		fallbackPath = err
+	end
+
+	local cacheId = string.format("%s_%s_%s", path, fallbackPath, params)
+
+	if g_IsValidTextureCache[cacheId] ~= nil then
+		local mat = g_IsValidTextureCache[cacheId]
+		if not mat then
+			return nil
+		end
+
+		return mat
+	end
+
+	g_IsValidTextureCache[cacheId] = false
+
+	if not LIB.IsValidTextureFile(path) then
+		return LIB.LoadPngMaterial(fallbackPath, err, params)
+	end
+
+	local mat = Material(path, params)
+	if not mat or mat:IsError() then
+		mat = LIB.LoadPngMaterial(fallbackPath, err, params)
+
+		if not mat or mat:IsError() then
+			return nil
+		end
+	end
+
+	g_IsValidTextureCache[cacheId] = mat
+	return mat
 end
 
 function LIB.GuessAddonIDByModelName(model)

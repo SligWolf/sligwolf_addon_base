@@ -243,6 +243,7 @@ ITEM_META.__index = ITEM_META
 local g_taType = nil
 local g_taSettings = {}
 
+g_taSettings.Source = "SW_ADDONS"
 g_taSettings.Error = function(message)
 	LIBPrint.Print("%s", message)
 end
@@ -288,33 +289,35 @@ function SLIGWOLF_ADDON:GetTrackAssamblerItem(model)
 end
 
 --[[
-* Description of the export format from TrackAssemblyTool as from docs:
-* https://github.com/dvdvideo1234/TrackAssemblyTool/blob/master/data/trackassembly/set/z_autorun_%5Btrackassembly%5D.txt
-*
-* MODEL  > This string contains the path to your /*.mdl/ file. It is mandatory and
-*          taken in pairs with LINEID, it forms the unique identifier of every record.
-*          When used in /DSV/ mode ( like seen below ) is is used as a hash index.
-* TYPE   > This string is the name of the type your stuff will reside in the panel.
-*          Disabling this, makes it use the value of the /DEFAULT_TYPE/ variable.
-*          If it is empty uses the string /TYPE/, so make sure you fill this.
-* NAME   > This is the name of your track piece. Put /#/ here to be auto-generated from
-*          the model ( from the last slash to the file extension ).
-* LINEID > This is the ID of the point that can be selected for building. They must be
-*          sequential and mandatory. If provided, the ID must the same as the row index under
-*          a given model key. Disabling this, makes it use the the index of the current line.
-*          Use that to swap the active points around by only moving the desired row up or down.
-*          For the example table definition below, the line ID in the database will be the same.
-* POINT  > This is the local position vector that TA searches and selects the related
-*          ORIGIN for. An empty or disabled string is treated as taking the ORIGIN.
-*          Disabling this using the disable event makes it hidden when the active point is searched for
-* ORIGIN > This is the origin relative to which the next track piece position is calculated
-*          An empty string is treated as {0,0,0}. Disabling this also makes it use {0,0,0}
-*          You can also fill it with attachment event /!/ followed by your attachment name. It's mandatory
-* ANGLE  > This is the angle relative to which the forward and up vectors are calculated.
-*          An empty string is treated as {0,0,0}. Disabling this also makes it use {0,0,0}
-*          You can also fill it with attachment event /!/ followed by your attachment name. It's mandatory
-* CLASS  > This string is populated up when your entity class is not /prop_physics/ but something else
-*          used by ents.Create of the gmod ents API library. Keep this empty if your stuff is a normal prop.
+ * Description of the export format from TrackAssemblyTool as from docs:
+ * https://github.com/dvdvideo1234/TrackAssemblyTool/blob/master/data/trackassembly/set/z_autorun_%5Btrackassembly%5D.txt
+ *
+ * MODEL  > This string contains the path to your /*.mdl/ file. It is mandatory and
+ *          taken in pairs with LINEID, it forms the unique identifier of every record.
+ *          When used in /DSV/ mode ( like seen below ) it is used as a hash index.
+ * TYPE   > This string is the name of the type your stuff will reside in the panel.
+ *          Disabling this, makes it use the value of the /DEFAULT_TYPE/ variable.
+ *          If it is empty uses the string /TYPE/, so make sure you fill this.
+ * NAME   > This is the name of your track piece. Put /#/ here to be auto-generated from
+ *          the model ( from the last slash to the file extension ).
+ * LINEID > This is the ID of the point that can be selected for building. They must be
+ *          sequential and mandatory. If provided, the ID must the same as the row index under
+ *          a given model key. Disabling this, makes it use the the index of the current line.
+ *          Use that to swap the active points around by only moving the desired row up or down.
+ *          For the example table definition below, the line ID in the database will be the same.
+ * POINT  > This is the location vector that TA searches and selects the related ORIGIN for.
+ *          An empty string is treated as taking the ORIGIN when assuming player traces can hit the origin
+ *          Disabling via /#/ makes it take the ORIGIN. Used to disable a point but keep original data
+ *          You can also fill it with attachment event /!/ followed by your attachment name.
+ * ORIGIN > This is the origin relative to which the next track piece position is calculated
+ *          An empty string is treated as {0,0,0}. Disabling via /#/ also makes it use {0,0,0}
+ *          You can also fill it with attachment event /!/ followed by your attachment name. It's mandatory
+ * ANGLE  > This is the angle relative to which the forward and up vectors are calculated.
+ *          An empty string is treated as {0,0,0}. Disabling via /#/ also makes it use {0,0,0}
+ *          You can also fill it with attachment event /!/ followed by your attachment name. It's mandatory
+ * CLASS  > This string is populated up when your entity class is not /prop_physics/ but something else
+ *          used by ents.Create of the gmod ents API library. Keep this empty if your stuff is a normal prop.
+ *          Disabling via /#/ makes it take the NULL value. In this case the model is spawned as a prop
 --]]
 
 local g_asmlib = nil
