@@ -158,7 +158,14 @@ function LIB.LoadPngMaterial(path, params, fallbackPath)
 	g_IsValidTextureCache[cacheId] = false
 
 	if not LIB.IsValidTextureFile(path) then
-		return LIB.LoadPngMaterial(fallbackPath, err, params)
+		local mat = LIB.LoadPngMaterial(fallbackPath, err, params)
+
+		if not mat or mat:IsError() then
+			return nil
+		end
+
+		g_IsValidTextureCache[cacheId] = mat
+		return mat
 	end
 
 	local mat = Material(path, params)
