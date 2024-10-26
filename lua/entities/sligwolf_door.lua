@@ -17,7 +17,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
 
-local dtr = {
+local g_denyToolReload = {
 	weld = "",
 	remover = "",
 }
@@ -186,7 +186,7 @@ function ENT:SpawnCollisionEntity(mdl)
 		return
 	end
 
-	Prop.sligwolf_denyToolReload = dtr
+	Prop.sligwolf_denyToolReload = g_denyToolReload
 	Prop.DoNotDuplicate = true
 
 	Prop:SetModel(mdl)

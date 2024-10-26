@@ -505,7 +505,7 @@ function LIB.Load()
 			if not seat:IsValidVehicle() then return end
 
 			if not seat.sligwolf_vehicle then return end
-			if not seat.sligwolf_Addonname then return end
+			if not seat.sligwolf_addonname then return end
 			if not seat.sligwolf_vehicleDynamicSeat then return end
 
 			LIB.RemoveSeat(seat)

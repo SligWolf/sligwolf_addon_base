@@ -88,14 +88,13 @@ function LIB.RemoveBadDupeData(data)
 		return
 	end
 
-	data.sligwolf_Addonname = nil
 	data.spawnname = nil
 	data.addonCache = nil
 	data.addonIdCache = nil
 
 	data.DoNotDuplicate = nil
 
-	-- Remove values whose names starting with "_"
+	-- Remove values whose names starting with "_", "sligwolf_" or "SLIGWOLF_"
 	for key, _ in pairs(data) do
 		if not isstring(key) then
 			continue
@@ -105,11 +104,20 @@ function LIB.RemoveBadDupeData(data)
 			continue
 		end
 
-		if key[1] ~= "_" then
+		if string.StartsWith(key, "_") then
+			data[key] = nil
 			continue
 		end
 
-		data[key] = nil
+		if string.StartsWith(key, "sligwolf_") then
+			data[key] = nil
+			continue
+		end
+
+		if string.StartsWith(key, "SLIGWOLF_") then
+			data[key] = nil
+			continue
+		end
 	end
 end
 
@@ -127,8 +135,8 @@ function LIB.ToString(ent)
 		name = string.format("[name: %s]", name)
 	end
 
-	if ent.sligwolf_Addonname then
-		addonname = string.format("[addon: %s]", ent.sligwolf_Addonname)
+	if ent.sligwolf_addonname then
+		addonname = string.format("[addon: %s]", ent.sligwolf_addonname)
 	end
 
 	local str = string.format("%s%s%s", entStr, addonname, name)
@@ -177,7 +185,7 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 	end
 
 	if IsValid(parent) then
-		addonname = addonname or parent.sligwolf_Addonname
+		addonname = addonname or parent.sligwolf_addonname
 	end
 
 	LIB.SetName(ent, name)
@@ -192,7 +200,7 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 
 	ent.sligwolf_entity = true
 	ent.sligwolf_subentity = true
-	ent.sligwolf_Addonname = addonname
+	ent.sligwolf_addonname = addonname
 
 	if IsValid(plyOwner) then
 		LIB.SetOwner(ent, plyOwner)

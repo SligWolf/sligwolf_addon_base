@@ -30,7 +30,6 @@ function ENT:OnSpawnedCollision(prop)
 	prop.sligwolf_blockAllTools  = true
 	prop.sligwolf_blockedprop    = true
 	prop.sligwolf_noPickup       = true
-	prop.sligwolf_denyToolReload = true
 	prop.sligwolf_noUnfreeze     = true
 	prop.sligwolf_noFreeze       = true
 

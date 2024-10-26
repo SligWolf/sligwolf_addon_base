@@ -13,7 +13,7 @@ end
 local LIBTimer = SligWolf_Addons.Timer
 
 local function getTimerNameFromAddon(addon, identifier)
-	local id = addon.NetworkaddonID
+	local id = addon.Addonname
 	if not id then
 		return nil
 	end

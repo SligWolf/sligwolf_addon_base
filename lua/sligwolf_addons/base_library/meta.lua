@@ -29,7 +29,7 @@ function LIB.BuildMetaEntity()
 end
 
 function LIB.BuildGenericMetaFunctions(META, getTable)
-	META.SligWolf_GetTable = function(thisEnt)
+	local sligwolf_getTable = function(thisEnt)
 		local entTable = getTable(thisEnt)
 
 		local tab = entTable.sligwolf_internalTable
@@ -42,6 +42,28 @@ function LIB.BuildGenericMetaFunctions(META, getTable)
 		entTable.sligwolf_internalTable = tab
 
 		return tab
+	end
+
+	META.SligWolf_GetTable = sligwolf_getTable
+
+	META.SligWolf_GetAddonTable = function(thisEnt, addonname)
+		local entTable = sligwolf_getTable(thisEnt)
+		local addondata = entTable.addondata
+
+		if not addondata then
+			addondata = {}
+			entTable.addondata = addondata
+		end
+
+		local addonEntTable = addondata[addonname]
+		if addonEntTable then
+			return addonEntTable
+		end
+
+		addonEntTable = {}
+		addondata[addonname] = addonEntTable
+
+		return addonEntTable
 	end
 end
 

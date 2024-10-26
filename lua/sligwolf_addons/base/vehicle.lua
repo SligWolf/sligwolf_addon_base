@@ -122,6 +122,57 @@ function SLIGWOLF_ADDON:ValidateVehicleTable(vehicle, vehicleTable)
 	return true
 end
 
+function SLIGWOLF_ADDON:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)
+	local addonname = self.Addonname
+	vehicle.sligwolf_addonname = addonname
+
+	vehicle["sligwolf_is_" .. addonname] = true
+
+	local vehicleType = tostring(customSpawnProperties.vehicleType or "")
+	vehicleType = string.lower(vehicleType)
+
+	if vehicleType ~= "" then
+		customSpawnProperties.vehicleType = vehicleType
+
+		vehicle["sligwolf_is_" .. addonname .. "_" .. vehicleType] = true
+		vehicle["sligwolf_isType_" .. vehicleType] = true
+
+		self:AddToEntList("vehicles_" .. vehicleType, vehicle)
+	else
+		vehicleType = nil
+		customSpawnProperties.vehicleType = nil
+	end
+
+	vehicle.sligwolf_vehicle_type = vehicleType
+
+	self:AddToEntList("vehicles", vehicle)
+end
+
+function SLIGWOLF_ADDON:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawnProperties)
+	local denyToolReload = customSpawnProperties.denyToolReload
+	if not denyToolReload then
+		denyToolReload = {
+			"weld",
+			"nocollide",
+			"remover",
+		}
+	end
+
+	local denyToolReloadIndexed = {}
+
+	for k, v in pairs(denyToolReload) do
+		if isstring(k) then
+			denyToolReloadIndexed[k] = tobool(v)
+			continue
+		end
+
+		denyToolReloadIndexed[v] = true
+	end
+
+	vehicle.sligwolf_denyToolReload	= denyToolReloadIndexed
+	customSpawnProperties.denyToolReload = denyToolReloadIndexed
+end
+
 function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 	if not IsValid(vehicle) then return end
 	if not vehicle:IsVehicle() then return end
@@ -153,6 +204,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 	local keyValues = vehicleTable.KeyValues or {}
 	local class = vehicleTable.Class
 	local members = vehicleTable.Members
+	local customSpawnProperties = vehicleTable.SLIGWOLF_Custom or {}
 
 	local entTable = vehicle:SligWolf_GetTable()
 
@@ -160,7 +212,8 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 	vehicle.sligwolf_vehicle = true
 	vehicle.sligwolf_headVehicle = true
 
-	vehicle.sligwolf_Addonname = self.Addonname
+	self:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)
+	self:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawnProperties)
 
 	LIBPhysics.InitializeAsPhysEntity(vehicle)
 
@@ -174,7 +227,6 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 	vehicle.VehicleName = vehicleSpawnname
 	vehicle.VehicleTable = vehicleTable
 
-	local customSpawnProperties = vehicleTable.SLIGWOLF_Custom
 	entTable.customSpawnProperties = customSpawnProperties
 
 	if isSpawnedByEngine then
@@ -193,10 +245,13 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 		end
 	end
 
+	local vat = self:GetEntityTable(vehicle)
+
 	self:CallAddonFunctionWithErrorNoHalt(
 		"SpawnVehicle",
 		entTable.spawnerPlayer,
 		vehicle,
+		vat,
 		customSpawnProperties
 	)
 end

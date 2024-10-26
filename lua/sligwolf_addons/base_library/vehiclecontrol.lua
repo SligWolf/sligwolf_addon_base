@@ -77,7 +77,7 @@ local breakUntil = 5
 local stopBreakingAt = 4
 local setSpeedTo = 0
 
-function LIB.TrainSpeedOrder(vehicle, ply, acceleration, emergencyBrake)
+function LIB.TrainSpeedOrder(vehicle, vat, ply, acceleration, emergencyBrake)
 	if not IsValid(vehicle) then return end
 	if not IsValid(ply) then return end
 	acceleration = tonumber(acceleration or 2.25)
@@ -85,26 +85,26 @@ function LIB.TrainSpeedOrder(vehicle, ply, acceleration, emergencyBrake)
 
 	-- @TODO: Create new speed control logic for trains and vehicles for upcomming remote controller update
 
-	if not vehicle.sligwolf_vehicleEngine then return end
+	if not vat.engine then return end
 
 	if ply:KeyDown(IN_FORWARD) then
-		vehicle.sligwolf_speed = vehicle.sligwolf_speed + acceleration
+		vat.speed = vat.speed + acceleration
 	end
 	if ply:KeyDown(IN_BACK) then
-		vehicle.sligwolf_speed = vehicle.sligwolf_speed - acceleration
+		vat.speed = vat.speed - acceleration
 	end
 
 	if ply:KeyDown(IN_JUMP) then
-		if vehicle.sligwolf_speed >= breakUntil then
-			vehicle.sligwolf_speed = vehicle.sligwolf_speed - emergencyBrake
-			if vehicle.sligwolf_speed <= stopBreakingAt then
-				vehicle.sligwolf_speed = setSpeedTo
+		if vat.speed >= breakUntil then
+			vat.speed = vat.speed - emergencyBrake
+			if vat.speed <= stopBreakingAt then
+				vat.speed = setSpeedTo
 			end
 		end
-		if vehicle.sligwolf_speed <= -breakUntil then
-			vehicle.sligwolf_speed = vehicle.sligwolf_speed + emergencyBrake
-			if vehicle.sligwolf_speed >= -stopBreakingAt then
-				vehicle.sligwolf_speed = setSpeedTo
+		if vat.speed <= -breakUntil then
+			vat.speed = vat.speed + emergencyBrake
+			if vat.speed >= -stopBreakingAt then
+				vat.speed = setSpeedTo
 			end
 		end
 	end

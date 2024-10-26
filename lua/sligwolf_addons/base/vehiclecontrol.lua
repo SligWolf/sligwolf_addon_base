@@ -81,16 +81,10 @@ function SLIGWOLF_ADDON:RegisterVehicleOrder(name, callback_hold, callback_down,
 
 	if CLIENT then return end
 
-	local ID = self.NetworkaddonID or ""
-	if ID == "" then
-		error("Invalid NetworkaddonID!")
-		return
-	end
-
 	name = name or ""
 	if name == "" then return end
 
-	local netname = "SligWolf_VehicleOrder_" .. ID .. "_" .. name
+	local netname = "SligWolf_VehicleOrder_" .. self.Addonname .. "_" .. name
 
 	local valid = false
 	if not isfunction(callback_hold) then
@@ -180,13 +174,15 @@ function SLIGWOLF_ADDON:RegisterKeySettings(name, default, time, description, ex
 	default = default or 0
 	time = time or 0.1
 
-	if (name == "") then return end
-	if (description == "") then return end
-	if (default == 0) then return end
+	if name == "" then return end
+	if description == "" then return end
+	if default == 0 then return end
+
+	local cmd = "cl_sligwolf_addons_" .. self.Addonname .. "_key_" .. name
 
 	local setting = {}
 	setting.description = description
-	setting.cvcmd = "cl_" .. self.NetworkaddonID .. "_key_" .. name
+	setting.cvcmd = cmd
 	setting.default = default
 	setting.time = time
 
@@ -207,12 +203,6 @@ if CLIENT then
 		if not self.HasVehicleOrders then return end
 		if not IsValid(vehicle) then return end
 
-		local ID = self.NetworkaddonID or ""
-		if ID == "" then
-			error("Invalid NetworkaddonID!")
-			return
-		end
-
 		name = name or ""
 		down = down or false
 
@@ -228,7 +218,7 @@ if CLIENT then
 
 		self.KeyBuffer[vehicle][name] = changedbuffer
 
-		local netname = "SligWolf_VehicleOrder_" .. ID .. "_" .. name
+		local netname = "SligWolf_VehicleOrder_" .. self.Addonname .. "_" .. name
 		net.Start(netname)
 			net.WriteEntity(vehicle)
 			net.WriteBool(down)
@@ -265,11 +255,9 @@ if CLIENT then
 	function SLIGWOLF_ADDON:VehicleOrderMenu()
 		if not self.HasVehicleOrders then return end
 
-		local networkAddonID = self.NetworkaddonID
-
 		spawnmenu.AddToolMenuOption(
 			"Utilities", "SligWolf Keys",
-			networkAddonID .. "_Key_Settings",
+			"SligWolf_VehicleOrder_" .. self.Addonname .. "_Key_Settings",
 			self.NiceName, "", "",
 			function(panel, ...)
 				panel:Help("\nAll keys down below can be changed.\nUsing a mouse key will disable the control key.\n")
@@ -320,14 +308,9 @@ function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 	end
 
 	if IsValid(playervehicle) and superparent ~= playervehicle then return end
+	if superparent.sligwolf_addonname ~= self.Addonname then return end
+
 	if not button.SLIGWOLF_Buttonfunc then return end
-
-	if not superparent.SLIGWOLF_AddonID or (superparent.SLIGWOLF_AddonID == "") then
-		error("superparent.SLIGWOLF_AddonID missing!")
-		return
-	end
-
-	if superparent.SLIGWOLF_AddonID ~= self.NetworkaddonID then return end
 
 	local allowuse = true
 

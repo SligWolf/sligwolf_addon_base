@@ -46,7 +46,6 @@ function LIB.ApplyStaticEntityTrait(SENT)
 	SENT.sligwolf_blockAllTools  = true
 	SENT.sligwolf_blockedprop    = true
 	SENT.sligwolf_noPickup       = true
-	SENT.sligwolf_denyToolReload = true
 	SENT.sligwolf_noUnfreeze     = true
 	SENT.sligwolf_noFreeze       = true
 

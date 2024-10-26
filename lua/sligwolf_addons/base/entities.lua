@@ -15,6 +15,11 @@ local LIBUtil = SligWolf_Addons.Util
 local LIBTimer = SligWolf_Addons.Timer
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
 
+function SLIGWOLF_ADDON:GetEntityTable(ent)
+	local entAddonTable = ent:SligWolf_GetAddonTable(self.Addonname)
+	return entAddonTable
+end
+
 function SLIGWOLF_ADDON:MakeEnt(classname, plyOwner, parent, name)
 	local ent = LIBEntities.MakeEnt(classname, plyOwner, parent, name, self.Addonname)
 	if not ent then
@@ -106,7 +111,7 @@ function SLIGWOLF_ADDON:GetVal(ent, name, default)
 	local path = LIBEntities.GetEntityPath(ent)
 
 	name = LIBUtil.ValidateName(name)
-	name = self.NetworkaddonID .. "/" .. path .. "/!" .. name
+	name = self.Addonname .. "/" .. path .. "/!" .. name
 
 	local data = superparentEntTable.Data
 	if not data then
@@ -132,7 +137,7 @@ function SLIGWOLF_ADDON:SetVal(ent, name, value)
 	local path = LIBEntities.GetEntityPath(ent)
 
 	name = LIBUtil.ValidateName(name)
-	name = self.NetworkaddonID .. "/" .. path .. "/!" .. name
+	name = self.Addonname .. "/" .. path .. "/!" .. name
 
 	local data = superparentEntTable.Data or {}
 	superparentEntTable.Data = data
@@ -253,7 +258,7 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	local oldPreEntityCopy = superparent.PreEntityCopy or function() end
 	local oldOnEntityCopyTableFinish = superparent.OnEntityCopyTableFinish or function() end
 
-	local dupename = "SLIGWOLF_Common_MakeEnt_Dupe_" .. self.NetworkaddonID  .. "_" .. name
+	local dupename = "SligWolf_Common_MakeEnt_Dupe_" .. self.Addonname  .. "_" .. name
 	superparentEntTable.dupename = dupename
 
 	superparent.PreEntityCopy = function(thisent, ...)

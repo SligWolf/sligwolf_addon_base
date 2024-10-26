@@ -757,7 +757,6 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	local thisAddon = {}
 
 	thisAddon.Addonname = name
-	thisAddon.NetworkaddonID = "SLIGWOLF_" .. name
 	thisAddon.LuaDirectory = luaDirectory
 	thisAddon.WorkshopID = wsid
 	thisAddon.Loaded = false

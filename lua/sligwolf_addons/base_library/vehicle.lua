@@ -307,9 +307,12 @@ function LIB.Load()
 		if not vehicle:IsValidVehicle() then return end
 
 		if not vehicle.sligwolf_vehicle then return end
-		if not vehicle.sligwolf_Addonname then return end
 
-		SligWolf_Addons.CallFunctionOnAddon(vehicle.sligwolf_Addonname, "SpawnVehicleFinished", vehicle, ply)
+		local addonname = vehicle.sligwolf_addonname
+		if not addonname then return end
+
+		local vat = vehicle:SligWolf_GetAddonTable(addonname)
+		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnVehicleFinished", vehicle, vat, ply)
 	end
 
 	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_Vehicle_SpawnVehicleFinished", SpawnVehicleFinished, 20000)
@@ -321,10 +324,14 @@ function LIB.Load()
 		if not vehicle:IsValidVehicle() then return end
 
 		if not vehicle.sligwolf_vehicle then return end
-		if not vehicle.sligwolf_Addonname then return end
+
+		local addonname = vehicle.sligwolf_addonname
+		if not addonname then return end
+
+		local vat = vehicle:SligWolf_GetAddonTable(addonname)
 
 		LIBCamera.ResetCamera(ply)
-		SligWolf_Addons.CallFunctionOnAddon(vehicle.sligwolf_Addonname, "EnterVehicle", ply, vehicle)
+		SligWolf_Addons.CallFunctionOnAddon(addonname, "EnterVehicle", ply, vehicle, vat)
 	end
 
 	LIBHook.Add("PlayerEnteredVehicle", "Library_Vehicle_PlayerEnteredVehicle", PlayerEnteredVehicle, 20000)
@@ -336,9 +343,13 @@ function LIB.Load()
 		if not vehicle:IsValidVehicle() then return end
 
 		if not vehicle.sligwolf_vehicle then return end
-		if not vehicle.sligwolf_Addonname then return end
 
-		SligWolf_Addons.CallFunctionOnAddon(vehicle.sligwolf_Addonname, "LeaveVehicle", ply, vehicle)
+		local addonname = vehicle.sligwolf_addonname
+		if not addonname then return end
+
+		local vat = vehicle:SligWolf_GetAddonTable(addonname)
+
+		SligWolf_Addons.CallFunctionOnAddon(addonname, "LeaveVehicle", ply, vehicle, vat)
 
 		LIB.ResetDriverMaxHealth(ply)
 		LIBCamera.ResetCamera(ply)
