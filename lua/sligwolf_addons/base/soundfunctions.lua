@@ -61,14 +61,16 @@ function SLIGWOLF_ADDON:SoundCreate(ent, name, recipientFilter)
 	return soundObj
 end
 
-function SLIGWOLF_ADDON:SoundEmitIndicator(ent)
-	if not ent.sligwolf_indicator_OnOff then
+function SLIGWOLF_ADDON:SoundEmitIndicator(ent, vat)
+	if not vat.indicatorOnOff then
 		ent:EmitSound(CONSTANTS.sndIndicatorOn)
-		ent.sligwolf_indicator_OnOff = true
+		vat.indicatorOnOff = true
+
 		return
 	else
 		ent:EmitSound(CONSTANTS.sndIndicatorOff)
-		ent.sligwolf_indicator_OnOff = false
+		vat.indicatorOnOff = false
+
 		return
 	end
 end
