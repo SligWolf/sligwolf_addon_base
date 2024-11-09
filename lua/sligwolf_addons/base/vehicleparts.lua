@@ -12,15 +12,16 @@ end
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBVehicle = SligWolf_Addons.Vehicle
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPosition = SligWolf_Addons.Position
 local LIBCoupling = SligWolf_Addons.Coupling
+local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
-local LIBSpamprotection = SligWolf_Addons.Spamprotection
-local LIBUtil = SligWolf_Addons.Util
+local LIBModel = SligWolf_Addons.Model
 
-local g_FailbackComponentsParams = {
+
+local g_FallbackComponentsParams = {
 	model = "",
 	class = "",
 	color = CONSTANTS.colorDefault,
@@ -149,7 +150,7 @@ local g_FailbackComponentsParams = {
 	},
 }
 
-local g_FailbackConstraintsParams = {
+local g_FallbackConstraintsParams = {
 	Weld = {
 		bone1 = 0,
 		bone2 = 0,
@@ -306,9 +307,9 @@ local function SetPartInputFire(ent, inputFires)
 end
 
 local function SetUnsetConstraintValuesToDefaults(constraint, constraintInfo)
-	local failbackConstraintParamsForConstraint = g_FailbackConstraintsParams[constraint] or {}
+	local fallbackConstraintParamsForConstraint = g_FallbackConstraintsParams[constraint] or {}
 
-	for k, v in pairs(failbackConstraintParamsForConstraint) do
+	for k, v in pairs(fallbackConstraintParamsForConstraint) do
 		if constraintInfo[k] ~= nil then
 			continue
 		end
@@ -574,14 +575,14 @@ local function SetUnsetComponentsValuesToDefaults(component)
 	end
 	component.type = componentType
 
-	local mergedFailbackComponentsParams = table.Copy(g_FailbackComponentsParams)
+	local mergedFallbackComponentsParams = table.Copy(g_FallbackComponentsParams)
 
-	local typeParams = mergedFailbackComponentsParams.typesParams[componentType] or {}
-	mergedFailbackComponentsParams.typesParams = nil
+	local typeParams = mergedFallbackComponentsParams.typesParams[componentType] or {}
+	mergedFallbackComponentsParams.typesParams = nil
 
-	mergedFailbackComponentsParams = table.Merge(mergedFailbackComponentsParams, typeParams)
+	mergedFallbackComponentsParams = table.Merge(mergedFallbackComponentsParams, typeParams)
 
-	for k, v in pairs(mergedFailbackComponentsParams) do
+	for k, v in pairs(mergedFallbackComponentsParams) do
 		if not istable(v) or IsColor(v) then
 			if component[k] ~= nil then
 				continue
@@ -596,7 +597,7 @@ local function SetUnsetComponentsValuesToDefaults(component)
 
 	local color = component.color
 	if not color then
-		color = mergedFailbackComponentsParams.color
+		color = mergedFallbackComponentsParams.color
 	end
 
 	local attachment = tostring(component.attachment or "")
@@ -606,11 +607,7 @@ local function SetUnsetComponentsValuesToDefaults(component)
 	end
 	component.attachment = attachment
 
-	local model = component.model
-	if not LIBUtil.IsValidModel(model) then
-		model = mergedFailbackComponentsParams.model
-	end
-	component.model = model
+	component.model = LIBModel.LoadModel(component.model, mergedFallbackComponentsParams.model)
 
 	local name = tostring(component.name or "")
 	if name == "" then
@@ -665,9 +662,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local isBody = component.isBody
 	local selfAttachment = component.selfAttachment
 
-	if LIBUtil.IsValidModel(model) then
-		ent:SetModel(model)
-	end
+	LIBModel.SetModel(ent, model)
 
 	SetPartKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
@@ -677,19 +672,6 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 
 	 	ent:Spawn()
 	 	ent:Activate()
-	end
-
-	local model = ent:GetModel()
-
-	if not LIBUtil.IsValidModel(model) then
-		self:RemoveFaultyEntities(
-			{parent, ent},
-			"Invalid model ('%s') on entity %s. Removing entities.",
-			model,
-			ent
-		)
-
-		return
 	end
 
 	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
@@ -1081,7 +1063,8 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 		ent:SetDoorCloseSound(soundClose)
 	end
 
-	ent:SetModel(model)
+	LIBModel.SetModel(ent, model)
+
 	ent:SetDoorOpenPhysModel(openPhysModel)
 	ent:SetDoorOpenTime(openTime)
 	ent:SetDoorAutoClose(autoClose)

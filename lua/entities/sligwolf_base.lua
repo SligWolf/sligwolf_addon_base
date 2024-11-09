@@ -28,9 +28,10 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
 local LIBBones = SligWolf_Addons.Bones
+local LIBModel = SligWolf_Addons.Model
 local LIBUtil = SligWolf_Addons.Util
 
-ENT.FailbackModel = CONSTANTS.mdlCube1
+ENT.FallbackModel = CONSTANTS.mdlCube1
 
 function ENT:Initialize()
 	self:InitializeModel()
@@ -61,28 +62,19 @@ function ENT:PostInitialize()
 end
 
 function ENT:InitializeModel()
-	local currentModel = self:GetModel()
-	if not LIBUtil.IsValidModel(currentModel) then
-		currentModel = nil
-	end
+	local fallback = self.FallbackModel or CONSTANTS.mdlCube1
 
 	local spawndata = self:GetSpawnData()
 	if spawndata then
 		local model = tostring(spawndata.Model or "")
 
 		if model ~= "" then
-			if not LIBUtil.IsValidModel(model) then
-				model = self.FailbackModel or CONSTANTS.mdlCube1
-			end
-
-			if currentModel ~= model then
-				self:SetModel(model)
-			end
+			LIBModel.SetModel(self, model, fallback)
 		end
 	end
 
-	if not LIBUtil.IsValidModel(self:GetModel()) then
-		self:SetModel(self.FailbackModel or CONSTANTS.mdlCube1)
+	if not LIBModel.IsValidModelEntity(self) then
+		LIBModel.SetModel(self, fallback)
 	end
 end
 
@@ -101,7 +93,7 @@ end
 
 function ENT:GuessAddonIDByModelName()
 	local currentModel = self:GetModel()
-	return LIBUtil.GuessAddonIDByModelName(currentModel)
+	return LIBModel.GuessAddonIDByModelName(currentModel)
 end
 
 function ENT:GetAddonIDFallback()
@@ -494,6 +486,8 @@ function ENT:PreEntityCopy()
 	if self.DoNotDuplicate then
 		return
 	end
+
+	duplicator.ClearEntityModifier(self, "sligwolf_dupedata")
 
 	self._dupeData = self._dupeData or {}
 	self:PreDupeCopy(self._dupeData)

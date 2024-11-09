@@ -17,7 +17,6 @@ local LIB = SligWolf_Addons.Entityhooks
 
 function LIB.Load()
 	local LIBEntities = SligWolf_Addons.Entities
-
 	local LIBHook = SligWolf_Addons.Hook
 
 	if SERVER then

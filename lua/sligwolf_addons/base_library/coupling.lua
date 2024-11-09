@@ -17,12 +17,12 @@ local LIB = SligWolf_Addons.Coupling
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBEntities = nil
 local LIBVehicleControl = nil
+local LIBEntities = nil
 
 function LIB.Load()
-	LIBEntities = SligWolf_Addons.Entities
 	LIBVehicleControl = SligWolf_Addons.VehicleControl
+	LIBEntities = SligWolf_Addons.Entities
 end
 
 function LIB.MarkAsTrailerMain(vehicle)

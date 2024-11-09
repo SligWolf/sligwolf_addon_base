@@ -14,8 +14,9 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local LIBWire = SligWolf_Addons.Wire
 local LIBEntities = SligWolf_Addons.Entities
+local LIBModel = SligWolf_Addons.Model
+local LIBWire = SligWolf_Addons.Wire
 
 LIBWire.ApplyWiremodTrait(ENT)
 
@@ -295,7 +296,7 @@ function ENT:SpawnCollision(model, pos, ang)
 	Prop.sligwolf_blockAllTools = true
 	Prop:SetNWBool("sligwolf_blockAllTools", true)
 
-	Prop:SetModel(model or "")
+	LIBModel.SetModel(Prop, model)
 	Prop:SetPos(self:LocalToWorld(pos or Vector()))
 	Prop:SetAngles(self:LocalToWorldAngles(ang or Angle()))
 

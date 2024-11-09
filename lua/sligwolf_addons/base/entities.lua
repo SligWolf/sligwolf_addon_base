@@ -10,10 +10,10 @@ if not SLIGWOLF_ADDON then
 	return
 end
 
-local LIBEntities = SligWolf_Addons.Entities
-local LIBUtil = SligWolf_Addons.Util
-local LIBTimer = SligWolf_Addons.Timer
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
+local LIBEntities = SligWolf_Addons.Entities
+local LIBTimer = SligWolf_Addons.Timer
+local LIBUtil = SligWolf_Addons.Util
 
 function SLIGWOLF_ADDON:GetEntityTable(ent)
 	local entAddonTable = ent:SligWolf_GetAddonTable(self.Addonname)
@@ -265,6 +265,8 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 		local thisSuperparent = LIBEntities.GetSuperParent(thisent)
 		if not IsValid(thisSuperparent) then return end
 
+		duplicator.ClearEntityModifier(thisSuperparent, dupename)
+
 		local thisSuperparentEntTable = thisSuperparent:SligWolf_GetTable()
 
 		if IsValid(thisSuperparent) then
@@ -272,6 +274,7 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 		end
 
 		local data = table.Copy(thisSuperparentEntTable.Data or {})
+
 		duplicator.StoreEntityModifier(thisSuperparent, dupename, data)
 
 		return oldPreEntityCopy(thisent, ...)

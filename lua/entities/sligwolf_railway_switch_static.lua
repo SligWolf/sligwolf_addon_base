@@ -18,8 +18,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local LIBEntities = SligWolf_Addons.Entities
 local LIBProtection = SligWolf_Addons.Protection
+local LIBEntities = SligWolf_Addons.Entities
 
 LIBProtection.ApplyStaticEntityTrait(ENT)
 

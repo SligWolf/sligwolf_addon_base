@@ -15,8 +15,8 @@ table.Empty(SligWolf_Addons.Position)
 
 local LIB = SligWolf_Addons.Position
 
-local LIBUtil = nil
 local LIBPrint = nil
+local LIBModel = nil
 
 function LIB.VectorToLocalToWorld(ent, vec)
 	if not IsValid(ent) then return nil end
@@ -46,7 +46,7 @@ function LIB.DirToLocalToWorld(ent, ang, dir)
 end
 
 function LIB.GetAttachmentCache(ent, forceRebuild)
-	if not LIBUtil.IsValidModelEntity(ent) then
+	if not LIBModel.IsValidModelEntity(ent) then
 		return nil
 	end
 
@@ -162,8 +162,8 @@ function LIB.GetAttachmentPosAng(ent, attachment)
 end
 
 function LIB.GetAngPosViaAttachmentMount(parentEnt, selfEnt, parentAttachment, selfAttachment)
-	if not LIBUtil.IsValidModelEntity(parentEnt) then return nil end
-	if not LIBUtil.IsValidModelEntity(selfEnt) then return nil end
+	if not LIBModel.IsValidModelEntity(parentEnt) then return nil end
+	if not LIBModel.IsValidModelEntity(selfEnt) then return nil end
 
 	local PosA, AngA, HasAttA = LIB.GetAttachmentPosAng(parentEnt, parentAttachment)
 	local PosB, AngB, HasAttB = LIB.GetAttachmentPosAng(selfEnt, selfAttachment)
@@ -220,8 +220,8 @@ function LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, sel
 end
 
 function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment)
-	if not LIBUtil.IsValidModelEntity(parentEnt) then return false end
-	if not LIBUtil.IsValidModelEntity(selfEnt) then return false end
+	if not LIBModel.IsValidModelEntity(parentEnt) then return false end
+	if not LIBModel.IsValidModelEntity(selfEnt) then return false end
 
 	local entTable = selfEnt:SligWolf_GetTable()
 	local mountPoint = entTable.mountPoint
@@ -294,7 +294,7 @@ function LIB.RemountToMountPoint(selfEnt, mountPoint)
 end
 
 function LIB.GetNearestAttachment(ent, pos, filter)
-	if not LIBUtil.IsValidModelEntity(ent) then return nil end
+	if not LIBModel.IsValidModelEntity(ent) then return nil end
 	if not pos then return nil end
 
 	local attachments = ent:GetAttachments()
@@ -461,8 +461,8 @@ function LIB.GetPlayerAimVector(ply)
 end
 
 function LIB.Load()
-	LIBUtil = SligWolf_Addons.Util
 	LIBPrint = SligWolf_Addons.Print
+	LIBModel = SligWolf_Addons.Model
 
 	local LIBHook = SligWolf_Addons.Hook
 

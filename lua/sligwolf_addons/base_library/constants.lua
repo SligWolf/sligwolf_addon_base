@@ -94,6 +94,8 @@ CONSTANTS.sndMagnetRelease = Sound("Crane_magnet_release")
 CONSTANTS.sndATVskidLow = Sound("ATV_skid_lowfriction")
 
 -- models
+CONSTANTS.mdlGmodError = Model("models/error.mdl")
+CONSTANTS.mdlError = Model("models/sligwolf/base/error.mdl")
 CONSTANTS.mdlCube1 = Model("models/sligwolf/base/unique/sw_cube_1x1x1.mdl")
 CONSTANTS.mdlSphere4 = Model("models/sligwolf/base/unique/sw_sphere_4x4x4.mdl")
 CONSTANTS.mdlCube4 = Model("models/sligwolf/base/unique/sw_cube_4x4x4.mdl")

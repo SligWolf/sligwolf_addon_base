@@ -81,6 +81,7 @@ loadLib("wire")
 loadLib("vgui")
 loadLib("convar")
 loadLib("mapping")
+loadLib("model")
 
 callLoaders()
 

@@ -19,7 +19,7 @@ local GENDER_MALE = "M"
 local GENDER_FEMALE = "F"
 local GENDER_NEUTRAL = "N"
 
-ENT.FailbackModel = CONSTANTS.mdlSphere4
+ENT.FallbackModel = CONSTANTS.mdlSphere4
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)

@@ -15,17 +15,17 @@ table.Empty(SligWolf_Addons.Entities)
 
 local LIB = SligWolf_Addons.Entities
 
-local LIBUtil = nil
+local LIBPosition = nil
 local LIBTimer = nil
 local LIBPrint = nil
-local LIBPosition = nil
 local LIBMeta = nil
+local LIBUtil = nil
 
 function LIB.Load()
-	LIBUtil = SligWolf_Addons.Util
+	LIBPosition = SligWolf_Addons.Position
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
-	LIBPosition = SligWolf_Addons.Position
+	LIBUtil = SligWolf_Addons.Util
 	LIBMeta = SligWolf_Addons.Meta
 end
 

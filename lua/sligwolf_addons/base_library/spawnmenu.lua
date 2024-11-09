@@ -14,8 +14,9 @@ SligWolf_Addons.Spawnmenu = SligWolf_Addons.Spawnmenu or {}
 table.Empty(SligWolf_Addons.Spawnmenu)
 
 local LIB = SligWolf_Addons.Spawnmenu
-local LIBHook = SligWolf_Addons.Hook
+
 local LIBTimer = SligWolf_Addons.Timer
+local LIBHook = SligWolf_Addons.Hook
 local LIBUtil = SligWolf_Addons.Util
 
 -- Tell the user something is wrong ("Broken") with the addons in case they see the usually hidden placeholder node.

@@ -19,6 +19,7 @@ local LIBPosition = nil
 local LIBEntities = nil
 local LIBDebug = nil
 local LIBTimer = nil
+local LIBModel = nil
 
 local g_maxAttachmentTraceDistance = 96
 local g_maxAttachmentDistanceSqr = 40 * 40
@@ -193,7 +194,7 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 		return nil
 	end
 
-	seat:SetModel(seatGroup:GetSeatModel())
+	LIBModel.SetModel(seat, seatGroup:GetSeatModel())
 
 	if not LIBPosition.MountToAttachment(seatGroup, seat, attachmentName) then
 		LIB.RemoveSeat(seat)
@@ -495,6 +496,7 @@ function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBDebug = SligWolf_Addons.Debug
 	LIBTimer = SligWolf_Addons.Timer
+	LIBModel = SligWolf_Addons.Model
 
 	if SERVER then
 		local LIBHook = SligWolf_Addons.Hook

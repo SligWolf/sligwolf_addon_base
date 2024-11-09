@@ -23,12 +23,12 @@ function LIB.BuildMetaEntity()
 		return
 	end
 
-	local getTable = META.GetTable
-
-	LIB.BuildGenericMetaFunctions(META, getTable)
+	LIB.BuildGenericMetaFunctions(META)
 end
 
-function LIB.BuildGenericMetaFunctions(META, getTable)
+function LIB.BuildGenericMetaFunctions(META)
+	local getTable = META.GetTable
+
 	local sligwolf_getTable = function(thisEnt)
 		local entTable = getTable(thisEnt)
 

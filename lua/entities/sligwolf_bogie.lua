@@ -14,9 +14,9 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local LIBRail = SligWolf_Addons.Rail
-local LIBPhysgun = SligWolf_Addons.Physgun
 local LIBEntities = SligWolf_Addons.Entities
+local LIBPhysgun = SligWolf_Addons.Physgun
+local LIBRail = SligWolf_Addons.Rail
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)

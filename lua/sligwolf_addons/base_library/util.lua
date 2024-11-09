@@ -24,79 +24,6 @@ function LIB.ValidateName(name)
 	return name
 end
 
-function LIB.IsValidModelEntity(ent)
-	if not IsValid(ent) then return false end
-
-	local model = tostring(ent:GetModel() or "")
-	if model == "" then return false end
-
-	if not LIB.IsValidModel(model) then return false end
-	return true
-end
-
-local g_IsValidModelCache = {}
-local g_IsValidModelFileCache = {}
-
-local g_modelInvalid = {}
-g_modelInvalid[""] = true
-g_modelInvalid["models/error.mdl"] = true
-
-function LIB.IsValidModel(model)
-	model = tostring(model or "")
-
-	if g_modelInvalid[model] then
-		return false
-	end
-
-	if g_IsValidModelCache[model] then
-		return true
-	end
-
-	g_IsValidModelCache[model] = nil
-
-	if not LIB.IsValidModelFile(model) then
-		return false
-	end
-
-	util.PrecacheModel(model)
-
-	if not util.IsValidModel(model) then
-		return false
-	end
-
-	g_IsValidModelCache[model] = true
-	return true
-end
-
-function LIB.IsValidModelFile(model)
-	model = tostring(model or "")
-
-	if g_modelInvalid[model] then
-		return false
-	end
-
-	if g_IsValidModelFileCache[model] then
-		return true
-	end
-
-	g_IsValidModelFileCache[model] = nil
-
-	if model == "" then
-		return false
-	end
-
-	if IsUselessModel(model) then
-		return false
-	end
-
-	if not file.Exists(model, "GAME") then
-		return false
-	end
-
-	g_IsValidModelFileCache[model] = true
-	return true
-end
-
 local g_IsValidTextureCache = {}
 local g_IsValidTextureFileCache = {}
 
@@ -179,23 +106,6 @@ function LIB.LoadPngMaterial(path, params, fallbackPath)
 
 	g_IsValidTextureCache[cacheId] = mat
 	return mat
-end
-
-function LIB.GuessAddonIDByModelName(model)
-	if not LIB.IsValidModel(model) then
-		return
-	end
-
-	local addonid = string.match(model, "^models/sligwolf/([%w%s_]+)/" ) or ""
-	if addonid == "" then
-		return
-	end
-
-	if not SligWolf_Addons.HasLoadedAddon(addonid) then
-		return
-	end
-
-	return addonid
 end
 
 local g_MatCache = {}

@@ -9,8 +9,8 @@ if not SLIGWOLF_BASE_OBJ then
 	return
 end
 
-local LIBEntities = SligWolf_Addons.Entities
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
+local LIBEntities = SligWolf_Addons.Entities
 local LIBPrint = SligWolf_Addons.Print
 local LIBDebug = SligWolf_Addons.Debug
 

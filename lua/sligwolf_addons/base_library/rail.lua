@@ -16,8 +16,8 @@ table.Empty(SligWolf_Addons.Rail)
 local LIB = SligWolf_Addons.Rail
 
 local LIBPosition = nil
-local LIBTracer = nil
 local LIBEntities = nil
+local LIBTracer = nil
 
 local g_maxRailCheckTraceAttachmentPairs = 4
 
@@ -412,8 +412,8 @@ end
 
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
-	LIBTracer = SligWolf_Addons.Tracer
 	LIBEntities = SligWolf_Addons.Entities
+	LIBTracer = SligWolf_Addons.Tracer
 end
 
 return true

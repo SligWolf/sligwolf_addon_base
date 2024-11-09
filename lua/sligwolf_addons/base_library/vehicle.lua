@@ -18,6 +18,7 @@ local LIB = SligWolf_Addons.Vehicle
 local LIBEntities = nil
 local LIBCamera = nil
 local LIBTimer = nil
+local LIBModel = nil
 local LIBHook = nil
 local LIBUtil = nil
 
@@ -75,7 +76,7 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	local vehicle = LIBEntities.MakeEnt(class, plyOwner, parent, name, addonname)
 	if not IsValid(vehicle) then return end
 
-	vehicle:SetModel(mdl)
+	LIBModel.SetModel(vehicle, mdl)
 
 	LIB.SetupVehicleKeyValues(vehicle, keyValues)
 
@@ -297,6 +298,7 @@ function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBCamera = SligWolf_Addons.Camera
 	LIBTimer = SligWolf_Addons.Timer
+	LIBModel = SligWolf_Addons.Model
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util
 

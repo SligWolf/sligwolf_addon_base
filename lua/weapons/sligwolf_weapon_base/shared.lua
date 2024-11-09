@@ -13,8 +13,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local LIBBase = SligWolf_Addons.Base
 local LIBBones = SligWolf_Addons.Bones
+local LIBBase = SligWolf_Addons.Base
 
 if not LIBBase.ExtendBaseObjectTable(SWEP) then
 	return

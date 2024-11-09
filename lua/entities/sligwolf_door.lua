@@ -16,6 +16,7 @@ if not SligWolf_Addons.IsLoaded() then return end
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBModel = SligWolf_Addons.Model
 
 local g_denyToolReload = {
 	weld = "",
@@ -189,7 +190,7 @@ function ENT:SpawnCollisionEntity(mdl)
 	Prop.sligwolf_denyToolReload = g_denyToolReload
 	Prop.DoNotDuplicate = true
 
-	Prop:SetModel(mdl)
+	LIBModel.SetModel(Prop, mdl)
 	Prop:SetPos(self:GetPos())
 	Prop:SetAngles(self:GetAngles())
 

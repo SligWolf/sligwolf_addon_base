@@ -18,8 +18,8 @@ if not SligWolf_Addons.IsLoaded() then return end
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local LIBModel = SligWolf_Addons.Model
 local LIBSeat = SligWolf_Addons.Seat
-local LIBUtil = SligWolf_Addons.Util
 
 ENT.SeatModel = CONSTANTS.mdlDynamicSeat
 ENT.SeatKeyValues = {
@@ -57,12 +57,7 @@ end
 
 function ENT:SetSeatModel(model)
 	if CLIENT then return end
-
-	if not LIBUtil.IsValidModel(model) then
-		model = CONSTANTS.mdlDynamicSeat
-	end
-
-	self.SeatModel = model
+	self.SeatModel = LIBModel.LoadModel(model, CONSTANTS.mdlDynamicSeat)
 end
 
 function ENT:GetSeatModel()

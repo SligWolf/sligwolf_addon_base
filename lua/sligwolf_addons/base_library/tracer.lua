@@ -15,10 +15,10 @@ table.Empty(SligWolf_Addons.Tracer)
 
 local LIB = SligWolf_Addons.Tracer
 
-local LIBDebug = nil
-local LIBCamera = nil
 local LIBPosition = nil
 local LIBEntities = nil
+local LIBCamera = nil
+local LIBDebug = nil
 
 local Color_trGreen = Color(50, 255, 50)
 local Color_trBlue = Color(50, 50, 255)
@@ -38,10 +38,10 @@ end
 LIB.DEBUG_LIFETIME = 0.20
 
 function LIB.Load()
-	LIBDebug = SligWolf_Addons.Debug
-	LIBCamera = SligWolf_Addons.Camera
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
+	LIBCamera = SligWolf_Addons.Camera
+	LIBDebug = SligWolf_Addons.Debug
 end
 
 local TRACE_RESULT_BUFFER = {}

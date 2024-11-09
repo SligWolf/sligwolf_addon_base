@@ -1,0 +1,10 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/sligwolf/base/error_stripes"
+	"$nocull"    "1"
+
+	"$detail" "models/sligwolf/base/error_stripes"
+   	"$detailscale" "1.0"
+   	"$detailblendfactor" "1.0"
+   	"$detailblendmode" "5"
+}
