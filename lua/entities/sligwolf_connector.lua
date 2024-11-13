@@ -13,18 +13,14 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local CONSTANTS = SligWolf_Addons.Constants
-
 local GENDER_MALE = "M"
 local GENDER_FEMALE = "F"
 local GENDER_NEUTRAL = "N"
 
-ENT.FallbackModel = CONSTANTS.mdlSphere4
-
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
-	self:SetNoDraw(true)
+	-- self:SetNoDraw(true)
 
 	self.allowedtypes = nil
 	self.gender = GENDER_NEUTRAL
@@ -191,6 +187,7 @@ function ENT:Connect(Con)
 
 	self:OnConnect(Con)
 	Con:OnConnect(self)
+
 	return true
 end
 
@@ -209,6 +206,7 @@ function ENT:Disconnect(Con)
 
 	self:OnDisconnect(Con)
 	Con:OnDisconnect(self)
+
 	return true
 end
 

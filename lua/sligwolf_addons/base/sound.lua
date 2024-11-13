@@ -17,7 +17,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "indicator.on",
 	channel = CHAN_AUTO,
-	volume = 0.5,
+	volume = 0.15,
 	level = 75,
 	pitch = 100,
 	sound = "sligwolf/base/indicator_on.wav"
@@ -26,7 +26,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "indicator.off",
 	channel = CHAN_AUTO,
-	volume = 0.5,
+	volume = 0.15,
 	level = 75,
 	pitch = 75,
 	sound = "sligwolf/base/indicator_on.wav"

@@ -20,7 +20,6 @@ local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
 local LIBModel = SligWolf_Addons.Model
 
-
 local g_FallbackComponentsParams = {
 	model = "",
 	class = "",
@@ -52,6 +51,7 @@ local g_FallbackComponentsParams = {
 			customPhysics = true,
 			minSize = Vector(-4, -4, -4),
 			maxSize = Vector(4, 4, 4),
+			model = CONSTANTS.mdlCube4,
 		},
 		door = {
 			autoClose = true,
@@ -63,6 +63,7 @@ local g_FallbackComponentsParams = {
 			connectortype = "unknown",
 			gender = "N",
 			searchRadius = 10,
+			model = CONSTANTS.mdlSphere4,
 		},
 		connectorButton = {
 			collision = COLLISION_GROUP_WORLD,

@@ -25,11 +25,43 @@ function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 end
 
+function LIB.GetTrailerData(vehicle)
+	local vehicle_table = vehicle:SligWolf_GetTable()
+	return vehicle_table.trailerData
+end
+
+function LIB.InitTrailerData(vehicle)
+	local vehicle_table = vehicle:SligWolf_GetTable()
+	local trailer_data = vehicle_table.trailerData
+
+	if trailer_data then
+		return trailer_data
+	end
+
+	vehicle_table.trailerData = {}
+	LIB.ResetTrailerData(vehicle)
+
+	return trailer_data
+end
+
+function LIB.ResetTrailerData(vehicle)
+	local trailer_data = LIB.GetTrailerData(vehicle)
+
+	trailer_data.lightstate = false
+	trailer_data.indicatorHazzard = false
+	trailer_data.indicatorL = false
+	trailer_data.indicatorR = false
+	trailer_data.indicatorOnOff = false
+	trailer_data.indicatorDelay = 0
+end
+
 function LIB.MarkAsTrailerMain(vehicle)
 	if not IsValid(vehicle) then return end
 
 	vehicle.sligwolf_isTrailerMain = true
 	vehicle.sligwolf_isTrailer = false
+
+	LIB.InitTrailerData(vehicle)
 end
 
 function LIB.MarkAsTrailer(vehicle)
@@ -37,6 +69,31 @@ function LIB.MarkAsTrailer(vehicle)
 
 	vehicle.sligwolf_isTrailerMain = false
 	vehicle.sligwolf_isTrailer = true
+
+	LIB.InitTrailerData(vehicle)
+end
+
+function LIB.CloneDataFromMainTrailer(mainTrailer)
+	if not IsValid(mainTrailer) then return end
+
+	local mainTrailerData = LIB.GetTrailerData(mainTrailer)
+
+	LIB.ForEachTrailerVehicles(mainTrailer, function(k, subTrailer)
+		if mainTrailer == subTrailer then return end
+		local subTrailerData = LIB.GetTrailerData(subTrailer)
+
+		for key, value in pairs(mainTrailerData) do
+			subTrailerData[key] = value
+		end
+	end)
+end
+
+function LIB.ResetDataOfSubTrailer(mainTrailer)
+	if not IsValid(mainTrailer) then return end
+
+	LIB.ForEachTrailerVehicles(mainTrailer, function(k, subTrailer)
+		LIB.ResetTrailerData(subTrailer)
+	end)
 end
 
 function LIB.GetConnectedVehicles(vehicle)
