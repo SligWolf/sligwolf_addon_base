@@ -14,6 +14,7 @@ local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBEntities = SligWolf_Addons.Entities
 local LIBTimer = SligWolf_Addons.Timer
 local LIBUtil = SligWolf_Addons.Util
+local LIBHook = SligWolf_Addons.Hook
 
 function SLIGWOLF_ADDON:GetEntityTable(ent)
 	local entAddonTable = ent:SligWolf_GetAddonTable(self.Addonname)
@@ -175,7 +176,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 		local owner = LIBEntities.GetOwner(superparent)
 		LIBSpamprotection.DelayNextSpawn(owner)
 
-		hook.Run("SLIGWOLF_SpawnSystemFinished", superparent, owner)
+		LIBHook.RunCustom("SpawnSystemFinished", superparent, owner)
 
 		self:EntityTimerRemove(superparent, timernameEventTimeout)
 

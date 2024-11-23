@@ -15,12 +15,18 @@ table.Empty(SligWolf_Addons.Hook)
 
 local LIB = SligWolf_Addons.Hook
 
-local g_nameprefix = "SLIGWOLF_hookSystem_"
+local g_namePrefixMain = "SLIGWOLF_mainHook_"
+local g_namePrefixCustom = "SLIGWOLF_"
 local g_hooks = {}
 local g_orderCounter = 0
 
-local function GetMainHookIdentifier(eventName)
-	local identifier = g_nameprefix .. tostring(eventName or "")
+local function getMainHookIdentifier(eventName)
+	local identifier = g_namePrefixMain .. tostring(eventName or "")
+	return identifier
+end
+
+local function getCustomHookIdentifier(eventName)
+	local identifier = g_namePrefixCustom .. tostring(eventName or "")
 	return identifier
 end
 
@@ -128,7 +134,7 @@ function LIB.Add(eventName, identifier, func, order)
 	BuildOrder(hookData)
 
 	if not hookData.hasHook then
-		local hookIdentifier = GetMainHookIdentifier(eventName)
+		local hookIdentifier = getMainHookIdentifier(eventName)
 
 		hook.Remove(eventName, hookIdentifier)
 		hook.Add(eventName, hookIdentifier, function(...)
@@ -158,11 +164,31 @@ function LIB.Remove(eventName, identifier)
 	BuildOrder(hookData)
 
 	if table.IsEmpty(byName) then
-		local hookIdentifier = GetMainHookIdentifier(eventName)
+		local hookIdentifier = getMainHookIdentifier(eventName)
 
 		hook.Remove(eventName, hookIdentifier)
 		hookData.hasHook = nil
 	end
+end
+
+function LIB.Run(eventName, ...)
+	eventName = tostring(eventName or "")
+	return hook.Run(eventName, ...)
+end
+
+function LIB.AddCustom(eventName, ...)
+	local eventName = getCustomHookIdentifier(eventName)
+	return LIB.Add(eventName, ...)
+end
+
+function LIB.RemoveCustom(eventName, ...)
+	local eventName = getCustomHookIdentifier(eventName)
+	return LIB.Remove(eventName, ...)
+end
+
+function LIB.RunCustom(eventName, ...)
+	local eventName = getCustomHookIdentifier(eventName)
+	return LIB.Run(eventName, ...)
 end
 
 return true

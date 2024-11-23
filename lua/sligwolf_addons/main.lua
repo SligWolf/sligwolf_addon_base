@@ -1178,7 +1178,7 @@ function SligWolf_Addons.CallAllAddonsLoadedHook()
 	end
 
 	sligwolfAddons.AllAddonsLoaded = true
-	hook.Run("SLIGWOLF_AllAddonsLoaded")
+	sligwolfAddons.Hook.RunCustom("AllAddonsLoaded")
 end
 
 local function OnBaseReload(name)

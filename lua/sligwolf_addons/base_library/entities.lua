@@ -15,6 +15,7 @@ table.Empty(SligWolf_Addons.Entities)
 
 local LIB = SligWolf_Addons.Entities
 
+local LIBConstraints = nil
 local LIBPosition = nil
 local LIBTimer = nil
 local LIBPrint = nil
@@ -22,6 +23,7 @@ local LIBMeta = nil
 local LIBUtil = nil
 
 function LIB.Load()
+	LIBConstraints = SligWolf_Addons.Constraints
 	LIBPosition = SligWolf_Addons.Position
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
@@ -298,7 +300,7 @@ function LIB.RemoveEntityWithEffects(ent)
 		return
 	end
 
-	constraint.RemoveAll(ent)
+	LIBConstraints.RemoveAll(ent)
 
 	LIBTimer.Simple(1, function()
 		LIB.RemoveEntity(ent, false)
@@ -1444,21 +1446,11 @@ function LIB.LockEntityToMountPoint(selfEnt)
 
 	local parentEnt = mountPoint.parentEnt
 
-	local weldConstraint = constraint.Weld(
-		selfEnt,
-		parentEnt,
-		0,
-		0,
-		0,
-		false,
-		false
-	)
-
+	local weldConstraint = LIBConstraints.Weld(selfEnt, parentEnt, {nocollide = true})
 	if not IsValid(weldConstraint) then
 		return false
 	end
 
-	weldConstraint.DoNotDuplicate = true
 	selfEnt.sligwolf_lockConstraintWeld = weldConstraint
 
 	-- @DEBUG: Color entity according to their lock state

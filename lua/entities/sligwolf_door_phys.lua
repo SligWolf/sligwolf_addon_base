@@ -38,9 +38,20 @@ function ENT:Use(...)
 	parent:Use(...)
 end
 
+function ENT:UpdateDoorPhysSolid()
+	self:SetDoorPhysSolid(self._isSolid or false)
+end
+
 function ENT:SetDoorPhysSolid(solid)
 	local phys = self:GetPhysicsObject()
 	if not IsValid(phys) then return end
+
+	local oldSolid = self._isSolid
+	self._isSolid = solid
+
+	if oldSolid == solid then
+		return
+	end
 
 	self:SetNotSolid(not solid)
 

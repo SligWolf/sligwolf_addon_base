@@ -20,6 +20,7 @@ local LIBEntities = nil
 local LIBDebug = nil
 local LIBTimer = nil
 local LIBModel = nil
+local LIBHook = nil
 
 local g_maxAttachmentTraceDistance = 96
 local g_maxAttachmentDistanceSqr = 40 * 40
@@ -163,7 +164,7 @@ function LIB.TakeSeat(ply, seatGroup, attachmentName)
 
 		LIB.DebounceSeatGroupUsage(ply)
 
-		local canEnter = hook.Run("CanPlayerEnterVehicle", ply, seat, 1)
+		local canEnter = LIBHook.Run("CanPlayerEnterVehicle", ply, seat, 1)
 		if not canEnter then
 			LIB.RemoveSeat(seat)
 			return
@@ -497,10 +498,9 @@ function LIB.Load()
 	LIBDebug = SligWolf_Addons.Debug
 	LIBTimer = SligWolf_Addons.Timer
 	LIBModel = SligWolf_Addons.Model
+	LIBHook = SligWolf_Addons.Hook
 
 	if SERVER then
-		local LIBHook = SligWolf_Addons.Hook
-
 		local function PlayerLeaveSeat(ply, seat)
 			if not IsValid(seat) then return end
 

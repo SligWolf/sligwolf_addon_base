@@ -13,6 +13,7 @@ end
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
+local LIBConstraints = SligWolf_Addons.Constraints
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPosition = SligWolf_Addons.Position
 local LIBCoupling = SligWolf_Addons.Coupling
@@ -333,140 +334,37 @@ local function SetUnsetConstraintsValuesToDefaults(constraints)
 end
 
 local function CreateWeld(ent, parent, constraintInfos)
-	local WD = constraint.Weld(
-		ent,
-		parent,
-		constraintInfos.bone1,
-		constraintInfos.bone2,
-		constraintInfos.forcelimit,
-		constraintInfos.nocollide,
-		true
-	)
+	constraintInfos.deleteEntOnBreak = true
 
-	if not IsValid(WD) then
-		return
-	end
-
-	WD.DoNotDuplicate = true
-	parent.sligwolf_constraintWeld = WD
-
-	return WD
+	local constraintEnt = LIBConstraints.Weld(ent, parent, constraintInfos)
+	return constraintEnt
 end
 
 local function CreateNoCollide(ent, parent, constraintInfos)
-	local NC = constraint.NoCollide(
-		ent,
-		parent,
-		constraintInfos.bone1,
-		constraintInfos.bone2
-	)
-
-	if not IsValid(NC) then
-		return
-	end
-
-	NC.DoNotDuplicate = true
-	parent.sligwolf_constraintNoCollide = NC
-
-	return NC
+	local constraintEnt = LIBConstraints.NoCollide(ent, parent, constraintInfos)
+	return constraintEnt
 end
 
 local function CreateAxis(ent, parent, constraintInfos)
-	local AX = constraint.Axis(
-		ent,
-		parent,
-		constraintInfos.bone1,
-		constraintInfos.bone2,
-		constraintInfos.lpos1,
-		constraintInfos.lpos2,
-		constraintInfos.forcelimit,
-		constraintInfos.torquelimit,
-		constraintInfos.friction,
-		constraintInfos.nocollide,
-		constraintInfos.localaxis
-	)
+	constraintInfos.dontAddTable = false
 
-	if not IsValid(AX) then
-		return
-	end
-
-	AX.DoNotDuplicate = true
-	parent.sligwolf_constraintAxis = AX
-
-	return AX
+	local constraintEnt = LIBConstraints.Axis(ent, parent, constraintInfos)
+	return constraintEnt
 end
 
 local function CreateBallSocket(ent, parent, constraintInfos)
-	local BS = constraint.Ballsocket(
-		parent,
-		ent,
-		constraintInfos.bone1,
-		constraintInfos.bone2,
-		constraintInfos.localpos,
-		constraintInfos.forcelimit,
-		constraintInfos.torquelimit,
-		constraintInfos.nocollide
-	)
-
-	if not IsValid(BS) then
-		return
-	end
-
-	BS.DoNotDuplicate = true
-	parent.sligwolf_constraintBallSocket = BS
-
-	return BS
+	local constraintEnt = LIBConstraints.BallSocket(ent, parent, constraintInfos)
+	return constraintEnt
 end
 
 local function CreateAdvBallsocket(ent, parent, constraintInfos)
-	local ADVBS = constraint.AdvBallsocket(
-		ent,
-		parent,
-		constraintInfos.bone1,
-		constraintInfos.bone2,
-		constraintInfos.lpos1,
-		constraintInfos.lpos2,
-		constraintInfos.forcelimit,
-		constraintInfos.torquelimit,
-		constraintInfos.xmin,
-		constraintInfos.ymin,
-		constraintInfos.zmin,
-		constraintInfos.xmax,
-		constraintInfos.ymax,
-		constraintInfos.zmax,
-		constraintInfos.xfric,
-		constraintInfos.yfric,
-		constraintInfos.zfric,
-		constraintInfos.onlyrotation,
-		constraintInfos.nocollide
-	)
-
-	if not IsValid(ADVBS) then
-		return
-	end
-
-	ADVBS.DoNotDuplicate = true
-	parent.sligwolf_constraintAdvBallsocket = ADVBS
-
-	return ADVBS
+	local constraintEnt = LIBConstraints.AdvBallsocket(ent, parent, constraintInfos)
+	return constraintEnt
 end
 
 local function CreateKeepupright(ent, parent, constraintInfos)
-	local KU = constraint.Keepupright(
-		ent,
-		constraintInfos.ang,
-		constraintInfos.bone1,
-		constraintInfos.angularLimit
-	)
-
-	if not IsValid(KU) then
-		return
-	end
-
-	KU.DoNotDuplicate = true
-	parent.sligwolf_constraintKeepupright = KU
-
-	return KU
+	local constraintEnt = LIBConstraints.Keepupright(ent, parent, constraintInfos)
+	return constraintEnt
 end
 
 local g_ConstraintCreateFunctions = {

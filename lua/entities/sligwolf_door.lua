@@ -15,13 +15,14 @@ if not SligWolf_Addons.IsLoaded() then return end
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local LIBConstraints = SligWolf_Addons.Constraints
 local LIBEntities = SligWolf_Addons.Entities
 local LIBModel = SligWolf_Addons.Model
 
-local g_denyToolReload = {
-	weld = "",
-	remover = "",
-}
+-- local g_denyToolReload = {
+-- 	weld = "",
+-- 	remover = "",
+-- }
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
@@ -137,30 +138,18 @@ function ENT:Use(activator, caller, useType, value)
 	self:Toggle()
 end
 
-function ENT:UpdateCollisionEntity()
+function ENT:UpdateCollisionEntity(force)
 	if CLIENT then return end
 
 	local mdl = self:GetDoorOpenPhysModel()
+
 	local oldmdl = self._oldOpenModel or ""
-
-	if mdl ~= oldmdl then
-		self:SpawnCollisionEntity(mdl)
-	end
-
 	self._oldOpenModel = mdl
-end
 
-function ENT:RemoveCollisionEntity()
-	if IsValid(self._collisionProp) then
-		self._collisionProp:Remove()
+	if force or mdl ~= oldmdl then
+		self:SpawnCollisionEntity(mdl)
+		self:UpdateDoorPhysSolid()
 	end
-
-	if IsValid(self._collisionPropConst) then
-		self._collisionPropConst:Remove()
-	end
-
-	self._collisionProp = nil
-	self._collisionPropConst = nil
 end
 
 function ENT:GetCollisionEntity()
@@ -176,7 +165,11 @@ function ENT:SpawnCollisionEntity(mdl)
 
 	mdl = mdl or ""
 
-	self:RemoveCollisionEntity()
+	LIBEntities.RemoveEntityWithNoCallback(self._collisionProp)
+	LIBEntities.RemoveEntityWithNoCallback(self._collisionPropConst)
+
+	self._collisionProp = nil
+	self._collisionPropConst = nil
 
 	if mdl == "" then
 		return
@@ -187,7 +180,7 @@ function ENT:SpawnCollisionEntity(mdl)
 		return
 	end
 
-	Prop.sligwolf_denyToolReload = g_denyToolReload
+	--Prop.sligwolf_denyToolReload = g_denyToolReload
 	Prop.DoNotDuplicate = true
 
 	LIBModel.SetModel(Prop, mdl)
@@ -199,7 +192,7 @@ function ENT:SpawnCollisionEntity(mdl)
 
 	local doorParent = LIBEntities.GetParent(self)
 
-	local WD = constraint.Weld(Prop, doorParent, 0, 0, 0, 0, true)
+	local WD = LIBConstraints.Weld(Prop, doorParent, {nocollide = true})
 	if not IsValid(WD) then
 		self:RemoveFaultyEntities(
 			{self, doorParent, Prop},
@@ -211,13 +204,43 @@ function ENT:SpawnCollisionEntity(mdl)
 		return
 	end
 
-	WD.DoNotDuplicate = true
+	local respawn = function(thisent, withEffect)
+		if withEffect then
+			return
+		end
+
+		if LIBEntities.IsMarkedForDeletion(self) then
+			return
+		end
+
+		self:TimerNextFrame("RespawnCollision", function()
+			if LIBEntities.IsMarkedForDeletion(self) then
+				return
+			end
+
+			self:UpdateCollisionEntity(true)
+		end)
+	end
+
+	LIBEntities.RemoveEntitiesOnDelete(self, Prop)
+	LIBEntities.RemoveEntitiesOnDelete(WD, Prop)
+
+	LIBEntities.CallOnRemove(Prop, "RespawnCollision", respawn)
 
 	self._collisionProp = Prop
 	self._collisionPropConst = WD
 
 	self:UpdateBodySystemMotion()
 	return Prop
+end
+
+function ENT:UpdateDoorPhysSolid()
+	BaseClass.UpdateDoorPhysSolid(self)
+
+	local collision = self:GetCollisionEntity()
+	if not collision then return end
+
+	collision:UpdateDoorPhysSolid()
 end
 
 function ENT:SetDoorPhysSolid(solid)

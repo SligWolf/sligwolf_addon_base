@@ -59,6 +59,7 @@ loadLib("base")
 loadLib("bones")
 loadLib("camera")
 loadLib("entities")
+loadLib("constraints")
 loadLib("physics")
 loadLib("position")
 loadLib("entityhooks")
@@ -82,10 +83,11 @@ loadLib("vgui")
 loadLib("convar")
 loadLib("mapping")
 loadLib("model")
+loadLib("thirdperson")
 
 callLoaders()
 
-SligWolf_Addons.Hook.Add("SLIGWOLF_AllAddonsLoaded", "Library_Init_AllAddonsLoaded", callAllAddonsLoaded, 1000)
+SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded", callAllAddonsLoaded, 1000)
 
 return true
 

@@ -13,14 +13,14 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local LIBConstraints = SligWolf_Addons.Constraints
+
 local GENDER_MALE = "M"
 local GENDER_FEMALE = "F"
 local GENDER_NEUTRAL = "N"
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
-
-	-- self:SetNoDraw(true)
 
 	self.allowedtypes = nil
 	self.gender = GENDER_NEUTRAL
@@ -171,14 +171,13 @@ function ENT:Connect(Con)
 	if not self:CanConnect(Con) then return false end
 
 	self:SetPos(Con:GetPos())
-	local WD = constraint.Weld(self, Con, 0, 0, 0, 0, false)
+	local WD = LIBConstraints.Weld(self, Con, {nocollide = true})
 
 	if not IsValid(WD) then
 		self:Disconnect(self, Con)
 		return false
 	end
 
-	WD.DoNotDuplicate = true
 	self.constraint = WD
 	Con.constraint = WD
 

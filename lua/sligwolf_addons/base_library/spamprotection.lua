@@ -232,8 +232,8 @@ function LIB.Load()
 			LIB.DelayNextSpawn(ply)
 		end
 
-		LIBHook.Add("SLIGWOLF_DuplicatorPrePaste", "Library_SpamProtection_MarkAsDupe", MarkAsDupe, 1000)
-		LIBHook.Add("SLIGWOLF_DuplicatorPostPaste", "Library_SpamProtection_UnmarkAsDupe", UnmarkAsDupe, 1000)
+		LIBHook.AddCustom("DuplicatorPrePaste", "Library_SpamProtection_MarkAsDupe", MarkAsDupe, 1000)
+		LIBHook.AddCustom("DuplicatorPostPaste", "Library_SpamProtection_UnmarkAsDupe", UnmarkAsDupe, 1000)
 
 		local function AntiVehicleSpam(ply, model, spawnname)
 			local spawnTable = LIBVehicle.GetVehicleTableFromSpawnname(spawnname)

@@ -14,6 +14,7 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local LIBConstraints = SligWolf_Addons.Constraints
 local LIBEntities = SligWolf_Addons.Entities
 local LIBModel = SligWolf_Addons.Model
 local LIBWire = SligWolf_Addons.Wire
@@ -277,7 +278,15 @@ function ENT:ResetState()
 	self._reset = nil
 end
 
-function ENT:SpawnCollision(model, pos, ang)
+function ENT:GetCollisionEntity()
+	if not IsValid(self._collisionProp) then
+		return
+	end
+
+	return self._collisionProp
+end
+
+function ENT:SpawnCollisionEntity(mdl, pos, ang)
 	if CLIENT then return end
 
 	LIBEntities.RemoveEntityWithNoCallback(self._collisionProp)
@@ -304,7 +313,7 @@ function ENT:SpawnCollision(model, pos, ang)
 	Prop:Activate()
 	Prop:DrawShadow(false)
 
-	local WD = constraint.Weld(Prop, self, 0, 0, 0, 0, true)
+	local WD = LIBConstraints.Weld(Prop, self, {nocollide = true})
 	if not IsValid(WD) then
 		self:RemoveFaultyEntities(
 			{self, Prop},
@@ -315,8 +324,6 @@ function ENT:SpawnCollision(model, pos, ang)
 
 		return
 	end
-
-	WD.DoNotDuplicate = true
 
 	local respawn = function(thisent, withEffect)
 		if withEffect then
@@ -365,7 +372,7 @@ function ENT:RunCurrentState()
 	local ang = state.ang
 	local sequence = state.sequence or "idle"
 
-	local Prop = self:SpawnCollision(model, pos, ang)
+	local Prop = self:SpawnCollisionEntity(model, pos, ang)
 	if not IsValid(Prop) then
 		return
 	end
@@ -406,21 +413,6 @@ if CLIENT then
 		BaseClass.DrawTranslucent(self, flags)
 		LIBWire.Render(self)
 	end
-end
-
-function ENT:OnRemove()
-	if IsValid(self._collisionProp) then
-		self._collisionProp:Remove()
-	end
-
-	if IsValid(self._collisionPropConst) then
-		self._collisionPropConst:Remove()
-	end
-
-	self._collisionProp = nil
-	self._collisionPropConst = nil
-
-	BaseClass.OnRemove(self)
 end
 
 function ENT:AcceptInputInteral(name, activator, caller, data)

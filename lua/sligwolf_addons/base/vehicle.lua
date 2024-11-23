@@ -12,6 +12,7 @@ end
 
 local SligWolf_Addons = SligWolf_Addons
 
+local LIBThirdperson = SligWolf_Addons.Thirdperson
 local LIBEntities = SligWolf_Addons.Entities
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
@@ -214,6 +215,10 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 
 	self:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)
 	self:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawnProperties)
+
+	PrintTable({customSpawnProperties = customSpawnProperties or "nil"})
+
+	LIBThirdperson.SetThirdpersonParameters(vehicle, customSpawnProperties.thirdperson)
 
 	LIBPhysics.InitializeAsPhysEntity(vehicle)
 

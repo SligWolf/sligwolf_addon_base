@@ -61,7 +61,7 @@ function LIB.Load()
 		end
 	end
 
-	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinishedClearCaches", SpawnSystemFinishedClearCaches, 1000)
+	LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinishedClearCaches", SpawnSystemFinishedClearCaches, 1000)
 
 	local function SpawnSystemEntitiesFinished(ent, ply)
 		if not IsValid(ent) then return end
@@ -79,7 +79,7 @@ function LIB.Load()
 		end
 	end
 
-	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemEntitiesFinished", SpawnSystemEntitiesFinished, 19000)
+	LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemEntitiesFinished", SpawnSystemEntitiesFinished, 19000)
 
 
 	local function SpawnSystemFinished(ent, ply)
@@ -93,7 +93,7 @@ function LIB.Load()
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnSystemFinished", ent, ply)
 	end
 
-	LIBHook.Add("SLIGWOLF_SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinished", SpawnSystemFinished, 19100)
+	LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinished", SpawnSystemFinished, 19100)
 
 	local function RunCallOnRemoveEffect(ent)
 		if not IsValid(ent) then return end
@@ -101,7 +101,7 @@ function LIB.Load()
 		LIBEntities.RunCallOnRemoveEffect(ent)
 	end
 
-	LIBHook.Add("SLIGWOLF_EntityRemovedByToolgun", "Library_EntityHooks_RunCallOnRemoveEffect", RunCallOnRemoveEffect, 1000)
+	LIBHook.AddCustom("EntityRemovedByToolgun", "Library_EntityHooks_RunCallOnRemoveEffect", RunCallOnRemoveEffect, 1000)
 
 	local function RunCallOnRemove(ent, fullUpdate)
 		if fullUpdate then return end

@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Detours)
 local LIB = SligWolf_Addons.Detours
 
 local LIBSpawnmenu = nil
+local LIBHook = nil
 
 local g_detourBackups = SligWolf_Addons._detourBackups
 
@@ -67,7 +68,7 @@ function LIB.CreateRemoverToolHook()
 		entTable.hasCalledRemoveEffectHook = true
 		entTable.isMarkedForDeletionWithEffect = true
 
-		hook.Run("SLIGWOLF_EntityRemovedByToolgun", ent)
+		LIBHook.RunCustom("EntityRemovedByToolgun", ent)
 
 		return oldFunc(name, effectData, ...)
 	end
@@ -80,7 +81,7 @@ function LIB.CreateDuplicaterPasteHooks()
 	-- We override duplicator.Paste, because that the only way to globally detect entity are being pasted.
 
 	duplicator.CreateEntityFromTable = function(ply, ...)
-		hook.Run("SLIGWOLF_DuplicatorPrePaste", ply)
+		LIBHook.RunCustom("DuplicatorPrePaste", ply)
 
 		local result = {oldFunc(ply, ...)}
 		local ent = result[1]
@@ -89,7 +90,7 @@ function LIB.CreateDuplicaterPasteHooks()
 			ent = nil
 		end
 
-		hook.Run("SLIGWOLF_DuplicatorPostPaste", ply)
+		LIBHook.RunCustom("DuplicatorPostPaste", ply)
 		return unpack(result)
 	end
 end
@@ -109,7 +110,7 @@ function LIB.CreateAdvDuplicater1PasteHooks()
 	-- We override duplicator.Paste, because that the only way to globally detect entity are being pasted.
 
 	AdvDupe.CreateEntityFromTable = function(ply, ...)
-		hook.Run("SLIGWOLF_DuplicatorPrePaste", ply)
+		LIBHook.RunCustom("DuplicatorPrePaste", ply)
 
 		local result = {oldFunc(ply, ...)}
 		local ent = result[1]
@@ -118,7 +119,7 @@ function LIB.CreateAdvDuplicater1PasteHooks()
 			ent = nil
 		end
 
-		hook.Run("SLIGWOLF_DuplicatorPostPaste", ply)
+		LIBHook.RunCustom("DuplicatorPostPaste", ply)
 		return unpack(result)
 	end
 end
@@ -226,6 +227,7 @@ LIB.FixSENTAliases()
 
 function LIB.Load()
 	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
+	LIBHook = SligWolf_Addons.Hook
 end
 
 function LIB.AllAddonsLoaded()
