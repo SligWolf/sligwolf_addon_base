@@ -73,13 +73,14 @@ function LIB.TrainDoorButtonToggle(button, mainvehicle, ply)
 	end
 end
 
-local breakUntil = 5
+local breakUntil = 2
 local stopBreakingAt = 4
 local setSpeedTo = 0
 
 function LIB.TrainSpeedOrder(vehicle, vat, ply, acceleration, emergencyBrake)
 	if not IsValid(vehicle) then return end
 	if not IsValid(ply) then return end
+
 	acceleration = tonumber(acceleration or 2.25)
 	emergencyBrake = tonumber(emergencyBrake or 6.75)
 
@@ -95,6 +96,11 @@ function LIB.TrainSpeedOrder(vehicle, vat, ply, acceleration, emergencyBrake)
 	end
 
 	if ply:KeyDown(IN_JUMP) then
+		if math.Distance(0, 0, vat.speed, vat.speed) < 3 then
+			vat.speed = 0
+			return
+		end
+
 		if vat.speed >= breakUntil then
 			vat.speed = vat.speed - emergencyBrake
 			if vat.speed <= stopBreakingAt then

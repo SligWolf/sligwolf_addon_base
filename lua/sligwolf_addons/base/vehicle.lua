@@ -216,8 +216,6 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 	self:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)
 	self:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawnProperties)
 
-	PrintTable({customSpawnProperties = customSpawnProperties or "nil"})
-
 	LIBThirdperson.SetThirdpersonParameters(vehicle, customSpawnProperties.thirdperson)
 
 	LIBPhysics.InitializeAsPhysEntity(vehicle)

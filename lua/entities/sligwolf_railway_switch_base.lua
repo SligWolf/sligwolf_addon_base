@@ -305,7 +305,7 @@ function ENT:SpawnCollisionEntity(mdl, pos, ang)
 	Prop.sligwolf_blockAllTools = true
 	Prop:SetNWBool("sligwolf_blockAllTools", true)
 
-	LIBModel.SetModel(Prop, model)
+	LIBModel.SetModel(Prop, mdl)
 	Prop:SetPos(self:LocalToWorld(pos or Vector()))
 	Prop:SetAngles(self:LocalToWorldAngles(ang or Angle()))
 

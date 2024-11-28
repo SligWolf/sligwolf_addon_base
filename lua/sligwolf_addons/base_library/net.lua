@@ -55,6 +55,14 @@ function LIB.Receive(identifier, ...)
 	return net.Receive(name, ...)
 end
 
+function LIB.WriteInt(...)
+	return net.WriteInt(...)
+end
+
+function LIB.ReadInt(...)
+	return net.ReadInt(...)
+end
+
 function LIB.Send(...)
 	return net.Send(...)
 end
