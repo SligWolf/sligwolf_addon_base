@@ -389,11 +389,11 @@ function LIB.UpdatePlayerPosData(ply)
 	data.aimVector = ply:GetAimVector()
 
 	local eyeAngles = ply:LocalEyeAngles()
-	local parent = ply:GetParent()
+	local vehicle = ply:GetVehicle()
 
-	if IsValid(parent) then
+	if IsValid(vehicle) then
 		-- fix for wonky angles in vehicles
-		eyeAngles = parent:LocalToWorldAngles(eyeAngles)
+		eyeAngles = vehicle:LocalToWorldAngles(eyeAngles)
 	end
 
 	data.eyeAngles = eyeAngles

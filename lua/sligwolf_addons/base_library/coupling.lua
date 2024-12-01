@@ -26,6 +26,10 @@ function LIB.Load()
 end
 
 function LIB.GetTrailerData(vehicle)
+	if not IsValid(vehicle) then
+		return {}
+	end
+
 	local vehicle_table = vehicle:SligWolf_GetTable()
 	return vehicle_table.trailerData
 end

@@ -210,6 +210,8 @@ function ENT:Disconnect(Con)
 end
 
 function ENT:OnRemove()
+	BaseClass.OnRemove(self)
+
 	self:Disconnect(self.connected)
 end
 

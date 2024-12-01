@@ -107,10 +107,6 @@ function ENT:GetDisplayPos()
 	return attachment.Pos or pos, attachment.Ang or ang
 end
 
-function ENT:OnRemove()
-	BaseClass.OnRemove(self)
-end
-
 function ENT:ThinkInternal()
 	BaseClass.ThinkInternal(self)
 

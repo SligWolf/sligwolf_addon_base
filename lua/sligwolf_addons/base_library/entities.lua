@@ -213,7 +213,7 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 	return ent
 end
 
-function LIB.SetupChildEntity(ent, parent, collision, attachmentid)
+function LIB.SetupChildPhysEntity(ent, parent, collision, attachmentid)
 	if not IsValid(ent) then return end
 	if not IsValid(parent) then return end
 
@@ -231,7 +231,6 @@ function LIB.SetupChildEntity(ent, parent, collision, attachmentid)
 
 	ent:SetMoveType(MOVETYPE_NONE)
 
-	ent.DoNotDuplicate = true
 	ent.sligwolf_noUnfreeze = true
 	ent.sligwolf_noBodySystemApplyMotion = true
 

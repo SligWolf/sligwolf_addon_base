@@ -74,6 +74,12 @@ local g_FallbackComponentsParams = {
 			collision = COLLISION_GROUP_WORLD,
 			inVehicle = false,
 		},
+		camera = {
+			forceThirdperson = false,
+			allowThirdperson = false,
+			allowRotation = false,
+			defaultDistance = nil,
+		},
 		smoke = {
 			spawnTime = 0.1,
 			velocity = 7,
@@ -692,6 +698,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 		prop = self.SetUpVehicleProp,
 		slider = self.SetUpVehicleSlider,
 		bogie = self.SetUpVehicleBogie,
+		camera = self.SetUpVehicleCamera,
 		propParent = self.SetUpVehiclePropParented,
 		seatGroup = self.SetUpVehicleSeatGroup,
 		animatable = self.SetUpVehicleAnimatable,
@@ -803,7 +810,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -826,7 +833,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent:SetSeatModel(seatModel)
 	ent:SetSeatKeyValues(seatKeyValues)
@@ -846,7 +853,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -914,7 +921,7 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent)
 	end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	return ent
 end
@@ -1086,7 +1093,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_connectorDirection = name
 
@@ -1119,7 +1126,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_noPickup = true
 	ent:SetNWBool("sligwolf_noPickup", true)
@@ -1128,6 +1135,51 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 	ent.SLIGWOLF_Buttonfunc = function(...)
 		return func(...)
 	end
+
+	return ent
+end
+
+function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent)
+	local attachment = self:CheckToProceedToCreateEnt(parent, component)
+	if not attachment then return end
+
+	local name = component.name
+	local class = component.class
+	local forceThirdperson = component.forceThirdperson
+	local allowThirdperson = component.allowThirdperson
+	local allowRotation = component.allowRotation
+	local defaultDistance = component.defaultDistance
+	local selfAttachment = component.selfAttachment
+
+	local ent = self:MakeEntEnsured(class or "sligwolf_camera", ply, parent, "Camera_" .. name)
+	if not IsValid(ent) then return end
+
+	-- self:SetPartValues(ent, parent, component, attachment, superparent)
+
+	ent:Spawn()
+	ent:Activate()
+
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
+		self:RemoveFaultyEntities(
+			{parent, ent},
+			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
+			ent,
+			parent,
+			tostring(selfAttachment or "<origin>"),
+			tostring(attachment or "<origin>")
+		)
+
+		return
+	end
+
+	ent:AttachToEnt(parent, attachment)
+	ent:SetCameraForceThirdperson(forceThirdperson)
+	ent:SetCameraAllowThirdperson(allowThirdperson)
+	ent:SetCameraAllowRotation(allowRotation)
+	ent:SetCameraDefaultDistance(defaultDistance)
+
+	ent.sligwolf_blockedprop = true
+	ent:SetNWBool("sligwolf_blockedprop", true)
 
 	return ent
 end
@@ -1306,7 +1358,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent)
-	LIBEntities.SetupChildEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_vehicle = true
 	ent.sligwolf_vehiclePod = true

@@ -333,7 +333,7 @@ function LIB.Load()
 
 		local vat = vehicle:SligWolf_GetAddonTable(addonname)
 
-		LIBCamera.ResetCamera(ply)
+		LIBCamera.LeaveCamera(ply)
 
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "EnterVehicle", ply, vehicle, vat)
 	end
@@ -356,7 +356,7 @@ function LIB.Load()
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "LeaveVehicle", ply, vehicle, vat)
 
 		LIB.ResetDriverMaxHealth(ply)
-		LIBCamera.ResetCamera(ply)
+		LIBCamera.LeaveCamera(ply)
 	end
 
 	LIBHook.Add("PlayerLeaveVehicle", "Library_Vehicle_PlayerLeaveVehicle", PlayerLeaveVehicle, 20000)

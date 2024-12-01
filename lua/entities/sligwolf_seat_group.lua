@@ -5,7 +5,7 @@ DEFINE_BASECLASS("sligwolf_phys")
 
 ENT.Spawnable 				= false
 ENT.AdminOnly 				= false
-ENT.DoNotDuplicate 			= false
+ENT.DoNotDuplicate 			= true
 
 ENT.sligwolf_noPickup = true
 ENT.sligwolf_blockedprop = true

@@ -61,15 +61,16 @@ function SLIGWOLF_ADDON:SoundCreate(ent, name, recipientFilter)
 	return soundObj
 end
 
-function SLIGWOLF_ADDON:SoundEmitIndicator(ent, trailerData)
-	if not trailerData.indicatorOnOff then
+function SLIGWOLF_ADDON:SoundEmitIndicator(ent, vehData)
+	if not vehData.indicatorOnOff then
 		ent:EmitSound(CONSTANTS.sndIndicatorOn)
-		trailerData.indicatorOnOff = true
+		vehData.indicatorOnOff = true
+
 		return
 	end
 
 	ent:EmitSound(CONSTANTS.sndIndicatorOff)
-	trailerData.indicatorOnOff = false
+	vehData.indicatorOnOff = false
 end
 
 function SLIGWOLF_ADDON:SoundEdit(soundObj, state, pitch, pitchtime, volume, volumetime)

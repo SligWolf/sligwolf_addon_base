@@ -210,6 +210,8 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 	seat.sligwolf_blockedprop = true
 	seat.sligwolf_blockAllTools = true
 
+	seat.DoNotDuplicate = true
+
 	seat:SetNWBool("sligwolf_blockedprop", true)
 	seat:SetNWBool("sligwolf_blockAllTools", true)
 	seat:SetNWBool("sligwolf_noPickup", true)
@@ -223,7 +225,7 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 	seat:Spawn()
 	seat:Activate()
 
-	LIBEntities.SetupChildEntity(seat, seatGroup, COLLISION_GROUP_IN_VEHICLE, attachmentName)
+	LIBEntities.SetupChildPhysEntity(seat, seatGroup, COLLISION_GROUP_IN_VEHICLE, attachmentName)
 
 	return seat
 end

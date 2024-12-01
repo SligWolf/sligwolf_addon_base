@@ -154,11 +154,12 @@ function ENT:ThinkInternal()
 
 	local Delay = self.Delay or 0
 	local Time = self:GetParticleSpawnTime() or EmitTime
-	if (CurTime() - Delay) < Time then return end
+	local Now = CurTime()
+	if (Now - Delay) < Time then return end
 
-	self.Delay = CurTime()
+	self.Delay = Now
 	self:EmitterThink()
-	self:NextThink(CurTime())
+	self:NextThink(Now)
 
 	return true
 end

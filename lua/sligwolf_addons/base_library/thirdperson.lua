@@ -20,7 +20,6 @@ local CONSTANTS = SligWolf_Addons.Constants
 local LIBEntities = nil
 local LIBCamera = nil
 local LIBHook = nil
--- local LIBNet = nil
 
 local g_trace = {}
 local g_traceResult = {}
@@ -38,33 +37,32 @@ local function thirdpersonCalcVehicleView(vehicle, ply, view)
 		return
 	end
 
-	if vehicle.GetThirdPersonMode == nil then
+	if not vehicle.GetThirdPersonMode then
 		return
 	end
-
-	if not vehicle:GetThirdPersonMode() then
-		return
-	end
-
-	-- @TODO
 
 	local camera = LIBCamera.GetCameraEnt(ply)
 	if not IsValid(camera) then
 		return
 	end
 
-	local isCamera = camera ~= ply
+	local isCamera = ply ~= camera
+	local forceThirdperson = false
 
 	if isCamera then
-		local cameraParameters = LIBCamera.GetCameraParameters(camera)
-
-		if not cameraParameters then
+		if not camera.sligwolf_cameraEntity then
 			return
 		end
 
-		if not cameraParameters.allowThirdperson then
+		forceThirdperson = camera:GetCameraForceThirdperson()
+
+		if not forceThirdperson and not camera:GetCameraAllowThirdperson() then
 			return
 		end
+	end
+
+	if not forceThirdperson and not vehicle:GetThirdPersonMode() then
+		return
 	end
 
 	local mn, mx = vehicle:GetRenderBounds()
@@ -153,60 +151,14 @@ function LIB.GetThirdpersonParameters(vehicle)
 	return thirdpersonParameters
 end
 
--- local function updateThirdperson(ply)
--- 	local plyTable = ply:SligWolf_GetTable()
-
--- 	local thirdpersonEnabled = plyTable.thirdpersonEnabled or false
--- 	local oldThirdpersonEnabled = plyTable.oldThirdpersonEnabled
-
--- 	plyTable.oldThirdpersonEnabled = thirdpersonEnabled
-
--- 	if oldThirdpersonEnabled == thirdpersonEnabled then
--- 		return
--- 	end
-
--- 	if SERVER then
--- 		LIBNet.Start("ThirdpersonState")
--- 			net.WriteBool(thirdpersonEnabled)
--- 		LIBNet.Send(ply)
-
--- 		return
--- 	end
--- end
-
--- function LIB.SetThirdperson(ply, bool)
--- 	local plyTable = ply:SligWolf_GetTable()
--- 	plyTable.thirdpersonEnabled = bool or false
-
--- 	updateThirdperson(ply)
--- end
-
--- function LIB.GetThirdperson(ply)
--- 	local plyTable = ply:SligWolf_GetTable()
--- 	return plyTable.thirdpersonEnabled or false
--- end
-
--- function LIB.ToggleThirdperson(ply)
--- 	LIB.SetThirdperson(ply, not LIB.GetThirdperson(ply))
--- end
-
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBCamera = SligWolf_Addons.Camera
 	LIBHook = SligWolf_Addons.Hook
-	LIBNet = SligWolf_Addons.Net
 
 	if SERVER then
-		--LIBNet.AddNetworkString("ThirdpersonState")
 		return
 	end
-
-	-- LIBNet.Receive("ThirdpersonState", function()
-	-- 	local state = net.ReadBool()
-	-- 	local ply = LocalPlayer()
-
-	-- 	LIB.SetThirdperson(ply, state)
-	-- end)
 
 	LIBHook.Add("CalcVehicleView", "Library_Thirdperson_CalcVehicleView", thirdpersonCalcVehicleView, 11000)
 end
