@@ -23,6 +23,7 @@ local LIBPhysics = nil
 local LIBVehicle = nil
 local LIBTimer = nil
 local LIBPrint = nil
+local LIBUtil = nil
 
 function LIB.SetNextAllowedSpawnTime(ply, time)
 	if not IsValid(ply) then
@@ -219,6 +220,7 @@ function LIB.Load()
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
+	LIBUtil = SligWolf_Addons.Util
 
 	local LIBHook = SligWolf_Addons.Hook
 
@@ -266,11 +268,6 @@ function LIB.Load()
 		LIBHook.Add("PlayerSpawnSENT", "Library_SpamProtection_AntiSentSpam", AntiSentSpam, 1000)
 
 		if g_maxCollisionSpamCount > 0 then
-			local function removeCandidatesSorter(a, b)
-				-- Newest entity first
-				return a:GetCreationTime() > b:GetCreationTime()
-			end
-
 			local function RemoveSpamCollisions()
 				local collidingSystems = LIBPhysics.GetCollidingSystems(ent)
 
@@ -302,7 +299,7 @@ function LIB.Load()
 
 				if not table.IsEmpty(removeCandidates) then
 					-- Remove the newest entity first
-					table.sort(removeCandidates, removeCandidatesSorter)
+					LIBUtil.SortEntitiesBySpawn(removeCandidates)
 
 					for _, removeCandidate in ipairs(removeCandidates) do
 						-- Remove only one entity at a time

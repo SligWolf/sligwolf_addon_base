@@ -62,7 +62,7 @@ local g_FallbackComponentsParams = {
 		},
 		connector = {
 			connectortype = "unknown",
-			gender = "N",
+			gender = LIBCoupling.GENDER_NEUTRAL,
 			searchRadius = 10,
 			model = CONSTANTS.mdlSphere4,
 		},
@@ -1013,19 +1013,16 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleA) then return end
 		if not IsValid(vehicleB) then return end
 
-		local DirA = ConA.sligwolf_connectorDirection
-		local DirB = ConB.sligwolf_connectorDirection
+		local dirA = ConA.sligwolf_connectorDirection
+		local dirB = ConB.sligwolf_connectorDirection
 
 		if isfunction(self.OnDisconnectTrailer) then
-			self:OnDisconnectTrailer(vehicleA, vehicleB, DirA)
-			self:OnDisconnectTrailer(vehicleB, vehicleA, DirB)
+			self:OnDisconnectTrailer(vehicleA, vehicleB, dirA)
+			self:OnDisconnectTrailer(vehicleB, vehicleA, dirB)
 		end
 
-		vehicleA.SLIGWOLF_Connected = vehicleA.SLIGWOLF_Connected or {}
-		vehicleB.SLIGWOLF_Connected = vehicleB.SLIGWOLF_Connected or {}
-
-		vehicleA.SLIGWOLF_Connected[DirA] = nil
-		vehicleB.SLIGWOLF_Connected[DirB] = nil
+		LIBCoupling.DisconnectVehicles(vehicleA, dirA)
+		LIBCoupling.DisconnectVehicles(vehicleB, dirB)
 	end
 
 	ent.OnConnect = function(ConA, ConB)
@@ -1034,18 +1031,15 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleA) then return end
 		if not IsValid(vehicleB) then return end
 
-		local DirA = ConA.sligwolf_connectorDirection
-		local DirB = ConB.sligwolf_connectorDirection
+		local dirA = ConA.sligwolf_connectorDirection
+		local dirB = ConB.sligwolf_connectorDirection
 
-		vehicleA.SLIGWOLF_Connected = vehicleA.SLIGWOLF_Connected or {}
-		vehicleB.SLIGWOLF_Connected = vehicleB.SLIGWOLF_Connected or {}
-
-		vehicleA.SLIGWOLF_Connected[DirA] = vehicleB
-		vehicleB.SLIGWOLF_Connected[DirB] = vehicleA
+		LIBCoupling.ConnectVehicles(vehicleA, vehicleB, dirA)
+		LIBCoupling.ConnectVehicles(vehicleB, vehicleA, dirB)
 
 		if isfunction(self.OnConnectTrailer) then
-			self:OnConnectTrailer(vehicleA, vehicleB, DirA)
-			self:OnConnectTrailer(vehicleB, vehicleA, DirB)
+			self:OnConnectTrailer(vehicleA, vehicleB, dirA)
+			self:OnConnectTrailer(vehicleB, vehicleA, dirB)
 		end
 	end
 
@@ -1055,17 +1049,16 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleA) then return end
 		if not IsValid(vehicleB) then return end
 
-		local DirA = ConA.sligwolf_connectorDirection
-		local DirB = ConB.sligwolf_connectorDirection
+		local dirA = ConA.sligwolf_connectorDirection
+		local dirB = ConB.sligwolf_connectorDirection
 
-		vehicleA.SLIGWOLF_Connected = vehicleA.SLIGWOLF_Connected or {}
-		vehicleB.SLIGWOLF_Connected = vehicleB.SLIGWOLF_Connected or {}
+		if not LIBCoupling.IsConnected(vehicleA, vehicleB, dirA) then
+			return false
+		end
 
-		if not IsValid(vehicleA.SLIGWOLF_Connected[DirA]) then return false end
-		if not IsValid(vehicleB.SLIGWOLF_Connected[DirB]) then return false end
-
-		if vehicleA.SLIGWOLF_Connected[DirA] ~= vehicleB then return false end
-		if vehicleB.SLIGWOLF_Connected[DirB] ~= vehicleA then return false end
+		if not LIBCoupling.IsConnected(vehicleB, vehicleA, dirB) then
+			return false
+		end
 
 		return true
 	end

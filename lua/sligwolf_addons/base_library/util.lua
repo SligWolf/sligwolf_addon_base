@@ -212,6 +212,33 @@ function LIB.IsAdminForCMD(ply)
 	return true
 end
 
+local function entitySpawnSorterAsc(a, b)
+	local ctA = a:GetCreationTime()
+	local ctB = b:GetCreationTime()
+
+	if ctA == ctB then
+		return a:GetCreationID() < b:GetCreationID()
+	end
+
+	return ctA < ctB
+end
+
+local function entitySpawnSorterDesc(a, b)
+	local ctA = a:GetCreationTime()
+	local ctB = b:GetCreationTime()
+
+	if ctA == ctB then
+		return a:GetCreationID() > b:GetCreationID()
+	end
+
+	return ctA > ctB
+end
+
+function LIB.SortEntitiesBySpawn(entities, asc)
+	local func = asc and entitySpawnSorterAsc or entitySpawnSorterDesc
+	table.sort(entities, func)
+end
+
 local g_listCache = {}
 
 function LIB.GetList(name)

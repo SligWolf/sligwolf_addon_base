@@ -236,17 +236,35 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(ent)
 	end)
 end
 
-function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopycallback)
+function SLIGWOLF_ADDON:SetupDupeModifier(ent, callbacks)
 	if not IsValid(ent) then return end
 
-	name = LIBUtil.ValidateName(name)
-	if name == "" then return end
+	local vehicleType = tostring(ent.sligwolf_vehicle_type or "")
+	local entName = tostring(LIBEntities.GetName(ent) or "")
+
+	local name = {}
+
+	if vehicleType ~= "" then
+		table.insert(name, vehicleType)
+	end
+
+	if entName ~= "" then
+		table.insert(name, entName)
+	end
+
+	name = table.concat(name, "_")
+	if name ~= "" then
+		name = "_" .. name
+	end
 
 	local superparent = LIBEntities.GetSuperParent(ent)
 	if not IsValid(superparent) then return end
 
 	local superparentEntTable = superparent:SligWolf_GetTable()
 	if superparentEntTable.duperegistered then return end
+
+	local precopycallback = callbacks.copy
+	local postcopycallback = callbacks.paste
 
 	if not isfunction(precopycallback) then
 		precopycallback = function() end
@@ -259,7 +277,7 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	local oldPreEntityCopy = superparent.PreEntityCopy or function() end
 	local oldOnEntityCopyTableFinish = superparent.OnEntityCopyTableFinish or function() end
 
-	local dupename = "SligWolf_Common_MakeEnt_Dupe_" .. self.Addonname  .. "_" .. name
+	local dupename = "SligWolf_Common_MakeEnt_Dupe_" .. self.Addonname .. name
 	superparentEntTable.dupename = dupename
 
 	superparent.PreEntityCopy = function(thisent, ...)
@@ -294,7 +312,7 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, name, precopycallback, postcopyca
 	end
 
 	local calledEntityModifier = false
-	local timerName = "registerEntityModifier_" .. name
+	local timerName = "registerEntityModifier" .. name
 
 	local entityModifierCallback = function(ply, ent, data)
 		calledEntityModifier = true

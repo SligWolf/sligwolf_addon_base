@@ -91,7 +91,7 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Int", "Size")
 	self:AddNetworkRVar("Int", "Enlarge")
 	self:AddNetworkRVar("Int", "Count")
-	self:AddNetworkRVar("Int", "Alpha_Reduce")
+	self:AddNetworkRVar("Int", "AlphaReduce")
 
 	self:RegisterNetworkRVarNotify("Size", self.UpdateRenderBounds)
 end
@@ -129,11 +129,11 @@ end
 function ENT:SetGlowAlphaReduce(num)
 	if CLIENT then return end
 
-	self:SetNetworkRVar("Alpha_Reduce", num)
+	self:SetNetworkRVar("AlphaReduce", num)
 end
 
 function ENT:GetGlowAlphaReduce()
-	return self:GetNetworkRVarNumber("Alpha_Reduce", 1)
+	return self:GetNetworkRVarNumber("AlphaReduce", 1)
 end
 
 function ENT:SetGlowMaterial(mat)

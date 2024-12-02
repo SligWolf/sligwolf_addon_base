@@ -14,16 +14,13 @@ if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
 local LIBConstraints = SligWolf_Addons.Constraints
-
-local GENDER_MALE = "M"
-local GENDER_FEMALE = "F"
-local GENDER_NEUTRAL = "N"
+local LIBCoupling = SligWolf_Addons.Coupling
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
 	self.allowedtypes = nil
-	self.gender = GENDER_NEUTRAL
+	self.gender = LIBCoupling.GENDER_NEUTRAL
 	self.kind = ""
 end
 
@@ -83,17 +80,17 @@ function ENT:GetType()
 end
 
 function ENT:SetGender(gender)
-	if gender == GENDER_MALE then
-		self.gender = GENDER_MALE
+	if gender == LIBCoupling.GENDER_MALE then
+		self.gender = LIBCoupling.GENDER_MALE
 		return
 	end
 
-	if gender == GENDER_FEMALE then
-		self.gender = GENDER_FEMALE
+	if gender == LIBCoupling.GENDER_FEMALE then
+		self.gender = LIBCoupling.GENDER_FEMALE
 		return
 	end
 
-	self.gender = GENDER_NEUTRAL
+	self.gender = LIBCoupling.GENDER_NEUTRAL
 end
 
 function ENT:GetGender()
@@ -102,8 +99,8 @@ end
 
 function ENT:IsAllowedGender(gender)
 	if not self.gender then return true end
-	if self.gender == GENDER_NEUTRAL then return true end
-	if gender == GENDER_NEUTRAL then return true end
+	if self.gender == LIBCoupling.GENDER_NEUTRAL then return true end
+	if gender == LIBCoupling.GENDER_NEUTRAL then return true end
 
 	return self.gender ~= gender
 end
@@ -243,15 +240,15 @@ function ENT:Debug(Size, Col, Time)
 	end
 
 	local gender = self.gender or "Neutral"
-	if gender == GENDER_MALE then
+	if gender == LIBCoupling.GENDER_MALE then
 		gender = "Male"
 	end
 
-	if gender == GENDER_FEMALE then
+	if gender == LIBCoupling.GENDER_FEMALE then
 		gender = "Female"
 	end
 
-	if gender == GENDER_NEUTRAL then
+	if gender == LIBCoupling.GENDER_NEUTRAL then
 		gender = "Neutral"
 	end
 
