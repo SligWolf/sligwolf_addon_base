@@ -298,7 +298,7 @@ function SLIGWOLF_BASECHECK.MatchVersion(currentVersion, requiredVersion)
 	local cMajor, cMinor, cPatch = semanticSplit(currentVersion)
 	local rMajor, rMinor, rPatch = semanticSplit(requiredVersion)
 
-	if cMajor != rMajor then
+	if cMajor ~= rMajor then
 		return false
 	end
 

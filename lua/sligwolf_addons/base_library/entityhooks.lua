@@ -26,8 +26,10 @@ function LIB.Load()
 
 			local entTable = ent:SligWolf_GetTable()
 
-			entTable.keyValues = entTable.keyValues or {}
-			entTable.keyValues[key] = value
+			local keyValues = entTable.keyValues or {}
+			entTable.keyValues = keyValues
+
+			keyValues[key] = value
 		end
 
 		LIBHook.Add("EntityKeyValue", "Library_EntityHooks_RegisterKeyValue", RegisterKeyValue, 20000)

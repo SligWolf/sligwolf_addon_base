@@ -91,6 +91,9 @@ function LIB.RemoveBadDupeData(data)
 	end
 
 	data.spawnname = nil
+	data.spawnProperties = nil
+	data.defaultSpawnProperties = nil
+
 	data.addonCache = nil
 	data.addonIdCache = nil
 
@@ -1278,29 +1281,42 @@ function LIB.FindPropInSphere(ent, radius, attachment, filterA, filterB)
 	return nil
 end
 
+function LIB.GetKeyValue(ent, key, findAll)
+	key = string.lower(key)
+
+	local keyValues = nil
+
+	if findAll then
+		keyValues = LIB.GetKeyValues(ent)
+	else
+		local entTable = ent:SligWolf_GetTable()
+		keyValues = entTable.keyValues
+	end
+
+	if not keyValues then
+		return
+	end
+
+	return keyValues[key]
+end
+
 function LIB.GetKeyValues(ent)
-	local keyValues = {}
+	local entTable = ent:SligWolf_GetTable()
+
+	local keyValuesRef = entTable.keyValuesRef or {}
+	entTable.keyValuesRef = keyValuesRef
 
 	for key, value in pairs(ent:GetKeyValues() or {}) do
 		key = string.lower(key)
-		keyValues[key] = value
+		keyValuesRef[key] = value
 	end
-
-	local entTable = ent:SligWolf_GetTable()
 
 	for key, value in pairs(entTable.keyValues or {}) do
 		key = string.lower(key)
-		keyValues[key] = value
+		keyValuesRef[key] = value
 	end
 
-	return keyValues
-end
-
-function LIB.GetKeyValue(ent, key)
-	key = string.lower(key)
-
-	local keyValues = LIB.GetKeyValues(ent)
-	return keyValues[key]
+	return keyValuesRef
 end
 
 function LIB.CanApplyBodySystemMotion(ent)

@@ -26,6 +26,18 @@
 	[
 //      {{SW_SPAWNNAME_PROP_VEHICLE_PRISONER_POD_OPTIONS}}
 	]
+
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon vehicle engine state." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon vehicle lights state." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
+	]
 ]
 
 @BaseClass base(prop_vehicle_airboat) = Sligwolf_base_prop_vehicle_airboat
@@ -38,6 +50,18 @@
 	[
 //      {{SW_SPAWNNAME_PROP_VEHICLE_AIRBOAT_OPTIONS}}
 	]
+	
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon vehicle engine state." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon vehicle lights state." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
+	]
 ]
 
 @BaseClass base(prop_vehicle_jeep) = Sligwolf_base_prop_vehicle_jeep
@@ -49,6 +73,18 @@
 		"In case of any mismatches issues, the game will tell what's wrong via an error." =
 	[
 //      {{SW_SPAWNNAME_PROP_VEHICLE_JEEP_OPTIONS}}
+	]
+
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon vehicle engine state." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon vehicle lights state." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
 	]
 ]
 

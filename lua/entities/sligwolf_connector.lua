@@ -203,6 +203,9 @@ function ENT:Disconnect(Con)
 	self:OnDisconnect(Con)
 	Con:OnDisconnect(self)
 
+	self:OnPostDisconnect(Con)
+	Con:OnPostDisconnect(self)
+
 	return true
 end
 
@@ -259,14 +262,17 @@ function ENT:Debug(Size, Col, Time)
 end
 
 function ENT:OnConnectionCheck(Con)
-
+	-- override me
 end
 
 function ENT:OnConnect(Con)
-
+	-- override me
 end
 
 function ENT:OnDisconnect(Con)
-
+	-- override me
 end
 
+function ENT:OnPostDisconnect(Con)
+	-- override me
+end

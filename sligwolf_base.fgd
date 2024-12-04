@@ -8,7 +8,7 @@
 
 // Generated:
 //   API Version:   1.0.0
-//   Generated at:  2024-11-12 23:46:44
+//   Generated at:  2024-12-04 21:33:42
 //
 // Cached:
 //   API Version:   1.0.0
@@ -281,6 +281,18 @@
 		"sligwolf_western_tender_blue" : "Western Loco | Tender (sligwolf_western_tender_blue)"
 		"sligwolf_western_tender_green" : "Western Loco | Tender (sligwolf_western_tender_green)"
 	]
+
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon vehicle engine state." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon vehicle lights state." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
+	]
 ]
 
 @BaseClass base(prop_vehicle_airboat) = Sligwolf_base_prop_vehicle_airboat
@@ -308,6 +320,18 @@
 		"sligwolf_speedboat_red" : "Speedboat | Speedboat (sligwolf_speedboat_red)"
 		"sligwolf_speedboat_white" : "Speedboat | Speedboat (sligwolf_speedboat_white)"
 		"sligwolf_speedboat_yellow" : "Speedboat | Speedboat (sligwolf_speedboat_yellow)"
+	]
+	
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon vehicle engine state." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon vehicle lights state." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
 	]
 ]
 
@@ -587,6 +611,18 @@
 		"sligwolf_trailer_t4_red" : "Trucks | Trucktrailer - T4 (sligwolf_trailer_t4_red)"
 		"sligwolf_trailer_t4_white" : "Trucks | Trucktrailer - T4 (sligwolf_trailer_t4_white)"
 		"sligwolf_trailer_t4_yellow" : "Trucks | Trucktrailer - T4 (sligwolf_trailer_t4_yellow)"
+	]
+
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon vehicle engine state." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon vehicle lights state." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
 	]
 ]
 

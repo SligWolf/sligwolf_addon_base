@@ -38,8 +38,10 @@ function SLIGWOLF_BASE_OBJ:KeyValue(key, value)
 
 	local entTable = self:SligWolf_GetTable()
 
-	entTable.keyValues = entTable.keyValues or {}
-	entTable.keyValues[key] = value
+	local keyValues = entTable.keyValues or {}
+	entTable.keyValues = keyValues
+
+	keyValues[key] = value
 end
 
 local function extendErrorFormat(format, obj)

@@ -54,6 +54,9 @@ local g_FallbackComponentsParams = {
 			maxSize = Vector(4, 4, 4),
 			model = CONSTANTS.mdlCube4,
 		},
+		help = {
+			helpName = "",
+		},
 		door = {
 			autoClose = true,
 			openTime = 3,
@@ -704,6 +707,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 		animatable = self.SetUpVehicleAnimatable,
 		speedometer = self.SetUpVehicleSpeedometer,
 		trigger = self.SetUpVehicleTrigger,
+		help = self.SetUpVehicleHelp,
 		door = self.SetUpVehicleDoor,
 		connector = self.SetUpVehicleConnector,
 		connectorButton = self.SetUpVehicleConnectorButton,
@@ -926,6 +930,31 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent)
 	return ent
 end
 
+function SLIGWOLF_ADDON:SetUpVehicleHelp(parent, component, ply, superparent)
+	local attachment = self:CheckToProceedToCreateEnt(parent, component)
+	if not attachment then return end
+
+	local name = component.name
+	local class = component.class
+	local model = component.model
+	local helpName = component.helpName
+
+	local ent = self:MakeEntEnsured(class or "sligwolf_help", ply, parent, "Help_" .. name)
+	if not IsValid(ent) then
+		return
+	end
+
+	self:SetPartValues(ent, parent, component, attachment, superparent)
+	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
+
+	LIBModel.SetModel(ent, model)
+
+	ent:SetHelpName(helpName)
+	ent:TurnOn(true)
+
+	return ent
+end
+
 function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
@@ -1005,6 +1034,8 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	self:SetPartValues(ent, parent, component, attachment, superparent)
 
 	ent.sligwolf_connectorDirection = name
+	LIBCoupling.RegisterCoupler(superparent, ent)
+
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	ent.OnDisconnect = function(ConA, ConB)
@@ -1014,15 +1045,25 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleB) then return end
 
 		local dirA = ConA.sligwolf_connectorDirection
-		local dirB = ConB.sligwolf_connectorDirection
 
 		if isfunction(self.OnDisconnectTrailer) then
 			self:OnDisconnectTrailer(vehicleA, vehicleB, dirA)
-			self:OnDisconnectTrailer(vehicleB, vehicleA, dirB)
 		end
 
 		LIBCoupling.DisconnectVehicles(vehicleA, dirA)
-		LIBCoupling.DisconnectVehicles(vehicleB, dirB)
+	end
+
+	ent.OnPostDisconnect = function(ConA, ConB)
+		local vehicleA = LIBEntities.GetSuperParent(ConA)
+		local vehicleB = LIBEntities.GetSuperParent(ConB)
+		if not IsValid(vehicleA) then return end
+		if not IsValid(vehicleB) then return end
+
+		local dirA = ConA.sligwolf_connectorDirection
+
+		if isfunction(self.OnPostDisconnectTrailer) then
+			self:OnPostDisconnectTrailer(vehicleA, vehicleB, dirA)
+		end
 	end
 
 	ent.OnConnect = function(ConA, ConB)
@@ -1032,14 +1073,11 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleB) then return end
 
 		local dirA = ConA.sligwolf_connectorDirection
-		local dirB = ConB.sligwolf_connectorDirection
 
 		LIBCoupling.ConnectVehicles(vehicleA, vehicleB, dirA)
-		LIBCoupling.ConnectVehicles(vehicleB, vehicleA, dirB)
 
 		if isfunction(self.OnConnectTrailer) then
 			self:OnConnectTrailer(vehicleA, vehicleB, dirA)
-			self:OnConnectTrailer(vehicleB, vehicleA, dirB)
 		end
 	end
 
@@ -1050,13 +1088,8 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 		if not IsValid(vehicleB) then return end
 
 		local dirA = ConA.sligwolf_connectorDirection
-		local dirB = ConB.sligwolf_connectorDirection
 
 		if not LIBCoupling.IsConnected(vehicleA, vehicleB, dirA) then
-			return false
-		end
-
-		if not LIBCoupling.IsConnected(vehicleB, vehicleA, dirB) then
 			return false
 		end
 
@@ -1067,8 +1100,8 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	ent:SetGender(gender)
 	ent.searchRadius = searchRadius
 
-	self:EntityTimerOnce(ent, "Auto_Connect_Trailers", 0.1, function(f_ent)
-		LIBCoupling.AutoConnectVehicles(f_ent)
+	self:EntityTimerOnce(ent, "Auto_Connect_Trailers", 0.1, function()
+		LIBCoupling.Connect(ent, ply)
 	end)
 
 	return ent
@@ -1094,8 +1127,8 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	ent:SetNWBool("sligwolf_noPickup", true)
 
 	ent.sligwolf_inVehicle = inVehicle
-	ent.SLIGWOLF_Buttonfunc = function(...)
-		return LIBCoupling.CouplingMechanism(...)
+	ent.SLIGWOLF_Buttonfunc = function()
+		return LIBCoupling.ToogleConnection(ent, ply)
 	end
 
 	return ent
@@ -1146,8 +1179,6 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent)
 
 	local ent = self:MakeEntEnsured(class or "sligwolf_camera", ply, parent, "Camera_" .. name)
 	if not IsValid(ent) then return end
-
-	-- self:SetPartValues(ent, parent, component, attachment, superparent)
 
 	ent:Spawn()
 	ent:Activate()

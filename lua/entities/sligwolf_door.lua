@@ -19,11 +19,6 @@ local LIBConstraints = SligWolf_Addons.Constraints
 local LIBEntities = SligWolf_Addons.Entities
 local LIBModel = SligWolf_Addons.Model
 
--- local g_denyToolReload = {
--- 	weld = "",
--- 	remover = "",
--- }
-
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
@@ -180,7 +175,6 @@ function ENT:SpawnCollisionEntity(mdl)
 		return
 	end
 
-	--Prop.sligwolf_denyToolReload = g_denyToolReload
 	Prop.DoNotDuplicate = true
 
 	LIBModel.SetModel(Prop, mdl)

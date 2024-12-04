@@ -17,7 +17,6 @@ local LIB = SligWolf_Addons.Coupling
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBVehicleControl = nil
 local LIBEntities = nil
 local LIBUtil = nil
 
@@ -42,6 +41,9 @@ local function getCache(ent)
 
 	local mainVehicles = couplingCache.mainVehicles or {}
 	couplingCache.mainVehicles = mainVehicles
+
+	local endVehicles = couplingCache.endVehicles or {}
+	couplingCache.endVehicles = endVehicles
 
 	return couplingCache
 end
@@ -122,46 +124,48 @@ function LIB.CloneTrailerData(vehicleA, vehicleB)
 	mainTrailerDataB.indicatorDelay = mainTrailerDataA.indicatorDelay
 end
 
-function LIB.ClearCache(ent, notRecursive)
+local function clearCacheEntities(entities)
+	if not entities then return end
+
+	for key, otherEnt in pairs(entities) do
+		entities[key] = nil
+	end
+end
+
+function LIB.ClearCache(ent)
 	if not IsValid(ent) then return end
 
+	local vehicles = LIB.GetTrailerVehicles(ent)
+
+	if vehicles then
+		for _, vehicle in ipairs(vehicles) do
+			local cache = getCache(vehicle)
+			if not cache then
+				continue
+			end
+
+			local mainVehicles = cache.mainVehicles
+			local endVehicles = cache.endVehicles
+			local connections = cache.connections
+
+			clearCacheEntities(mainVehicles)
+			clearCacheEntities(endVehicles)
+			clearCacheEntities(connections)
+		end
+	end
+
 	local cache = getCache(ent)
-	if not cache then return end
+	if not cache then
+		return
+	end
 
 	local mainVehicles = cache.mainVehicles
+	local endVehicles = cache.endVehicles
 	local connections = cache.connections
 
-	if mainVehicles then
-		for key, otherEnt in pairs(mainVehicles) do
-			mainVehicles[key] = nil
-
-			if notRecursive then
-				continue
-			end
-
-			if otherEnt == ent then
-				continue
-			end
-
-			LIB.ClearCache(otherEnt, true)
-		end
-	end
-
-	if connections then
-		for key, otherEnt in pairs(connections) do
-			connections[key] = nil
-
-			if notRecursive then
-				continue
-			end
-
-			if otherEnt == ent then
-				continue
-			end
-
-			LIB.ClearCache(otherEnt, true)
-		end
-	end
+	clearCacheEntities(mainVehicles)
+	clearCacheEntities(endVehicles)
+	clearCacheEntities(connections)
 end
 
 function LIB.ResetTrailerData(vehicle)
@@ -191,12 +195,74 @@ function LIB.MarkAsTrailer(vehicle)
 	trailerData.isTrailer = true
 end
 
+function LIB.GetCouplers(vehicle)
+	vehicle = LIBEntities.GetSuperParent(vehicle)
+	if not IsValid(vehicle) then return end
+
+	local vehicleTable = vehicle:SligWolf_GetTable()
+
+	local couplers = vehicleTable.couplers
+	if not couplers then return end
+
+	return couplers
+end
+
+function LIB.GetCoupler(vehicle, dir)
+	local couplers = LIB.GetCouplers(vehicle)
+	if not couplers then return end
+
+	dir = tostring(dir or "")
+
+	local coupler = couplers[dir]
+
+	if not IsValid(coupler) then return end
+	if not coupler.sligwolf_isConnector then return end
+
+	return coupler
+end
+
+function LIB.RegisterCoupler(vehicle, coupler)
+	vehicle = LIBEntities.GetSuperParent(vehicle)
+
+	if not IsValid(vehicle) then return end
+	if not IsValid(coupler) then return end
+
+	local connectorDirection = coupler.sligwolf_connectorDirection
+	if not connectorDirection then return end
+
+	local vehicleTable = vehicle:SligWolf_GetTable()
+
+	local couplers = vehicleTable.couplers or {}
+	vehicleTable.couplers = couplers
+
+	couplers[connectorDirection] = coupler
+
+
+	local couplerConnections = vehicleTable.couplerConnections or {}
+	vehicleTable.couplerConnections = couplerConnections
+
+	local vehicles = couplerConnections.vehicles or {}
+	couplerConnections.vehicles = vehicles
+
+	couplerConnections.count = table.Count(vehicles)
+
+
+	LIB.ClearCache(vehicle)
+end
+
 function LIB.GetConnectedVehicles(vehicle)
 	vehicle = LIBEntities.GetSuperParent(vehicle)
 	if not IsValid(vehicle) then return end
 
 	local vehicleTable = vehicle:SligWolf_GetTable()
-	return vehicleTable.couplerConnections
+
+	local couplerConnections = vehicleTable.couplerConnections
+	if not couplerConnections then return end
+
+	if not couplerConnections.vehicles then return end
+	if not couplerConnections.count then return end
+
+	return couplerConnections
 end
 
 function LIB.ConnectVehicles(vehicleA, vehicleB, dirA)
@@ -205,15 +271,19 @@ function LIB.ConnectVehicles(vehicleA, vehicleB, dirA)
 
 	if not IsValid(vehicleA) then return end
 	if not IsValid(vehicleB) then return end
+	if vehicleA == vehicleB then return end
 
 	dirA = tostring(dirA or "")
 
-	local vehicleATable = vehicleA:SligWolf_GetTable()
+	local couplerConnections = LIB.GetConnectedVehicles(vehicleA)
+	if not couplerConnections then
+		return
+	end
 
-	local couplerConnectionsA = vehicleATable.couplerConnections or {}
-	vehicleATable.couplerConnections = couplerConnectionsA
+	local vehicles = couplerConnections.vehicles
+	vehicles[dirA] = vehicleB
 
-	couplerConnectionsA[dirA] = vehicleB
+	couplerConnections.count = table.Count(vehicles)
 
 	LIB.ClearCache(vehicleA)
 	LIB.ClearCache(vehicleB)
@@ -225,15 +295,20 @@ function LIB.DisconnectVehicles(vehicleA, dirA)
 
 	dirA = tostring(dirA or "")
 
-	local vehicleATable = vehicleA:SligWolf_GetTable()
+	local couplerConnections = LIB.GetConnectedVehicles(vehicleA)
+	if not couplerConnections then
+		return
+	end
 
-	local couplerConnectionsA = vehicleATable.couplerConnections or {}
-	vehicleATable.couplerConnections = couplerConnectionsA
+	local vehicles = couplerConnections.vehicles
+	local vehicleB = vehicles[dirA]
+	vehicles[dirA] = nil
 
-	local vehicleB = couplerConnectionsA[dirA]
-	couplerConnectionsA[dirA] = nil
+	couplerConnections.count = table.Count(vehicles)
 
 	LIB.ClearCache(vehicleA)
+
+	if vehicleA == vehicleB then return end
 	LIB.ClearCache(vehicleB)
 end
 
@@ -243,15 +318,16 @@ function LIB.IsConnected(vehicleA, vehicleB, dirA)
 
 	if not IsValid(vehicleA) then return false end
 	if not IsValid(vehicleB) then return false end
+	if vehicleA == vehicleB then return false end
 
 	dirA = tostring(dirA or "")
 
-	local vehicleATable = vehicleA:SligWolf_GetTable()
+	local couplerConnections = LIB.GetConnectedVehicles(vehicleA)
+	if not couplerConnections then
+		return false
+	end
 
-	local couplerConnectionsA = vehicleATable.couplerConnections or {}
-	vehicleATable.couplerConnections = couplerConnectionsA
-
-	local vehicleToCheck = couplerConnectionsA[dirA]
+	local vehicleToCheck = couplerConnections.vehicles[dirA]
 
 	if not IsValid(vehicleToCheck) then
 		return false
@@ -296,12 +372,12 @@ function LIB.GetTrailerVehicles(vehicle)
 				table.insert(connections, currentEntity)
 			end
 
-			local vehicles = LIB.GetConnectedVehicles(currentEntity)
-			if not vehicles then
+			local couplerConnections = LIB.GetConnectedVehicles(currentEntity)
+			if not couplerConnections then
 				continue
 			end
 
-			for k, v in pairs(vehicles) do
+			for k, v in pairs(couplerConnections.vehicles) do
 				if connectionsIndexed[v] then
 					continue
 				end
@@ -358,9 +434,9 @@ local function getTrailerMainVehicleInternal(vehicles, checkPattern)
 
 		if checkConnections then
 			-- check if v is in the middle
-			local connections = LIB.GetConnectedVehicles(v)
 
-			if connections and table.Count(connections) > 1 then
+			local couplerConnections = LIB.GetConnectedVehicles(v)
+			if couplerConnections and couplerConnections.count > 1 then
 				continue
 			end
 		end
@@ -398,6 +474,35 @@ function LIB.GetTrailerMainVehicles(vehicle)
 	end
 
 	return mainVehicles
+end
+
+function LIB.GetTrailerEndVehicles(vehicle)
+	if not IsValid(vehicle) then return end
+
+	local cache = getCache(vehicle)
+
+	local endVehicles = cache.endVehicles
+	if not table.IsEmpty(endVehicles) then
+		return endVehicles
+	end
+
+	local vehicles = LIB.GetTrailerVehicles(vehicle)
+	if not vehicles then return end
+
+	for k, v in pairs(vehicles) do
+		if not IsValid(v) then
+			continue
+		end
+
+		local couplerConnections = LIB.GetConnectedVehicles(v)
+		if couplerConnections and couplerConnections.count > 1 then
+			continue
+		end
+
+		table.insert(endVehicles, v)
+	end
+
+	return endVehicles
 end
 
 local g_checkPatterns = {
@@ -441,113 +546,156 @@ function LIB.TrailerHasMainVehicle(vehicle, allowFallback)
 	return true
 end
 
-function LIB.FindCorrectConnector(parent, dir)
-	if not IsValid(parent) then return end
+function LIB.GetCouplerByButton(couplerOrButton)
+	if not IsValid(couplerOrButton) then return end
 
-	local connector = LIBEntities.GetChild(parent, "Connector_" .. dir)
-
-	if not IsValid(connector) then
-		local children = LIBEntities.GetChildren(parent)
-
-		for _, child in pairs(children) do
-			if not IsValid(child) then continue end
-
-			connector = LIBEntities.GetChild(child, "Connector_" .. dir)
-
-			if IsValid(connector) then
-				return connector
-			end
-
-			connector = LIB.FindCorrectConnector(child, dir)
-
-			if IsValid(connector) then
-				return connector
-			end
-		end
+	if couplerOrButton.sligwolf_isConnector then
+		return couplerOrButton
 	end
 
-	return connector
+	local coupler = LIB.GetCoupler(couplerOrButton, couplerOrButton.sligwolf_connectorDirection)
+	return coupler
 end
 
-function LIB.CouplingMechanism(couplerButton, mainvehicle, ply)
-	if not IsValid(couplerButton) then return end
-	if not IsValid(ply) then return end
+function LIB.FindOtherCoupler(coupler)
+	if not IsValid(coupler) then return end
+	if not coupler.sligwolf_isConnector then return end
 
-	local dir = couplerButton.sligwolf_connectorDirection
-	if not dir then return end
-
-	local ConA = LIB.FindCorrectConnector(mainvehicle, dir)
-	local ConB = nil
-
-	if not IsValid(ConA) then return end
-	if not ConA.sligwolf_isConnector then return end
-	if not ConA.sligwolf_connectorDirection then return end
-	if ConA.sligwolf_connectorDirection ~= dir then return end
-
-	local Radius = ConA.searchRadius
-	if not Radius then return end
-
-	local RadiusSqr = Radius * Radius
-
-	local PosA = ConA:GetPos()
-	local Cons = ents.FindInSphere(PosA, Radius) or {}
-
-	for k, v in pairs(Cons) do
-		if not IsValid(v) then continue end
-		if v == ConA then continue end
-		if not v.sligwolf_isConnector then continue end
-		if not v.sligwolf_connectorDirection then continue end
-
-		local sp = LIBEntities.GetSuperParent(v)
-		if sp == mainvehicle then continue end
-
-		ConB = v
-		break
-	end
-
-	if not IsValid(ConB) then return end
-	local PosB = ConB:GetPos()
-
-	local Allow = LIBEntities.ConstraintIsAllowed(ConB, ply)
-	if not Allow then return end
-
-	if ConA:IsConnectedWith(ConB) then
-		local isControllingVehicle = LIBVehicleControl.IsControllingVehicle(ply)
-		if isControllingVehicle then return end
-
-		if not ConA:Disconnect(ConB) then return end
-		ConA:EmitSound(CONSTANTS.sndCoupling)
-
+	local radius = coupler.searchRadius
+	if not radius then
 		return
 	end
 
-	if PosA:DistToSqr(PosB) >= RadiusSqr then return end
+	local radiusSqr = radius * radius
+	local posA = coupler:GetPos()
 
-	if not ConA:Connect(ConB) then return end
-	ConA:EmitSound(CONSTANTS.sndCoupling)
+	local otherCouplers = ents.FindInSphere(posA, radius)
+	if not otherCouplers then return end
+
+	local superparent = LIBEntities.GetSuperParent(coupler)
+
+	for i, otherCoupler in ipairs(otherCouplers) do
+		if not IsValid(otherCoupler) then continue end
+
+		if otherCoupler == coupler then continue end
+		if not otherCoupler.sligwolf_isConnector then continue end
+
+		local posB = otherCoupler:GetPos()
+		if posA:DistToSqr(posB) >= radiusSqr then continue end
+
+		local otherSuperparent = LIBEntities.GetSuperParent(otherCoupler)
+		if otherSuperparent == superparent then continue end
+
+		return otherCoupler
+	end
+
+	return nil
 end
 
-function LIB.AutoConnectVehicles(ConA)
-	if not IsValid(ConA) then return end
-
-	local Radius = ConA.searchRadius
-	if not Radius then return end
-
-	local RadiusSqr = Radius * Radius
-
-	local PosA = ConA:GetPos()
-	local Cons = ents.FindInSphere(PosA, Radius) or {}
-
-	for k, ConB in pairs(Cons) do
-		if not ConB.sligwolf_isConnector then continue end
-		if ConB == ConA then continue end
-
-		local PosB = ConB:GetPos()
-		if PosA:DistToSqr(PosB) >= RadiusSqr then continue end
-
-		ConA:Connect(ConB)
-		ConA:EmitSound(CONSTANTS.sndCoupling)
+function LIB.Connect(coupler, ply)
+	coupler = LIB.GetCouplerByButton(coupler)
+	if not IsValid(coupler) then
+		return false
 	end
+
+	if coupler:IsConnected() then
+		return false
+	end
+
+	local otherCoupler = LIB.FindOtherCoupler(coupler)
+	if not IsValid(otherCoupler) then
+		return false
+	end
+
+	if IsValid(ply) then
+		if not LIBEntities.ConstraintIsAllowed(coupler, ply) then
+			return false
+		end
+
+		if not LIBEntities.ConstraintIsAllowed(otherCoupler, ply) then
+			return false
+		end
+	end
+
+	if coupler:Connect(otherCoupler) then
+		coupler:EmitSound(CONSTANTS.sndCoupling)
+		return true
+	end
+
+	return false
+end
+
+function LIB.Disconnect(coupler, ply)
+	coupler = LIB.GetCouplerByButton(coupler)
+	if not IsValid(coupler) then
+		return false
+	end
+
+	if not coupler:IsConnected() then
+		return false
+	end
+
+	local otherCoupler = coupler:GetConnectedEntity()
+	if not IsValid(otherCoupler) then
+		return false
+	end
+
+	if IsValid(ply) then
+		if not LIBEntities.ConstraintIsAllowed(coupler, ply) then
+			return false
+		end
+
+		if not LIBEntities.ConstraintIsAllowed(otherCoupler, ply) then
+			return false
+		end
+	end
+
+	if coupler:Disconnect(otherCoupler) then
+		coupler:EmitSound(CONSTANTS.sndCoupling)
+		return true
+	end
+
+	return false
+end
+
+function LIB.ToogleConnection(coupler, ply)
+	coupler = LIB.GetCouplerByButton(coupler)
+	if not IsValid(coupler) then
+		return false
+	end
+
+	if coupler:IsConnected() then
+		return LIB.Disconnect(coupler, ply)
+	end
+
+	return LIB.Connect(coupler, ply)
+end
+
+function LIB.AutoConnect(vehicle, ply)
+	if not IsValid(vehicle) then
+		return false
+	end
+
+	local endVehicles = LIB.GetTrailerEndVehicles(vehicle)
+
+	local hasConnected = false
+
+	for i, endVehicle in ipairs(endVehicles) do
+		local couplers = LIB.GetCouplers(endVehicle)
+		if not couplers then
+			continue
+		end
+
+		for _, coupler in pairs(couplers) do
+			if not LIB.Connect(coupler, ply) then
+				continue
+			end
+
+			hasConnected = true
+		end
+	end
+
+	return hasConnected
 end
 
 return true

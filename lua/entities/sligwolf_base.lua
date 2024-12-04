@@ -385,30 +385,61 @@ function ENT:EnableMotion(bool)
 	LIBEntities.EnableMotion(self, bool)
 end
 
+function ENT:HasSpawnProperties()
+	if CLIENT then
+		return false
+	end
+
+	local spawnProperties = self.spawnProperties
+
+	if not spawnProperties then
+		return false
+	end
+
+	if table.IsEmpty(spawnProperties) then
+		return false
+	end
+
+	return true
+end
+
 function ENT:SetSpawnProperties(spawnProperties)
 	if CLIENT then
 		return
 	end
 
-	self.spawnProperties = spawnProperties
+	self.spawnProperties = spawnProperties or {}
 end
 
 function ENT:GetSpawnProperties()
 	if CLIENT then
-		return
+		return nil
 	end
 
-	return self.spawnProperties or self.defaultSpawnProperties or {}
+	if not self:HasSpawnProperties() then
+		self.defaultSpawnProperties = self.defaultSpawnProperties or {}
+		return self.defaultSpawnProperties
+	end
+
+	return self.spawnProperties
 end
 
 function ENT:GetSpawnProperty(name)
+	if CLIENT then
+		return nil
+	end
+
 	local spawnProperties = self:GetSpawnProperties()
 
 	if spawnProperties[name] ~= nil then
 		return spawnProperties[name]
 	end
 
-	local defaultSpawnProperties = self.defaultSpawnProperties or {}
+	local defaultSpawnProperties = self.defaultSpawnProperties
+	if not defaultSpawnProperties then
+		return nil
+	end
+
 	return defaultSpawnProperties[name]
 end
 

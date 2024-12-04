@@ -48,6 +48,7 @@ SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base_library/baseobject.lua")
 
 loadLib("constants")
 loadLib("print")
+loadLib("help")
 loadLib("hook")
 loadLib("meta")
 loadLib("detours")
