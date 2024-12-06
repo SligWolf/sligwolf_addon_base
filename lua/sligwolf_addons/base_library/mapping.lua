@@ -284,7 +284,7 @@ function LIB.GenerateFGD(rebuildCache)
 		getSpawnnameOptionsList(vehicleTables["prop_vehicle_jeep"])
 	)
 
-	fgd = LIBUtil.NormalizeNewlines(fgd, "\n\r")
+	fgd = LIBUtil.NormalizeNewlines(fgd, "\r\n")
 	fgd = string.Replace(fgd, "\\t", "\t")
 
 	local success = LIBFile.Write(fileName, fgd)
