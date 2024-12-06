@@ -105,106 +105,102 @@ function ENT:IsAllowedGender(gender)
 	return self.gender ~= gender
 end
 
-function ENT:CanConnect(Con)
-	if not IsValid(Con) then return false end
-	if Con == self then return false end
-	if not Con.sligwolf_isConnector then return false end
+function ENT:CanConnect(other)
+	if not IsValid(other) then return false end
+	if other == self then return false end
+	if not other.sligwolf_isConnector then return false end
 
-	if not self:IsAllowedType(Con:GetType()) then return false end
-	if not Con:IsAllowedType(self:GetType()) then return false end
+	if not self:IsAllowedType(other:GetType()) then return false end
+	if not other:IsAllowedType(self:GetType()) then return false end
 
-	if not self:IsAllowedGender(Con:GetGender()) then return false end
-	if not Con:IsAllowedGender(self:GetGender()) then return false end
+	if not self:IsAllowedGender(other:GetGender()) then return false end
+	if not other:IsAllowedGender(self:GetGender()) then return false end
 
 	if self:IsConnected() then return false end
-	if Con:IsConnected() then return false end
+	if other:IsConnected() then return false end
 
 	return true
 end
 
 function ENT:GetConnectedEntity()
-	if not IsValid(self.constraint) then return nil end
-	if not IsValid(self.connected) then return nil end
-	if self.connected == self then return nil end
+	if not IsValid(self._constraint) then return nil end
+	if not IsValid(self._connected) then return nil end
+	if self._connected == self then return nil end
 
-	return self.connected
+	return self._connected
 end
 
 function ENT:GetConnectedConstraint()
-	if not IsValid(self.constraint) then return nil end
-	if not IsValid(self.connected) then return nil end
-	if self.connected == self then return nil end
+	if not IsValid(self._constraint) then return nil end
+	if not IsValid(self._connected) then return nil end
+	if self._connected == self then return nil end
 
-	return self.constraint
+	return self._constraint
 end
 
 function ENT:IsConnected()
-	if not IsValid(self.constraint) then return false end
-	if not IsValid(self.connected) then return false end
-	if self.connected == self then return false end
+	if not IsValid(self._constraint) then return false end
+	if not IsValid(self._connected) then return false end
+	if self._connected == self then return false end
 
 	return true
 end
 
-function ENT:IsConnectedWith(Con)
-	if not IsValid(Con) then return false end
-	if Con == self then return false end
+function ENT:IsConnectedWith(other)
+	if not IsValid(other) then return false end
+	if other == self then return false end
 
-	if IsValid(self.constraint) and IsValid(Con.constraint) then
-		if self.constraint ~= Con.constraint then return false end
-	end
+	if self._connected ~= other then return false end
+	if other._connected ~= self then return false end
 
-	if self.connected ~= Con then return false end
-	if Con.connected ~= self then return false end
-
-	if self:OnConnectionCheck(Con) == false then return false end
-	if Con:OnConnectionCheck(self) == false then return false end
+	if self:OnConnectionCheck(other) == false then return false end
+	if other:OnConnectionCheck(self) == false then return false end
 
 	return true
 end
 
-function ENT:Connect(Con)
-	if self:IsConnectedWith(Con) then return true end
-	if not self:CanConnect(Con) then return false end
+function ENT:Connect(other)
+	if self:IsConnectedWith(other) then return true end
+	if not self:CanConnect(other) then return false end
 
-	self:SetPos(Con:GetPos())
-	local WD = LIBConstraints.Weld(self, Con, {nocollide = true})
+	self:SetPos(other:GetPos())
+	local WD = LIBConstraints.Weld(self, other, {nocollide = true})
 
 	if not IsValid(WD) then
-		self:Disconnect(self, Con)
+		self:Disconnect(self, other)
 		return false
 	end
 
-	self.constraint = WD
-	Con.constraint = WD
+	self._constraint = WD
+	other._constraint = WD
 
-	self.connected = Con
-	Con.connected = self
+	self._connected = other
+	other._connected = self
 
-	self:OnConnect(Con)
-	Con:OnConnect(self)
+	self:OnConnect(other)
+	other:OnConnect(self)
 
 	return true
 end
 
-function ENT:Disconnect(Con)
-	if not self:IsConnectedWith(Con) then return false end
+function ENT:Disconnect(other)
+	if not self:IsConnectedWith(other) then return false end
 
-	if IsValid(self.constraint) then
-		self.constraint:Remove()
+	if IsValid(self._constraint) then
+		self._constraint:Remove()
 	end
 
-	self.constraint = nil
-	Con.constraint = nil
+	self:OnDisconnect(other)
+	other:OnDisconnect(self)
 
-	self.connected = nil
-	Con.connected = nil
+	self._constraint = nil
+	other._constraint = nil
 
-	self:OnDisconnect(Con)
-	Con:OnDisconnect(self)
+	self._connected = nil
+	other._connected = nil
 
-	self:OnPostDisconnect(Con)
-	Con:OnPostDisconnect(self)
+	self:OnPostDisconnect(other)
+	other:OnPostDisconnect(self)
 
 	return true
 end
@@ -212,14 +208,14 @@ end
 function ENT:OnRemove()
 	BaseClass.OnRemove(self)
 
-	self:Disconnect(self.connected)
+	self:Disconnect(self._connected)
 end
 
 function ENT:ThinkInternal()
 	BaseClass.ThinkInternal(self)
 
-	if IsValid(self.connected) and not IsValid(self.constraint) then
-		self:Disconnect(self.connected)
+	if IsValid(self._connected) and not IsValid(self._constraint) then
+		self:Disconnect(self._connected)
 	end
 
 	self:Debug()
@@ -261,18 +257,18 @@ function ENT:Debug(Size, Col, Time)
 	debugoverlay.Cross(pos, Size, Time, Col, true)
 end
 
-function ENT:OnConnectionCheck(Con)
+function ENT:OnConnectionCheck(other)
 	-- override me
 end
 
-function ENT:OnConnect(Con)
+function ENT:OnConnect(other)
 	-- override me
 end
 
-function ENT:OnDisconnect(Con)
+function ENT:OnDisconnect(other)
 	-- override me
 end
 
-function ENT:OnPostDisconnect(Con)
+function ENT:OnPostDisconnect(other)
 	-- override me
 end

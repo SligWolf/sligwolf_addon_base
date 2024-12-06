@@ -79,7 +79,11 @@ local function thirdpersonCalcVehicleView(vehicle, ply, view)
 			local originOffset = thirdpersonParameters.originOffset or CONSTANTS.vecZero
 			local anglesOffset = thirdpersonParameters.anglesOffset or CONSTANTS.angZero
 
-			origin, angles = LocalToWorld(originOffset, anglesOffset, origin, angles)
+			local _, newAngles = LocalToWorld(CONSTANTS.vecZero, anglesOffset, CONSTANTS.vecZero, angles)
+			local newOrigin = LocalToWorld(originOffset, CONSTANTS.angZero, origin, vehicle:GetAngles())
+
+			origin = newOrigin
+			angles = newAngles
 		end
 	end
 

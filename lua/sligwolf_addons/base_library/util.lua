@@ -239,6 +239,20 @@ function LIB.SortEntitiesBySpawn(entities, asc)
 	table.sort(entities, func)
 end
 
+function LIB.CountEntities(entities)
+	local i = 0
+
+	for _, ent in pairs(entities) do
+		if not IsValid(ent) then
+			continue
+		end
+
+		i = i + 1
+	end
+
+	return i
+end
+
 local g_listCache = {}
 
 function LIB.GetList(name)

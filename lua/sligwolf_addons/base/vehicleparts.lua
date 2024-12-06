@@ -66,7 +66,7 @@ local g_FallbackComponentsParams = {
 		connector = {
 			connectortype = "unknown",
 			gender = LIBCoupling.GENDER_NEUTRAL,
-			searchRadius = 10,
+			searchRadius = CONSTANTS.numConRadius,
 			model = CONSTANTS.mdlSphere4,
 		},
 		connectorButton = {

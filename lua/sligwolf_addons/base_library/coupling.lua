@@ -31,6 +31,10 @@ function LIB.Load()
 end
 
 local function getCache(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
 	local entTable = ent:SligWolf_GetTable()
 
 	local couplingCache = entTable.couplingCache or {}
@@ -221,6 +225,28 @@ function LIB.GetCoupler(vehicle, dir)
 	return coupler
 end
 
+local function updateCouplerConnections(couplerConnections)
+	if not couplerConnections then
+		return
+	end
+
+	local vehicles = couplerConnections.vehicles or {}
+	couplerConnections.vehicles = vehicles
+
+	local i = 0
+
+	for k, ent in pairs(vehicles) do
+		if not IsValid(ent) then
+			vehicles[k] = nil
+			continue
+		end
+
+		i = i + 1
+	end
+
+	couplerConnections.count = i
+end
+
 function LIB.RegisterCoupler(vehicle, coupler)
 	vehicle = LIBEntities.GetSuperParent(vehicle)
 
@@ -237,17 +263,27 @@ function LIB.RegisterCoupler(vehicle, coupler)
 
 	couplers[connectorDirection] = coupler
 
-
 	local couplerConnections = vehicleTable.couplerConnections or {}
 	vehicleTable.couplerConnections = couplerConnections
 
-	local vehicles = couplerConnections.vehicles or {}
-	couplerConnections.vehicles = vehicles
-
-	couplerConnections.count = table.Count(vehicles)
-
+	updateCouplerConnections(couplerConnections)
 
 	LIB.ClearCache(vehicle)
+
+	LIBEntities.CallOnRemove(vehicle, "Coupling_RegisterCoupler", function(thisVehicle)
+		local thisCouplerConnections = LIB.GetConnectedVehicles(thisVehicle)
+
+		if thisCouplerConnections then
+			for k, ent in pairs(thisCouplerConnections.vehicles) do
+				local entCouplerConnections = LIB.GetConnectedVehicles(ent)
+				updateCouplerConnections(entCouplerConnections)
+			end
+
+			updateCouplerConnections(thisCouplerConnections)
+		end
+
+		LIB.ClearCache(thisVehicle)
+	end)
 end
 
 function LIB.GetConnectedVehicles(vehicle)
@@ -283,7 +319,7 @@ function LIB.ConnectVehicles(vehicleA, vehicleB, dirA)
 	local vehicles = couplerConnections.vehicles
 	vehicles[dirA] = vehicleB
 
-	couplerConnections.count = table.Count(vehicles)
+	updateCouplerConnections(couplerConnections)
 
 	LIB.ClearCache(vehicleA)
 	LIB.ClearCache(vehicleB)
@@ -304,7 +340,7 @@ function LIB.DisconnectVehicles(vehicleA, dirA)
 	local vehicleB = vehicles[dirA]
 	vehicles[dirA] = nil
 
-	couplerConnections.count = table.Count(vehicles)
+	updateCouplerConnections(couplerConnections)
 
 	LIB.ClearCache(vehicleA)
 
@@ -340,6 +376,37 @@ function LIB.IsConnected(vehicleA, vehicleB, dirA)
 	return true
 end
 
+local function copyCache(vehicle, otherVehicles, name)
+	local cache = getCache(vehicle)
+	if not cache then
+		return
+	end
+
+	local cacheItems = cache[name]
+	if not cacheItems then
+		return
+	end
+
+	for i, otherVehicle in ipairs(otherVehicles) do
+		if vehicle == otherVehicle then
+			continue
+		end
+
+		local otherCache = getCache(otherVehicle)
+		if not otherCache then
+			continue
+		end
+
+		local otherCacheItems = otherCache[name]
+		if not otherCacheItems then
+			return
+		end
+
+		table.Empty(otherCacheItems)
+		table.CopyFromTo(cacheItems, otherCacheItems)
+	end
+end
+
 function LIB.GetTrailerVehicles(vehicle)
 	if not IsValid(vehicle) then return end
 
@@ -367,6 +434,10 @@ function LIB.GetTrailerVehicles(vehicle)
 		local nextEntities = {}
 
 		for i, currentEntity in ipairs(currentEntities) do
+			if not IsValid(currentEntity) then
+				continue
+			end
+
 			if not connectionsIndexed[currentEntity] then
 				connectionsIndexed[currentEntity] = true
 				table.insert(connections, currentEntity)
@@ -378,6 +449,10 @@ function LIB.GetTrailerVehicles(vehicle)
 			end
 
 			for k, v in pairs(couplerConnections.vehicles) do
+				if not IsValid(v) then
+					continue
+				end
+
 				if connectionsIndexed[v] then
 					continue
 				end
@@ -398,6 +473,8 @@ function LIB.GetTrailerVehicles(vehicle)
 
 	-- Sort by oldest entity first
 	LIBUtil.SortEntitiesBySpawn(connections, true)
+
+	copyCache(vehicle, connections, "connections")
 
 	return connections
 end
@@ -473,6 +550,8 @@ function LIB.GetTrailerMainVehicles(vehicle)
 		table.insert(mainVehicles, v)
 	end
 
+	copyCache(vehicle, vehicles, "mainVehicles")
+
 	return mainVehicles
 end
 
@@ -502,6 +581,8 @@ function LIB.GetTrailerEndVehicles(vehicle)
 		table.insert(endVehicles, v)
 	end
 
+	copyCache(vehicle, vehicles, "endVehicles")
+
 	return endVehicles
 end
 
@@ -522,6 +603,20 @@ function LIB.GetTrailerMainVehicle(vehicle, allowFallback)
 
 	local mainVehicles = LIB.GetTrailerMainVehicles(vehicle)
 	if not mainVehicles then return end
+
+	if #mainVehicles <= 1 then
+		local mainVehicle = mainVehicles[1]
+
+		if IsValid(mainVehicle) then
+			return mainVehicle
+		end
+
+		if allowFallback then
+			return vehicle
+		end
+
+		return nil
+	end
 
 	for key, checkPattern in ipairs(g_checkPatterns) do
 		local mainVehicle = getTrailerMainVehicleInternal(mainVehicles, checkPattern)
