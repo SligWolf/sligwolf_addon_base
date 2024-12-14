@@ -126,7 +126,7 @@ function LIB.CanSpawn(ply, spawnTable)
 	end
 
 	local message = LIBPrint.FormatMessage("You are spawning too often, please slow down!")
-	LIBPrint.Notify(NOTIFY_ERROR, message, 3, ply)
+	LIBPrint.Notify(1, message, 3, ply)
 
 	return false
 end
@@ -207,7 +207,7 @@ function LIB.RemoveSpamCollisionEntities(ent)
 			printName
 		)
 
-		LIBPrint.Notify(NOTIFY_ERROR, message, 5, rf)
+		LIBPrint.Notify(1, message, 5, rf)
 
 		LIBEntities.RemoveSystemEntities(ent, true)
 	end)

@@ -172,7 +172,7 @@ if CLIENT then
 	}
 
 	function LIB.Notify(mode, message, len)
-		mode = mode or NOTIFY_GENERIC
+		mode = mode or 1
 
 		message = tostring(message or "")
 		if message == "" then
@@ -193,7 +193,7 @@ if CLIENT then
 	end
 else
 	function LIB.Notify(mode, message, len, recipientFilterOrPly)
-		mode = mode or NOTIFY_GENERIC
+		mode = mode or 1
 
 		message = tostring(message or "")
 		if message == "" then
