@@ -7,14 +7,14 @@
 // Generated via concommand: sv_sligwolf_mapping_generate_fgd <rebuildCache (0/1)>
 
 // Generated:
-//   API Version:   1.0.0
-//   Generated at:  2024-12-06 18:14:44
+//   API Version:   1.0.1
+//   Generated at:  2024-12-14 13:04:50
 //
 // Cached:
-//   API Version:   1.0.0
-//   Generated at:  2024-12-06 18:14:44
-//   Addons count:  60
-//   Vehicle count: 538
+//   API Version:   1.0.1
+//   Generated at:  2024-12-14 13:04:46
+//   Addons count:  62
+//   Vehicle count: 541
 
 @BaseClass base(prop_vehicle_prisoner_pod) = Sligwolf_base_prop_vehicle_prisoner_pod
 [
@@ -125,6 +125,7 @@
 		"sligwolf_train_wagon_1_blue" : "Green-T7 | Train Wagon Short (sligwolf_train_wagon_1_blue)"
 		"sligwolf_train_wagon_1_green" : "Green-T7 | Train Wagon Short (sligwolf_train_wagon_1_green)"
 		"sligwolf_train_wagon_1_red" : "Green-T7 | Train Wagon Short (sligwolf_train_wagon_1_red)"
+		"sligwolf_hl2coopvehicles_airboat_gunner" : "HL2 Coop Vehicles | Coop Airboat Gunner (sligwolf_hl2coopvehicles_airboat_gunner)"
 		"sligwolf_tank_v2_gunner" : "Leopard 2 Tank | Tank Leopard Gunner (sligwolf_tank_v2_gunner)"
 		"sligwolf_tank_v2_passenger" : "Leopard 2 Tank | Tank Leopard Seat (sligwolf_tank_v2_passenger)"
 		"sligwolf_loco_blueline" : "Mini Trains | Minitrain 01 (sligwolf_loco_blueline)"
@@ -304,6 +305,7 @@
 		"In case of any mismatches issues, the game will tell what's wrong via an error." =
 	[
 		"" : "Nothing (No SW-ADDON Vehicle)"
+		"sligwolf_hl2coopvehicles_airboat" : "HL2 Coop Vehicles | Coop Airboat (sligwolf_hl2coopvehicles_airboat)"
 		"sligwolf_hovercraft_beige" : "Hovercraft | Hovercraft (sligwolf_hovercraft_beige)"
 		"sligwolf_hovercraft_blue" : "Hovercraft | Hovercraft (sligwolf_hovercraft_blue)"
 		"sligwolf_hovercraft_red" : "Hovercraft | Hovercraft (sligwolf_hovercraft_red)"
@@ -456,6 +458,7 @@
 		"sligwolf_gokart_red" : "Gokart | Go Kart (sligwolf_gokart_red)"
 		"sligwolf_gokart_white" : "Gokart | Go Kart (sligwolf_gokart_white)"
 		"sligwolf_gokart_yellow" : "Gokart | Go Kart (sligwolf_gokart_yellow)"
+		"sligwolf_hl2coopvehicles_jeep" : "HL2 Coop Vehicles | Coop Buggy (sligwolf_hl2coopvehicles_jeep)"
 		"sligwolf_new_hotrod" : "Hotrod | Hot Rod (sligwolf_new_hotrod)"
 		"sligwolf_new_hotrod_black" : "Hotrod | Hot Rod (sligwolf_new_hotrod_black)"
 		"sligwolf_new_hotrod_red" : "Hotrod | Hot Rod (sligwolf_new_hotrod_red)"
