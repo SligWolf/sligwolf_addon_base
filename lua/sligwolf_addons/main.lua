@@ -25,7 +25,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "af17bec9ab37327d33e9f6bd7a149a348802e26ff049913deb42cdfe38fc728d"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.0.0"
+SligWolf_Addons.BaseApiVersion = "1.0.1"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 241029
@@ -98,6 +98,7 @@ local g_WorkshopIDWhitelist = {
 	["greent7"] = "105147817",
 	["grenadelauncher"] = "175664622",
 	["hands"] = "113764710",
+	["hl2coopvehicles"] = "3384120217",
 	["hotrod"] = "105011898",
 	["hovercraft"] = "105010554",
 	["jeeps"] = "1375274405",
@@ -114,6 +115,7 @@ local g_WorkshopIDWhitelist = {
 	["robotgen1"] = "147802259",
 	["robotgen2"] = "119968146",
 	["robotgen2npc"] = "123685947",
+	["robotgen3"] = "3384124517",
 	["rustyer"] = "219898030",
 	["seats"] = "107865704",
 	["siren"] = "337151920",
@@ -130,6 +132,7 @@ local g_WorkshopIDWhitelist = {
 	["vrhl2weapons"] = "3008753645",
 	["wagons"] = "379538128",
 	["westernloco"] = "132174849",
+	["wheelpack"] = "3384113283",
 	["wpsuspensiontrain"] = "3297918081",
 }
 
