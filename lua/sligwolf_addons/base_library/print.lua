@@ -15,6 +15,12 @@ table.Empty(SligWolf_Addons.Print)
 
 local LIB = SligWolf_Addons.Print
 
+LIB.NOTIFY_GENERIC = 0
+LIB.NOTIFY_ERROR = 1
+LIB.NOTIFY_UNDO = 2
+LIB.NOTIFY_HINT = 3
+LIB.NOTIFY_CLEANUP = 4
+
 local LIBVehicle = nil
 local LIBEntities = nil
 local LIBDebug = nil
@@ -172,7 +178,7 @@ if CLIENT then
 	}
 
 	function LIB.Notify(mode, message, len)
-		mode = mode or 1
+		mode = mode or LIB.NOTIFY_GENERIC
 
 		message = tostring(message or "")
 		if message == "" then
@@ -193,7 +199,7 @@ if CLIENT then
 	end
 else
 	function LIB.Notify(mode, message, len, recipientFilterOrPly)
-		mode = mode or 1
+		mode = mode or LIB.NOTIFY_GENERIC
 
 		message = tostring(message or "")
 		if message == "" then
