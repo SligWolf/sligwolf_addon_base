@@ -371,7 +371,7 @@ local function CreateAdvBallsocket(ent, parent, constraintInfos)
 	return constraintEnt
 end
 
-local function CreateKeepupright(ent, constraintInfos)
+local function CreateKeepupright(ent, parent, constraintInfos)
 	local constraintEnt = LIBConstraints.Keepupright(ent, constraintInfos)
 	return constraintEnt
 end
