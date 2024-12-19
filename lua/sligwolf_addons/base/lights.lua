@@ -19,11 +19,19 @@ local function lightsUpdateGlowsSingle(trailer, lightState, indicatorState)
 
 	local lights = vehicleLights.lights
 	local indicators = vehicleLights.indicators
+	local allowMiddleLights = vehicleLights.allowMidLights
+
+	local isEnd = LIBCoupling.IsTrailerEndVehicle(trailer)
 
 	if lights then
 		for i, filter in ipairs(lights) do
 			LIBEntities.ForEachFilteredChild(trailer, filter, function(f_ent, index, k, v)
 				if not lightState then
+					v:TurnOn(false)
+					return
+				end
+
+				if not allowMiddleLights and not isEnd then
 					v:TurnOn(false)
 					return
 				end

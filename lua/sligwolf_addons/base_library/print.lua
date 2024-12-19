@@ -15,16 +15,16 @@ table.Empty(SligWolf_Addons.Print)
 
 local LIB = SligWolf_Addons.Print
 
+local LIBVehicle = nil
+local LIBEntities = nil
+local LIBDebug = nil
+local LIBNet = nil
+
 LIB.NOTIFY_GENERIC = 0
 LIB.NOTIFY_ERROR = 1
 LIB.NOTIFY_UNDO = 2
 LIB.NOTIFY_HINT = 3
 LIB.NOTIFY_CLEANUP = 4
-
-local LIBVehicle = nil
-local LIBEntities = nil
-local LIBDebug = nil
-local LIBNet = nil
 
 function LIB.Load()
 	LIBVehicle = SligWolf_Addons.Vehicle

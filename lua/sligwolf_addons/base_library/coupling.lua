@@ -136,10 +136,22 @@ local function clearCacheEntities(entities)
 	end
 end
 
+function LIB.ClearCachePair(entA, entB, entC)
+	LIB.ClearCache(entA)
+
+	if IsValid(entB) and entB ~= entA then
+		LIB.ClearCache(entB)
+	end
+
+	if IsValid(entC) and entC ~= entA and entC ~= entB then
+		LIB.ClearCache(entC)
+	end
+end
+
 function LIB.ClearCache(ent)
 	if not IsValid(ent) then return end
 
-	local vehicles = LIB.GetTrailerVehicles(ent)
+	local vehicles = LIB.GetTrailerVehicles(ent, true)
 
 	if vehicles then
 		for _, vehicle in ipairs(vehicles) do
@@ -317,12 +329,14 @@ function LIB.ConnectVehicles(vehicleA, vehicleB, dirA)
 	end
 
 	local vehicles = couplerConnections.vehicles
-	vehicles[dirA] = vehicleB
+	local vehicleC = vehicles[dirA]
 
+	LIB.ClearCachePair(vehicleA, vehicleB, vehicleC)
+
+	vehicles[dirA] = vehicleB
 	updateCouplerConnections(couplerConnections)
 
-	LIB.ClearCache(vehicleA)
-	LIB.ClearCache(vehicleB)
+	LIB.ClearCachePair(vehicleA, vehicleB, vehicleC)
 end
 
 function LIB.DisconnectVehicles(vehicleA, dirA)
@@ -338,14 +352,13 @@ function LIB.DisconnectVehicles(vehicleA, dirA)
 
 	local vehicles = couplerConnections.vehicles
 	local vehicleB = vehicles[dirA]
-	vehicles[dirA] = nil
 
+	LIB.ClearCachePair(vehicleA, vehicleB)
+
+	vehicles[dirA] = nil
 	updateCouplerConnections(couplerConnections)
 
-	LIB.ClearCache(vehicleA)
-
-	if vehicleA == vehicleB then return end
-	LIB.ClearCache(vehicleB)
+	LIB.ClearCachePair(vehicleA, vehicleB)
 end
 
 function LIB.IsConnected(vehicleA, vehicleB, dirA)
@@ -407,14 +420,20 @@ local function copyCache(vehicle, otherVehicles, name)
 	end
 end
 
-function LIB.GetTrailerVehicles(vehicle)
+function LIB.GetTrailerVehicles(vehicle, ignoreCache)
 	if not IsValid(vehicle) then return end
 
-	local cache = getCache(vehicle)
+	local connections = nil
 
-	local connections = cache.connections
-	if not table.IsEmpty(connections) then
-		return connections
+	if ignoreCache then
+		connections = {}
+	else
+		local cache = getCache(vehicle)
+
+		connections = cache.connections
+		if not table.IsEmpty(connections) then
+			return connections
+		end
 	end
 
 	local connectionsIndexed = {}
@@ -471,10 +490,12 @@ function LIB.GetTrailerVehicles(vehicle)
 		currentEntities = nextEntities
 	end
 
-	-- Sort by oldest entity first
-	LIBUtil.SortEntitiesBySpawn(connections, true)
+	if not ignoreCache then
+		-- Sort by oldest entity first, do not sort if not cached
+		LIBUtil.SortEntitiesBySpawn(connections, true)
 
-	copyCache(vehicle, connections, "connections")
+		copyCache(vehicle, connections, "connections")
+	end
 
 	return connections
 end
@@ -512,8 +533,7 @@ local function getTrailerMainVehicleInternal(vehicles, checkPattern)
 		if checkConnections then
 			-- check if v is in the middle
 
-			local couplerConnections = LIB.GetConnectedVehicles(v)
-			if couplerConnections and couplerConnections.count > 1 then
+			if not LIB.IsTrailerEndVehicle(v) then
 				continue
 			end
 		end
@@ -573,8 +593,7 @@ function LIB.GetTrailerEndVehicles(vehicle)
 			continue
 		end
 
-		local couplerConnections = LIB.GetConnectedVehicles(v)
-		if couplerConnections and couplerConnections.count > 1 then
+		if not LIB.IsTrailerEndVehicle(v) then
 			continue
 		end
 
@@ -584,6 +603,19 @@ function LIB.GetTrailerEndVehicles(vehicle)
 	copyCache(vehicle, vehicles, "endVehicles")
 
 	return endVehicles
+end
+
+function LIB.IsTrailerEndVehicle(vehicle)
+	local couplerConnections = LIB.GetConnectedVehicles(vehicle)
+	if not couplerConnections then
+		return true
+	end
+
+	if couplerConnections.count <= 1 then
+		return true
+	end
+
+	return false
 end
 
 local g_checkPatterns = {
@@ -772,7 +804,6 @@ function LIB.AutoConnect(vehicle, ply)
 	end
 
 	local endVehicles = LIB.GetTrailerEndVehicles(vehicle)
-
 	local hasConnected = false
 
 	for i, endVehicle in ipairs(endVehicles) do
