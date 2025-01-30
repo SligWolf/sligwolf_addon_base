@@ -17,7 +17,7 @@ local LIB = SligWolf_Addons.Convar
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local g_lastThink = 0
+local g_nextThink = 0
 
 local g_sliderRenderMode = 0
 local g_isDebug = false
@@ -111,9 +111,9 @@ function LIB.Load()
 	LIBHook.Add("Think", "ConvarsUpdate", function()
 		local now = RealTime()
 
-		if g_lastThink < now then
+		if g_nextThink < now then
 			doDelayedThink()
-			g_lastThink = now + 1 + math.random()
+			g_nextThink = now + 1 + math.random()
 		end
 	end)
 end
