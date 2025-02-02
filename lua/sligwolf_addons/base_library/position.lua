@@ -81,16 +81,13 @@ local function pollAsyncPositioning(ent, entTable, force)
 		end
 	end
 
-	local curPos = ent:GetPos()
-	local curAng = ent:GetAngles()
-
 	local callbacksCopy = table.Copy(callbacks)
 
 	table.Empty(callbacks)
 	table.Empty(callbacksIdx)
 
 	for i, thisCallback in ipairs(callbacksCopy) do
-		thisCallback(ent, curPos, curAng)
+		thisCallback(ent)
 	end
 
 	asyncPositioning.active = false
@@ -183,11 +180,11 @@ function LIB.SetPosAng(ent, pos, ang, callback)
 end
 
 function LIB.SetPos(ent, pos, callback)
-	LIB.SetPosAng(ent, pos, nil, callback)
+	return LIB.SetPosAng(ent, pos, nil, callback)
 end
 
 function LIB.SetAng(ent, ang, callback)
-	LIB.SetPosAng(ent, nil, ang, callback)
+	return LIB.SetPosAng(ent, nil, ang, callback)
 end
 
 function LIB.IsAsyncPositioning(ent)

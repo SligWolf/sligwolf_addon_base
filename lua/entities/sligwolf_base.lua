@@ -27,6 +27,7 @@ end
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBBones = SligWolf_Addons.Bones
 local LIBModel = SligWolf_Addons.Model
 local LIBUtil = SligWolf_Addons.Util
@@ -385,6 +386,10 @@ function ENT:EnableMotion(bool)
 	LIBEntities.EnableMotion(self, bool)
 end
 
+function ENT:IsMotionEnabled()
+	return LIBEntities.IsMotionEnabled(self)
+end
+
 function ENT:HasSpawnProperties()
 	if CLIENT then
 		return false
@@ -469,7 +474,7 @@ function ENT:GetSpawnName()
 end
 
 function ENT:OnEntityCopyTableFinish(data)
-	LIBEntities.RemoveBadDupeData(data)
+	LIBDuplicator.RemoveBadDupeData(data)
 end
 
 function ENT:SetDupeData(key, value)

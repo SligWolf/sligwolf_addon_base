@@ -12,7 +12,10 @@ end
 
 local SligWolf_Addons = SligWolf_Addons
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBThirdperson = SligWolf_Addons.Thirdperson
+local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
@@ -218,6 +221,9 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 
 	LIBThirdperson.SetThirdpersonParameters(vehicle, customSpawnProperties.thirdperson)
 
+	local spawnOffset = customSpawnProperties.spawnOffset
+	local spawnOffsetDupe = customSpawnProperties.spawnOffsetDupe or customSpawnProperties.spawnOffset
+
 	LIBPhysics.InitializeAsPhysEntity(vehicle)
 
 	if isSpawnedByEngine then
@@ -248,15 +254,44 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 		end
 	end
 
-	local vat = self:GetEntityTable(vehicle)
+	LIBEntities.EnableMotion(vehicle, false)
 
-	self:CallAddonFunctionWithErrorNoHalt(
-		"SpawnVehicle",
-		entTable.spawnerPlayer,
-		vehicle,
-		vat,
-		customSpawnProperties
-	)
+	local spawnVehicle = function(thisVehicle)
+		local vat = self:GetEntityTable(thisVehicle)
+
+		self:CallAddonFunctionWithErrorNoHalt(
+			"SpawnVehicle",
+			entTable.spawnerPlayer,
+			thisVehicle,
+			vat,
+			customSpawnProperties
+		)
+	end
+
+	local isAsync = false
+	local isDupe = entTable.isDuped
+
+	if SERVER and not isSpawnedByEngine then
+		local pos = vehicle:GetPos()
+		local ang = vehicle:GetAngles()
+
+		local newpos = nil
+		local newang = nil
+
+		if not isDupe and spawnOffset then
+			newpos, newang = LocalToWorld(spawnOffset.pos or CONSTANTS.vecZero, spawnOffset.ang or CONSTANTS.angZero, pos, ang)
+		elseif isDupe and spawnOffsetDupe then
+			newpos, newang = LocalToWorld(spawnOffsetDupe.pos or CONSTANTS.vecZero, spawnOffsetDupe.ang or CONSTANTS.angZero, pos, ang)
+		end
+
+		if newpos and newang then
+			isAsync = LIBPosition.SetPosAng(vehicle, newpos, newang, spawnVehicle)
+		end
+	end
+
+	if not isAsync then
+		spawnVehicle(vehicle)
+	end
 end
 
 return true

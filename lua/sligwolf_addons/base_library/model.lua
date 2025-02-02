@@ -245,17 +245,17 @@ function LIB.SetModel(ent, path, fallbackPath)
 end
 
 function LIB.GuessAddonIDByModelName(model)
-	if not LIB.IsValidModel(model) then
-		return
+	if not model or model == "" then
+		return nil
 	end
 
 	local addonid = string.match(model, "^models/sligwolf/([%w%s_]+)/" ) or ""
 	if addonid == "" then
-		return
+		return nil
 	end
 
 	if not SligWolf_Addons.HasLoadedAddon(addonid) then
-		return
+		return nil
 	end
 
 	return addonid

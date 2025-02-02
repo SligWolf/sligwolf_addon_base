@@ -225,7 +225,7 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 	seat:Spawn()
 	seat:Activate()
 
-	LIBEntities.SetupChildPhysEntity(seat, seatGroup, COLLISION_GROUP_IN_VEHICLE, attachmentName)
+	LIBEntities.SetupDecoratorEntity(seat, seatGroup, COLLISION_GROUP_IN_VEHICLE, attachmentName)
 
 	return seat
 end

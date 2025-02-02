@@ -146,12 +146,7 @@ function ENT:UpdateCheckForRealign()
 end
 
 function ENT:CanRealign()
-	local phys = self:GetPhysicsObject()
-	if not IsValid(phys) then
-		return false
-	end
-
-	if not phys:IsMotionEnabled() then
+	if not LIBEntities.IsMotionEnabled(self) then
 		-- don't realign frozen bogies
 		return false
 	end

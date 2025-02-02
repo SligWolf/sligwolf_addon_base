@@ -11,6 +11,7 @@ if not SLIGWOLF_ADDON then
 end
 
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
+local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBEntities = SligWolf_Addons.Entities
 local LIBTimer = SligWolf_Addons.Timer
 local LIBUtil = SligWolf_Addons.Util
@@ -300,7 +301,7 @@ function SLIGWOLF_ADDON:SetupDupeModifier(ent, callbacks)
 	end
 
 	superparent.OnEntityCopyTableFinish = function(thisent, data, ...)
-		LIBEntities.RemoveBadDupeData(data)
+		LIBDuplicator.RemoveBadDupeData(data)
 		return oldOnEntityCopyTableFinish(thisent, data, ...)
 	end
 

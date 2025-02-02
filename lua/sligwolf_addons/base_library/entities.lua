@@ -19,8 +19,9 @@ local LIBConstraints = nil
 local LIBPosition = nil
 local LIBTimer = nil
 local LIBPrint = nil
-local LIBMeta = nil
 local LIBUtil = nil
+
+local g_emptyFunction = function() end
 
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
@@ -28,7 +29,6 @@ function LIB.Load()
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
 	LIBUtil = SligWolf_Addons.Util
-	LIBMeta = SligWolf_Addons.Meta
 end
 
 local function getCache(ent)
@@ -79,51 +79,6 @@ function LIB.ClearCache(ent)
 	if not cache then return end
 
 	table.Empty(cache.parents)
-end
-
-function LIB.RemoveBadDupeData(data)
-	if not data then return end
-
-	LIBMeta.RemoveBadDupeData(data)
-
-	if not data.sligwolf_entity then
-		return
-	end
-
-	data.spawnname = nil
-	data.spawnProperties = nil
-	data.defaultSpawnProperties = nil
-
-	data.addonCache = nil
-	data.addonIdCache = nil
-
-	data.DoNotDuplicate = nil
-
-	-- Remove values whose names starting with "_", "sligwolf_" or "SLIGWOLF_"
-	for key, _ in pairs(data) do
-		if not isstring(key) then
-			continue
-		end
-
-		if key == "" then
-			continue
-		end
-
-		if string.StartsWith(key, "_") then
-			data[key] = nil
-			continue
-		end
-
-		if string.StartsWith(key, "sligwolf_") then
-			data[key] = nil
-			continue
-		end
-
-		if string.StartsWith(key, "SLIGWOLF_") then
-			data[key] = nil
-			continue
-		end
-	end
 end
 
 function LIB.ToString(ent)
@@ -216,7 +171,7 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 	return ent
 end
 
-function LIB.SetupChildPhysEntity(ent, parent, collision, attachmentid)
+function LIB.SetupDecoratorEntity(ent, parent, collision, attachmentid)
 	if not IsValid(ent) then return end
 	if not IsValid(parent) then return end
 
@@ -238,11 +193,7 @@ function LIB.SetupChildPhysEntity(ent, parent, collision, attachmentid)
 	ent.sligwolf_noBodySystemApplyMotion = true
 
 	LIB.RemoveEntitiesOnDelete(parent, ent)
-
-	local phys = ent:GetPhysicsObject()
-	if IsValid(phys) then
-		phys:Sleep()
-	end
+	LIB.EnableMotion(ent, false)
 
 	return ent
 end
@@ -1399,12 +1350,7 @@ function LIB.UpdateBodySystemMotion(srcEnt, delayed)
 		return false
 	end
 
-	local phys = srcEnt:GetPhysicsObject()
-	if not IsValid(phys) then
-		return
-	end
-
-	local motion = phys:IsMotionEnabled()
+	local motion = LIB.IsMotionEnabled(srcEnt)
 
 	if not LIB.CanApplyBodySystemMotion(srcEnt) then
 		return
@@ -1428,13 +1374,86 @@ function LIB.UpdateBodySystemMotion(srcEnt, delayed)
 	end)
 end
 
-function LIB.EnableMotion(ent, bool)
-	if not IsValid(ent) then return end
+function LIB.EnableMotion(entOrPhys, bool)
+	if not IsValid(entOrPhys) then
+		return
+	end
 
-	local phys = ent:GetPhysicsObject()
-	if not IsValid(phys) then return end
+	if isentity(entOrPhys) then
+		if entOrPhys:IsPlayer() then
+			return
+		end
 
-	phys:EnableMotion(bool or false)
+		local physcount = entOrPhys:GetPhysicsObjectCount()
+
+		if physcount <= 0 then
+			return
+		end
+
+		for i = 1, physcount do
+			local subPhys = entOrPhys:GetPhysicsObjectNum(i - 1)
+
+			if not IsValid(subPhys) then
+				continue
+			end
+
+			if not bool then
+				subPhys:Sleep()
+			end
+
+			subPhys:EnableMotion(bool or false)
+
+			if bool then
+				subPhys:Wake()
+			end
+		end
+
+		return
+	end
+
+	if not bool then
+		entOrPhys:Sleep()
+	end
+
+	entOrPhys:EnableMotion(bool or false)
+
+	if bool then
+		entOrPhys:Wake()
+	end
+end
+
+function LIB.IsMotionEnabled(entOrPhys)
+	if not IsValid(entOrPhys) then
+		return false
+	end
+
+	if isentity(entOrPhys) then
+		if entOrPhys:IsPlayer() then
+			return false
+		end
+
+		local physcount = entOrPhys:GetPhysicsObjectCount()
+
+		if physcount <= 0 then
+			return false
+		end
+
+		for i = 1, physcount do
+			local subPhys = entOrPhys:GetPhysicsObjectNum(i - 1)
+
+			if not IsValid(subPhys) then
+				continue
+			end
+
+			if not subPhys:IsMotionEnabled() then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	return entOrPhys:IsMotionEnabled()
 end
 
 function LIB.LockEntityToMountPoint(selfEnt, callback)
@@ -1456,6 +1475,8 @@ function LIB.LockEntityToMountPoint(selfEnt, callback)
 	end
 
 	LIB.EnableMotion(selfEnt, false)
+
+	callback = callback or g_emptyFunction
 
 	local done = function(ent)
 		if not IsValid(ent.sligwolf_lockConstraintWeld) then

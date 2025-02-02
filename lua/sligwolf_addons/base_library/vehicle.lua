@@ -316,6 +316,10 @@ function LIB.Load()
 
 		local vat = vehicle:SligWolf_GetAddonTable(addonname)
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnVehicleFinished", vehicle, vat, ply)
+
+		if SERVER then
+			LIBEntities.EnableSystemMotion(vehicle, true)
+		end
 	end
 
 	LIBHook.AddCustom("SpawnSystemFinished", "Library_Vehicle_SpawnVehicleFinished", SpawnVehicleFinished, 20000)

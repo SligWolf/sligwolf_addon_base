@@ -107,7 +107,7 @@ function LIB.CreateAdvDuplicater1PasteHooks()
 	g_detourBackups.AdvDupe1CreateEntityFromTable = g_detourBackups.AdvDupe1CreateEntityFromTable or AdvDupe.CreateEntityFromTable
 	local oldFunc = g_detourBackups.AdvDupe1CreateEntityFromTable
 
-	-- We override duplicator.Paste, because that the only way to globally detect entity are being pasted.
+	-- We override AdvDupe.CreateEntityFromTable, because that the only way to globally detect entity are being pasted.
 
 	AdvDupe.CreateEntityFromTable = function(ply, ...)
 		LIBHook.RunCustom("DuplicatorPrePaste", ply)

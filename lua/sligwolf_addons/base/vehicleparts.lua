@@ -37,7 +37,6 @@ local g_FallbackComponentsParams = {
 	keyValues = {},
 	inputFires = {},
 	constraints = {},
-	motion = true,
 	colorFromParent = false,
 	isBody = false,
 	removeAllOnDelete = true,
@@ -46,7 +45,6 @@ local g_FallbackComponentsParams = {
 		propParent = {
 			collision = COLLISION_GROUP_IN_VEHICLE,
 			boneMerge = false,
-			motion = false,
 		},
 		trigger = {
 			customPhysics = true,
@@ -92,26 +90,22 @@ local g_FallbackComponentsParams = {
 			endAlpha = 10,
 			lifeTime = 0,
 			dieTime = 3,
-			motion = false,
 		},
 		light = {
 			fov = 120,
 			farZ = 2048,
 			shadowRenderDist = 2048,
-			motion = false,
 		},
 		glow = {
 			size = 30,
 			enlarge = 10,
 			count = 2,
 			alphaReduce = 100,
-			motion = false,
 		},
 		animatedWheel = {
 			size = 8,
 			restrate = 16,
 			boneMerge = false,
-			motion = false,
 			collision = COLLISION_GROUP_WEAPON,
 		},
 		speedometer = {
@@ -125,7 +119,6 @@ local g_FallbackComponentsParams = {
 			scale = 0.25,
 			functionName = "",
 			maxDrawDistance = 2048,
-			motion = false,
 		},
 		bendi = {
 			parentNameFront = "",
@@ -134,7 +127,6 @@ local g_FallbackComponentsParams = {
 		pod = {
 			collision = COLLISION_GROUP_WORLD,
 			boneMerge = false,
-			motion = false,
 			keyValues = {
 				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
 				limitview = 0,
@@ -564,7 +556,6 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local blockAllTools = component.blockAllTools
 	local keyValues = component.keyValues
 	local inputFires = component.inputFires
-	local motion = component.motion
 	local mass = component.mass
 	local colorFromParent = component.colorFromParent
 	local isBody = component.isBody
@@ -642,17 +633,14 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		ent:SetNWBool("sligwolf_isBody", true)
 	end
 
+	LIBEntities.EnableMotion(ent, false)
+
 	local phys = ent:GetPhysicsObject()
-	if not IsValid(phys) then
-		return ent
-	end
-
-	phys:Wake()
-	phys:EnableMotion(motion)
-
-	if mass then
+	if IsValid(phys) and mass then
 		phys:SetMass(mass)
 	end
+
+	return ent
 end
 
 function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superparent)
@@ -798,7 +786,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
-	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupDecoratorEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -821,7 +809,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
-	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupDecoratorEntity(ent, parent, component.collision, attachment)
 
 	ent:SetSeatModel(seatModel)
 	ent:SetSeatKeyValues(seatKeyValues)
@@ -841,7 +829,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
-	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupDecoratorEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
 		ent:AddEffects(EF_BONEMERGE)
@@ -909,7 +897,7 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent,
 	end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
-	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupDecoratorEntity(ent, parent, component.collision, attachment)
 
 	return ent
 end
@@ -1103,7 +1091,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
-	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupDecoratorEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_connectorDirection = name
 
@@ -1136,7 +1124,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent, 
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
-	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupDecoratorEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_noPickup = true
 	ent:SetNWBool("sligwolf_noPickup", true)
@@ -1366,7 +1354,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent, cal
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
-	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
+	LIBEntities.SetupDecoratorEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_vehicle = true
 	ent.sligwolf_vehiclePod = true
@@ -1489,6 +1477,8 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent, c
 	parent.sligwolf_constraintWeld2 = WD2
 
 	LIBPhysics.InitializeAsPhysEntity(ent)
+
+	LIBEntities.EnableMotion(ent, true)
 
 	return ent
 end
