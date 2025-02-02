@@ -23,6 +23,23 @@ local function getName(identifier)
 	return identifier
 end
 
+function LIB.GetEntityTimerName(ent, identifier)
+	if not IsValid(ent) then return nil end
+
+	identifier = ent:GetCreationID() .. "_" .. tostring(identifier or "")
+	return identifier
+end
+
+function LIB.GetAddonTimerName(addon, identifier)
+	local id = addon.Addonname
+	if not id then
+		return nil
+	end
+
+	identifier = id .. "_" .. tostring(identifier or "")
+	return identifier
+end
+
 function LIB.Interval(identifier, delay, repetitions, func)
 	if not isfunction(func) then return end
 	local name = getName(identifier)

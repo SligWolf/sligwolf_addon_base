@@ -180,7 +180,11 @@ end
 function ENT:LockToMount()
 	if not self.nextAutoUnlockFromMount then
 		LIBEntities.SetUnsolidToPlayerRecursive(self, true)
-		LIBEntities.LockEntityToMountPoint(self)
+		LIBEntities.LockEntityToMountPoint(self, function(this, ok)
+			if this.nextAutoUnlockFromMount then
+				this.nextAutoUnlockFromMount = CurTime() + 0.5
+			end
+		end)
 	end
 
 	self.nextAutoUnlockFromMount = CurTime() + 0.5

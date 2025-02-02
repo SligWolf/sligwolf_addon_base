@@ -12,16 +12,6 @@ end
 
 local LIBTimer = SligWolf_Addons.Timer
 
-local function getTimerNameFromAddon(addon, identifier)
-	local id = addon.Addonname
-	if not id then
-		return nil
-	end
-
-	identifier = id .. "_" .. tostring(identifier or "")
-	return identifier
-end
-
 local function getTimerCallbackForAddon(addon, identifier, func)
 	return function()
 		if not addon.Loaded then
@@ -38,7 +28,7 @@ local function getTimerCallbackForAddon(addon, identifier, func)
 end
 
 function SLIGWOLF_ADDON:TimerInterval(identifier, delay, repetitions, func)
-	identifier = getTimerNameFromAddon(self, identifier)
+	identifier = LIBTimer.GetAddonTimerName(self, identifier)
 	if not identifier then
 		return
 	end
@@ -49,7 +39,7 @@ function SLIGWOLF_ADDON:TimerInterval(identifier, delay, repetitions, func)
 end
 
 function SLIGWOLF_ADDON:TimerOnce(identifier, delay, func)
-	identifier = getTimerNameFromAddon(self, identifier)
+	identifier = LIBTimer.GetAddonTimerName(self, identifier)
 	if not identifier then
 		return
 	end
@@ -60,7 +50,7 @@ function SLIGWOLF_ADDON:TimerOnce(identifier, delay, func)
 end
 
 function SLIGWOLF_ADDON:TimerUntil(identifier, delay, func)
-	identifier = getTimerNameFromAddon(self, identifier)
+	identifier = LIBTimer.GetAddonTimerName(self, identifier)
 	if not identifier then
 		return
 	end
@@ -71,7 +61,7 @@ function SLIGWOLF_ADDON:TimerUntil(identifier, delay, func)
 end
 
 function SLIGWOLF_ADDON:TimerNextFrame(identifier, func)
-	identifier = getTimerNameFromAddon(self, identifier)
+	identifier = LIBTimer.GetAddonTimerName(self, identifier)
 	if not identifier then
 		return
 	end
@@ -82,7 +72,7 @@ function SLIGWOLF_ADDON:TimerNextFrame(identifier, func)
 end
 
 function SLIGWOLF_ADDON:TimerRemove(identifier)
-	identifier = getTimerNameFromAddon(self, identifier)
+	identifier = LIBTimer.GetAddonTimerName(self, identifier)
 	if not identifier then
 		return
 	end
@@ -90,13 +80,6 @@ function SLIGWOLF_ADDON:TimerRemove(identifier)
 	func = getTimerCallbackForAddon(self, identifier, func)
 
 	return LIBTimer.Remove(identifier)
-end
-
-local function getTimerNameFromEntity(ent, identifier)
-	if not IsValid(ent) then return nil end
-
-	identifier = ent:GetCreationID() .. "_" .. tostring(identifier or "")
-	return identifier
 end
 
 local function getTimerCallbackForEntity(addon, ent, identifier, func)
@@ -115,7 +98,7 @@ local function getTimerCallbackForEntity(addon, ent, identifier, func)
 end
 
 function SLIGWOLF_ADDON:EntityTimerInterval(ent, identifier, delay, repetitions, func)
-	identifier = getTimerNameFromEntity(ent, identifier)
+	identifier = LIBTimer.GetEntityTimerName(ent, identifier)
 	if not identifier then
 		return
 	end
@@ -126,7 +109,7 @@ function SLIGWOLF_ADDON:EntityTimerInterval(ent, identifier, delay, repetitions,
 end
 
 function SLIGWOLF_ADDON:EntityTimerOnce(ent, identifier, delay, func)
-	identifier = getTimerNameFromEntity(ent, identifier)
+	identifier = LIBTimer.GetEntityTimerName(ent, identifier)
 	if not identifier then
 		return
 	end
@@ -137,7 +120,7 @@ function SLIGWOLF_ADDON:EntityTimerOnce(ent, identifier, delay, func)
 end
 
 function SLIGWOLF_ADDON:EntityTimerUntil(ent, identifier, delay, func)
-	identifier = getTimerNameFromEntity(ent, identifier)
+	identifier = LIBTimer.GetEntityTimerName(ent, identifier)
 	if not identifier then
 		return
 	end
@@ -148,7 +131,7 @@ function SLIGWOLF_ADDON:EntityTimerUntil(ent, identifier, delay, func)
 end
 
 function SLIGWOLF_ADDON:EntityTimerNextFrame(ent, identifier, func)
-	identifier = getTimerNameFromEntity(ent, identifier)
+	identifier = LIBTimer.GetEntityTimerName(ent, identifier)
 	if not identifier then
 		return
 	end
@@ -159,7 +142,7 @@ function SLIGWOLF_ADDON:EntityTimerNextFrame(ent, identifier, func)
 end
 
 function SLIGWOLF_ADDON:EntityTimerRemove(ent, identifier)
-	identifier = getTimerNameFromEntity(ent, identifier)
+	identifier = LIBTimer.GetEntityTimerName(ent, identifier)
 	if not identifier then
 		return
 	end

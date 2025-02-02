@@ -17,6 +17,224 @@ local LIB = SligWolf_Addons.Position
 
 local LIBPrint = nil
 local LIBModel = nil
+local LIBTimer = nil
+
+local g_asyncPositioningTimerName = "asyncPositioning"
+local g_asyncPositioningPollTime = 0.033
+local g_asyncPositioningAttachment = 1
+local g_asyncPositioningDistanceToleranceSqr = 0.01 * 0.01
+local g_asyncPositioningDistanceAngle = 0.01
+local g_asyncPositioningLifetime = 50
+
+local function pollAsyncPositioning(ent, entTable, force)
+	if not IsValid(ent) then
+		return false
+	end
+
+	local asyncPositioning = entTable.asyncPositioning or {}
+	entTable.asyncPositioning = asyncPositioning
+
+	local callbacks = asyncPositioning.callbacks or {}
+	asyncPositioning.callbacks = callbacks
+
+	local callbacksIdx = asyncPositioning.callbacksIdx or {}
+	asyncPositioning.callbacksIdx = callbacksIdx
+
+	local lifetime = asyncPositioning.lifetime or g_asyncPositioningLifetime
+	asyncPositioning.lifetime = lifetime - 1
+	asyncPositioning.active = true
+
+	if lifetime <= 0 then
+		LIBTimer.Remove(timerName)
+
+		table.Empty(callbacks)
+		table.Empty(callbacksIdx)
+
+		asyncPositioning.active = false
+		asyncPositioning.lifetime = g_asyncPositioningLifetime
+
+		LIBPrint.ErrorNoHaltWithStack("Position.SetPosAng: Async positioning did not return after %i attempts at %s.", g_asyncPositioningLifetime, ent)
+		return true
+	end
+
+	local hasPos = asyncPositioning.hasPos
+	local hasAng = asyncPositioning.hasAng
+
+	local oldAttData = asyncPositioning.oldAttData
+
+	local curAttPos, curAttAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachment)
+
+	if not force then
+		local posUnchanged = curAttPos:DistToSqr(oldAttData.pos) <= g_asyncPositioningDistanceToleranceSqr
+		local angUnchanged = LIB.GetAnglesDifference(curAttAng, oldAttData.ang) <= g_asyncPositioningDistanceAngle
+
+		if hasPos then
+			if posUnchanged then
+				return false
+			end
+		end
+
+		if hasAng then
+			if posUnchanged and angUnchanged then
+				return false
+			end
+		end
+	end
+
+	local curPos = ent:GetPos()
+	local curAng = ent:GetAngles()
+
+	local callbacksCopy = table.Copy(callbacks)
+
+	table.Empty(callbacks)
+	table.Empty(callbacksIdx)
+
+	for i, thisCallback in ipairs(callbacksCopy) do
+		thisCallback(ent, curPos, curAng)
+	end
+
+	asyncPositioning.active = false
+	asyncPositioning.lifetime = g_asyncPositioningLifetime
+
+	oldAttData.pos = curAttPos
+	oldAttData.ang = curAttAng
+
+	LIBTimer.Remove(timerName)
+	return true
+end
+
+function LIB.SetPosAng(ent, pos, ang, callback)
+	if not IsValid(ent) then
+		return false
+	end
+
+	local timerName = LIBTimer.GetEntityTimerName(ent, g_asyncPositioningTimerName)
+	if not timerName then
+		return false
+	end
+
+	LIBTimer.Remove(timerName)
+
+	if not pos and not ang then
+		return false
+	end
+
+	if not isfunction(callback) then
+		if pos then
+			ent:SetPos(pos)
+		end
+
+		if ang then
+			ent:SetAngles(ang)
+		end
+
+		return true
+	end
+
+	local posUnchanged = not pos or pos:DistToSqr(ent:GetPos()) <= g_asyncPositioningDistanceToleranceSqr
+	local angUnchanged = not ang or LIB.GetAnglesDifference(ang, ent:GetAngles()) <= g_asyncPositioningDistanceAngle
+
+	local entTable = ent:SligWolf_GetTable()
+
+	local asyncPositioning = entTable.asyncPositioning or {}
+	entTable.asyncPositioning = asyncPositioning
+
+	LIB.AddPositioningCallback(ent, callback)
+
+	local oldAttPos, oldAttAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachment)
+
+	local oldAttData = asyncPositioning.oldAttData or {}
+	asyncPositioning.oldAttData = oldAttData
+
+	oldAttData.pos = oldAttPos
+	oldAttData.ang = oldAttAng
+
+	asyncPositioning.active = true
+	asyncPositioning.hasPos = nil
+	asyncPositioning.hasAng = nil
+	asyncPositioning.lifetime = g_asyncPositioningLifetime
+
+	if pos then
+		asyncPositioning.hasPos = true
+		ent:SetPos(pos)
+	end
+
+	if ang then
+		asyncPositioning.hasAng = true
+		ent:SetAngles(ang)
+	end
+
+	if posUnchanged and angUnchanged then
+		pollAsyncPositioning(ent, entTable, true)
+		return true
+	end
+
+	-- Sometimes attachment lag behind the actual entity.
+	-- So we need to check them to have moved with it before actual using them.
+	-- This function calls the given callback when the attachments are ready to be used.
+
+	if not pollAsyncPositioning(ent, entTable) then
+		LIBTimer.Until(timerName, g_asyncPositioningPollTime, function()
+			return pollAsyncPositioning(ent, entTable)
+		end)
+	end
+
+	return true
+end
+
+function LIB.SetPos(ent, pos, callback)
+	LIB.SetPosAng(ent, pos, nil, callback)
+end
+
+function LIB.SetAng(ent, ang, callback)
+	LIB.SetPosAng(ent, nil, ang, callback)
+end
+
+function LIB.IsAsyncPositioning(ent)
+	if not IsValid(ent) then
+		return false
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	local asyncPositioning = entTable.asyncPositioning
+	if not asyncPositioning then
+		return false
+	end
+
+	local active = asyncPositioning.active
+	if not active then
+		return false
+	end
+
+	return true
+end
+
+function LIB.AddPositioningCallback(ent, callback)
+	if not IsValid(ent) then
+		return
+	end
+
+	if not isfunction(callback) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	local asyncPositioning = entTable.asyncPositioning or {}
+	entTable.asyncPositioning = asyncPositioning
+
+	local callbacks = asyncPositioning.callbacks or {}
+	asyncPositioning.callbacks = callbacks
+
+	local callbacksIdx = asyncPositioning.callbacksIdx or {}
+	asyncPositioning.callbacksIdx = callbacksIdx
+
+	if not callbacksIdx[callback] then
+		callbacksIdx[callback] = true
+		table.insert(callbacks, callback)
+	end
+end
 
 function LIB.VectorToLocalToWorld(ent, vec)
 	if not IsValid(ent) then return nil end
@@ -202,7 +420,7 @@ function LIB.GetAngPosViaAttachmentMount(parentEnt, selfEnt, parentAttachment, s
 	return pos, ang
 end
 
-function LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment)
+function LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment, callback)
 	local pos, ang = LIB.GetAngPosViaAttachmentMount(parentEnt, selfEnt, parentAttachment, selfAttachment)
 
 	if not pos then
@@ -213,13 +431,14 @@ function LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, sel
 		return false
 	end
 
-	selfEnt:SetPos(pos)
-	selfEnt:SetAngles(ang)
+	if not LIB.SetPosAng(selfEnt, pos, ang, callback) then
+		return false
+	end
 
 	return true
 end
 
-function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment)
+function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment, callback)
 	if not LIBModel.IsValidModelEntity(parentEnt) then return false end
 	if not LIBModel.IsValidModelEntity(selfEnt) then return false end
 
@@ -244,7 +463,7 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 	local parentAttachment = LIB.GetAttachmentId(parentEnt, parentAttachment)
 	local selfAttachment = LIB.GetAttachmentId(selfEnt, selfAttachment)
 
-	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment) then
+	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment, callback) then
 		return false
 	end
 
@@ -276,7 +495,7 @@ function LIB.GetMountPoint(selfEnt)
 	return mountPoint
 end
 
-function LIB.RemountToMountPoint(selfEnt, mountPoint)
+function LIB.RemountToMountPoint(selfEnt, mountPoint, callback)
 	mountPoint = mountPoint or LIB.GetMountPoint(selfEnt)
 	if not mountPoint then
 		return false
@@ -286,7 +505,7 @@ function LIB.RemountToMountPoint(selfEnt, mountPoint)
 	local parentAttachment = mountPoint.parentAttachment
 	local selfAttachment = mountPoint.selfAttachment
 
-	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment) then
+	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment, callback) then
 		return false
 	end
 
@@ -460,9 +679,23 @@ function LIB.GetPlayerAimVector(ply)
 	return data.aimVector
 end
 
+function LIB.GetAnglesDifference(angA, angB)
+	local normalA = angA:Up()
+	local normalB = angB:Up()
+
+	local cross = normalA:Cross(normalB):Length()
+	local dot = normalA:Dot(normalB)
+
+	local diff = math.atan2(cross, dot)
+
+	diff = math.deg(diff)
+	return diff
+end
+
 function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 	LIBModel = SligWolf_Addons.Model
+	LIBTimer = SligWolf_Addons.Timer
 
 	local LIBHook = SligWolf_Addons.Hook
 

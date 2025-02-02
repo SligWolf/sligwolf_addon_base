@@ -549,7 +549,7 @@ function SLIGWOLF_ADDON:CheckToProceedToCreateEnt(ent, tb)
 	return parentAttId
 end
 
-function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superparent)
+function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	if not IsValid(ent) then return end
 
 	local model = component.model
@@ -582,7 +582,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	 	ent:Activate()
 	end
 
-	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment, callback) then
 		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -667,31 +667,7 @@ function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superpar
 	end
 end
 
-function SLIGWOLF_ADDON:SetUpVehiclePartsDelayed(parent, components, dtr, ply, superparent)
-	if not ProceedVehicleSetUp(parent, components) then return end
-	if table.IsEmpty(components) then return end
-
-	dtr = dtr or {}
-	superparent = superparent or parent
-
-	local timername = "SetUpVehicleParts"
-
-	LIBSpamprotection.DelayNextSpawn(ply)
-
-	self:EntityTimerOnce(parent, timername, 0.125, function()
-		-- Delay the spawning of the next level of sub entities by at least 0.125 seconds. 
-		-- This will prevent positioning issues from happening.
-
-		if not IsValid(superparent) then
-			return
-		end
-
-		self:SetUpVehicleParts(parent, components, dtr, ply, superparent)
-		return
-	end)
-end
-
-function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparent, callback)
 	if not ProceedVehicleSetUp(parent, component) then return end
 	dtr = dtr or {}
 
@@ -727,12 +703,21 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 	local componentType = component.type
 	local func = funcs[componentType]
 
-	if not func then
+	if not isfunction(func) then
 		self:Error("%s is not a valid part type", componentType)
 		return
 	end
 
-	local ent = func(self, parent, component, ply, superparent)
+	local ent = func(self, parent, component, ply, superparent, function(ent)
+		if not IsValid(ent) then return end
+
+		self:SetUpVehicleParts(ent, component.children, dtr, ply, superparent)
+
+		if isfunction(callback) then
+			callback(ent)
+		end
+	end)
+
 	if not IsValid(ent) then return end
 
 	local removeAllOnDelete = component.removeAllOnDelete
@@ -749,12 +734,11 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 	end
 
 	LIBSpamprotection.DelayNextSpawn(ply)
-	self:SetUpVehiclePartsDelayed(ent, component.children, dtr, ply, superparent)
 
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleProp(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleProp(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -764,13 +748,13 @@ function SLIGWOLF_ADDON:SetUpVehicleProp(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured(class or "sligwolf_phys", ply, parent, "Prop_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleSlider(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleSlider(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -780,13 +764,13 @@ function SLIGWOLF_ADDON:SetUpVehicleSlider(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured(class or "sligwolf_slider", ply, parent, "Slider_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleBogie(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleBogie(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -796,13 +780,13 @@ function SLIGWOLF_ADDON:SetUpVehicleBogie(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured(class or "sligwolf_bogie", ply, parent, "Bogie_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -813,7 +797,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	local ent = self:MakeEntEnsured(class or "sligwolf_phys", ply, parent, "ParentedProp_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
@@ -824,7 +808,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -836,7 +820,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 	local ent = self:MakeEntEnsured(class or "sligwolf_seat_group", ply, parent, "SeatGroup_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent:SetSeatModel(seatModel)
@@ -845,7 +829,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -856,7 +840,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 	local ent = self:MakeEntEnsured(class or "sligwolf_animatable", ply, parent, "Animatable_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	if boneMerge then
@@ -867,7 +851,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -882,7 +866,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 	local ent = self:MakeEntEnsured(class or "sligwolf_speedometer", ply, parent, "Speedometer_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	ent:SetSpeedoMinSpeed(minSpeed)
 	ent:SetSpeedoMaxSpeed(maxSpeed)
 	ent:SetSpeedoMinPoseValue(minPoseValue)
@@ -900,7 +884,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -924,13 +908,13 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent)
 		ent.PassesTriggerFilters = filterFunc
 	end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleHelp(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleHelp(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -944,7 +928,7 @@ function SLIGWOLF_ADDON:SetUpVehicleHelp(parent, component, ply, superparent)
 		return
 	end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	LIBModel.SetModel(ent, model)
@@ -955,7 +939,7 @@ function SLIGWOLF_ADDON:SetUpVehicleHelp(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -987,7 +971,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 		return
 	end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.RemoveEntitiesOnDelete(parent, ent)
 
 	if isstring(soundOpen) then
@@ -1018,7 +1002,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1031,7 +1015,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	local ent = self:MakeEntEnsured(class or "sligwolf_connector", ply, parent, "Connector_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 
 	ent.sligwolf_connectorDirection = name
 	LIBCoupling.RegisterCoupler(superparent, ent)
@@ -1107,7 +1091,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1118,7 +1102,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	local ent = self:MakeEntEnsured(class or "sligwolf_button", ply, parent, "ConnectorButton_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_connectorDirection = name
@@ -1134,7 +1118,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1151,7 +1135,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured(class or "sligwolf_button", ply, parent, "Button_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_noPickup = true
@@ -1165,7 +1149,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1183,7 +1167,7 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent)
 	ent:Spawn()
 	ent:Activate()
 
-	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment, callback) then
 		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -1208,7 +1192,7 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, callback)
 	if not ProceedVehicleSetUp(parent, component) then return end
 
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
@@ -1238,7 +1222,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	ent:Spawn()
 	ent:Activate()
 
-	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment, callback) then
 		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -1268,7 +1252,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, callback)
 	if not ProceedVehicleSetUp(parent, component) then return end
 
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
@@ -1293,7 +1277,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	ent:Spawn()
 	ent:Activate()
 
-	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment, callback) then
 		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -1318,7 +1302,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, callback)
 	if not ProceedVehicleSetUp(parent, component) then return end
 
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
@@ -1344,7 +1328,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 	ent:Spawn()
 	ent:Activate()
 
-	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment) then
+	if not LIBPosition.MountToAttachment(parent, ent, attachment, selfAttachment, callback) then
 		self:RemoveFaultyEntities(
 			{parent, ent},
 			"Couldn't attach entities %s <===> %s. Attachments %s <===> %s. Removing entities.",
@@ -1371,7 +1355,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1381,7 +1365,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured("prop_vehicle_prisoner_pod", ply, parent, "Seat_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	LIBEntities.SetupChildPhysEntity(ent, parent, component.collision, attachment)
 
 	ent.sligwolf_vehicle = true
@@ -1399,7 +1383,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1412,7 +1396,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superp
 	local ent = self:MakeEntEnsured(class or "sligwolf_wheel", ply, parent, "Wheel_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	ent:SetWheelSize(size)
 	ent:SetWheelRestRate(restrate)
 	ent:SetWheelMessureEntity(parent)
@@ -1426,7 +1410,7 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superp
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1439,7 +1423,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured(class or "sligwolf_display", ply, parent, "Display_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	ent:SetDisplayOriginName("displaypos")
 	ent:AttachToEnt(parent, attachment)
 	ent:TurnOn(true)
@@ -1450,7 +1434,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1471,7 +1455,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured("prop_ragdoll", ply, parent, "Bendi_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 
 	LIBEntities.RemoveEntitiesOnDelete(parentFront, {parentRear, ent})
 	LIBEntities.RemoveEntitiesOnDelete(parentRear, {parentFront, ent})
@@ -1509,8 +1493,8 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent)
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicle(ent, parent, component, attachment, superparent)
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+function SLIGWOLF_ADDON:SetUpVehicle(ent, parent, component, attachment, superparent, callback)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 
 	ent.sligwolf_vehicle = true
 
@@ -1519,7 +1503,7 @@ function SLIGWOLF_ADDON:SetUpVehicle(ent, parent, component, attachment, superpa
 	ent.sligwolf_ExitVectors = component.exitVectors
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleJeep(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleJeep(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1528,12 +1512,12 @@ function SLIGWOLF_ADDON:SetUpVehicleJeep(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured("prop_vehicle_jeep", ply, parent, "Jeep_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetUpVehicle(ent, parent, component, attachment, superparent)
+	self:SetUpVehicle(ent, parent, component, attachment, superparent, callback)
 
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleAirboat(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleAirboat(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1542,12 +1526,12 @@ function SLIGWOLF_ADDON:SetUpVehicleAirboat(parent, component, ply, superparent)
 	local ent = self:MakeEntEnsured("prop_vehicle_airboat", ply, parent, "Airboat_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetUpVehicle(ent, parent, component, attachment, superparent)
+	self:SetUpVehicle(ent, parent, component, attachment, superparent, callback)
 
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleHoverball(parent, component, ply, superparent)
+function SLIGWOLF_ADDON:SetUpVehicleHoverball(parent, component, ply, superparent, callback)
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
@@ -1563,7 +1547,7 @@ function SLIGWOLF_ADDON:SetUpVehicleHoverball(parent, component, ply, superparen
 	local ent = self:MakeEntEnsured("gmod_hoverball", ply, parent, "Hoverball_" .. name)
 	if not IsValid(ent) then return end
 
-	self:SetPartValues(ent, parent, component, attachment, superparent)
+	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 
 	LIBPhysics.InitializeAsPhysEntity(ent)
 

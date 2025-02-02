@@ -1437,7 +1437,7 @@ function LIB.EnableMotion(ent, bool)
 	phys:EnableMotion(bool or false)
 end
 
-function LIB.LockEntityToMountPoint(selfEnt)
+function LIB.LockEntityToMountPoint(selfEnt, callback)
 	if not IsValid(selfEnt) then
 		return false
 	end
@@ -1455,21 +1455,41 @@ function LIB.LockEntityToMountPoint(selfEnt)
 		return false
 	end
 
-	if not LIBPosition.RemountToMountPoint(selfEnt, mountPoint) then
-		return false
+	LIB.EnableMotion(selfEnt, false)
+
+	local done = function(ent)
+		if not IsValid(ent.sligwolf_lockConstraintWeld) then
+			callback(ent, false)
+			return
+		end
+
+		callback(ent, true)
 	end
 
-	local parentEnt = mountPoint.parentEnt
+	LIBTimer.Simple(0.066, function()
+		if not IsValid(selfEnt) then
+			return
+		end
 
-	local weldConstraint = LIBConstraints.Weld(selfEnt, parentEnt, {nocollide = true})
-	if not IsValid(weldConstraint) then
-		return false
-	end
+		LIB.EnableMotion(selfEnt, true)
 
-	selfEnt.sligwolf_lockConstraintWeld = weldConstraint
+		if not LIBPosition.RemountToMountPoint(selfEnt, mountPoint, done) then
+			callback(selfEnt, false)
+			return
+		end
 
-	-- @DEBUG: Color entity according to their lock state
-	-- SligWolf_Addons.Debug.HighlightEntities(selfEnt, Color(255, 0, 0))
+		local parentEnt = mountPoint.parentEnt
+
+		local weldConstraint = LIBConstraints.Weld(selfEnt, parentEnt, {nocollide = true})
+		if not IsValid(weldConstraint) then
+			return
+		end
+
+		selfEnt.sligwolf_lockConstraintWeld = weldConstraint
+
+		-- @DEBUG: Color entity according to their lock state
+		-- SligWolf_Addons.Debug.HighlightEntities(selfEnt, Color(255, 0, 0))
+	end)
 
 	return true
 end
