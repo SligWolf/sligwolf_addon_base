@@ -118,16 +118,7 @@ function ENT:HandleSpawnFinishedEvent()
 		return
 	end
 
-	local superparent = LIBEntities.GetSuperParent(self)
-	if not IsValid(superparent) then
-		return
-	end
-
-	if self == superparent then
-		return
-	end
-
-	addon:HandleSpawnFinishedEvent(superparent)
+	addon:RequestHandleSpawnFinishedEvent(self, true)
 end
 
 function ENT:UpdateTransmitState()

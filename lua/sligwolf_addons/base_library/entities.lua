@@ -17,6 +17,7 @@ local LIB = SligWolf_Addons.Entities
 
 local LIBConstraints = nil
 local LIBPosition = nil
+local LIBPhysics = nil
 local LIBTimer = nil
 local LIBPrint = nil
 local LIBUtil = nil
@@ -26,6 +27,7 @@ local g_emptyFunction = function() end
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
 	LIBPosition = SligWolf_Addons.Position
+	LIBPhysics = SligWolf_Addons.Physics
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
 	LIBUtil = SligWolf_Addons.Util
@@ -1287,7 +1289,17 @@ function LIB.CanApplyBodySystemMotion(ent)
 		return false
 	end
 
-	if ent:GetPhysicsObjectCount() ~= 1 then
+	if ent:IsPlayer() then
+		return false
+	end
+
+	local physCount = ent:GetPhysicsObjectCount()
+
+	if physCount <= 0 then
+		return false
+	end
+
+	if not ent:IsVehicle() and physCount > 1 then
 		-- ignore ragdolls
 		return false
 	end
@@ -1297,7 +1309,6 @@ end
 
 function LIB.EnableSystemMotion(srcEnt, motion)
 	local root = LIB.GetSuperParent(srcEnt)
-
 	if not IsValid(root) then
 		return
 	end
@@ -1315,7 +1326,6 @@ function LIB.EnableSystemMotion(srcEnt, motion)
 		-- else
 		-- 	SligWolf_Addons.Debug.HighlightEntities(thisent, Color(255, 0, 0))
 		-- end
-
 		LIB.EnableMotion(thisent, motion)
 	end
 end
@@ -1374,86 +1384,12 @@ function LIB.UpdateBodySystemMotion(srcEnt, delayed)
 	end)
 end
 
-function LIB.EnableMotion(entOrPhys, bool)
-	if not IsValid(entOrPhys) then
-		return
-	end
-
-	if isentity(entOrPhys) then
-		if entOrPhys:IsPlayer() then
-			return
-		end
-
-		local physcount = entOrPhys:GetPhysicsObjectCount()
-
-		if physcount <= 0 then
-			return
-		end
-
-		for i = 1, physcount do
-			local subPhys = entOrPhys:GetPhysicsObjectNum(i - 1)
-
-			if not IsValid(subPhys) then
-				continue
-			end
-
-			if not bool then
-				subPhys:Sleep()
-			end
-
-			subPhys:EnableMotion(bool or false)
-
-			if bool then
-				subPhys:Wake()
-			end
-		end
-
-		return
-	end
-
-	if not bool then
-		entOrPhys:Sleep()
-	end
-
-	entOrPhys:EnableMotion(bool or false)
-
-	if bool then
-		entOrPhys:Wake()
-	end
+function LIB.EnableMotion(...)
+	return LIBPhysics.EnableMotion(...)
 end
 
-function LIB.IsMotionEnabled(entOrPhys)
-	if not IsValid(entOrPhys) then
-		return false
-	end
-
-	if isentity(entOrPhys) then
-		if entOrPhys:IsPlayer() then
-			return false
-		end
-
-		local physcount = entOrPhys:GetPhysicsObjectCount()
-
-		if physcount <= 0 then
-			return false
-		end
-
-		for i = 1, physcount do
-			local subPhys = entOrPhys:GetPhysicsObjectNum(i - 1)
-
-			if not IsValid(subPhys) then
-				continue
-			end
-
-			if not subPhys:IsMotionEnabled() then
-				return false
-			end
-		end
-
-		return true
-	end
-
-	return entOrPhys:IsMotionEnabled()
+function LIB.IsMotionEnabled(...)
+	return LIBPhysics.IsMotionEnabled(...)
 end
 
 function LIB.LockEntityToMountPoint(selfEnt, callback)

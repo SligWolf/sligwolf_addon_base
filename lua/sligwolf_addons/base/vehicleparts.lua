@@ -150,6 +150,12 @@ local g_FallbackComponentsParams = {
 			numBackUp = KEY_LALT,
 			solid = SOLID_NONE,
 		},
+		jeep = {
+			enableWheels = true,
+		},
+		airboat = {
+			enableWheels = true,
+		},
 	},
 }
 
@@ -706,7 +712,9 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 		end
 	end)
 
-	if not IsValid(ent) then return end
+	if not IsValid(ent) then
+		return
+	end
 
 	local removeAllOnDelete = component.removeAllOnDelete
 
@@ -722,6 +730,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 	end
 
 	LIBSpamprotection.DelayNextSpawn(ply)
+	self:RequestHandleSpawnFinishedEvent(ent)
 
 	return ent
 end
@@ -1486,11 +1495,15 @@ end
 function SLIGWOLF_ADDON:SetUpVehicle(ent, parent, component, attachment, superparent, callback)
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
 
+	local enableWheels = component.enableWheels
+
 	ent.sligwolf_vehicle = true
 
 	LIBPhysics.InitializeAsPhysEntity(ent)
 
 	ent.sligwolf_ExitVectors = component.exitVectors
+
+	LIBVehicle.EnableWheels(ent, enableWheels)
 end
 
 function SLIGWOLF_ADDON:SetUpVehicleJeep(parent, component, ply, superparent, callback)

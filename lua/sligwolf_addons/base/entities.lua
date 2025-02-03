@@ -147,6 +147,43 @@ function SLIGWOLF_ADDON:SetVal(ent, name, value)
 	data[name] = value
 end
 
+function SLIGWOLF_ADDON:RequestHandleSpawnFinishedEvent(ent, callNow)
+	if not IsValid(ent) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	if entTable.wasHandleSpawnFinishedEventRequested then
+		return
+	end
+
+	entTable.wasHandleSpawnFinishedEventRequested = true
+
+	local request = function(thisEnt)
+		self:EntityTimerNextFrame(thisEnt, "RequestHandleSpawnFinishedEvent", function(thisEnt)
+			-- Make sure we have a delay of at least 2 frames.
+
+			local superparent = LIBEntities.GetSuperParent(thisEnt)
+			if not IsValid(superparent) then
+				return
+			end
+
+			if thisEnt == superparent then
+				return
+			end
+
+			self:HandleSpawnFinishedEvent(superparent)
+		end)
+	end
+
+	if callNow then
+		request(ent)
+		return
+	end
+
+	self:EntityTimerNextFrame(ent, "RequestHandleSpawnFinishedEvent", request)
+end
+
 function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 	local superparentEntTable = superparent:SligWolf_GetTable()
 

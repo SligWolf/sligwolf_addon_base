@@ -153,6 +153,136 @@ function LIB.InitializeAsPhysEntity(ent)
 	LIB.AddDefaultCollisionHooks(ent)
 end
 
+function LIB.IsValidPhysObject(phys)
+	if not IsValid(phys) then
+		return false
+	end
+
+	local name = string.lower(phys:GetName())
+	if name == "vehiclewheel" then
+		-- wheels do act crazy when messed with
+		return false
+	end
+
+	return true
+end
+
+function LIB.GetPhysObjects(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	if ent:IsPlayer() then
+		return nil
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	local cache = entTable.physObjects
+
+	if cache ~= nil then
+		if not cache then
+			return nil
+		end
+
+		return cache
+	end
+
+	local physcount = ent:GetPhysicsObjectCount()
+
+	if physcount <= 0 then
+		entTable.physObjects = false
+		return nil
+	end
+
+	local physObjects = {}
+
+	for i = 1, physcount do
+		local phys = ent:GetPhysicsObjectNum(i - 1)
+
+		if not LIB.IsValidPhysObject(phys) then
+			continue
+		end
+
+		table.insert(physObjects, phys)
+	end
+
+	if table.IsEmpty(physObjects) then
+		entTable.physObjects = false
+		return nil
+	end
+
+	entTable.physObjects = physObjects
+	return physObjects
+end
+
+function LIB.EnableMotion(entOrPhys, bool)
+	if not IsValid(entOrPhys) then
+		return
+	end
+
+	if isentity(entOrPhys) then
+		local physObjects = LIB.GetPhysObjects(entOrPhys)
+		if not physObjects then
+			return
+		end
+
+		for i, physObject in ipairs(physObjects) do
+			if not bool then
+				physObject:Sleep()
+			end
+
+			physObject:EnableMotion(bool or false)
+
+			if bool then
+				physObject:Wake()
+			end
+		end
+
+		return
+	end
+
+	if not LIB.IsValidPhysObject(entOrPhys) then
+		return
+	end
+
+	if not bool then
+		entOrPhys:Sleep()
+	end
+
+	entOrPhys:EnableMotion(bool or false)
+
+	if bool then
+		entOrPhys:Wake()
+	end
+end
+
+function LIB.IsMotionEnabled(entOrPhys)
+	if not IsValid(entOrPhys) then
+		return false
+	end
+
+	if isentity(entOrPhys) then
+		local physObjects = LIB.GetPhysObjects(entOrPhys)
+		if not physObjects then
+			return false
+		end
+
+		for i, physObject in ipairs(physObjects) do
+			if not physObject:IsMotionEnabled() then
+				return false
+			end
+		end
+
+		return true
+	end
+
+	if not LIB.IsValidPhysObject(entOrPhys) then
+		return false
+	end
+
+	return entOrPhys:IsMotionEnabled()
+end
+
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBSpamprotection = SligWolf_Addons.Spamprotection

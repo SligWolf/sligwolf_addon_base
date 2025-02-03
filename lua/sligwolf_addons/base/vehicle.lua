@@ -256,6 +256,8 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 
 	LIBEntities.EnableMotion(vehicle, false)
 
+	self:RequestHandleSpawnFinishedEvent(vehicle)
+
 	local spawnVehicle = function(thisVehicle)
 		local vat = self:GetEntityTable(thisVehicle)
 
