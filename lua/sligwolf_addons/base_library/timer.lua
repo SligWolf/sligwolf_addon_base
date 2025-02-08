@@ -66,21 +66,41 @@ function LIB.Once(identifier, delay, func)
 	end)
 end
 
-function LIB.Until(identifier, delay, func)
+function LIB.Until(identifier, delay, func, maxRepeats)
 	if not isfunction(func) then return end
 	local name = getName(identifier)
 
 	delay = tonumber(delay or 0)
 	delay = math.max(delay, g_epsilon)
 
+	if maxRepeats then
+		maxRepeats = math.max(maxRepeats, 1)
+	end
+
+	local removeNextTick = false
+
 	timer.Remove(name)
 	timer.Create(name, delay, 0, function()
-		local endtimer = func()
-		if not endtimer then
+		if removeNextTick then
+			timer.Remove(name)
 			return
 		end
 
-		timer.Remove(name)
+		if maxRepeats then
+			if maxRepeats <= 0 then
+				removeNextTick = true
+				timer.Remove(name)
+				return
+			end
+
+			maxRepeats = maxRepeats - 1
+		end
+
+		local endtimer = func()
+
+		if endtimer then
+			removeNextTick = true
+		end
 	end)
 end
 

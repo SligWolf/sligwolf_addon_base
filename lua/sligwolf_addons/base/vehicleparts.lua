@@ -730,7 +730,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 	end
 
 	LIBSpamprotection.DelayNextSpawn(ply)
-	self:RequestHandleSpawnFinishedEvent(ent)
+	self:HandleSpawnFinishedEvent(ent)
 
 	return ent
 end

@@ -25,7 +25,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "af17bec9ab37327d33e9f6bd7a149a348802e26ff049913deb42cdfe38fc728d"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.2.1"
+SligWolf_Addons.BaseApiVersion = "1.2.2"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 241209
@@ -828,6 +828,22 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 
 	sligwolfAddons.Addondata[name] = thisAddon
 
+	inValidateSortedAddondata()
+
+	if ok then
+		local loadFunc = thisAddon.Load
+
+		if isfunction(loadFunc) then
+			local status = xpcall(loadFunc, throwIncludeError, thisAddon)
+
+			if not status or not ok then
+				ok = false
+				thisAddon.Loaded = false
+				thisAddon.ToString = emptyAddonToString
+			end
+		end
+	end
+
 	local loadedText = ""
 	local stateText = ok and "loaded" or "could not be loaded"
 
@@ -842,8 +858,6 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	else
 		MsgCError(loadedText, lastErrorCode)
 	end
-
-	inValidateSortedAddondata()
 
 	return true
 end

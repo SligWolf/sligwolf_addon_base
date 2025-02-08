@@ -151,6 +151,7 @@ function LIB.InitializeAsPhysEntity(ent)
 
 	ent.sligwolf_physEntity = true
 	LIB.AddDefaultCollisionHooks(ent)
+	LIB.ClearPhysObjectsCache(ent)
 end
 
 function LIB.IsValidPhysObject(phys)
@@ -184,8 +185,12 @@ function LIB.GetPhysObjects(ent)
 			return nil
 		end
 
-		return cache
+		if not table.IsEmpty(cache) then
+			return cache
+		end
 	end
+
+	entTable.physObjects = nil
 
 	local physcount = ent:GetPhysicsObjectCount()
 
@@ -213,6 +218,24 @@ function LIB.GetPhysObjects(ent)
 
 	entTable.physObjects = physObjects
 	return physObjects
+end
+
+function LIB.ClearPhysObjectsCache(ent)
+	if not IsValid(ent) then
+		return
+	end
+
+	if ent:IsPlayer() then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	if istable(entTable.physObjects) then
+		table.Empty(entTable.physObjects)
+	end
+
+	entTable.physObjects = nil
 end
 
 function LIB.EnableMotion(entOrPhys, bool)

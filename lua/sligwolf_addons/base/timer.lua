@@ -49,7 +49,7 @@ function SLIGWOLF_ADDON:TimerOnce(identifier, delay, func)
 	return LIBTimer.Once(identifier, delay, func)
 end
 
-function SLIGWOLF_ADDON:TimerUntil(identifier, delay, func)
+function SLIGWOLF_ADDON:TimerUntil(identifier, delay, func, maxRepeats)
 	identifier = LIBTimer.GetAddonTimerName(self, identifier)
 	if not identifier then
 		return
@@ -57,7 +57,7 @@ function SLIGWOLF_ADDON:TimerUntil(identifier, delay, func)
 
 	func = getTimerCallbackForAddon(self, identifier, func)
 
-	return LIBTimer.Until(identifier, delay, func)
+	return LIBTimer.Until(identifier, delay, func, maxRepeats)
 end
 
 function SLIGWOLF_ADDON:TimerNextFrame(identifier, func)
@@ -119,7 +119,7 @@ function SLIGWOLF_ADDON:EntityTimerOnce(ent, identifier, delay, func)
 	return self:TimerOnce(identifier, delay, func)
 end
 
-function SLIGWOLF_ADDON:EntityTimerUntil(ent, identifier, delay, func)
+function SLIGWOLF_ADDON:EntityTimerUntil(ent, identifier, delay, func, maxRepeats)
 	identifier = LIBTimer.GetEntityTimerName(ent, identifier)
 	if not identifier then
 		return
@@ -127,7 +127,7 @@ function SLIGWOLF_ADDON:EntityTimerUntil(ent, identifier, delay, func)
 
 	func = getTimerCallbackForEntity(self, ent, identifier, func)
 
-	return self:TimerUntil(identifier, delay, func)
+	return self:TimerUntil(identifier, delay, func, maxRepeats)
 end
 
 function SLIGWOLF_ADDON:EntityTimerNextFrame(ent, identifier, func)

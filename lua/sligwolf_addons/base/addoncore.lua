@@ -12,6 +12,7 @@ end
 
 SligWolf_Addons.Include("sligwolf_addons/base/util.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/entities.lua")
+SligWolf_Addons.Include("sligwolf_addons/base/duplicator.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/errorhandling.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/soundfunctions.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/sound.lua")

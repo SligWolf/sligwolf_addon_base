@@ -26,8 +26,9 @@ end
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBEntities = SligWolf_Addons.Entities
 local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBEntities = SligWolf_Addons.Entities
+local LIBPhysics = SligWolf_Addons.Physics
 local LIBBones = SligWolf_Addons.Bones
 local LIBModel = SligWolf_Addons.Model
 local LIBUtil = SligWolf_Addons.Util
@@ -39,7 +40,7 @@ function ENT:Initialize()
 	self:SetApplyDupe(true)
 
 	if SERVER then
-		self:InitializePhysics()
+		self:InitializePhysicsInternal()
 		self:SetUseType(SIMPLE_USE)
 	end
 
@@ -50,6 +51,11 @@ function ENT:Initialize()
 			self:UpdateChildren(nil, nil, LIBEntities.GetParent(self))
 		end)
 	end
+end
+
+function ENT:InitializePhysicsInternal()
+	self:InitializePhysics()
+	self:ClearPhysObjectsCache()
 end
 
 function ENT:InitializePhysics()
@@ -118,7 +124,11 @@ function ENT:HandleSpawnFinishedEvent()
 		return
 	end
 
-	addon:RequestHandleSpawnFinishedEvent(self, true)
+	addon:HandleSpawnFinishedEvent(self, true)
+end
+
+function ENT:ClearPhysObjectsCache()
+	LIBPhysics.ClearPhysObjectsCache(self)
 end
 
 function ENT:UpdateTransmitState()
