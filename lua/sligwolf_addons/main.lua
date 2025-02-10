@@ -25,7 +25,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "af17bec9ab37327d33e9f6bd7a149a348802e26ff049913deb42cdfe38fc728d"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.2.2"
+SligWolf_Addons.BaseApiVersion = "1.2.3"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 241209
@@ -663,8 +663,33 @@ end
 
 local emptyAddonToString = function(thisAddon)
 	return string.format(
-		"Addon [%s][not loaded]",
+		"Addon [id:%s][not loaded]",
 		thisAddon.Addonname or "<unknown>"
+	)
+end
+
+local validAddonToString = function(thisAddon)
+	if not thisAddon.Loaded then
+		return emptyAddonToString(thisAddon)
+	end
+
+	local addonname = thisAddon.Addonname or "<unknown>"
+	local workshopID = thisAddon.WorkshopID or "<no ws>"
+	local fullNiceName = tostring(thisAddon.FullNiceName or thisAddon.NiceName or "")
+
+	if fullNiceName == "" then
+		return string.format(
+			"Addon [id:%s][ws:%s]",
+			addonname,
+			workshopID
+		)
+	end
+
+	return string.format(
+		"Addon [id:%s][ws:%s][%s]",
+		addonname,
+		workshopID,
+		fullNiceName
 	)
 end
 
@@ -814,20 +839,15 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 
 	thisAddon.Loaded = ok
 	thisAddon.Loading = false
+	thisAddon.FullNiceName = niceName
 
 	if ok then
-		thisAddon.ToString = function(this)
-			return string.format(
-				"Addon [id:%s][ws:%s][%s]",
-				this.Addonname or "<unknown>",
-				this.WorkshopID or "<no ws>",
-				niceName
-			)
-		end
+		thisAddon.ToString = validAddonToString
+	else
+		thisAddon.ToString = emptyAddonToString
 	end
 
 	sligwolfAddons.Addondata[name] = thisAddon
-
 	inValidateSortedAddondata()
 
 	if ok then
@@ -836,12 +856,15 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 		if isfunction(loadFunc) then
 			local status = xpcall(loadFunc, throwIncludeError, thisAddon)
 
-			if not status or not ok then
+			if not status then
 				ok = false
-				thisAddon.Loaded = false
-				thisAddon.ToString = emptyAddonToString
 			end
 		end
+	end
+
+	if not ok then
+		thisAddon.Loaded = false
+		thisAddon.ToString = emptyAddonToString
 	end
 
 	local loadedText = ""
@@ -858,6 +881,9 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	else
 		MsgCError(loadedText, lastErrorCode)
 	end
+
+	sligwolfAddons.Addondata[name] = thisAddon
+	inValidateSortedAddondata()
 
 	return true
 end

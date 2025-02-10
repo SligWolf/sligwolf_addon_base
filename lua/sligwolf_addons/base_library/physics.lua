@@ -185,9 +185,16 @@ function LIB.GetPhysObjects(ent)
 			return nil
 		end
 
-		if not table.IsEmpty(cache) then
+		if IsValid(cache[1]) then
+			-- Invalidate cache if phys objects were destroyed or recreated.
 			return cache
 		end
+	end
+
+	cache = nil
+
+	if istable(entTable.physObjects) then
+		table.Empty(entTable.physObjects)
 	end
 
 	entTable.physObjects = nil
@@ -238,27 +245,54 @@ function LIB.ClearPhysObjectsCache(ent)
 	entTable.physObjects = nil
 end
 
+local function setEnableMotionInternal(physObject, bool)
+	if not IsValid(physObject) then
+		return
+	end
+
+	if not bool then
+		physObject:Sleep()
+	end
+
+	physObject:EnableMotion(bool)
+
+	if bool then
+		physObject:Wake()
+	end
+end
+
+local function getEnableMotionInternal(physObject)
+	if not IsValid(physObject) then
+		return false
+	end
+
+	return physObject:IsMotionEnabled()
+end
+
 function LIB.EnableMotion(entOrPhys, bool)
 	if not IsValid(entOrPhys) then
 		return
 	end
 
+	bool = bool or false
+
 	if isentity(entOrPhys) then
+		if not entOrPhys.sligwolf_entity then
+			-- Do not use LIB.GetPhysObjects on non sw-addon entities to prevent over caching.
+
+			local physObject = entOrPhys:GetPhysicsObject()
+			setEnableMotionInternal(physObject, bool)
+
+			return
+		end
+
 		local physObjects = LIB.GetPhysObjects(entOrPhys)
 		if not physObjects then
 			return
 		end
 
 		for i, physObject in ipairs(physObjects) do
-			if not bool then
-				physObject:Sleep()
-			end
-
-			physObject:EnableMotion(bool or false)
-
-			if bool then
-				physObject:Wake()
-			end
+			setEnableMotionInternal(physObject, bool)
 		end
 
 		return
@@ -268,15 +302,7 @@ function LIB.EnableMotion(entOrPhys, bool)
 		return
 	end
 
-	if not bool then
-		entOrPhys:Sleep()
-	end
-
-	entOrPhys:EnableMotion(bool or false)
-
-	if bool then
-		entOrPhys:Wake()
-	end
+	setEnableMotionInternal(entOrPhys, bool)
 end
 
 function LIB.IsMotionEnabled(entOrPhys)
@@ -285,13 +311,20 @@ function LIB.IsMotionEnabled(entOrPhys)
 	end
 
 	if isentity(entOrPhys) then
+		if not entOrPhys.sligwolf_entity then
+			-- Do not use LIB.GetPhysObjects on non sw-addon entities to prevent over caching.
+
+			local physObject = entOrPhys:GetPhysicsObject()
+			return getEnableMotionInternal(physObject)
+		end
+
 		local physObjects = LIB.GetPhysObjects(entOrPhys)
 		if not physObjects then
 			return false
 		end
 
 		for i, physObject in ipairs(physObjects) do
-			if not physObject:IsMotionEnabled() then
+			if not getEnableMotionInternal(physObject) then
 				return false
 			end
 		end
@@ -303,7 +336,7 @@ function LIB.IsMotionEnabled(entOrPhys)
 		return false
 	end
 
-	return entOrPhys:IsMotionEnabled()
+	return getEnableMotionInternal(entOrPhys)
 end
 
 function LIB.Load()
