@@ -193,6 +193,7 @@ function LIB.SetupDecoratorEntity(ent, parent, collision, attachmentid)
 
 	ent.sligwolf_noUnfreeze = true
 	ent.sligwolf_noBodySystemApplyMotion = true
+	ent.sligwolf_decorative = true
 
 	LIB.RemoveEntitiesOnDelete(parent, ent)
 	LIB.EnableMotion(ent, false)

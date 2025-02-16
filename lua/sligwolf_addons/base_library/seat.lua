@@ -291,6 +291,7 @@ g_exitSeatTrace.filter = function(ent)
 
 	if ent.sligwolf_vehicleDynamicSeat then return false end
 	if ent.sligwolf_seatGroupEntity then return false end
+	if ent.sligwolf_decorative then return false end
 
 	return true
 end
@@ -306,6 +307,7 @@ g_exitSeatTraceHull.filter = function(ent)
 
 	if ent.sligwolf_vehicleDynamicSeat then return false end
 	if ent.sligwolf_seatGroupEntity then return false end
+	if ent.sligwolf_decorative then return false end
 
 	return true
 end
