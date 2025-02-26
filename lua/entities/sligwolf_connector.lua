@@ -51,6 +51,12 @@ function ENT:InitializePhysics()
 	self:SetNotSolid(true)
 end
 
+function ENT:PostInitialize()
+	BaseClass.PostInitialize(self)
+
+	self:EnableMotion(true)
+end
+
 function ENT:Draw()
 	-- invisible
 end
