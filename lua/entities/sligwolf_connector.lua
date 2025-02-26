@@ -9,6 +9,13 @@ ENT.DoNotDuplicate 		= true
 
 ENT.sligwolf_isConnector = true
 
+ENT.sligwolf_blockAllTools  = true
+ENT.sligwolf_blockedprop    = true
+ENT.sligwolf_noPickup       = true
+ENT.sligwolf_noUnfreeze     = true
+ENT.sligwolf_noFreeze       = true
+ENT.sligwolf_noBodySystemApplyMotion = true
+
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end

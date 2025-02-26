@@ -1081,7 +1081,7 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	ent:SetGender(gender)
 	ent.searchRadius = searchRadius
 
-	self:EntityTimerOnce(ent, "Auto_Connect_Trailers", 0.1, function()
+	self:EntityTimerOnce(ent, "AutoConnectTrailers", 0.1, function()
 		LIBCoupling.Connect(ent, ply)
 	end)
 
