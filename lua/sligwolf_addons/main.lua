@@ -25,7 +25,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "af17bec9ab37327d33e9f6bd7a149a348802e26ff049913deb42cdfe38fc728d"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.2.6"
+SligWolf_Addons.BaseApiVersion = "1.2.7"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 241209
@@ -83,6 +83,7 @@ local g_WorkshopIDWhitelist = {
 	["bluex14"] = "256428548",
 	["bluex15"] = "1231937933",
 	["bus"] = "130227747",
+	["couplers"] = "3436937725",
 	["crane"] = "263027561",
 	["cranetrain"] = "270201182",
 	["cranetruck"] = "357910009",
