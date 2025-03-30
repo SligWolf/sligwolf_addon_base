@@ -1438,7 +1438,7 @@ function LIB.LockEntityToMountPoint(selfEnt, callback)
 
 		local parentEnt = mountPoint.parentEnt
 
-		local weldConstraint = LIBConstraints.Weld(selfEnt, parentEnt, {nocollide = true})
+		local weldConstraint = LIBConstraints.Weld(selfEnt, parentEnt)
 		if not IsValid(weldConstraint) then
 			return
 		end
