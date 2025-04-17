@@ -280,5 +280,35 @@ function LIB.CheckSumOfFile(filePath, gamePath)
 	return hash
 end
 
+local g_inext = ipairs({})
+local g_PlayerCache = nil
+
+function LIB.GetPlayerIterator()
+	if not g_PlayerCache then
+		g_PlayerCache = player.GetAll()
+	end
+
+	return g_inext, g_PlayerCache, 0
+end
+
+function LIB.InvalidatePlayerIteratorCache()
+	g_PlayerCache = nil
+end
+
+function LIB.Load()
+	local LIBHook = SligWolf_Addons.Hook
+
+	local function PlayerIterator_InvalidatePlayerCache(ply)
+		if not ply or ply:IsPlayer() then
+			LIB.InvalidatePlayerIteratorCache()
+		end
+	end
+
+	LIBHook.Add("OnEntityCreated", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
+	LIBHook.Add("EntityRemoved", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
+	LIBHook.Add("PlayerDisconnected", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
+	LIBHook.Add("PlayerInitialSpawn", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
+end
+
 return true
 

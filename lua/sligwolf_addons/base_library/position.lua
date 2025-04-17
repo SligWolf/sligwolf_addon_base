@@ -590,7 +590,7 @@ end
 function LIB.UpdatePlayerPosData(ply)
 	local data = LIB.GetPlayerPosData(ply)
 	if not data then
-		return
+		return nil
 	end
 
 	if data.skipNextUpdate then
@@ -693,6 +693,7 @@ function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 	LIBModel = SligWolf_Addons.Model
 	LIBTimer = SligWolf_Addons.Timer
+	LIBUtil = SligWolf_Addons.Util
 
 	local LIBHook = SligWolf_Addons.Hook
 
@@ -710,13 +711,21 @@ function LIB.Load()
 	LIBHook.Add("PlayerEnteredVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000)
 
 	local function UpdatePlayerPos(ply, key)
-		for i, ply in player.Iterator() do
+		local badState = false
+
+		for i, ply in LIBUtil.GetPlayerIterator() do
 			local data = LIB.UpdatePlayerPosData(ply)
 			if not data then
+				badState = true
 				continue
 			end
 
 			data.skipNextUpdate = nil
+		end
+
+		if badState then
+			LIB.InvalidatePlayerIteratorCache()
+			error("Bad state in player iterator detected!")
 		end
 	end
 
