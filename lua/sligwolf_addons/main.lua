@@ -25,7 +25,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "af17bec9ab37327d33e9f6bd7a149a348802e26ff049913deb42cdfe38fc728d"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.3.0"
+SligWolf_Addons.BaseApiVersion = "1.3.1"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 250328
@@ -132,6 +132,7 @@ local g_WorkshopIDWhitelist = {
 	["traincontroller"] = "3462401312",
 	["tram"] = "114589891",
 	["truck"] = "194583946",
+	["vrhl2lambdaweapons"] = "3467257324",
 	["vrhl2weapons"] = "3008753645",
 	["wagons"] = "379538128",
 	["westernloco"] = "132174849",
