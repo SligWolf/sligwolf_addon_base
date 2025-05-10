@@ -19,18 +19,16 @@ do
 	SligWolf_Addons._detourBackups = detourBackups
 end
 
-
 -- Check sum of SW Base validation script "sligwolf_addons/basecheck.lua".
 -- It contains logic to validate the SW Base addon being installed, up to date and active. (SHA256)
 local BASECHECK_SCRIPT_CHECKSUM = "af17bec9ab37327d33e9f6bd7a149a348802e26ff049913deb42cdfe38fc728d"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.3.1"
+SligWolf_Addons.BaseApiVersion = "1.3.2"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 250328
 SligWolf_Addons.MinGameVersionClient = 250328
-
 
 SligWolf_Addons.Addondata = SligWolf_Addons.Addondata or {}
 SligWolf_Addons.AddondataSorted = nil
@@ -107,6 +105,7 @@ local g_WorkshopIDWhitelist = {
 	["leotank"] = "288026358",
 	["limousine"] = "180567595",
 	["loopings"] = "105780180",
+	["mannedturret"] = "3477565429",
 	["minitrains"] = "149759773",
 	["modelpack"] = "147812851",
 	["motorbike"] = "105144348",
