@@ -51,21 +51,21 @@ SLIGWOLF_ADDON:AddSoundScript({
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "generic.carhorn",
 	channel = CHAN_STATIC,
-	level = 110,
+	level = 90,
 	sound = "sligwolf/base/carhorn.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "generic.carhorn2",
 	channel = CHAN_STATIC,
-	level = 110,
+	level = 90,
 	sound = "sligwolf/base/carhorn2.wav"
 })
 
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "generic.bikehorn",
 	channel = CHAN_STATIC,
-	level = 110,
+	level = 90,
 	sound = "sligwolf/base/bikehorn.wav"
 })
 
@@ -104,7 +104,7 @@ SLIGWOLF_ADDON:AddSoundScript({
 SLIGWOLF_ADDON:AddSoundScript({
 	name = "weapon.denyaction",
 	channel = CHAN_WEAPON,
-	level = 100,
+	level = 75,
 	pitch = 120,
 	sound = "buttons/combine_button2.wav"
 })
