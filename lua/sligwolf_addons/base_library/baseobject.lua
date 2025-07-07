@@ -112,15 +112,7 @@ function SLIGWOLF_BASE_OBJ:AddNetworkRVar(datatype, name, ...)
 	name = tostring(name or "")
 	if name == "" then return end
 
-	self.NWVarAdded = self.NWVarAdded or {}
-	if self.NWVarAdded[name] then return end
-	self.NWVarAdded[name] = true
-
-	self.NWVarCount = self.NWVarCount or {}
-	local count = self.NWVarCount[datatype] or 0
-	self.NWVarCount[datatype] = count + 1
-
-	return self:NetworkVar(datatype, count, "NWVR_" .. name, ...)
+	return self:NetworkVar(datatype, "NWVR_" .. name, ...)
 end
 
 function SLIGWOLF_BASE_OBJ:GetNetworkRFunc(name, setter)
@@ -293,6 +285,7 @@ function SLIGWOLF_BASE_OBJ:GetAddonID()
 		return self.addonIdCache
 	end
 
+	self.addonCache = nil
 	self.addonIdCache = nil
 
 	local addonid = self:GetNetworkRVarString("AddonID", "")
@@ -322,11 +315,12 @@ function SLIGWOLF_BASE_OBJ:GetAddonID()
 end
 
 function SLIGWOLF_BASE_OBJ:GetAddon()
-	if self.addonCache then
+	if SligWolf_Addons.IsValidAddon(self.addonCache) then
 		return self.addonCache
 	end
 
 	self.addonCache = nil
+	self.addonIdCache = nil
 
 	if not SligWolf_Addons then
 		return nil

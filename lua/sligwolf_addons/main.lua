@@ -24,7 +24,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "af17bec9ab37327d33e9f6bd7a149a348802e26ff049913deb42cdfe38fc728d"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.3.3"
+SligWolf_Addons.BaseApiVersion = "1.3.4"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 250328
@@ -1097,6 +1097,22 @@ function SligWolf_Addons.GetLoadedAddonsCount()
 	return count
 end
 
+function SligWolf_Addons.IsValidAddon(addon)
+	if not istable(addon) then
+		return false
+	end
+
+	if not addon.Loaded then
+		return false
+	end
+
+	if not isfunction(addon.MakeEnt) then
+		return false
+	end
+
+	return true
+end
+
 function SligWolf_Addons.GetAddon(name)
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then
@@ -1109,11 +1125,8 @@ function SligWolf_Addons.GetAddon(name)
 	end
 
 	local addon = addondata[name]
-	if not addon then
-		return nil
-	end
 
-	if not addon.Loaded then
+	if not sligwolfAddons.IsValidAddon(addon) then
 		return nil
 	end
 
@@ -1140,11 +1153,8 @@ function SligWolf_Addons.HasLoadedAddon(name)
 	end
 
 	local addon = addondata[name]
-	if not addon then
-		return false
-	end
 
-	if not addon.Loaded then
+	if not sligwolfAddons.IsValidAddon(addon) then
 		return false
 	end
 
@@ -1184,11 +1194,7 @@ function SligWolf_Addons.IsLoaded()
 		return false
 	end
 
-	if not sligwolfAddons.BASE_ADDON then
-		return false
-	end
-
-	if not sligwolfAddons.BASE_ADDON.Loaded then
+	if not sligwolfAddons.IsValidAddon(sligwolfAddons.BASE_ADDON) then
 		return false
 	end
 

@@ -13,6 +13,8 @@ end
 SligWolf_Addons.Position = SligWolf_Addons.Position or {}
 table.Empty(SligWolf_Addons.Position)
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIB = SligWolf_Addons.Position
 
 local LIBPrint = nil
@@ -22,13 +24,13 @@ local LIBTimer = nil
 local g_asyncPositioningTimerName = "asyncPositioning"
 local g_asyncPositioningPollTime = 0.033
 local g_asyncPositioningAttachment = 1
-local g_asyncPositioningDistanceToleranceSqr = 0.01 * 0.01
+local g_asyncPositioningDistanceToleranceSqr = 0.01 ^ 2
 local g_asyncPositioningDistanceAngle = 0.01
 local g_asyncPositioningLifetime = 50
 
-local function pollAsyncPositioning(ent, entTable, force)
+local function pollAsyncPositioning(ent, entTable, timerName, force)
 	if not IsValid(ent) then
-		return false
+		return true
 	end
 
 	local asyncPositioning = entTable.asyncPositioning or {}
@@ -60,24 +62,23 @@ local function pollAsyncPositioning(ent, entTable, force)
 	local hasPos = asyncPositioning.hasPos
 	local hasAng = asyncPositioning.hasAng
 
-	local oldAttData = asyncPositioning.oldAttData
-
+	local attTargetData = asyncPositioning.attTargetData
 	local curAttPos, curAttAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachment)
 
 	if not force then
-		local posUnchanged = curAttPos:DistToSqr(oldAttData.pos) <= g_asyncPositioningDistanceToleranceSqr
-		local angUnchanged = LIB.GetAnglesDifference(curAttAng, oldAttData.ang) <= g_asyncPositioningDistanceAngle
+		-- Check if the attachment has moved to its SetPos()-target yet.
+		-- If it hasn't, we assume the position might not have been properly set yet
+		-- and the model attachments are outdated.
 
-		if hasPos then
-			if posUnchanged then
-				return false
-			end
+		local posHasArrived = not hasPos or curAttPos:DistToSqr(attTargetData.pos) < g_asyncPositioningDistanceToleranceSqr
+		local angHasArrived = not hasAng or LIB.GetAnglesDifference(curAttAng, attTargetData.ang) < g_asyncPositioningDistanceAngle
+
+		if not posHasArrived then
+			return false
 		end
 
-		if hasAng then
-			if posUnchanged and angUnchanged then
-				return false
-			end
+		if not angHasArrived then
+			return false
 		end
 	end
 
@@ -92,9 +93,6 @@ local function pollAsyncPositioning(ent, entTable, force)
 
 	asyncPositioning.active = false
 	asyncPositioning.lifetime = g_asyncPositioningLifetime
-
-	oldAttData.pos = curAttPos
-	oldAttData.ang = curAttAng
 
 	LIBTimer.Remove(timerName)
 	return true
@@ -125,31 +123,33 @@ function LIB.SetPosAng(ent, pos, ang, callback)
 			ent:SetAngles(ang)
 		end
 
-		return true
+		return false
 	end
 
-	local posUnchanged = not pos or pos:DistToSqr(ent:GetPos()) <= g_asyncPositioningDistanceToleranceSqr
-	local angUnchanged = not ang or LIB.GetAnglesDifference(ang, ent:GetAngles()) <= g_asyncPositioningDistanceAngle
-
 	local entTable = ent:SligWolf_GetTable()
+
+	local attPos, attAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachment)
+
+	attPos = ent:WorldToLocal(attPos)
+	attAng = ent:WorldToLocalAngles(attAng)
+
+	attPos, attAng = LocalToWorld(attPos, attAng, pos or CONSTANTS.vecZero, ang or CONSTANTS.angZero)
 
 	local asyncPositioning = entTable.asyncPositioning or {}
 	entTable.asyncPositioning = asyncPositioning
 
-	LIB.AddPositioningCallback(ent, callback)
+	local attTargetData = asyncPositioning.attTargetData or {}
+	asyncPositioning.attTargetData = attTargetData
 
-	local oldAttPos, oldAttAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachment)
-
-	local oldAttData = asyncPositioning.oldAttData or {}
-	asyncPositioning.oldAttData = oldAttData
-
-	oldAttData.pos = oldAttPos
-	oldAttData.ang = oldAttAng
+	attTargetData.pos = attPos
+	attTargetData.ang = attAng
 
 	asyncPositioning.active = true
 	asyncPositioning.hasPos = nil
 	asyncPositioning.hasAng = nil
 	asyncPositioning.lifetime = g_asyncPositioningLifetime
+
+	LIB.AddPositioningCallback(ent, callback)
 
 	if pos then
 		asyncPositioning.hasPos = true
@@ -161,20 +161,17 @@ function LIB.SetPosAng(ent, pos, ang, callback)
 		ent:SetAngles(ang)
 	end
 
-	if posUnchanged and angUnchanged then
-		pollAsyncPositioning(ent, entTable, true)
-		return true
-	end
-
 	-- Sometimes attachment lag behind the actual entity.
 	-- So we need to check them to have moved with it before actual using them.
 	-- This function calls the given callback when the attachments are ready to be used.
 
-	if not pollAsyncPositioning(ent, entTable) then
-		LIBTimer.Until(timerName, g_asyncPositioningPollTime, function()
-			return pollAsyncPositioning(ent, entTable)
-		end)
+	if pollAsyncPositioning(ent, entTable, timerName) then
+		return false
 	end
+
+	LIBTimer.Until(timerName, g_asyncPositioningPollTime, function()
+		return pollAsyncPositioning(ent, entTable, timerName)
+	end)
 
 	return true
 end
@@ -428,10 +425,7 @@ function LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, sel
 		return false
 	end
 
-	if not LIB.SetPosAng(selfEnt, pos, ang, callback) then
-		return false
-	end
-
+	LIB.SetPosAng(selfEnt, pos, ang, callback)
 	return true
 end
 
@@ -492,7 +486,7 @@ function LIB.GetMountPoint(selfEnt)
 	return mountPoint
 end
 
-function LIB.RemountToMountPoint(selfEnt, mountPoint, callback)
+function LIB.RemountToMountPoint(selfEnt, mountPoint)
 	mountPoint = mountPoint or LIB.GetMountPoint(selfEnt)
 	if not mountPoint then
 		return false
@@ -502,7 +496,7 @@ function LIB.RemountToMountPoint(selfEnt, mountPoint, callback)
 	local parentAttachment = mountPoint.parentAttachment
 	local selfAttachment = mountPoint.selfAttachment
 
-	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment, callback) then
+	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment) then
 		return false
 	end
 
