@@ -95,35 +95,6 @@ function LIB.CreateDuplicaterPasteHooks()
 	end
 end
 
-function LIB.CreateAdvDuplicater1PasteHooks()
-	if not AdvDupe then
-		return
-	end
-
-	if not AdvDupe.CreateEntityFromTable then
-		return
-	end
-
-	g_detourBackups.AdvDupe1CreateEntityFromTable = g_detourBackups.AdvDupe1CreateEntityFromTable or AdvDupe.CreateEntityFromTable
-	local oldFunc = g_detourBackups.AdvDupe1CreateEntityFromTable
-
-	-- We override AdvDupe.CreateEntityFromTable, because that the only way to globally detect entity are being pasted.
-
-	AdvDupe.CreateEntityFromTable = function(ply, ...)
-		LIBHook.RunCustom("DuplicatorPrePaste", ply)
-
-		local result = {oldFunc(ply, ...)}
-		local ent = result[1]
-
-		if not IsValid(ent) then
-			ent = nil
-		end
-
-		LIBHook.RunCustom("DuplicatorPostPaste", ply)
-		return unpack(result)
-	end
-end
-
 function LIB.FixSENTAliases()
 	g_detourBackups.scriptedentsGetMember = g_detourBackups.scriptedentsGetMember or scripted_ents.GetMember
 	local oldFunc = g_detourBackups.scriptedentsGetMember
@@ -228,12 +199,6 @@ LIB.FixSENTAliases()
 function LIB.Load()
 	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 	LIBHook = SligWolf_Addons.Hook
-end
-
-function LIB.AllAddonsLoaded()
-	if SERVER then
-		LIB.CreateAdvDuplicater1PasteHooks()
-	end
 end
 
 return true

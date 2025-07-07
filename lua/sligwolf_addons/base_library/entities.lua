@@ -1431,8 +1431,8 @@ function LIB.LockEntityToMountPoint(selfEnt, callback)
 
 		LIB.EnableMotion(selfEnt, true)
 
-		if not LIBPosition.RemountToMountPoint(selfEnt, mountPoint) then
-			done(selfEnt)
+		if not LIBPosition.RemountToMountPoint(selfEnt, mountPoint, done) then
+			callback(selfEnt, false)
 			return
 		end
 
@@ -1440,12 +1440,10 @@ function LIB.LockEntityToMountPoint(selfEnt, callback)
 
 		local weldConstraint = LIBConstraints.Weld(selfEnt, parentEnt)
 		if not IsValid(weldConstraint) then
-			done(selfEnt)
 			return
 		end
 
 		selfEnt.sligwolf_lockConstraintWeld = weldConstraint
-		done(selfEnt)
 
 		-- @DEBUG: Color entity according to their lock state
 		-- SligWolf_Addons.Debug.HighlightEntities(selfEnt, Color(255, 0, 0))

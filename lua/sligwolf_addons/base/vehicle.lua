@@ -270,7 +270,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 		)
 	end
 
-	local isAsync = false
+	local callsback = false
 	local isDupe = entTable.isDuped
 
 	if SERVER and not isSpawnedByEngine then
@@ -287,11 +287,11 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 		end
 
 		if newpos and newang then
-			isAsync = LIBPosition.SetPosAng(vehicle, newpos, newang, spawnVehicle)
+			callsback = LIBPosition.SetPosAng(vehicle, newpos, newang, spawnVehicle)
 		end
 	end
 
-	if not isAsync then
+	if not callsback then
 		spawnVehicle(vehicle)
 	end
 end
