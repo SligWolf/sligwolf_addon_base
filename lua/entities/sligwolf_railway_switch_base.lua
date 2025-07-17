@@ -345,6 +345,9 @@ function ENT:SpawnCollisionEntity(mdl, pos, ang)
 	self._collisionProp = Prop
 	self._collisionPropConst = WD
 
+	self:CopySpawnPhysState(Prop)
+	Prop:DeleteSpawnSolidState()
+
 	self:UpdateBodySystemMotion()
 
 	self:OnSpawnedCollision(Prop)

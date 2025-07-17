@@ -25,14 +25,40 @@ local function enrichConstraintEntityData(constraintEnt)
 	constraintEnt.sligwolf_constraintEntity = true
 end
 
+function LIB.IsValidSystemConstraint(constraintEnt)
+	if not IsValid(constraintEnt) then
+		return false
+	end
+
+	if not constraintEnt.sligwolf_constraintEntity then
+		return false
+	end
+
+	return true
+end
+
 function LIB.Weld(ent, parent, constraintInfos)
 	constraintInfos = constraintInfos or {}
 
-	local constraintEnt = constraint.Weld(
+	local bone1 = constraintInfos.bone1 or 0
+	local bone2 = constraintInfos.bone2 or 0
+
+	local constraintEnt = constraint.Find(ent, parent, "Weld", bone1, bone2)
+
+	if IsValid(constraintEnt) then
+		if not constraintInfos.forceRecreation and constraintEnt.sligwolf_constraintEntity then
+			return constraintEnt
+		end
+
+		constraintEnt:Remove()
+		constraintEnt = nil
+	end
+
+	constraintEnt = constraint.Weld(
 		ent,
 		parent,
-		constraintInfos.bone1 or 0,
-		constraintInfos.bone2 or 0,
+		bone1,
+		bone2,
 		constraintInfos.forcelimit or 0,
 		tobool(constraintInfos.nocollide),
 		constraintInfos.deleteEntOnBreak or false
@@ -43,18 +69,31 @@ function LIB.Weld(ent, parent, constraintInfos)
 	end
 
 	enrichConstraintEntityData(constraintEnt)
-
 	return constraintEnt
 end
 
 function LIB.NoCollide(ent, parent, constraintInfos)
 	constraintInfos = constraintInfos or {}
 
-	local constraintEnt = constraint.NoCollide(
+	local bone1 = constraintInfos.bone1 or 0
+	local bone2 = constraintInfos.bone2 or 0
+
+	local constraintEnt = constraint.Find(ent, parent, "NoCollide", bone1, bone2)
+
+	if IsValid(constraintEnt) then
+		if not constraintInfos.forceRecreation and constraintEnt.sligwolf_constraintEntity then
+			return constraintEnt
+		end
+
+		constraintEnt:Remove()
+		constraintEnt = nil
+	end
+
+	constraintEnt = constraint.NoCollide(
 		ent,
 		parent,
-		constraintInfos.bone1 or 0,
-		constraintInfos.bone2 or 0,
+		bone1,
+		bone2,
 		constraintInfos.disableOnRemove or false
 	)
 
@@ -63,18 +102,31 @@ function LIB.NoCollide(ent, parent, constraintInfos)
 	end
 
 	enrichConstraintEntityData(constraintEnt)
-
 	return constraintEnt
 end
 
 function LIB.Axis(ent, parent, constraintInfos)
 	constraintInfos = constraintInfos or {}
 
-	local constraintEnt = constraint.Axis(
+	local bone1 = constraintInfos.bone1 or 0
+	local bone2 = constraintInfos.bone2 or 0
+
+	local constraintEnt = constraint.Find(ent, parent, "Axis", bone1, bone2)
+
+	if IsValid(constraintEnt) then
+		if not constraintInfos.forceRecreation and constraintEnt.sligwolf_constraintEntity then
+			return constraintEnt
+		end
+
+		constraintEnt:Remove()
+		constraintEnt = nil
+	end
+
+	constraintEnt = constraint.Axis(
 		ent,
 		parent,
-		constraintInfos.bone1 or 0,
-		constraintInfos.bone2 or 0,
+		bone1,
+		bone2,
 		constraintInfos.lpos1 or CONSTANTS.vecZero,
 		constraintInfos.lpos2 or CONSTANTS.vecZero,
 		constraintInfos.forcelimit or 0,
@@ -90,18 +142,31 @@ function LIB.Axis(ent, parent, constraintInfos)
 	end
 
 	enrichConstraintEntityData(constraintEnt)
-
 	return constraintEnt
 end
 
-function LIB.BallSocket(ent, parent, constraintInfos)
+function LIB.Ballsocket(ent, parent, constraintInfos)
 	constraintInfos = constraintInfos or {}
 
-	local constraintEnt = constraint.Ballsocket(
+	local bone1 = constraintInfos.bone1 or 0
+	local bone2 = constraintInfos.bone2 or 0
+
+	local constraintEnt = constraint.Find(ent, parent, "Ballsocket", bone1, bone2)
+
+	if IsValid(constraintEnt) then
+		if not constraintInfos.forceRecreation and constraintEnt.sligwolf_constraintEntity then
+			return constraintEnt
+		end
+
+		constraintEnt:Remove()
+		constraintEnt = nil
+	end
+
+	constraintEnt = constraint.Ballsocket(
 		parent,
 		ent,
-		constraintInfos.bone1 or 0,
-		constraintInfos.bone2 or 0,
+		bone1,
+		bone2,
 		constraintInfos.localpos or CONSTANTS.vecZero,
 		constraintInfos.forcelimit or 0,
 		constraintInfos.torquelimit or 0,
@@ -113,18 +178,31 @@ function LIB.BallSocket(ent, parent, constraintInfos)
 	end
 
 	enrichConstraintEntityData(constraintEnt)
-
 	return constraintEnt
 end
 
 function LIB.AdvBallsocket(ent, parent, constraintInfos)
 	constraintInfos = constraintInfos or {}
 
-	local constraintEnt = constraint.AdvBallsocket(
+	local bone1 = constraintInfos.bone1 or 0
+	local bone2 = constraintInfos.bone2 or 0
+
+	local constraintEnt = constraint.Find(ent, parent, "AdvBallsocket", bone1, bone2)
+
+	if IsValid(constraintEnt) then
+		if not constraintInfos.forceRecreation and constraintEnt.sligwolf_constraintEntity then
+			return constraintEnt
+		end
+
+		constraintEnt:Remove()
+		constraintEnt = nil
+	end
+
+	constraintEnt = constraint.AdvBallsocket(
 		ent,
 		parent,
-		constraintInfos.bone1 or 0,
-		constraintInfos.bone2 or 0,
+		bone1,
+		bone2,
 		constraintInfos.lpos1 or CONSTANTS.vecZero,
 		constraintInfos.lpos2 or CONSTANTS.vecZero,
 		constraintInfos.forcelimit or 0,
@@ -147,17 +225,27 @@ function LIB.AdvBallsocket(ent, parent, constraintInfos)
 	end
 
 	enrichConstraintEntityData(constraintEnt)
-
 	return constraintEnt
 end
 
 function LIB.Keepupright(ent, constraintInfos)
 	constraintInfos = constraintInfos or {}
 
-	local constraintEnt = constraint.Keepupright(
+	local constraintEnt = constraint.Find(ent, parent, "Keepupright")
+
+	if IsValid(constraintEnt) then
+		if not constraintInfos.forceRecreation and constraintEnt.sligwolf_constraintEntity then
+			return constraintEnt
+		end
+
+		constraintEnt:Remove()
+		constraintEnt = nil
+	end
+
+	constraintEnt = constraint.Keepupright(
 		ent,
 		constraintInfos.ang or CONSTANTS.angZero,
-		constraintInfos.bone1 or 0,
+		0,
 		constraintInfos.angularLimit or 0
 	)
 
@@ -166,7 +254,6 @@ function LIB.Keepupright(ent, constraintInfos)
 	end
 
 	enrichConstraintEntityData(constraintEnt)
-
 	return constraintEnt
 end
 

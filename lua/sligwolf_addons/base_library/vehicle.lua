@@ -318,7 +318,7 @@ function LIB.Load()
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnVehicleFinished", vehicle, vat, ply)
 
 		if SERVER then
-			LIBEntities.EnableSystemMotion(vehicle, true)
+			LIBEntities.ApplySpawnState(vehicle)
 		end
 	end
 

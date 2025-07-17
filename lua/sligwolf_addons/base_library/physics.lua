@@ -136,7 +136,7 @@ function LIB.AddDefaultCollisionHooks(ent)
 	LIBSpamprotection.AddCollisionHooks(ent)
 end
 
-function LIB.GetCollidingSystems(ent)
+function LIB.GetCollidingSystems()
 	return g_CollidingSystems
 end
 
@@ -337,6 +337,18 @@ function LIB.IsMotionEnabled(entOrPhys)
 	end
 
 	return getEnableMotionInternal(entOrPhys)
+end
+
+function LIB.IsTraceableCollision(solidType, collisionGroup)
+	if solidType and solidType == SOLID_NONE then
+		return false
+	end
+
+	if collisionGroup and collisionGroup == COLLISION_GROUP_IN_VEHICLE then
+		return false
+	end
+
+	return true
 end
 
 function LIB.Load()

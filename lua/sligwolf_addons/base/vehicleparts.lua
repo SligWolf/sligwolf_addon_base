@@ -29,6 +29,7 @@ local g_FallbackComponentsParams = {
 	bodygroups = {},
 	shadow = false,
 	nodraw = false,
+	freeze = false,
 	customPhysics = false,
 	solid = SOLID_VPHYSICS,
 	collision = COLLISION_GROUP_NONE,
@@ -45,35 +46,43 @@ local g_FallbackComponentsParams = {
 		propParent = {
 			collision = COLLISION_GROUP_IN_VEHICLE,
 			boneMerge = false,
+			freeze = true,
 		},
 		trigger = {
 			customPhysics = true,
 			minSize = Vector(-4, -4, -4),
 			maxSize = Vector(4, 4, 4),
 			model = CONSTANTS.mdlCube4,
+			freeze = true,
 		},
 		help = {
 			helpName = "",
+			freeze = true,
 		},
 		door = {
 			autoClose = true,
 			openTime = 3,
 			disableUse = false,
 			spawnOpen = false,
+			freeze = false,
 		},
 		connector = {
+			collision = COLLISION_GROUP_IN_VEHICLE,
 			connectortype = "unknown",
 			gender = LIBCoupling.GENDER_NEUTRAL,
 			searchRadius = CONSTANTS.numConRadius,
 			model = CONSTANTS.mdlSphere4,
+			freeze = false,
 		},
 		connectorButton = {
 			collision = COLLISION_GROUP_WORLD,
 			inVehicle = false,
+			freeze = true,
 		},
 		button = {
 			collision = COLLISION_GROUP_WORLD,
 			inVehicle = false,
+			freeze = true,
 		},
 		camera = {
 			forceThirdperson = false,
@@ -107,6 +116,7 @@ local g_FallbackComponentsParams = {
 			restrate = 16,
 			boneMerge = false,
 			collision = COLLISION_GROUP_WEAPON,
+			freeze = true,
 		},
 		speedometer = {
 			minSpeed = 0,
@@ -114,15 +124,18 @@ local g_FallbackComponentsParams = {
 			minPoseValue = 0,
 			maxPoseValue = 1,
 			poseName = "vehicle_guage",
+			freeze = true,
 		},
 		display = {
 			scale = 0.25,
 			functionName = "",
 			maxDrawDistance = 2048,
+			freeze = true,
 		},
 		bendi = {
 			parentNameFront = "",
 			parentNameRear = "",
+			freeze = false,
 		},
 		pod = {
 			collision = COLLISION_GROUP_WORLD,
@@ -131,6 +144,7 @@ local g_FallbackComponentsParams = {
 				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
 				limitview = 0,
 			},
+			freeze = true,
 		},
 		seatGroup = {
 			collision = COLLISION_GROUP_WORLD,
@@ -139,6 +153,7 @@ local g_FallbackComponentsParams = {
 				vehiclescript = "scripts/vehicles/prisoner_pod.txt",
 				limitview = 0,
 			},
+			freeze = true,
 		},
 		hoverball = {
 			speed = 5,
@@ -149,12 +164,15 @@ local g_FallbackComponentsParams = {
 			numBackDown = KEY_LALT,
 			numBackUp = KEY_LALT,
 			solid = SOLID_NONE,
+			freeze = false,
 		},
 		jeep = {
 			enableWheels = true,
+			freeze = false,
 		},
 		airboat = {
 			enableWheels = true,
+			freeze = false,
 		},
 	},
 }
@@ -165,10 +183,12 @@ local g_FallbackConstraintsParams = {
 		bone2 = 0,
 		forcelimit = 0,
 		nocollide = true,
+		forceRecreation = false,
 	},
 	NoCollide = {
 		bone1 = 0,
 		bone2 = 0,
+		forceRecreation = false,
 	},
 	Axis = {
 		bone1 = 0,
@@ -178,8 +198,9 @@ local g_FallbackConstraintsParams = {
 		forcelimit = 0,
 		torquelimit = 0,
 		friction = 0,
-		nocollide = 1,
+		nocollide = true,
 		localaxis = CONSTANTS.vecZero,
+		forceRecreation = false,
 	},
 	Ballsocket = {
 		bone1 = 0,
@@ -187,7 +208,8 @@ local g_FallbackConstraintsParams = {
 		localpos = CONSTANTS.vecZero,
 		forcelimit = 0,
 		torquelimit = 0,
-		nocollide = 1,
+		nocollide = true,
+		forceRecreation = false,
 	},
 	AdvBallsocket = {
 		bone1 = 0,
@@ -206,12 +228,13 @@ local g_FallbackConstraintsParams = {
 		yfric = 0,
 		zfric = 0,
 		onlyrotation = 0,
-		nocollide  = 1,
+		nocollide  = true,
+		forceRecreation = false,
 	},
 	Keepupright = {
 		ang = Angle(),
-		bone1 = 0,
 		angularLimit = 0,
+		forceRecreation = false,
 	},
 }
 
@@ -359,8 +382,8 @@ local function CreateAxis(ent, parent, constraintInfos)
 	return constraintEnt
 end
 
-local function CreateBallSocket(ent, parent, constraintInfos)
-	local constraintEnt = LIBConstraints.BallSocket(ent, parent, constraintInfos)
+local function CreateBallsocket(ent, parent, constraintInfos)
+	local constraintEnt = LIBConstraints.Ballsocket(ent, parent, constraintInfos)
 	return constraintEnt
 end
 
@@ -378,7 +401,7 @@ local g_ConstraintCreateFunctions = {
 	Weld = CreateWeld,
 	NoCollide = CreateNoCollide,
 	Axis = CreateAxis,
-	Ballsocket = CreateBallSocket,
+	Ballsocket = CreateBallsocket,
 	AdvBallsocket = CreateAdvBallsocket,
 	Keepupright = CreateKeepupright,
 }
@@ -547,6 +570,24 @@ function SLIGWOLF_ADDON:CheckToProceedToCreateEnt(ent, tb)
 	return parentAttId
 end
 
+local function disableEntPhysicsTemporarily(ent, freeze, solid)
+	if not IsValid(ent) then return end
+
+	local entTable = ent:SligWolf_GetTable()
+	if entTable.spawnState then
+		return
+	end
+
+	local spawnState = {}
+	entTable.spawnState = spawnState
+
+	spawnState.solid = solid or false
+	spawnState.freeze = freeze or false
+
+	LIBEntities.EnableMotion(ent, false)
+	ent:SetNotSolid(true)
+end
+
 function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	if not IsValid(ent) then return end
 
@@ -566,6 +607,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local colorFromParent = component.colorFromParent
 	local isBody = component.isBody
 	local selfAttachment = component.selfAttachment
+	local freeze = component.freeze
 
 	LIBModel.SetModel(ent, model)
 
@@ -639,7 +681,12 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		ent:SetNWBool("sligwolf_isBody", true)
 	end
 
-	LIBEntities.EnableMotion(ent, false)
+	disableEntPhysicsTemporarily(superparent, false, true)
+	disableEntPhysicsTemporarily(
+		ent,
+		freeze,
+		ent:IsSolid() and LIBPhysics.IsTraceableCollision(solid, collision)
+	)
 
 	local phys = ent:GetPhysicsObject()
 	if IsValid(phys) and mass then
@@ -708,6 +755,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 		self:SetUpVehicleParts(ent, component.children, dtr, ply, superparent)
 
 		if isfunction(callback) then
+			self:HandleSpawnFinishedEvent(ent)
 			callback(ent)
 		end
 	end)

@@ -1393,6 +1393,37 @@ function LIB.IsMotionEnabled(...)
 	return LIBPhysics.IsMotionEnabled(...)
 end
 
+function LIB.ApplySpawnState(srcEnt)
+	local root = LIB.GetSuperParent(srcEnt)
+	if not IsValid(root) then
+		return
+	end
+
+	local systemEntities = LIB.GetSystemEntities(root)
+
+	for _, thisent in ipairs(systemEntities) do
+		local entTable = thisent:SligWolf_GetTable()
+
+		local spawnState = entTable.spawnState
+		entTable.spawnState = nil
+
+		if not spawnState then
+			continue
+		end
+
+		local solid = spawnState.solid
+		local freeze = spawnState.freeze
+
+		if solid ~= nil then
+			thisent:SetNotSolid(not solid)
+		end
+
+		if freeze ~= nil and LIB.CanApplyBodySystemMotion(thisent) then
+			LIB.EnableMotion(thisent, not freeze)
+		end
+	end
+end
+
 function LIB.LockEntityToMountPoint(selfEnt, callback)
 	if not IsValid(selfEnt) then
 		return false

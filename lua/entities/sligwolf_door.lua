@@ -45,7 +45,7 @@ end
 function ENT:PostInitialize()
 	BaseClass.PostInitialize(self)
 
-	self:UpdateCollisionEntity()
+	self:UpdateCollisionEntity(true)
 
 	if self:GetDoorSpawnOpen() then
 		self:OpenInternal()
@@ -142,8 +142,10 @@ function ENT:UpdateCollisionEntity(force)
 	self._oldOpenModel = mdl
 
 	if force or mdl ~= oldmdl then
-		self:SpawnCollisionEntity(mdl)
-		self:UpdateDoorPhysSolid()
+		if self.PostInitialized then
+			self:SpawnCollisionEntity(mdl)
+			self:UpdateDoorPhysSolid()
+		end
 	end
 end
 
@@ -224,7 +226,11 @@ function ENT:SpawnCollisionEntity(mdl)
 	self._collisionProp = Prop
 	self._collisionPropConst = WD
 
+	self:CopySpawnPhysState(Prop)
+	Prop:DeleteSpawnSolidState()
+
 	self:UpdateBodySystemMotion()
+
 	return Prop
 end
 

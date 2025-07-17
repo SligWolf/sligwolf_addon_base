@@ -34,6 +34,38 @@ function ENT:PhysicsCollide(colData, collider)
 	-- override me
 end
 
+function ENT:DeleteSpawnSolidState()
+	local entTable = self:SligWolf_GetTable()
+
+	local spawnState = entTable.spawnState
+	if not spawnState then
+		return
+	end
+
+	spawnState.solid = nil
+end
+
+function ENT:CopySpawnPhysState(otherEnd)
+	if not IsValid(otherEnd) then
+		return
+	end
+
+	local entTableA = self:SligWolf_GetTable()
+	local entTableB = otherEnd:SligWolf_GetTable()
+
+	local spawnStateA = entTableA.spawnState
+	if not spawnStateA then
+		return
+	end
+
+	local spawnStateB = entTableB.spawnState
+	if spawnStateB then
+		return
+	end
+
+	entTableB.spawnState = table.Copy(spawnStateA)
+end
+
 function ENT:UpdateBodySystemMotion(delayed)
 	LIBEntities.UpdateBodySystemMotion(self, delayed)
 end

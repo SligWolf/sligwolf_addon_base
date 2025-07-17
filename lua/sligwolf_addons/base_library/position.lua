@@ -20,6 +20,7 @@ local LIB = SligWolf_Addons.Position
 local LIBPrint = nil
 local LIBModel = nil
 local LIBTimer = nil
+local LIBUtil = nil
 
 local g_asyncPositioningTimerName = "asyncPositioning"
 local g_asyncPositioningPollTime = 0.033
@@ -28,15 +29,23 @@ local g_asyncPositioningDistanceToleranceSqr = 0.01 ^ 2
 local g_asyncPositioningDistanceAngle = 0.01
 local g_asyncPositioningLifetime = 50
 
-local function isSimilarPosAng(posA, posB, angA, angB)
+local function isSimilarPosAng(posA, posB, angA, angB, debug_ent)
 	local isSimilarPos = not posA or not posB or posA:DistToSqr(posB) < g_asyncPositioningDistanceToleranceSqr
-	local isSimilarPosAnd = not angA or not angB or LIB.GetAnglesDifference(angA, angB) < g_asyncPositioningDistanceAngle
+	local isSimilasAng = not angA or not angB or LIB.GetAnglesDifference(angA, angB) < g_asyncPositioningDistanceAngle
 
 	if not isSimilarPos then
+		-- if debug_ent then
+		-- 	LIBPrint.Print("Pos, %s: %s | %s | %s > %s", debug_ent, posA, posB, posA:DistToSqr(posB) ^ 0.5, g_asyncPositioningDistanceToleranceSqr ^ 0.5)
+		-- end
+
 		return false
 	end
 
-	if not isSimilarPosAnd then
+	if not isSimilasAng then
+		-- if debug_ent then
+		-- 	LIBPrint.Print("Ang, %s: %s | %s | %s > %s", debug_ent, angA, angB, LIB.GetAnglesDifference(angA, angB), g_asyncPositioningDistanceAngle)
+		-- end
+
 		return false
 	end
 
@@ -96,7 +105,7 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 		asyncPositioning.lifetime = g_asyncPositioningLifetime
 
 		LIB.SetPosAng(ent, pos, ang)
-		return false
+		return true
 	end
 
 	local attTargetData = asyncPositioning.attTargetData

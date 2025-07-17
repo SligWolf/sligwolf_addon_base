@@ -54,6 +54,7 @@ end
 function ENT:PostInitialize()
 	BaseClass.PostInitialize(self)
 
+	self:DeleteSpawnSolidState()
 	self:EnableMotion(true)
 end
 

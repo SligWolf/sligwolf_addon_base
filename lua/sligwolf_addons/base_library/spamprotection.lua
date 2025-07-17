@@ -269,13 +269,21 @@ function LIB.Load()
 
 		if g_maxCollisionSpamCount > 0 then
 			local function RemoveSpamCollisions()
-				local collidingSystems = LIBPhysics.GetCollidingSystems(ent)
+				local collidingSystems = LIBPhysics.GetCollidingSystems()
 
 				local removeCandidates = {}
 				local nowTick = engine.TickCount()
 
 				for _, superparent in pairs(collidingSystems) do
 					if LIBEntities.IsMarkedForDeletion(superparent) then
+						continue
+					end
+
+					if not superparent.sligwolf_entity then
+						continue
+					end
+
+					if superparent:CreatedByMap() then
 						continue
 					end
 

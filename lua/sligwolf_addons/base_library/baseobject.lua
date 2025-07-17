@@ -23,8 +23,8 @@ function SLIGWOLF_BASE_OBJ:RunPostInitialize()
 		self:TimerNextFrame("PostInitialize", function()
 			-- Make sure we have a delay of at least 2 frames.
 
-			self:PostInitialize()
 			self.PostInitialized = true
+			self:PostInitialize()
 		end)
 	end)
 end

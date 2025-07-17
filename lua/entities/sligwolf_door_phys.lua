@@ -53,6 +53,7 @@ function ENT:SetDoorPhysSolid(solid)
 		return
 	end
 
+	self:DeleteSpawnSolidState()
 	self:SetNotSolid(not solid)
 
 	if solid then
