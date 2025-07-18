@@ -126,6 +126,9 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 		return false
 	end
 
+	asyncPositioning.active = false
+	asyncPositioning.lifetime = g_asyncPositioningLifetime
+
 	local callbacksCopy = table.Copy(callbacks)
 
 	table.Empty(callbacks)
@@ -134,9 +137,6 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 	for i, thisCallback in ipairs(callbacksCopy) do
 		thisCallback(ent)
 	end
-
-	asyncPositioning.active = false
-	asyncPositioning.lifetime = g_asyncPositioningLifetime
 
 	LIBTimer.Remove(timerName)
 	return true

@@ -703,9 +703,29 @@ function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superpar
 	dtr = dtr or {}
 	superparent = superparent or parent
 
-	for i, component in ipairs(components) do
-		self:SetUpVehiclePart(parent, component, dtr, ply, superparent)
+	local waitForAsyncPositioningCallback = function(thisent)
+		if not ProceedVehicleSetUp(thisent, components) then
+			return true
+		end
+
+		if LIBPosition.IsAsyncPositioning(thisent) then
+			return false
+		end
+
+		for i, component in ipairs(components) do
+			self:SetUpVehiclePart(thisent, component, dtr, ply, superparent)
+		end
+
+		return true
 	end
+
+	self:EntityTimerRemove(parent, "SetUpVehicleParts_WaitForAsyncPositioning")
+
+	if waitForAsyncPositioningCallback(parent) then
+		return
+	end
+
+	self:EntityTimerUntil(parent, "SetUpVehicleParts_WaitForAsyncPositioning", 0.033, waitForAsyncPositioningCallback)
 end
 
 function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparent, callback)
