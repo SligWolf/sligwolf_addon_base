@@ -1254,6 +1254,8 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent, 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
+	disableEntPhysicsTemporarily(superparent, false, true)
+
 	return ent
 end
 
@@ -1314,6 +1316,8 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
+	disableEntPhysicsTemporarily(superparent, false, true)
+
 	return ent
 end
 
@@ -1363,6 +1367,8 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
+
+	disableEntPhysicsTemporarily(superparent, false, true)
 
 	return ent
 end
@@ -1416,6 +1422,8 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
+
+	disableEntPhysicsTemporarily(superparent, false, true)
 
 	return ent
 end
