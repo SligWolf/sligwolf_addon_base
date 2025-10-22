@@ -81,7 +81,9 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 		asyncPositioning.active = false
 		asyncPositioning.lifetime = g_asyncPositioningLifetime
 
-		LIBPrint.ErrorNoHaltWithStack("Position.SetPosAng: Async positioning did not return after %i attempts at %s.", g_asyncPositioningLifetime, ent)
+		-- Disabled for now since this error triggers to much in normal use of the addons.
+		-- LIBPrint.ErrorNoHaltWithStack("Position.SetPosAng: Async positioning did not return after %i attempts at %s.", g_asyncPositioningLifetime, ent)
+
 		return true
 	end
 
