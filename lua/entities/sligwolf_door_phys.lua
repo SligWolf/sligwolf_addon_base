@@ -12,6 +12,7 @@ if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBPhysics = SligWolf_Addons.Physics
 
 local g_massInNotActiveState = 1
 
@@ -44,7 +45,7 @@ end
 
 function ENT:SetDoorPhysSolid(solid)
 	local phys = self:GetPhysicsObject()
-	if not IsValid(phys) then return end
+	if not LIBPhysics.IsValidPhysObject(phys) then return end
 
 	local oldSolid = self._isSolid
 	self._isSolid = solid

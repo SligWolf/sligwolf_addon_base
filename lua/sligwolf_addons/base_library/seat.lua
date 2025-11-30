@@ -195,6 +195,9 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 		return nil
 	end
 
+	local entTable = seat:SligWolf_GetTable()
+	entTable.noAsycPositioning = true
+
 	LIBModel.SetModel(seat, seatGroup:GetSeatModel())
 
 	if not LIBPosition.MountToAttachment(seatGroup, seat, attachmentName) then

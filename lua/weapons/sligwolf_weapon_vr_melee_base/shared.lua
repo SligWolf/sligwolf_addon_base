@@ -24,6 +24,7 @@ SWEP.VrTraceChains = {}
 
 local Vector_Zero = Vector()
 
+local LIBPhysics = SligWolf_Addons.Physics
 local LIBTracer = SligWolf_Addons.Tracer
 
 function SWEP:Initialize()
@@ -67,7 +68,7 @@ function SWEP:GetTargetEntityVelocity(targetEntity, hitPos)
 	end
 
 	local phys = targetEntity:GetPhysicsObject()
-	if IsValid(phys) then
+	if LIBPhysics.IsValidPhysObject(phys) then
 		return phys:GetVelocityAtPoint(hitPos)
 	end
 

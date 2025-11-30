@@ -52,11 +52,7 @@ local function isSimilarPosAng(posA, posB, angA, angB, debug_ent)
 	return true
 end
 
-local function pollAsyncPositioning(ent, entTable, timerName)
-	if not IsValid(ent) then
-		return true
-	end
-
+local function closeAsyncPositioning(ent, entTable, timerName, callCallbacks)
 	local asyncPositioning = entTable.asyncPositioning or {}
 	entTable.asyncPositioning = asyncPositioning
 
@@ -66,6 +62,35 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 	local callbacksIdx = asyncPositioning.callbacksIdx or {}
 	asyncPositioning.callbacksIdx = callbacksIdx
 
+	asyncPositioning.active = false
+	asyncPositioning.lifetime = g_asyncPositioningLifetime
+
+	local callbacksCopy = callCallbacks and table.Copy(callbacks) or {}
+
+	table.Empty(callbacks)
+	table.Empty(callbacksIdx)
+
+	for i, thisCallback in ipairs(callbacksCopy) do
+		thisCallback(ent)
+	end
+
+	LIBTimer.Remove(timerName)
+end
+
+local function pollAsyncPositioning(ent, entTable, timerName)
+	if not IsValid(ent) then
+		return true
+	end
+
+	if entTable.noAsycPositioning then
+		closeAsyncPositioning(ent, entTable, timerName, true)
+
+		return true
+	end
+
+	local asyncPositioning = entTable.asyncPositioning or {}
+	entTable.asyncPositioning = asyncPositioning
+
 	local lifetime = asyncPositioning.lifetime or g_asyncPositioningLifetime
 	asyncPositioning.lifetime = lifetime - 1
 
@@ -73,16 +98,8 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 	asyncPositioning.active = true
 
 	if lifetime <= 0 then
-		LIBTimer.Remove(timerName)
-
-		table.Empty(callbacks)
-		table.Empty(callbacksIdx)
-
-		asyncPositioning.active = false
-		asyncPositioning.lifetime = g_asyncPositioningLifetime
-
-		-- Disabled for now since this error triggers to much in normal use of the addons.
-		-- LIBPrint.ErrorNoHaltWithStack("Position.SetPosAng: Async positioning did not return after %i attempts at %s.", g_asyncPositioningLifetime, ent)
+		closeAsyncPositioning(ent, entTable, timerName, false)
+		LIBPrint.ErrorNoHaltWithStack("Position.SetPosAng: Async positioning did not return after %i attempts at %s.", g_asyncPositioningLifetime, ent)
 
 		return true
 	end
@@ -128,19 +145,8 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 		return false
 	end
 
-	asyncPositioning.active = false
-	asyncPositioning.lifetime = g_asyncPositioningLifetime
+	closeAsyncPositioning(ent, entTable, timerName, true)
 
-	local callbacksCopy = table.Copy(callbacks)
-
-	table.Empty(callbacks)
-	table.Empty(callbacksIdx)
-
-	for i, thisCallback in ipairs(callbacksCopy) do
-		thisCallback(ent)
-	end
-
-	LIBTimer.Remove(timerName)
 	return true
 end
 

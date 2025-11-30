@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Vehicle)
 local LIB = SligWolf_Addons.Vehicle
 
 local LIBEntities = nil
+local LIBPhysics = nil
 local LIBCamera = nil
 local LIBTimer = nil
 local LIBModel = nil
@@ -214,7 +215,7 @@ function LIB.EnableWheels(vehicle, enable)
 
 	for i = 1, wheels do
 		local phys = vehicle:GetWheel(i)
-		if not IsValid(phys) then
+		if not LIBPhysics.IsValidPhysObject(phys, true) then
 			continue
 		end
 
@@ -297,6 +298,7 @@ end
 function LIB.Load()
 	LIBThirdperson = SligWolf_Addons.Thirdperson
 	LIBEntities = SligWolf_Addons.Entities
+	LIBPhysics = SligWolf_Addons.Physics
 	LIBCamera = SligWolf_Addons.Camera
 	LIBTimer = SligWolf_Addons.Timer
 	LIBModel = SligWolf_Addons.Model

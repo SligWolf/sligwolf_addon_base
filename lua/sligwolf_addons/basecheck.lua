@@ -63,13 +63,7 @@ function SLIGWOLF_BASECHECK.CheckBaseAddonExist(allowSpam)
 end
 
 function SLIGWOLF_BASECHECK.CheckBaseAddonVersion(allowSpam)
-	local SligWolf_Addons = SligWolf_Addons
-
-	if not SligWolf_Addons then
-		return false
-	end
-
-	local currentBaseApiVersion = tostring(SligWolf_Addons.BaseApiVersion or "")
+	local currentBaseApiVersion = tostring(SligWolf_Addons and SligWolf_Addons.BaseApiVersion or "")
 	local requiredBaseApiVersion = tostring(SLIGWOLF_BASECHECK.RequiredBaseApiVersion or "")
 	local addonname = tostring(SLIGWOLF_BASECHECK.Addonname or "")
 
@@ -106,6 +100,23 @@ function SLIGWOLF_BASECHECK.CheckBaseAddonVersion(allowSpam)
 		"[SW-ADDONS] ERROR: %s does not match to the 'SW Base' addon version (%s).\nUpdate your local addons or use their respective Workshop versions:\n%s",
 		addonnameFormated,
 		currentBaseApiVersion,
+		g_commonErrorText
+	)
+
+	SLIGWOLF_BASECHECK.ErrorNoHaltWithStack(err, allowSpam)
+	return false
+end
+
+function SLIGWOLF_BASECHECK.CheckBaseContent(allowSpam)
+	local SligWolf_Addons = SligWolf_Addons
+
+	local LIBModel = SligWolf_Addons and SligWolf_Addons.Model
+	if LIBModel and LIBModel.ValidateBaseContent() then
+		return true
+	end
+
+	local err = string.format(
+		"[SW-ADDONS] ERROR: Content of the 'SW Base' addon was not found.\nGet it on Workshop or allow Workshop download from server (cl_downloadfilter):\n%s",
 		g_commonErrorText
 	)
 
@@ -181,6 +192,10 @@ function SLIGWOLF_BASECHECK.DoRuntimeChecks()
 	end
 
 	if not SLIGWOLF_BASECHECK.CheckBaseAddonLoaded() then
+		return SligWolf_Addons.ERROR_NOT_LOADED
+	end
+
+	if not SLIGWOLF_BASECHECK.CheckBaseContent() then
 		return SligWolf_Addons.ERROR_NOT_LOADED
 	end
 

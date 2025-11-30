@@ -15,11 +15,13 @@ table.Empty(SligWolf_Addons.Velocity)
 
 local LIB = SligWolf_Addons.Velocity
 
+local LIBPhysics = SligWolf_Addons.Physics
+
 function LIB.GetRelativeVelocity(ent)
 	if not IsValid(ent) then return end
 
 	local phys = ent:GetPhysicsObject()
-	if not IsValid(phys) then return end
+	if not LIBPhysics.IsValidPhysObject(phys) then return end
 
 	local v = phys:GetVelocity()
 	return phys:WorldToLocalVector(v)

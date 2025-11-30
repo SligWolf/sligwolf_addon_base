@@ -261,6 +261,29 @@ function LIB.GuessAddonIDByModelName(model)
 	return addonid
 end
 
+local g_baseContentValidated = nil
+
+function LIB.ValidateBaseContent()
+	if g_baseContentValidated ~= nil then
+		return g_baseContentValidated
+	end
+
+	g_baseContentValidated = nil
+
+	local mdlError = CONSTANTS.mdlError
+	if not mdlError then
+		return false
+	end
+
+	if file.Exists(mdlError, "GAME") then
+		g_baseContentValidated = true
+		return true
+	end
+
+	g_baseContentValidated = false
+	return false
+end
+
 function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 end

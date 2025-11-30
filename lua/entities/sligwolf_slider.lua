@@ -14,6 +14,7 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local LIBPhysics = SligWolf_Addons.Physics
 local LIBConvar = SligWolf_Addons.Convar
 
 function ENT:Initialize()
@@ -30,7 +31,7 @@ function ENT:InitializePhysics()
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 
 	local phys = self:GetPhysicsObject()
-	if IsValid(phys) then
+	if LIBPhysics.IsValidPhysObject(phys) then
 		phys:SetMaterial("gmod_ice")
 	end
 end

@@ -41,6 +41,7 @@ local g_FallbackComponentsParams = {
 	colorFromParent = false,
 	isBody = false,
 	removeAllOnDelete = true,
+	noAsycPositioning = false,
 
 	typesParams = {
 		propParent = {
@@ -608,6 +609,10 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local isBody = component.isBody
 	local selfAttachment = component.selfAttachment
 	local freeze = component.freeze
+	local noAsycPositioning = component.noAsycPositioning
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.noAsycPositioning = noAsycPositioning
 
 	LIBModel.SetModel(ent, model)
 
@@ -689,7 +694,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	)
 
 	local phys = ent:GetPhysicsObject()
-	if IsValid(phys) and mass then
+	if LIBPhysics.IsValidPhysObject(phys) and mass then
 		phys:SetMass(mass)
 	end
 

@@ -256,6 +256,17 @@ function SLIGWOLF_BASE_OBJ:GetNetworkRVarColor(name, fallback, ...)
 	return color
 end
 
+local g_hasPrintedErrorAddonInstall = {}
+
+function SLIGWOLF_BASE_OBJ:ErrorAddonInstall(addonid)
+	if g_hasPrintedErrorAddonInstall[addonid] then
+		return
+	end
+
+	self:ErrorNoHaltWithStack("SligWolf addon '%s' is not loaded or installed.", addonid)
+	g_hasPrintedErrorAddonInstall[addonid] = true
+end
+
 function SLIGWOLF_BASE_OBJ:SetAddonID(addonid)
 	if CLIENT then return end
 
@@ -270,7 +281,7 @@ function SLIGWOLF_BASE_OBJ:SetAddonID(addonid)
 	local hasAddon = SligWolf_Addons.HasLoadedAddon(addonid)
 
 	if not hasAddon then
-		self:ErrorNoHaltWithStack("SligWolf addon '%s' is not loaded or installed.", addonid)
+		self:ErrorAddonInstall(addonid)
 		return false
 	end
 
@@ -306,7 +317,7 @@ function SLIGWOLF_BASE_OBJ:GetAddonID()
 
 	local hasAddon = SligWolf_Addons.HasLoadedAddon(addonid)
 	if not hasAddon then
-		self:ErrorNoHaltWithStack("SligWolf addon '%s' is not loaded or installed.", addonid)
+		self:ErrorAddonInstall(addonid)
 		return nil
 	end
 

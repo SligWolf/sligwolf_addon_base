@@ -154,15 +154,30 @@ function LIB.InitializeAsPhysEntity(ent)
 	LIB.ClearPhysObjectsCache(ent)
 end
 
-function LIB.IsValidPhysObject(phys)
-	if not IsValid(phys) then
+function LIB.IsValidPhysObject(phys, dontIgnoreWheels)
+	if not phys then
+		return nil
+	end
+
+	-- PhysObj:IsValid() is super slow as found in:
+	-- https://github.com/Facepunch/garrysmod-requests/issues/2928
+
+	-- if not phys:IsValid() then
+	-- 	return false
+	-- end
+
+	-- So we need to replace it with a hack, a Developer's DIY.
+	local physId = string.lower(tostring(phys))
+	if physId == "[null physobject]" then
 		return false
 	end
 
-	local name = string.lower(phys:GetName())
-	if name == "vehiclewheel" then
-		-- wheels do act crazy when messed with
-		return false
+	if not dontIgnoreWheels then
+		local name = string.lower(phys:GetName())
+		if name == "vehiclewheel" then
+			-- Wheels do act crazy when messed with
+			return false
+		end
 	end
 
 	return true
