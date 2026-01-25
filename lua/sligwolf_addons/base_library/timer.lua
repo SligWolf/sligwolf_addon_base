@@ -15,8 +15,11 @@ table.Empty(SligWolf_Addons.Timer)
 
 local LIB = SligWolf_Addons.Timer
 
+local LIBUtil = nil
+
 local g_nameprefix = "SLIGWOLF_ADDONS_Timer_"
-local g_epsilon = 0.001
+local g_time_min = engine.TickInterval() / 2
+local g_time_max = 3600
 
 local function getName(identifier)
 	identifier = g_nameprefix .. tostring(identifier or "")
@@ -46,7 +49,12 @@ function LIB.Interval(identifier, delay, repetitions, func)
 
 	repetitions = tonumber(repetitions or 0)
 	delay = tonumber(delay or 0)
-	delay = math.max(delay, g_epsilon)
+	delay = math.max(delay, g_time_min)
+
+	if delay > g_time_max then
+		error(string.format("Can not queue timers longer than %d sec, got run time %d sec.", g_time_max, delay))
+		return
+	end
 
 	timer.Remove(name)
 	timer.Create(name, delay, repetitions, func)
@@ -57,7 +65,12 @@ function LIB.Once(identifier, delay, func)
 	local name = getName(identifier)
 
 	delay = tonumber(delay or 0)
-	delay = math.max(delay, g_epsilon)
+	delay = math.max(delay, g_time_min)
+
+	if delay > g_time_max then
+		error(string.format("Can not queue timers longer than %d sec, got run time %d sec.", g_time_max, delay))
+		return
+	end
 
 	timer.Remove(name)
 	timer.Create(name, delay, 1, function()
@@ -66,18 +79,37 @@ function LIB.Once(identifier, delay, func)
 	end)
 end
 
-function LIB.Until(identifier, delay, func, maxRepeats)
+function LIB.Until(identifier, delay, func, maxRepeats, maxTime)
 	if not isfunction(func) then return end
 	local name = getName(identifier)
 
 	delay = tonumber(delay or 0)
-	delay = math.max(delay, g_epsilon)
+	delay = math.max(delay, g_time_min)
 
-	if maxRepeats then
-		maxRepeats = math.max(maxRepeats, 1)
+	if delay > g_time_max then
+		error(string.format("Can not queue timers longer than %d sec, got run time %d sec.", g_time_max, delay))
+		return
 	end
 
+	maxRepeats = tonumber(maxRepeats or 0)
+	maxRepeats = math.max(maxRepeats, 0)
+
+	maxTime = tonumber(maxTime or 0)
+	if maxTime <= 0 then
+		maxTime = g_time_max
+	end
+
+	if maxTime > g_time_max then
+		error(string.format("This timer would have a risk to live longer than %d sec, got estimated max run time %d sec.", g_time_max, maxTime))
+		return
+	end
+
+	delay = tonumber(delay or 0)
+	delay = math.max(delay, g_time_min)
+
 	local removeNextTick = false
+	local repeatsLeft = maxRepeats
+	local timeout = CurTime() + maxTime
 
 	timer.Remove(name)
 	timer.Create(name, delay, 0, function()
@@ -86,17 +118,28 @@ function LIB.Until(identifier, delay, func, maxRepeats)
 			return
 		end
 
-		if maxRepeats then
-			if maxRepeats <= 0 then
-				removeNextTick = true
+		local now = CurTime()
+		if now > timeout then
+			removeNextTick = false
+			timer.Remove(name)
+
+			func(false)
+			return
+		end
+
+		if maxRepeats > 0 then
+			if repeatsLeft <= 0 then
+				removeNextTick = false
 				timer.Remove(name)
+
+				func(false)
 				return
 			end
 
-			maxRepeats = maxRepeats - 1
+			repeatsLeft = repeatsLeft - 1
 		end
 
-		local endtimer = func()
+		local endtimer = func(true)
 
 		if endtimer then
 			removeNextTick = true
@@ -105,7 +148,7 @@ function LIB.Until(identifier, delay, func, maxRepeats)
 end
 
 function LIB.NextFrame(identifier, func)
-	LIB.Once(identifier, g_epsilon, func)
+	LIB.Once(identifier, g_time_min, func)
 end
 
 function LIB.Remove(identifier)
@@ -114,11 +157,19 @@ function LIB.Remove(identifier)
 end
 
 function LIB.Simple(delay, func)
-	timer.Simple(delay, func)
+	-- timer.Simple is unrelaible to always run next tick, see this:
+	-- https://github.com/Facepunch/garrysmod-issues/issues/6668
+
+	local identifier = LIBUtil.UniqueString("_SimpleThrowAwayTimer_UniqueId")
+	LIB.Once(identifier, delay, func)
 end
 
 function LIB.SimpleNextFrame(func)
-	LIB.Simple(g_epsilon, func)
+	LIB.Simple(g_time_min, func)
+end
+
+function LIB.Load()
+	LIBUtil = SligWolf_Addons.Util
 end
 
 return true

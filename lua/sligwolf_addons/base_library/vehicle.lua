@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Vehicle)
 local LIB = SligWolf_Addons.Vehicle
 
 local LIBEntities = nil
+local LIBPosition = nil
 local LIBPhysics = nil
 local LIBCamera = nil
 local LIBTimer = nil
@@ -295,9 +296,348 @@ function LIB.ResetDriverMaxHealth(ply)
 	plyTable.driverOldHealth = nil
 end
 
+function LIB.VehicleSupportsNPCPassenger(vehicle)
+	if not IsValid(vehicle) then return false end
+	if not vehicle:IsVehicle() then return false end
+
+	local enterVehicleAttachment = LIBPosition.GetAttachmentId(vehicle, "vehicle_feet_passenger1")
+	if not enterVehicleAttachment then return false end
+
+	return true
+end
+
+function LIB.NpcSupportsVehicleMounting(npc)
+	if not IsValid(npc) then return false end
+	if not npc:IsNPC() then return false end
+
+	local enterVehicleSequence = npc:LookupSequence("buggy_enter1") or -1
+	if enterVehicleSequence == -1 then return false end
+
+	local exitVehicleSequence = npc:LookupSequence("buggy_exit1") or -1
+	if exitVehicleSequence == -1 then return false end
+
+	return true
+end
+
+function LIB.NpcCanEnterVehicle(vehicle, npc)
+	if not IsValid(vehicle) then return false end
+	if not IsValid(npc) then return false end
+
+	if not LIB.VehicleSupportsNPCPassenger(vehicle) then return false end
+	if not LIB.NpcSupportsVehicleMounting(npc) then return false end
+
+	local npcTable = npc:SligWolf_GetTable()
+	local vehicleTable = vehicle:SligWolf_GetTable()
+
+	local npcSeatPlayerOccupied = vehicleTable.npcSeatPlayerOccupied
+	if npcSeatPlayerOccupied then return false end
+
+	if npcTable.passengerLock then return false end
+	if vehicleTable.passengerLock then return false end
+
+	local currentPassengerNpc = vehicleTable.currentPassengerNpc
+	if IsValid(currentPassengerNpc) then return false end
+
+	local currentPassengerVehicle = npcTable.currentPassengerVehicle
+	if IsValid(currentPassengerVehicle) then return false end
+
+	return true
+end
+
+function LIB.NpcCanExitVehicle(vehicle, npc)
+	if not IsValid(vehicle) then return false end
+	if not IsValid(npc) then return false end
+
+	if not LIB.VehicleSupportsNPCPassenger(vehicle) then return false end
+	if not LIB.NpcSupportsVehicleMounting(npc) then return false end
+
+	local npcTable = npc:SligWolf_GetTable()
+	local vehicleTable = vehicle:SligWolf_GetTable()
+
+	local npcSeatPlayerOccupied = vehicleTable.npcSeatPlayerOccupied
+	if npcSeatPlayerOccupied then return false end
+
+	if npcTable.passengerLock then return false end
+	if vehicleTable.passengerLock then return false end
+
+	local currentPassengerNpc = vehicleTable.currentPassengerNpc
+	if IsValid(currentPassengerNpc) and npc ~= currentPassengerNpc then return false end
+
+	local currentPassengerVehicle = npcTable.currentPassengerVehicle
+	if IsValid(currentPassengerVehicle) and vehicle ~= currentPassengerVehicle then return false end
+
+	return true
+end
+
+function LIB.GetNpcPassenger(vehicle)
+	if not IsValid(vehicle) then return nil end
+
+	local vehicleTable = vehicle:SligWolf_GetTable()
+
+	local npcSeatPlayerOccupied = vehicleTable.npcSeatPlayerOccupied
+	if npcSeatPlayerOccupied then return nil end
+
+	local currentPassengerNpc = vehicleTable.currentPassengerNpc
+	if not IsValid(currentPassengerNpc) then return nil end
+
+	return currentPassengerNpc
+end
+
+function LIB.GetNpcPassengerVehicle(npc)
+	if not IsValid(npc) then return nil end
+
+	local npcTable = npc:SligWolf_GetTable()
+
+	local currentPassengerVehicle = npcTable.currentPassengerVehicle
+	if not IsValid(currentPassengerVehicle) then return nil end
+
+	return currentPassengerVehicle
+end
+
+local g_passenger_handling_timer = "NpcPassengerHandling"
+local g_passenger_handling_timeout = 60
+
+local function isUniqueVehicleName(vehicleName)
+	if vehicleName == "" then
+		return false
+	end
+
+	local vehicles = ents.FindByName(vehicleName)
+
+	local found = false
+
+	for k, v in ipairs(vehicles) do
+		if not LIB.VehicleSupportsNPCPassenger(v) then continue end
+
+		if found then
+			return false
+		end
+
+		found = true
+	end
+
+	return true
+end
+
+local function revertTmpVehicleName(vehicle, vehicleTable)
+	local tmpVehicleName = vehicleTable.currentPassengerVehicleTmpName or ""
+	if tmpVehicleName == "" then
+		return
+	end
+
+	local currentName = vehicle:GetName()
+	local oldVehicleName = vehicleTable.currentPassengerVehicleOldName or ""
+
+	if currentName == oldVehicleName then
+		return
+	end
+
+	vehicle:SetName(oldVehicleName)
+end
+
+local function npcEnterVehicleInternal(vehicle, vehicleTable, npc)
+	local vehicleName = vehicle:GetName()
+
+	local isUnique = isUniqueVehicleName(vehicleName)
+	if isUnique then
+		npc:Fire("EnterVehicle", vehicleName)
+		return
+	end
+
+	local oldVehicleName = vehicleTable.currentPassengerVehicleOldName or vehicleName
+	local tmpVehicleName = vehicleTable.currentPassengerVehicleTmpName or ""
+
+	if tmpVehicleName == "" then
+		local tmpPrefix = oldVehicleName ~= "" and oldVehicleName or "Vehicle"
+		tmpPrefix = "SligWolf_" .. tmpPrefix .. "_UniqueId"
+
+		tmpVehicleName = LIBUtil.UniqueString(tmpPrefix)
+	end
+
+	vehicleTable.currentPassengerVehicleOldName = oldVehicleName
+	vehicleTable.currentPassengerVehicleTmpName = tmpVehicleName
+
+	vehicle:SetName(tmpVehicleName)
+	npc:Fire("EnterVehicle", tmpVehicleName)
+end
+
+function LIB.NpcEnterVehicle(vehicle, npc, callback)
+	callback = callback or function() end
+
+	if not LIB.NpcCanEnterVehicle(vehicle, npc) then
+		callback(vehicle, npc, false)
+		return
+	end
+
+	local npcTable = npc:SligWolf_GetTable()
+	local vehicleTable = vehicle:SligWolf_GetTable()
+
+	npcEnterVehicleInternal(vehicle, vehicleTable, npc)
+
+	npcTable.passengerLock = true
+	npcTable.currentPassengerVehicle = vehicle
+
+	vehicleTable.passengerLock = true
+	vehicleTable.currentPassengerNpc = npc
+
+	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passenger_handling_timer)
+
+	LIBTimer.Until(timerName, 0.25, function(running, ...)
+		local validNpc = IsValid(npc)
+
+		if not IsValid(vehicle) then
+			if validNpc then
+				npcTable.passengerLock = nil
+				npcTable.currentPassengerVehicle = nil
+			end
+
+			return true
+		end
+
+		if not validNpc or not npc:Alive() then
+			vehicleTable.passengerLock = nil
+			vehicleTable.currentPassengerNpc = nil
+
+			revertTmpVehicleName(vehicle, vehicleTable)
+
+			if validNpc then
+				npcTable.passengerLock = nil
+				npcTable.currentPassengerVehicle = nil
+
+				callback(vehicle, npc, false)
+			end
+
+			return true
+		end
+
+		local isInVehicle = npc:GetParent() == vehicle
+
+		if not isInVehicle then
+			if not running then
+				-- failed after timeout, force npc to stay out
+				npcTable.passengerLock = nil
+				npcTable.currentPassengerVehicle = nil
+
+				vehicleTable.passengerLock = nil
+				vehicleTable.currentPassengerNpc = nil
+
+				revertTmpVehicleName(vehicle, vehicleTable)
+				npc:Fire("ExitVehicle")
+
+				callback(vehicle, npc, false)
+				return false
+			end
+
+			-- try again if not timed out
+			return false
+		end
+
+		npcTable.passengerLock = nil
+		vehicleTable.passengerLock = nil
+
+		revertTmpVehicleName(vehicle, vehicleTable)
+		callback(vehicle, npc, true)
+
+		return true
+	end, 0, g_passenger_handling_timeout)
+end
+
+function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
+	if not IsValid(npcOrVehicle) then return end
+
+	local vehicle = nil
+
+	if npcOrVehicle:IsNPC() then
+		npc = npcOrVehicle
+		vehicle = LIB.GetNpcPassengerVehicle(npc)
+	elseif npcOrVehicle:IsVehicle() then
+		vehicle = npcOrVehicle
+
+		if not IsValid(npc) then
+			npc = LIB.GetNpcPassenger(vehicle)
+		end
+	end
+
+	callback = callback or function() end
+
+	if not LIB.NpcCanExitVehicle(vehicle, npc) then
+		callback(vehicle, npc, false)
+		return
+	end
+
+	local npcTable = npc:SligWolf_GetTable()
+	local vehicleTable = vehicle:SligWolf_GetTable()
+
+	npcTable.passengerLock = true
+	vehicleTable.passengerLock = true
+
+	npc:Fire("ExitVehicle")
+	revertTmpVehicleName(vehicle, vehicleTable)
+
+	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passenger_handling_timer)
+
+	LIBTimer.Until(timerName, 0.25, function(running)
+		local validNpc = IsValid(npc)
+
+		if not IsValid(vehicle) then
+			if validNpc then
+				npcTable.passengerLock = nil
+				npcTable.currentPassengerVehicle = nil
+			end
+
+			return true
+		end
+
+		if not validNpc then
+			vehicleTable.passengerLock = nil
+			vehicleTable.currentPassengerNpc = nil
+
+			revertTmpVehicleName(vehicle, vehicleTable)
+			return true
+		end
+
+		local isInVehicle = npc:GetParent() == vehicle and npc:Alive()
+
+		if isInVehicle then
+			if not running then
+				-- failed after timeout, force npc in again
+				npcTable.passengerLock = nil
+				npcTable.currentPassengerVehicle = nil
+
+				vehicleTable.passengerLock = nil
+				vehicleTable.currentPassengerNpc = nil
+
+				revertTmpVehicleName(vehicle, vehicleTable)
+
+				LIB.NpcEnterVehicle(vehicle, npc, function()
+					callback(vehicle, npc, false)
+				end)
+
+				return false
+			end
+
+			-- try again if not timed out
+			return false
+		end
+
+		npcTable.passengerLock = nil
+		npcTable.currentPassengerVehicle = nil
+
+		vehicleTable.passengerLock = nil
+		vehicleTable.currentPassengerNpc = nil
+
+		revertTmpVehicleName(vehicle, vehicleTable)
+		callback(vehicle, npc, true)
+
+		return true
+	end, 0, g_passenger_handling_timeout)
+end
+
+
 function LIB.Load()
 	LIBThirdperson = SligWolf_Addons.Thirdperson
 	LIBEntities = SligWolf_Addons.Entities
+	LIBPosition = SligWolf_Addons.Position
 	LIBPhysics = SligWolf_Addons.Physics
 	LIBCamera = SligWolf_Addons.Camera
 	LIBTimer = SligWolf_Addons.Timer

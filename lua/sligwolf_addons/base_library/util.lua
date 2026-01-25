@@ -17,6 +17,25 @@ local LIB = SligWolf_Addons.Util
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local g_uid = 0
+function LIB.Uid()
+	g_uid = (g_uid + 1) % (2 ^ 30)
+	return g_uid
+end
+
+function LIB.UniqueString(prefix)
+	prefix = tostring(prefix or "")
+
+	if prefix == "" then
+		prefix = "UniqueString"
+	end
+
+	local timeHash = tonumber(util.CRC(tostring(SysTime())))
+	local uniqueString = string.format("%s-%d-%08X", prefix, LIB.Uid(), timeHash)
+
+	return uniqueString
+end
+
 function LIB.ValidateName(name)
 	name = tostring(name or "")
 	name = string.gsub(name, "^!", "", 1)
