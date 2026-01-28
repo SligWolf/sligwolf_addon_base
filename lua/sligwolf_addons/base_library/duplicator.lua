@@ -240,17 +240,12 @@ function LIB.Load()
 	LIBMeta = SligWolf_Addons.Meta
 
 	if SERVER then
-		local function onDuplicated(ent, ...)
+		local function OnDuplicated(ent, ...)
 			if not IsValid(ent) then return end
 
 			local entTable = ent:SligWolf_GetTable()
-			local oldOnDuplicated = entTable._oldOnDuplicated
 
 			entTable.isDuped = true
-
-			if isfunction(oldOnDuplicated) then
-				oldOnDuplicated(ent, ...)
-			end
 
 			local swOnDuplicated = entTable.OnDuplicated
 			if isfunction(swOnDuplicated) then
@@ -258,16 +253,7 @@ function LIB.Load()
 			end
 		end
 
-		local function OnEntityCreated(ent)
-			if not IsValid(ent) then return end
-
-			local entTable = ent:SligWolf_GetTable()
-			entTable._oldOnDuplicated = entTable._oldOnDuplicated or ent.OnDuplicated
-
-			ent.OnDuplicated = onDuplicated
-		end
-
-		LIBHook.Add("OnEntityCreated", "Library_Duplicator_OnEntityCreated", OnEntityCreated, 1000)
+		LIBHook.Add("OnDuplicated", "Library_Duplicator_OnDuplicated", OnDuplicated, 1000)
 	end
 end
 
