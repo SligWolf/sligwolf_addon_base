@@ -20,6 +20,8 @@ function LIB.Load()
 	local LIBHook = SligWolf_Addons.Hook
 
 	if SERVER then
+		-- Make sure we get ALL key values for later,
+		-- as ent:GetKeyValues does not return all keyValues.
 		local function RegisterKeyValue(ent, key, value)
 			if not IsValid(ent) then return end
 			if not string.StartsWith(key, "sligwolf_") then return end

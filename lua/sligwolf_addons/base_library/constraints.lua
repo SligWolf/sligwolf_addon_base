@@ -94,7 +94,7 @@ function LIB.NoCollide(ent, parent, constraintInfos)
 		parent,
 		bone1,
 		bone2,
-		constraintInfos.disableOnRemove or false
+		true
 	)
 
 	if not IsValid(constraintEnt) then

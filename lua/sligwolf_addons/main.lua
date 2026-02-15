@@ -24,7 +24,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "e930639742cfa87730b83a7f508cae5e05518443ae3b44ea2a9a4c2ecbdc47b1"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.5.1"
+SligWolf_Addons.BaseApiVersion = "1.5.2"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 251210
@@ -60,6 +60,8 @@ local g_DefaultHooks = {
 	VehicleOrderThink = "Think",
 	VehicleOrderMenu = "PopulateToolMenu",
 	VehicleOrderLeave = "PlayerLeaveVehicle",
+	PreCleanupMap = "PreCleanupMap",
+	PostCleanupMap = "PostCleanupMap",
 
 	AllAddonsLoaded = "SLIGWOLF_AllAddonsLoaded",
 	TrackAssamblerContentAutoInclude = "SLIGWOLF_AllAddonsLoaded",
@@ -163,6 +165,19 @@ if SERVER then
 		if not cvarAllowWorkshopDownload:GetBool() then return end
 		resource.AddWorkshop(wsid)
 	end
+
+	-- Make sure the client has the custom error model for SligWolf addon
+	-- This prevents crashes and improves the UX with missing content.
+
+	resource.AddSingleFile("models/sligwolf/base/error.mdl")
+	resource.AddSingleFile("models/sligwolf/base/error.dx90.vtx")
+	resource.AddSingleFile("models/sligwolf/base/error.phy")
+	resource.AddSingleFile("models/sligwolf/base/error.vvd")
+
+	resource.AddSingleFile("materials/models/sligwolf/base/error.vmt")
+	resource.AddSingleFile("materials/models/sligwolf/base/error.vtf")
+	resource.AddSingleFile("materials/models/sligwolf/base/error_stripes.vmt")
+	resource.AddSingleFile("materials/models/sligwolf/base/error_stripes.vtf")
 end
 
 local function inValidateSortedAddondata()

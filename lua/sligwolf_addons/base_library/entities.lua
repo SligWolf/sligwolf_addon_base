@@ -1235,22 +1235,30 @@ function LIB.FindPropInSphere(ent, radius, attachment, filterA, filterB)
 	return nil
 end
 
-function LIB.GetKeyValue(ent, key, findAll)
-	key = string.lower(key)
+-- function LIB.GetKeyValue(ent, key, findAll)
+-- 	key = string.lower(key)
 
-	local keyValues = nil
+-- 	local keyValues = nil
 
-	if findAll then
-		keyValues = LIB.GetKeyValues(ent)
-	else
-		local entTable = ent:SligWolf_GetTable()
-		keyValues = entTable.keyValues
-	end
+-- 	if findAll then
+-- 		keyValues = LIB.GetKeyValues(ent)
+-- 	else
+-- 		local entTable = ent:SligWolf_GetTable()
+-- 		keyValues = entTable.keyValues
+-- 	end
 
-	if not keyValues then
-		return
-	end
+-- 	if not keyValues then
+-- 		return
+-- 	end
 
+-- 	return keyValues[key]
+-- end
+
+
+function LIB.GetKeyValue(ent, key)
+	key = string.lower(tostring(key or ""))
+
+	local keyValues = LIB.GetKeyValues(ent)
 	return keyValues[key]
 end
 
@@ -1272,6 +1280,7 @@ function LIB.GetKeyValues(ent)
 
 	return keyValuesRef
 end
+
 
 function LIB.CanApplyBodySystemMotion(ent)
 	if not IsValid(ent) then
