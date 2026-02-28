@@ -13,7 +13,7 @@ end
 local LIBTimer = SligWolf_Addons.Timer
 
 local function getTimerCallbackForAddon(addon, identifier, func)
-	return function()
+	return function(...)
 		if not addon.Loaded then
 			if not addon.TimerRemove then
 				return true
@@ -23,7 +23,7 @@ local function getTimerCallbackForAddon(addon, identifier, func)
 			return true
 		end
 
-		return func(addon)
+		return func(addon, ...)
 	end
 end
 
@@ -83,7 +83,7 @@ function SLIGWOLF_ADDON:TimerRemove(identifier)
 end
 
 local function getTimerCallbackForEntity(addon, ent, identifier, func)
-	return function()
+	return function(...)
 		if not IsValid(ent) then
 			if not addon.TimerRemove then
 				return true
@@ -93,7 +93,7 @@ local function getTimerCallbackForEntity(addon, ent, identifier, func)
 			return true
 		end
 
-		return func(ent)
+		return func(ent, ...)
 	end
 end
 

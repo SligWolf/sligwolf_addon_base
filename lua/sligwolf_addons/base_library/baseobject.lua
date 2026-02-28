@@ -381,13 +381,13 @@ function SLIGWOLF_BASE_OBJ:TimerOnce(identifier, delay, func)
 	return addon:EntityTimerOnce(self, identifier, delay, func)
 end
 
-function SLIGWOLF_BASE_OBJ:TimerUntil(identifier, delay, func)
+function SLIGWOLF_BASE_OBJ:TimerUntil(identifier, delay, func, maxRepeats, maxTime)
 	local addon = self:GetAddon()
 	if not addon then
 		return
 	end
 
-	return addon:EntityTimerUntil(self, identifier, delay, func)
+	return addon:EntityTimerUntil(self, identifier, delay, func, maxRepeats, maxTime)
 end
 
 function SLIGWOLF_BASE_OBJ:TimerNextFrame(identifier, func)

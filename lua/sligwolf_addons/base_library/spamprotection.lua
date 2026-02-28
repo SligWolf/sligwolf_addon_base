@@ -283,7 +283,7 @@ function LIB.Load()
 						continue
 					end
 
-					if superparent:CreatedByMap() then
+					if LIBEntities.IsCreatedByMap(superparent, true) then
 						continue
 					end
 

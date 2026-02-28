@@ -20,6 +20,7 @@ local LIBCoupling = SligWolf_Addons.Coupling
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
 local LIBModel = SligWolf_Addons.Model
+local LIBTimer = SligWolf_Addons.Timer
 
 local g_FallbackComponentsParams = {
 	model = "",
@@ -708,12 +709,18 @@ function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superpar
 	dtr = dtr or {}
 	superparent = superparent or parent
 
-	local waitForAsyncPositioningCallback = function(thisent)
+	local waitForAsyncPositioningCallback = function(thisent, success)
 		if not ProceedVehicleSetUp(thisent, components) then
 			return true
 		end
 
+		if not success then
+			self:ErrorNoHalt("SetUpVehicleParts failed to setup vehicle after 10 seconds")
+			return true
+		end
+
 		if LIBPosition.IsAsyncPositioning(thisent) then
+			-- try again if the position is not final yet
 			return false
 		end
 
@@ -724,13 +731,10 @@ function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superpar
 		return true
 	end
 
+	local delay = LIBTimer.TickTime(2)
+
 	self:EntityTimerRemove(parent, "SetUpVehicleParts_WaitForAsyncPositioning")
-
-	if waitForAsyncPositioningCallback(parent) then
-		return
-	end
-
-	self:EntityTimerUntil(parent, "SetUpVehicleParts_WaitForAsyncPositioning", 0.033, waitForAsyncPositioningCallback)
+	self:EntityTimerUntil(parent, "SetUpVehicleParts_WaitForAsyncPositioning", delay, waitForAsyncPositioningCallback, 0, 10)
 end
 
 function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparent, callback)

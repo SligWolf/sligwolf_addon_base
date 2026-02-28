@@ -1235,26 +1235,18 @@ function LIB.FindPropInSphere(ent, radius, attachment, filterA, filterB)
 	return nil
 end
 
-function LIB.GetKeyValue(ent, key, findAll)
-	key = string.lower(key)
+function LIB.GetKeyValue(ent, key)
+	key = string.lower(tostring(key or ""))
 
-	local keyValues = nil
-
-	if findAll then
-		keyValues = LIB.GetKeyValues(ent)
-	else
-		local entTable = ent:SligWolf_GetTable()
-		keyValues = entTable.keyValues
-	end
-
-	if not keyValues then
-		return
-	end
-
+	local keyValues = LIB.GetKeyValues(ent)
 	return keyValues[key]
 end
 
 function LIB.GetKeyValues(ent)
+	if CLIENT then
+		return {}
+	end
+
 	local entTable = ent:SligWolf_GetTable()
 
 	local keyValuesRef = entTable.keyValuesRef or {}
@@ -1262,15 +1254,76 @@ function LIB.GetKeyValues(ent)
 
 	for key, value in pairs(ent:GetKeyValues() or {}) do
 		key = string.lower(key)
-		keyValuesRef[key] = value
+		keyValuesRef[key] = tostring(value)
 	end
 
 	for key, value in pairs(entTable.keyValues or {}) do
 		key = string.lower(key)
-		keyValuesRef[key] = value
+		keyValuesRef[key] = tostring(value)
 	end
 
 	return keyValuesRef
+end
+
+function LIB.GetMapIO(ent)
+	if CLIENT then
+		return {}
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	return entTable.mapIO
+end
+
+function LIB.SetMapIOOutput(ent, key, output)
+	if CLIENT then
+		return
+	end
+
+	local outputParams = {output.target, output.input, output.param, output.delay, output.times}
+	outputParams = table.concat(outputParams, "\x1B")
+
+	ent:SetKeyValue(key, outputParams)
+
+	-- -- AddOutput, template: "<output> <target>:[input]:[parameter_override]:[delay]:[times to fire]"
+	-- local outputParams = string.format(
+	--  	"%s %s:%s:%s:%f:%i",
+	--  	key, output.target, output.input, output.param, output.delay, output.times
+	-- )
+
+	-- newEnt:Input("AddOutput", nil, nil, outputParams)
+end
+
+function LIB.SetMapIO(ent, ioList)
+	if CLIENT then
+		return
+	end
+
+	for key, outputs in pairs(ioList) do
+		for i, output in ipairs(outputs) do
+			LIB.SetMapIOOutput(ent, key, output)
+		end
+	end
+end
+
+function LIB.IsCreatedByMap(ent, alsoCheckHammerId)
+	if not IsValid(ent) then
+		return false
+	end
+
+	if ent:CreatedByMap() then
+		return true
+	end
+
+	if not alsoCheckHammerId then
+		return false
+	end
+
+	local hammerid = LIB.GetKeyValue(ent, "hammerid") or ""
+	if hammerid ~= "" then
+		return true
+	end
+
+	return false
 end
 
 function LIB.CanApplyBodySystemMotion(ent)

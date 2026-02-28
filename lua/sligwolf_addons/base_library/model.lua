@@ -262,6 +262,7 @@ function LIB.GuessAddonIDByModelName(model)
 end
 
 local g_baseContentValidated = nil
+local g_modelsToValidate = nil
 
 function LIB.ValidateBaseContent()
 	if g_baseContentValidated ~= nil then
@@ -270,18 +271,27 @@ function LIB.ValidateBaseContent()
 
 	g_baseContentValidated = nil
 
-	local mdlError = CONSTANTS.mdlError
-	if not mdlError then
+	if not g_modelsToValidate then
+		g_modelsToValidate = {
+			CONSTANTS.mdlError,
+			CONSTANTS.mdlCube1,
+			CONSTANTS.mdlSeat,
+		}
+	end
+
+	if table.IsEmpty(g_modelsToValidate) then
 		return false
 	end
 
-	if file.Exists(mdlError, "GAME") then
-		g_baseContentValidated = true
-		return true
+	for i, mdl in ipairs(g_modelsToValidate) do
+		if not file.Exists(mdl, "GAME") then
+			g_baseContentValidated = false
+			return false
+		end
 	end
 
-	g_baseContentValidated = false
-	return false
+	g_baseContentValidated = true
+	return true
 end
 
 function LIB.Load()

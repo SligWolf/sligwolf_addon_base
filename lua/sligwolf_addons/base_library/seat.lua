@@ -511,6 +511,7 @@ function LIB.Load()
 		local function PlayerLeaveSeat(ply, seat)
 			if not IsValid(seat) then return end
 
+			if not seat:IsVehicle() then return end
 			if not seat:IsValidVehicle() then return end
 
 			if not seat.sligwolf_vehicle then return end

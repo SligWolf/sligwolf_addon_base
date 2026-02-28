@@ -15,6 +15,7 @@ table.Empty(SligWolf_Addons.Vehicle)
 
 local LIB = SligWolf_Addons.Vehicle
 
+local LIBConstraints = nil
 local LIBEntities = nil
 local LIBPosition = nil
 local LIBPhysics = nil
@@ -84,9 +85,6 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 
 	vehicle.VehicleName = spawnname
 	vehicle.VehicleTable = vehicleTable
-
-	vehicle:Spawn()
-	vehicle:Activate()
 
 	if vehicle.SetVehicleClass then
 		vehicle:SetVehicleClass(spawnname)
@@ -186,7 +184,7 @@ function LIB.IsSpawnedByEngine(vehicle)
 
 	entTable.isSpawnedByEngine = true
 
-	if vehicle:CreatedByMap() then
+	if LIBEntities.IsCreatedByMap(vehicle, true) then
 		return true
 	end
 
@@ -357,9 +355,6 @@ function LIB.NpcCanExitVehicle(vehicle, npc)
 	local npcSeatPlayerOccupied = vehicleTable.npcSeatPlayerOccupied
 	if npcSeatPlayerOccupied then return false end
 
-	if npcTable.passengerLock then return false end
-	if vehicleTable.passengerLock then return false end
-
 	local currentPassengerNpc = vehicleTable.currentPassengerNpc
 	if IsValid(currentPassengerNpc) and npc ~= currentPassengerNpc then return false end
 
@@ -479,6 +474,7 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 
 	vehicleTable.passengerLock = true
 	vehicleTable.currentPassengerNpc = npc
+	vehicleTable.passengerEnterAbort = nil
 
 	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passenger_handling_timer)
 
@@ -522,10 +518,15 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 				vehicleTable.currentPassengerNpc = nil
 
 				revertTmpVehicleName(vehicle, vehicleTable)
-				npc:Fire("ExitVehicle")
 
-				callback(vehicle, npc, false)
-				return false
+				vehicleTable.passengerEnterAbort = true
+				LIB.NpcExitVehicle(vehicle, npc, function()
+					vehicleTable.passengerEnterAbort = nil
+
+					callback(vehicle, npc, false)
+				end)
+
+				return true
 			end
 
 			-- try again if not timed out
@@ -571,6 +572,11 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 	npcTable.passengerLock = true
 	vehicleTable.passengerLock = true
 
+	SafeRemoveEntity(vehicleTable.passengerNoCollide)
+	vehicleTable.passengerNoCollide = LIBConstraints.NoCollide(vehicle, npc)
+
+	local passengerNoCollide = vehicleTable.passengerNoCollide
+
 	npc:Fire("ExitVehicle")
 	revertTmpVehicleName(vehicle, vehicleTable)
 
@@ -585,12 +591,16 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 				npcTable.currentPassengerVehicle = nil
 			end
 
+			SafeRemoveEntity(passengerNoCollide)
 			return true
 		end
 
 		if not validNpc then
 			vehicleTable.passengerLock = nil
 			vehicleTable.currentPassengerNpc = nil
+
+			SafeRemoveEntity(vehicleTable.passengerNoCollide)
+			vehicleTable.passengerNoCollide = nil
 
 			revertTmpVehicleName(vehicle, vehicleTable)
 			return true
@@ -607,13 +617,22 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 				vehicleTable.passengerLock = nil
 				vehicleTable.currentPassengerNpc = nil
 
+				SafeRemoveEntity(vehicleTable.passengerNoCollide)
+				vehicleTable.passengerNoCollide = nil
+
 				revertTmpVehicleName(vehicle, vehicleTable)
+
+				if vehicleTable.passengerEnterAbort then
+					-- prevent infinite loop
+					callback(vehicle, npc, false)
+					return true
+				end
 
 				LIB.NpcEnterVehicle(vehicle, npc, function()
 					callback(vehicle, npc, false)
 				end)
 
-				return false
+				return true
 			end
 
 			-- try again if not timed out
@@ -626,6 +645,9 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 		vehicleTable.passengerLock = nil
 		vehicleTable.currentPassengerNpc = nil
 
+		SafeRemoveEntity(vehicleTable.passengerNoCollide)
+		vehicleTable.passengerNoCollide = nil
+
 		revertTmpVehicleName(vehicle, vehicleTable)
 		callback(vehicle, npc, true)
 
@@ -635,7 +657,7 @@ end
 
 
 function LIB.Load()
-	LIBThirdperson = SligWolf_Addons.Thirdperson
+	LIBConstraints = SligWolf_Addons.Constraints
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPosition = SligWolf_Addons.Position
 	LIBPhysics = SligWolf_Addons.Physics
@@ -670,6 +692,7 @@ function LIB.Load()
 		if not IsValid(vehicle) then return end
 		if not IsValid(ply) then return end
 
+		if not vehicle:IsVehicle() then return end
 		if not vehicle:IsValidVehicle() then return end
 
 		if not vehicle.sligwolf_vehicle then return end
@@ -690,6 +713,7 @@ function LIB.Load()
 		if not IsValid(vehicle) then return end
 		if not IsValid(ply) then return end
 
+		if not vehicle:IsVehicle() then return end
 		if not vehicle:IsValidVehicle() then return end
 
 		if not vehicle.sligwolf_vehicle then return end

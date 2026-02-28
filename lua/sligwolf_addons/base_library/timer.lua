@@ -17,8 +17,18 @@ local LIB = SligWolf_Addons.Timer
 
 local LIBUtil = nil
 
+function LIB.TickTime(tickCount)
+	tickCount = math.max(tickCount or 1, 1)
+
+	-- Avoid "missing the bus", so we are 1/4 tick early
+	tickCount = tickCount - 0.25
+
+	local time = engine.TickInterval() * tickCount
+	return time
+end
+
 local g_nameprefix = "SLIGWOLF_ADDONS_Timer_"
-local g_time_min = engine.TickInterval() / 2
+local g_time_min = LIB.TickTime(1)
 local g_time_max = 3600
 
 local function getName(identifier)
@@ -100,7 +110,7 @@ function LIB.Until(identifier, delay, func, maxRepeats, maxTime)
 	end
 
 	if maxTime > g_time_max then
-		error(string.format("This timer would have a risk to live longer than %d sec, got estimated max run time %d sec.", g_time_max, maxTime))
+		error(string.format("This timer would have a risk to live longer than %d sec, got max run time %d sec.", g_time_max, maxTime))
 		return
 	end
 
