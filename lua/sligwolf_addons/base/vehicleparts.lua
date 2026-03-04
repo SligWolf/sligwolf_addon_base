@@ -702,36 +702,62 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	return ent
 end
 
-function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superparent)
-	if not ProceedVehicleSetUp(parent, components) then return end
-	if table.IsEmpty(components) then return end
+function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superparent, callback)
+	callback = callback or function() end
+
+	if not ProceedVehicleSetUp(parent, components) then
+		callback(parent)
+		return
+	end
+
+	if table.IsEmpty(components) then
+		callback(parent)
+		return
+	end
 
 	dtr = dtr or {}
 	superparent = superparent or parent
 
-	local waitForAsyncPositioningCallback = function(thisent, success)
-		if not ProceedVehicleSetUp(thisent, components) then
+	local delay = LIBTimer.TickTime(2)
+
+	local wait = nil
+
+	local waitForAsyncPositioningCallback = function(thisparent, success)
+		if not ProceedVehicleSetUp(thisparent, components) then
 			return true
 		end
 
 		if not success then
-			self:ErrorNoHalt("SetUpVehicleParts failed to setup vehicle after 10 seconds")
+			self:ErrorNoHalt("WaitForAsyncPositioningCallback timed out after 10 seconds")
 			return true
 		end
 
-		if LIBPosition.IsAsyncPositioning(thisent) then
+		if not wait then
 			-- try again if the position is not final yet
-			return false
+			if LIBPosition.IsAsyncPositioning(thisparent) then
+				return false
+			end
+
+			wait = {}
+
+			for i, component in ipairs(components) do
+				wait[i] = false
+
+				self:SetUpVehiclePart(thisparent, component, dtr, ply, superparent, function()
+					wait[i] = true
+				end)
+			end
 		end
 
-		for i, component in ipairs(components) do
-			self:SetUpVehiclePart(thisent, component, dtr, ply, superparent)
+		for i, done in ipairs(wait) do
+			if not done then
+				return false
+			end
 		end
 
+		callback(thisparent)
 		return true
 	end
-
-	local delay = LIBTimer.TickTime(2)
 
 	self:EntityTimerRemove(parent, "SetUpVehicleParts_WaitForAsyncPositioning")
 	self:EntityTimerUntil(parent, "SetUpVehicleParts_WaitForAsyncPositioning", delay, waitForAsyncPositioningCallback, 0, 10)
@@ -778,38 +804,39 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 		return
 	end
 
-	local ent = func(self, parent, component, ply, superparent, function(ent)
-		if not IsValid(ent) then return end
+	local newPartEnt = func(self, parent, component, ply, superparent, function(newPartEnt)
+		if not IsValid(newPartEnt) then return end
 
-		self:SetUpVehicleParts(ent, component.children, dtr, ply, superparent)
+		self:HandleSpawnFinishedEvent(newPartEnt)
 
 		if isfunction(callback) then
-			self:HandleSpawnFinishedEvent(ent)
-			callback(ent)
+			callback(newPartEnt)
 		end
+
+		self:SetUpVehicleParts(newPartEnt, component.children, dtr, ply, superparent)
 	end)
 
-	if not IsValid(ent) then
+	if not IsValid(newPartEnt) then
 		return
 	end
 
 	local removeAllOnDelete = component.removeAllOnDelete
 
 	if removeAllOnDelete then
-		LIBEntities.RemoveSystemEntitiesOnDelete(ent)
+		LIBEntities.RemoveSystemEntitiesOnDelete(newPartEnt)
 	end
 
-	ent.sligwolf_denyToolReload = dtr
+	newPartEnt.sligwolf_denyToolReload = dtr
 
-	local hasSpawnedConstraints = self:CreateConstraints(ent, parent, component.constraints)
+	local hasSpawnedConstraints = self:CreateConstraints(newPartEnt, parent, component.constraints)
 	if not hasSpawnedConstraints then
 		return
 	end
 
 	LIBSpamprotection.DelayNextSpawn(ply)
-	self:HandleSpawnFinishedEvent(ent)
+	self:HandleSpawnFinishedEvent(newPartEnt)
 
-	return ent
+	return newPartEnt
 end
 
 function SLIGWOLF_ADDON:SetUpVehicleProp(parent, component, ply, superparent, callback)
@@ -1642,6 +1669,7 @@ function SLIGWOLF_ADDON:SetUpVehicleHoverball(parent, component, ply, superparen
 	ent:SetSpeed(speed)
 	ent:SetAirResistance(airResistance)
 	ent:SetStrength(strength)
+
 	ent.NumDown = numpad.OnDown(ply, numDown, "Hoverball_Up", ent, true)
 	ent.NumUp = numpad.OnUp(ply, numUp, "Hoverball_Up", ent, false)
 	ent.NumBackDown = numpad.OnDown(ply, numBackDown, "Hoverball_Down", ent, true)

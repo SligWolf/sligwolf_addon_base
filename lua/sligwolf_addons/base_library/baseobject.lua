@@ -99,7 +99,7 @@ function SLIGWOLF_BASE_OBJ:MakeVehicleEnsured(spawnname, name, parent)
 			parent
 		)
 
-		return
+		return nil
 	end
 
 	return ent

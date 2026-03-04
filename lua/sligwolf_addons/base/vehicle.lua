@@ -40,7 +40,7 @@ function SLIGWOLF_ADDON:MakeVehicleEnsured(spawnname, plyOwner, parent, name)
 			parent
 		)
 
-		return
+		return nil
 	end
 
 	return ent
