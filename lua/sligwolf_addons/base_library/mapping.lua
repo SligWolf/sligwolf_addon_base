@@ -66,14 +66,6 @@ local function getVehicleTablesByClass()
 end
 
 local function spawnnameOptionsListSorter(a, b)
-	if a.addontitle ~= b.addontitle then
-		return a.addontitle < b.addontitle
-	end
-
-	if a.title ~= b.title then
-		return a.title < b.title
-	end
-
 	return a.spawnname < b.spawnname
 end
 
@@ -90,13 +82,24 @@ local function getSpawnnameOptionsList(options)
 		local addontitle = item.addontitle
 		local spawnname = item.spawnname
 
-		local line = string.format(
-			[[\t\t"%s" : "%s | %s (%s)"]],
-			spawnname,
-			addontitle,
-			title,
-			spawnname
-		)
+		local line = ""
+
+		if addontitle == title then
+			line = string.format(
+				[[\t\t"%s" : "%s (%s)"]],
+				spawnname,
+				spawnname,
+				title
+			)
+		else
+			line = string.format(
+				[[\t\t"%s" : "%s (%s | %s)"]],
+				spawnname,
+				spawnname,
+				title,
+				addontitle
+			)
+		end
 
 		table.insert(lines, line)
 	end

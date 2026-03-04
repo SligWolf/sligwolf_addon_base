@@ -775,7 +775,8 @@ function LIB.AddEntity(addonname, spawnname, obj)
 
 	g_EntityOrder = (g_EntityOrder % 1000000) + 1
 
-	if not obj.hidden then
+	local hidden = obj.hidden or false
+	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
 			"entity",
@@ -862,7 +863,8 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 
 	g_WeaponOrder = (g_WeaponOrder % 1000000) + 1
 
-	if not obj.hidden then
+	local hidden = obj.hidden or false
+	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
 			"weapon",
@@ -972,11 +974,12 @@ function LIB.AddNPC(addonname, spawnname, obj)
 		return
 	end
 
-	obj = obj or {}
-
 	g_NpcOrder = (g_NpcOrder % 1000000) + 1
 
-	if not obj.hidden then
+	obj = obj or {}
+
+	local hidden = obj.hidden or false
+	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
 			"npc",
@@ -1071,7 +1074,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 
 	g_VehicleOrder = (g_VehicleOrder % 1000000) + 1
 
-	if not obj.hidden then
+	local hidden = obj.hidden or false
+	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
 			"vehicle",
