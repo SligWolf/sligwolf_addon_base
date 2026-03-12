@@ -233,6 +233,14 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
 		LIBVehicle.SetupVehicleKeyValues(vehicle, keyValues)
 	end
 
+	local keyValuesOverride = entTable.keyValuesOverride or {}
+	if keyValuesOverride then
+		keyValuesOverride.vehiclescript = nil
+
+		LIBVehicle.SetupVehicleKeyValues(vehicle, keyValuesOverride)
+		entTable.keyValuesOverride = nil
+	end
+
 	vehicle.VehicleName = vehicleSpawnname
 	vehicle.VehicleTable = vehicleTable
 

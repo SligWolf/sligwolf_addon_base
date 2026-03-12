@@ -129,6 +129,29 @@ function LIB.SetupVehicleKeyValues(vehicle, keyValues)
 	end
 end
 
+function LIB.SetupVehicleKeyValuesOverride(vehicle, keyValues)
+	if not SERVER then return end
+
+	if not IsValid(vehicle) then return end
+	if not vehicle:IsVehicle() then return end
+	if not keyValues then return end
+
+	local entTable = vehicle:SligWolf_GetTable()
+
+	local keyValuesOverride = entTable.keyValuesOverride or {}
+	entTable.keyValuesOverride = keyValuesOverride
+
+	for k, v in pairs(keyValues) do
+		local kLower = string.lower(k)
+
+		if not g_allowedVehicleKeyValues[kLower] then
+			continue
+		end
+
+		keyValuesOverride[kLower] = v
+	end
+end
+
 function LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
 	if not vehicleSpawnname then return nil end
 
@@ -736,9 +759,10 @@ function LIB.Load()
 
 		LIBTimer.SimpleNextFrame(function()
 			if not IsValid(ent) then return end
+			if not ent:IsVehicle() then return end
+			if not ent:IsValidVehicle() then return end
 
-			if not SligWolf_Addons then return end
-			SligWolf_Addons.CallFunctionOnAllAddons("HandleVehicleSpawn", ent)
+			LIBHook.RunCustom("OnVehicleCreated", ent)
 		end)
 	end
 
@@ -753,6 +777,12 @@ function LIB.Load()
 	end
 
 	LIBHook.Add("PlayerSpawnedVehicle", "Library_Vehicle_PlayerSpawnedVehicle", PlayerSpawnedVehicle, 10000)
+
+	local function HandleVehicleSpawn(vehicle)
+		SligWolf_Addons.CallFunctionOnAllAddons("HandleVehicleSpawn", vehicle)
+	end
+
+	LIBHook.AddCustom("OnVehicleCreated", "Library_Vehicle_HandleVehicleSpawn", HandleVehicleSpawn, 10000)
 end
 
 return true

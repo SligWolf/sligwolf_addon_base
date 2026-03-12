@@ -1298,6 +1298,10 @@ function LIB.SetMapIO(ent, ioList)
 		return
 	end
 
+	if not ioList then
+		return
+	end
+
 	for key, outputs in pairs(ioList) do
 		for i, output in ipairs(outputs) do
 			LIB.SetMapIOOutput(ent, key, output)

@@ -176,6 +176,11 @@ function LIB.Run(eventName, ...)
 	return hook.Run(eventName, ...)
 end
 
+function LIB.HasCustom(eventName, ...)
+	local eventName = getCustomHookIdentifier(eventName)
+	return LIB.Has(eventName, ...)
+end
+
 function LIB.AddCustom(eventName, ...)
 	local eventName = getCustomHookIdentifier(eventName)
 	return LIB.Add(eventName, ...)

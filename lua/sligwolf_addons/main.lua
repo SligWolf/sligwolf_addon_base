@@ -24,7 +24,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "e930639742cfa87730b83a7f508cae5e05518443ae3b44ea2a9a4c2ecbdc47b1"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.6.2"
+SligWolf_Addons.BaseApiVersion = "1.6.3"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 251210
@@ -187,7 +187,7 @@ local function inValidateSortedAddondata()
 	sligwolfAddons.AddondataSorted = nil
 end
 
-local function buildHookCaller(functionName, eventName)
+local function buildHookCaller(functionName, eventName, custom)
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then
 		return
@@ -197,31 +197,66 @@ local function buildHookCaller(functionName, eventName)
 		return
 	end
 
-	local identifier = "addon_" .. functionName
-	if sligwolfAddons.Hook.Has(eventName, identifier) then
+	local LIBHook = sligwolfAddons.Hook
+
+	if custom then
+		local identifier = "addon_" .. functionName
+		if LIBHook.HasCustom(eventName, identifier) then
+			return
+		end
+
+		LIBHook.AddCustom(eventName, identifier, function(...)
+			return sligwolfAddons.CallFunctionOnAllAddons(functionName, ...)
+		end, 3000000)
+
 		return
 	end
 
-	sligwolfAddons.Hook.Add(eventName, identifier, function(...)
+	local identifier = "addon_" .. functionName
+	if LIBHook.Has(eventName, identifier) then
+		return
+	end
+
+	LIBHook.Add(eventName, identifier, function(...)
 		return sligwolfAddons.CallFunctionOnAllAddons(functionName, ...)
 	end, 3000000)
 end
 
 local function AddHooks(addon)
-	local addedhooks = addon.hooks or {}
-
-	for functionName, eventName in pairs(g_DefaultHooks) do
-		buildHookCaller(functionName, eventName)
+	local sligwolfAddons = _G.SligWolf_Addons
+	if not sligwolfAddons then
+		return
 	end
 
-	for functionName, eventName in pairs(addedhooks) do
+	if not sligwolfAddons.LibrariesLoaded then
+		return
+	end
+
+	local hooks = addon.hooks or {}
+	local customHooks = addon.customHooks or {}
+
+	for functionName, eventName in pairs(g_DefaultHooks) do
+		buildHookCaller(functionName, eventName, false)
+	end
+
+	for functionName, eventName in pairs(hooks) do
 		functionName = tostring(functionName or "")
 		eventName = tostring(eventName or "")
 
 		if functionName == "" then continue end
 		if eventName == "" then continue end
 
-		buildHookCaller(functionName, eventName)
+		buildHookCaller(functionName, eventName, false)
+	end
+
+	for functionName, eventName in pairs(customHooks) do
+		functionName = tostring(functionName or "")
+		eventName = tostring(eventName or "")
+
+		if functionName == "" then continue end
+		if eventName == "" then continue end
+
+		buildHookCaller(functionName, eventName, true)
 	end
 end
 
