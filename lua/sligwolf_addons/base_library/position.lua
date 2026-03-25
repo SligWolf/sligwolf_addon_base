@@ -280,7 +280,7 @@ end
 function LIB.VectorToLocalToWorld(ent, vec)
 	if not IsValid(ent) then return nil end
 
-	vec = vec or Vector()
+	vec = vec or CONSTANTS.vecZero
 	vec = ent:LocalToWorld(vec)
 
 	return vec
@@ -295,7 +295,7 @@ function LIB.DirToLocalToWorld(ent, ang, dir)
 		dir = "Forward"
 	end
 
-	ang = ang or Angle()
+	ang = ang or CONSTANTS.angZero
 	ang = ent:LocalToWorldAngles(ang)
 
 	local func = ang[dir]
@@ -420,6 +420,9 @@ function LIB.GetAttachmentPosAng(ent, attachment)
 	return pos, ang, true
 end
 
+local g_tmp1Mx = Matrix()
+local g_tmp2Mx = Matrix()
+
 function LIB.GetAngPosViaAttachmentMount(parentEnt, selfEnt, parentAttachment, selfAttachment)
 	if not LIBModel.IsValidModelEntity(parentEnt) then return nil end
 	if not LIBModel.IsValidModelEntity(selfEnt) then return nil end
@@ -441,19 +444,20 @@ function LIB.GetAngPosViaAttachmentMount(parentEnt, selfEnt, parentAttachment, s
 	local localPosB = selfEnt:WorldToLocal(PosB)
 	local localAngB = selfEnt:WorldToLocalAngles(AngB)
 
-	local M = Matrix()
+	g_tmp1Mx:Identity()
+	g_tmp1Mx:SetTranslation(localPosA)
+	g_tmp1Mx:SetAngles(localAngA)
 
-	M:SetAngles(localAngA)
-	M:SetTranslation(localPosA)
+	g_tmp2Mx:Identity()
+	g_tmp2Mx:SetTranslation(localPosB)
+	g_tmp2Mx:SetAngles(localAngB)
 
-	local M2 = Matrix()
-	M2:SetAngles(localAngB)
-	M2:SetTranslation(localPosB)
+	g_tmp2Mx:InvertTR()
 
-	M = M * M2:GetInverseTR()
+	g_tmp1Mx:Mul(g_tmp2Mx)
 
-	local ang = M:GetAngles()
-	local pos = M:GetTranslation()
+	local ang = g_tmp1Mx:GetAngles()
+	local pos = g_tmp1Mx:GetTranslation()
 
 	pos = parentEnt:LocalToWorld(pos)
 	ang = parentEnt:LocalToWorldAngles(ang)
