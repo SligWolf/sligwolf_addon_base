@@ -18,7 +18,6 @@ local LIB = SligWolf_Addons.Duplicator
 local LIBPosition = nil
 local LIBEntities = nil
 local LIBTimer = nil
-local LIBHook = nil
 local LIBMeta = nil
 
 local g_mainEntityModifierName = "SLIGWOLF_Library_Duplicator_MainEntityModifier"
@@ -77,6 +76,11 @@ local function postCopyCallback(ply, ent, data)
 	data = data or {}
 
 	local timerName = LIBTimer.GetEntityTimerName(ent, "RegisterEntityModifierCallback")
+
+	local entTable = ent:SligWolf_GetTable()
+
+	-- Make sure we mark this entity as duplicated, so we can apply different logic and restrictions
+	entTable.isDuped = true
 
 	LIBTimer.Remove(timerName)
 	LIBTimer.Until(timerName, 0.1, function()
@@ -231,44 +235,11 @@ function LIB.RegisterEntityDuplicatorModifier(ent, params)
 	end
 end
 
-
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 	LIBTimer = SligWolf_Addons.Timer
-	LIBHook = SligWolf_Addons.Hook
 	LIBMeta = SligWolf_Addons.Meta
-
-	if SERVER then
-		local function onDuplicated(ent, ...)
-			if not IsValid(ent) then return end
-
-			local entTable = ent:SligWolf_GetTable()
-			local oldOnDuplicated = entTable._oldOnDuplicated
-
-			entTable.isDuped = true
-
-			if isfunction(oldOnDuplicated) then
-				oldOnDuplicated(ent, ...)
-			end
-
-			local swOnDuplicated = entTable.OnDuplicated
-			if isfunction(swOnDuplicated) then
-				swOnDuplicated(ent, ...)
-			end
-		end
-
-		local function OnEntityCreated(ent)
-			if not IsValid(ent) then return end
-
-			local entTable = ent:SligWolf_GetTable()
-			entTable._oldOnDuplicated = entTable._oldOnDuplicated or ent.OnDuplicated
-
-			ent.OnDuplicated = onDuplicated
-		end
-
-		LIBHook.Add("OnEntityCreated", "Library_Duplicator_OnEntityCreated", OnEntityCreated, 1000)
-	end
 end
 
 return true
