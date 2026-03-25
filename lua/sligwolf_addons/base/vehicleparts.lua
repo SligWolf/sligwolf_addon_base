@@ -653,7 +653,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	ent.DoNotDuplicate = true
 
 	for bodygroupName, bodygroup in pairs(bodygroups) do
-		ent:SetBodygroup(bodygroup.index, bodygroup.mesh)
+		LIBEntities.SetBodygroupSubId(ent, bodygroup.index, bodygroup.mesh)
 	end
 
 	ent:DrawShadow(shadow)
@@ -728,7 +728,7 @@ function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superpar
 		end
 
 		if not success then
-			self:ErrorNoHalt("WaitForAsyncPositioningCallback timed out after 10 seconds")
+			self:ErrorNoHalt("WaitForAsyncPositioningCallback timed out after 10 seconds\n")
 			return true
 		end
 
