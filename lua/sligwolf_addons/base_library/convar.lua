@@ -21,6 +21,7 @@ local g_nextThink = 0
 
 local g_sliderRenderMode = 0
 local g_isDebug = false
+local g_debugMode = false
 
 local cl_calcSliderRenderMode = nil
 
@@ -78,8 +79,37 @@ if CLIENT then
 	end
 end
 
+LIB.ENUM_DEBUG_MODE_DISABLED = 0
+LIB.ENUM_DEBUG_MODE_SHARED = 1
+LIB.ENUM_DEBUG_MODE_SERVER = 2
+LIB.ENUM_DEBUG_MODE_CLIENT = 3
+
+local cvarDebugMode = CreateConVar(
+	"sv_sligwolf_addons_debug_mode",
+	"0",
+	bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL, FCVAR_REPLICATED),
+	"Sets the debug mode. This requires 'developer 1' or above. 0 = Off, 1 = Shared, 2 = Server only, 2 = Client only, Default: 0",
+	0,
+	3
+)
+
 function LIB.IsDebug()
 	return g_isDebug
+end
+
+function LIB.GetDebugMode()
+	return g_debugMode
+end
+
+function LIB.SetDebugMode(mode)
+	if not SERVER then
+		return
+	end
+
+	mode = mode or LIB.ENUM_DEBUG_MODE_DISABLED
+
+	cvarDebugMode:SetInt(mode)
+	g_nextThink = 0
 end
 
 local function calcIsDebug()
@@ -95,8 +125,13 @@ local function calcIsDebug()
 	return true
 end
 
+local function calcDebugMode()
+	return cvarDebugMode:GetInt()
+end
+
 local function doDelayedThink()
 	g_isDebug = calcIsDebug()
+	g_debugMode = calcDebugMode()
 
 	if SERVER then
 		return

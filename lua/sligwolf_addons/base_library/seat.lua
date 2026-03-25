@@ -118,8 +118,12 @@ function LIB.TraceSeatAttachment(ply)
 		local angPos = nearstAttachment.angPos
 		local text = string.format("Nearst found seat: %s, %0.3f units away", nearstAttachment.name, math.sqrt(dist))
 
-		debugoverlay.Axis(angPos.Pos, angPos.Ang, 16, 2, true)
-		debugoverlay.EntityTextAtPosition(angPos.Pos, 0, text, 2, color_white)
+		LIBDebug.SetLifetime(2)
+		LIBDebug.SetIgnoreZ(true)
+		LIBDebug.Axis(angPos.Pos, angPos.Ang, 16)
+		LIBDebug.EntityTextAtPosition(angPos.Pos, text)
+		LIBDebug.ResetIgnoreZ()
+		LIBDebug.ResetLifetime()
 	end
 
 	if dist > g_maxAttachmentDistanceSqr then
