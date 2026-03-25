@@ -415,12 +415,11 @@ end
 local g_groundThreshold = math.cos(math.rad(64))
 local g_railParallelThreshold = math.cos(math.rad(1))
 
+local g_layerVec = Vector()
+local g_straightVec = Vector()
 
-local g_layerVec = Vector(0, 0, 0)
-local g_straightVec = Vector(0, 0, 0)
-
-local g_dirAng = Angle(0, 0, 0)
-local g_yawOffsetAng = Angle(0, 0, 0)
+local g_dirAng = Angle()
+local g_yawOffsetAng = Angle()
 
 local g_baseMx = Matrix()
 local g_layerMx = Matrix()
@@ -484,6 +483,7 @@ function LIB.ScanRail(ply, tr, parameters)
 	g_yawOffsetAng.y = 0
 
 	if normalZAbs >= g_groundThreshold then
+		-- ground surface math
 		local eyeAngles = eyeNormal:Angle()
 
 		ang:RotateAroundAxis(ang:Right(), -90)
@@ -569,7 +569,7 @@ function LIB.ScanRail(ply, tr, parameters)
 			end
 
 			if not playerSideTraceHitNormal then
-				continue
+				break
 			end
 
 			-- Find center and direction of the Rail track
@@ -676,47 +676,47 @@ function LIB.Load()
 	LIBHook = SligWolf_Addons.Hook
 
 	--if SERVER then
-		LIBHook.Add("Think", "Rail.ScanRail", function()
-			local ply = LIBDebug.GetDebugPlayer()
-			if not IsValid(ply) then
-				return
-			end
+		-- LIBHook.Add("Think", "Rail.ScanRail", function()
+		-- 	local ply = LIBDebug.GetDebugPlayer()
+		-- 	if not IsValid(ply) then
+		-- 		return
+		-- 	end
 
-			local tr = LIBTracer.DoTrace(ply, 5000)
-			if not tr or not tr.Hit then
-				return
-			end
+		-- 	local tr = LIBTracer.DoTrace(ply, 5000)
+		-- 	if not tr or not tr.Hit then
+		-- 		return
+		-- 	end
 
-			if ply:KeyDown( IN_ATTACK ) then
-				-- Minitrains
-				LIB.ScanRail(ply, tr, {
-					trainLength = 50,
-					maxGauge = 14,
-					minGauge = 10,
-					marginStraight = 1,
-					marginGround = 0.5,
-					minGround = -2,
-					maxGround = 2,
-					layers = {
-						0, 0.5, 0.5
-					}
-				})
-			else
-				-- PHX, 2feet, 3feet, rsg
-				LIB.ScanRail(ply, tr, {
-					trainLength = 1000,
-					maxGauge = 84,
-					minGauge = 28,
-					marginStraight = 2,
-					marginGround = 2,
-					minGround = -2,
-					maxGround = 2,
-					layers = {
-						0, 4, -4, 8
-					}
-				})
-			end
-		end)
+		-- 	if ply:KeyDown( IN_ATTACK ) then
+		-- 		-- Minitrains
+		-- 		LIB.ScanRail(ply, tr, {
+		-- 			trainLength = 50,
+		-- 			maxGauge = 14,
+		-- 			minGauge = 10,
+		-- 			marginStraight = 1,
+		-- 			marginGround = 0.5,
+		-- 			minGround = -2,
+		-- 			maxGround = 2,
+		-- 			layers = {
+		-- 				0, 0.5, 0.5
+		-- 			}
+		-- 		})
+		-- 	else
+		-- 		-- PHX, 2feet, 3feet, rsg
+		-- 		LIB.ScanRail(ply, tr, {
+		-- 			trainLength = 1000,
+		-- 			maxGauge = 84,
+		-- 			minGauge = 28,
+		-- 			marginStraight = 2,
+		-- 			marginGround = 2,
+		-- 			minGround = -2,
+		-- 			maxGround = 2,
+		-- 			layers = {
+		-- 				0, 4, -4, 8
+		-- 			}
+		-- 		})
+		-- 	end
+		-- end)
 	--end
 end
 
