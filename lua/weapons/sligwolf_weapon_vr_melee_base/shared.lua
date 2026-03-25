@@ -12,6 +12,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 SWEP.MeleeDistance			= 85
 
 SWEP.VrVelocitySensorPos	= Vector(0, 0, 0)
@@ -21,8 +23,6 @@ SWEP.VrMinHitVelocityRelativeToAttacker	 = 200
 SWEP.VrMinHitVelocityRelativeToTarget    = 200
 
 SWEP.VrTraceChains = {}
-
-local Vector_Zero = Vector()
 
 local LIBPhysics = SligWolf_Addons.Physics
 local LIBTracer = SligWolf_Addons.Tracer
@@ -39,6 +39,7 @@ function SWEP:GetVrVelocitySensorPos()
 	if not pos then return nil end
 
 	if self:IsDeveloper() then
+		-- @TODO: Use LIBDebug
 		debugoverlay.Cross(pos, 1, 0.1, color_white, true)
 		debugoverlay.EntityTextAtPosition(pos, 0, "SWEP:GetVrVelocitySensorPos()", 0.1, color_white)
 	end
@@ -47,24 +48,24 @@ function SWEP:GetVrVelocitySensorPos()
 end
 
 function SWEP:GetVrSensorVelocity()
-	return self.VrSensorVelocity or Vector_Zero
+	return self.VrSensorVelocity or CONSTANTS.vecZero
 end
 
 function SWEP:SetVrSensorVelocity(velocity)
-	self.VrSensorVelocity = velocity or Vector_Zero
+	self.VrSensorVelocity = velocity or CONSTANTS.vecZero
 end
 
 function SWEP:GetVrHMDVelocity()
-	return self.VrHMDVelocity or Vector_Zero
+	return self.VrHMDVelocity or CONSTANTS.vecZero
 end
 
 function SWEP:SetVrHMDVelocity(velocity)
-	self.VrHMDVelocity = velocity or Vector_Zero
+	self.VrHMDVelocity = velocity or CONSTANTS.vecZero
 end
 
 function SWEP:GetTargetEntityVelocity(targetEntity, hitPos)
 	if not IsValid(targetEntity) then
-		return Vector_Zero
+		return CONSTANTS.vecZero
 	end
 
 	local phys = targetEntity:GetPhysicsObject()
@@ -249,8 +250,8 @@ end
 function SWEP:OnVRExit()
 	BaseClass.OnVRExit(self)
 
-	self:SetVrSensorVelocity(Vector_Zero)
-	self:SetVrHMDVelocity(Vector_Zero)
+	self:SetVrSensorVelocity(CONSTANTS.vecZero)
+	self:SetVrHMDVelocity(CONSTANTS.vecZero)
 
 	self.nextHitTime = nil
 	self.hasHit = nil

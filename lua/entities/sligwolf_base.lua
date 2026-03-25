@@ -31,6 +31,7 @@ local LIBEntities = SligWolf_Addons.Entities
 local LIBPhysics = SligWolf_Addons.Physics
 local LIBBones = SligWolf_Addons.Bones
 local LIBModel = SligWolf_Addons.Model
+local LIBDebug = SligWolf_Addons.Debug
 local LIBUtil = SligWolf_Addons.Util
 
 ENT.FallbackModel = CONSTANTS.mdlCube1
@@ -198,7 +199,7 @@ function ENT:OnRemove()
 	self:TurnOn(false)
 end
 
-function ENT:Debug(Size, Col, Time)
+function ENT:Debug(size, color)
 	if not self:IsDeveloper() then
 		return
 	end
@@ -206,13 +207,21 @@ function ENT:Debug(Size, Col, Time)
 	local pos = self:GetPos()
 	local ang = self:GetAngles()
 
-	Size = Size or 10
-	Col = Col or color_white
-	Time = Time or FrameTime()
+	size = size or 10
+	color = color or CONSTANTS.colorDefault
 
-	debugoverlay.EntityTextAtPosition(pos, 0, tostring(self), Time, color_white)
-	debugoverlay.Axis(pos, ang, Size, Time, true)
-	debugoverlay.Cross(pos, Size / 10, Time, Col, true)
+	local time = nil
+	if CLIENT then
+		time = FrameTime()
+	end
+
+	LIBDebug.SetLifetime(time)
+	LIBDebug.SetIgnoreZ(true)
+	LIBDebug.EntityTextAtPosition(pos, self)
+	LIBDebug.Axis(pos, ang, size)
+	LIBDebug.Cross(pos, size / 10, color)
+	LIBDebug.ResetIgnoreZ()
+	LIBDebug.ResetLifetime()
 end
 
 function ENT:SetAnim(anim, frame, rate)

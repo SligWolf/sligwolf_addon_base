@@ -13,6 +13,8 @@ end
 SligWolf_Addons.Bones = SligWolf_Addons.Bones or {}
 table.Empty(SligWolf_Addons.Bones)
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIB = SligWolf_Addons.Bones
 
 function LIB.ChangePoseParameter(ent, poseName, pose)
@@ -93,8 +95,8 @@ function LIB.BoneEdit(ent, name, ang, vec)
 	name = name or nil
 	local Bone = ent:LookupBone(name)
 	if not Bone then return end
-	vec = vec or TB.Positions[Bone] or Vector()
-	ang = ang or TB.Angles[Bone] or Angle()
+	vec = vec or TB.Positions[Bone] or CONSTANTS.vecZero
+	ang = ang or TB.Angles[Bone] or CONSTANTS.angZero
 
 	ent:ManipulateBonePosition(Bone, vec)
 	ent:ManipulateBoneAngles(Bone, ang)

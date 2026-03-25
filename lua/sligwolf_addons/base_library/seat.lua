@@ -118,7 +118,7 @@ function LIB.TraceSeatAttachment(ply)
 		local angPos = nearstAttachment.angPos
 		local text = string.format("Nearst found seat: %s, %0.3f units away", nearstAttachment.name, math.sqrt(dist))
 
-		LIBDebug.SetLifetime(2)
+		LIBDebug.SetLifetime(LIBDebug.DEBUG_LIFETIME_MEDIUM)
 		LIBDebug.SetIgnoreZ(true)
 		LIBDebug.Axis(angPos.Pos, angPos.Ang, 16)
 		LIBDebug.EntityTextAtPosition(angPos.Pos, text)
@@ -473,12 +473,22 @@ function LIB.ExitSeatTrace(ply)
 		return nil
 	end
 
+	LIBDebug.SetLifetime(LIBDebug.DEBUG_LIFETIME_MEDIUM)
+	LIBDebug.SetIgnoreZ(true)
+	LIBDebug.DrawLineTrace(g_exitSeatTrace, tr)
+	LIBDebug.ResetIgnoreZ()
+	LIBDebug.ResetLifetime()
+
 	local tr = traceGroundPattern(tr, mins, maxs, size2D)
 	if not tr then
 		return nil
 	end
 
-	LIBDebug.ShowHullTrace(g_exitSeatTraceHull, tr, nil, 1)
+	LIBDebug.SetLifetime(LIBDebug.DEBUG_LIFETIME_MEDIUM)
+	LIBDebug.SetIgnoreZ(true)
+	LIBDebug.DrawHullTrace(g_exitSeatTraceHull, tr)
+	LIBDebug.ResetIgnoreZ()
+	LIBDebug.ResetLifetime()
 
 	return tr
 end

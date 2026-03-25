@@ -11,6 +11,10 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
+local LIBDebug = SligWolf_Addons.Debug
+
 ENT.GlowPoints = {
 	{
 		pos = Vector(),
@@ -146,7 +150,7 @@ function ENT:GetGlowMaterial()
 	return self:GetNetworkRVarMaterial("Material", "sprites/light_ignorez")
 end
 
-function ENT:Debug(Col, Time)
+function ENT:Debug(color)
 	if not self:IsDeveloper() then
 		return
 	end
@@ -155,13 +159,20 @@ function ENT:Debug(Col, Time)
 	local ang = self:GetAngles()
 
 	local min, max = self:GetRenderBounds()
+	color = color or CONSTANTS.colorDefault
 
-	Col = Col or color_white
-	Time = Time or FrameTime()
+	local time = nil
+	if CLIENT then
+		time = FrameTime()
+	end
 
-	debugoverlay.EntityTextAtPosition(pos, 0, tostring(self), Time, color_white)
-	debugoverlay.Axis(pos, ang, 4, Time, true)
-	debugoverlay.SweptBox(pos, pos, min, max, ang, Time, Col)
+	LIBDebug.SetLifetime(time)
+	LIBDebug.SetIgnoreZ(true)
+	LIBDebug.EntityTextAtPosition(pos, self)
+	LIBDebug.Axis(pos, ang, 4)
+	LIBDebug.BoxEx(pos, min, max, ang, color)
+	LIBDebug.ResetIgnoreZ()
+	LIBDebug.ResetLifetime()
 end
 
 function ENT:DrawGlow(pixVis, pos, ang, size, enlarge, count, col, AlphaReduce, matLight)
@@ -182,7 +193,11 @@ function ENT:DrawGlow(pixVis, pos, ang, size, enlarge, count, col, AlphaReduce, 
 
 	-- @DEBUG: Show a cross for each position a glow sprite could be rendered
 	-- if self:IsDeveloper() then
-	-- 	debugoverlay.Cross(pos, size / 10, FrameTime(), Col, true)
+	-- 	LIBDebug.SetLifetime(FrameTime())
+	-- 	LIBDebug.SetIgnoreZ(true)
+	--  LIBDebug.Cross(pos, size / 10, col)
+	-- 	LIBDebug.ResetIgnoreZ()
+	-- 	LIBDebug.ResetLifetime()
 	-- end
 
 	if ViewDot < 0 then

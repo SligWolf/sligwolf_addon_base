@@ -14,6 +14,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBConstraints = SligWolf_Addons.Constraints
 local LIBEntities = SligWolf_Addons.Entities
 local LIBModel = SligWolf_Addons.Model
@@ -306,8 +308,8 @@ function ENT:SpawnCollisionEntity(mdl, pos, ang)
 	Prop:SetNWBool("sligwolf_blockAllTools", true)
 
 	LIBModel.SetModel(Prop, mdl)
-	Prop:SetPos(self:LocalToWorld(pos or Vector()))
-	Prop:SetAngles(self:LocalToWorldAngles(ang or Angle()))
+	Prop:SetPos(self:LocalToWorld(pos or CONSTANTS.vecZero))
+	Prop:SetAngles(self:LocalToWorldAngles(ang or CONSTANTS.angZero))
 
 	Prop:Spawn()
 	Prop:Activate()

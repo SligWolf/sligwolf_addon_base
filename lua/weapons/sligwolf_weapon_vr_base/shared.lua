@@ -12,6 +12,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBVR = SligWolf_Addons.VR
 
 SWEP.VrViewModelOffset = {
@@ -23,9 +25,6 @@ SWEP.VrTraceHandOffset = {
 	pos = Vector(0, 0, 0),
 	ang = Angle(0, 0, 0),
 }
-
-local Vector_Zero = Vector()
-local Angle_Zero = Angle()
 
 function SWEP:IsInVR()
 	return LIBVR.IsPlayerInVR(self:GetOwner())
@@ -39,8 +38,8 @@ function SWEP:GetRightHandPose()
 	end
 
 	local VrTraceHandOffset = self.VrTraceHandOffset or {}
-	local offsetPos = VrTraceHandOffset.pos or Vector_Zero
-	local offsetAng = VrTraceHandOffset.ang or Angle_Zero
+	local offsetPos = VrTraceHandOffset.pos or CONSTANTS.vecZero
+	local offsetAng = VrTraceHandOffset.ang or CONSTANTS.angZero
 
 	local rhPos, rhAng = LocalToWorld(
 		offsetPos,
@@ -52,6 +51,7 @@ function SWEP:GetRightHandPose()
 	rhAng:Normalize()
 
 	if self:IsDeveloper() then
+		-- @TODO: Use LIBDebug
 		debugoverlay.Axis(rhPos, rhAng, 3, 0.05, true)
 		debugoverlay.EntityTextAtPosition(rhPos, 0, "SWEP:GetRightHandPose()", 0.1, color_white)
 	end
@@ -81,8 +81,8 @@ function SWEP:ApplyVrViewModelOffset()
 
 	vrmod.SetViewModelOffsetForWeaponClass(
 		self:GetClass(),
-		self.VrViewModelOffset.pos or Vector_Zero,
-		self.VrViewModelOffset.ang or Angle_Zero
+		self.VrViewModelOffset.pos or CONSTANTS.vecZero,
+		self.VrViewModelOffset.ang or CONSTANTS.angZero
 	)
 end
 
@@ -93,8 +93,8 @@ function SWEP:GetRightHandToWorld(localPos, localAng)
 		return nil, nil
 	end
 
-	localPos = localPos or Vector_Zero
-	localAng = localAng or Angle_Zero
+	localPos = localPos or CONSTANTS.vecZero
+	localAng = localAng or CONSTANTS.angZero
 
 	local worldPos, worldAng = LocalToWorld(
 		localPos,
@@ -117,8 +117,8 @@ function SWEP:GetHMDToWorld(localPos, localAng)
 		return nil, nil
 	end
 
-	localPos = localPos or Vector_Zero
-	localAng = localAng or Angle_Zero
+	localPos = localPos or CONSTANTS.vecZero
+	localAng = localAng or CONSTANTS.angZero
 
 	local worldPos, worldAng = LocalToWorld(
 		localPos,

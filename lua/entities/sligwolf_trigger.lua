@@ -14,6 +14,10 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
+local LIBDebug = SligWolf_Addons.Debug
+
 function ENT:Initialize()
 	BaseClass.Initialize(self)
 
@@ -52,7 +56,7 @@ if SERVER then
 		if self:IsDeveloper() then
 			local touched = self:IsTouched()
 
-			self:Debug(touched and g_ColorTouched or g_ColorDefault, 0.2)
+			self:Debug(touched and g_ColorTouched or g_ColorDefault)
 		end
 	end
 end
@@ -123,7 +127,7 @@ function ENT:EndTouch(ent)
 	self:CleanupEntities()
 end
 
-function ENT:Debug(Col, Time)
+function ENT:Debug(color)
 	if not self:IsDeveloper() then
 		return
 	end
@@ -133,10 +137,11 @@ function ENT:Debug(Col, Time)
 
 	local min, max = self:GetTriggerAABB()
 
-	Col = Col or color_white
-	Time = Time or FrameTime()
+	color = color or CONSTANTS.colorDefault
 
-	debugoverlay.EntityTextAtPosition(pos, 0, tostring(self), Time, color_white)
-	debugoverlay.Axis(pos, ang, 4, Time, true)
-	debugoverlay.SweptBox(pos, pos, min, max, ang, Time, Col)
+	LIBDebug.SetIgnoreZ(true)
+	LIBDebug.EntityTextAtPosition(pos, self)
+	LIBDebug.Axis(pos, ang, 4)
+	LIBDebug.BoxEx(pos, min, max, ang, color)
+	LIBDebug.ResetIgnoreZ()
 end

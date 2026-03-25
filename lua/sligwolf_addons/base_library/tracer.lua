@@ -13,17 +13,14 @@ end
 SligWolf_Addons.Tracer = SligWolf_Addons.Tracer or {}
 table.Empty(SligWolf_Addons.Tracer)
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIB = SligWolf_Addons.Tracer
 
 local LIBPosition = nil
 local LIBEntities = nil
 local LIBCamera = nil
 local LIBDebug = nil
-
-local Color_trGreen = Color(50, 255, 50)
-local Color_trBlue = Color(50, 50, 255)
-local Color_trCross = Color(200, 200, 200)
-local Color_trTextHit = Color(100, 255, 100)
 
 local TRACE_RESULT_BUFFER = {}
 local TRACE_RESULT_PARAMS = {}
@@ -90,25 +87,21 @@ function LIB.TracerChain(ent, vectorChain, filterfunc, result)
 
 		if isDebug then
 			LIBDebug.SetIgnoreZ(true)
-			LIBDebug.Line(trStart, trHitPos, Color_trGreen)
-			LIBDebug.Line(trHitPos, trEnd, Color_trBlue)
-			LIBDebug.Cross(trStart, 1, Color_trGreen)
+			LIBDebug.Line(trStart, trHitPos, LIBDebug.COLOR_TRACER_LIVE)
+			LIBDebug.Line(trHitPos, trEnd, LIBDebug.COLOR_TRACER_DEAD)
+			LIBDebug.Cross(trStart, 1, LIBDebug.COLOR_TRACER_LIVE)
 
-			if not trHit then
-				LIBDebug.Cross(trEnd, 1, Color_trBlue)
+			if trHit then
+				LIBDebug.Cross(trHitPos, 1, LIBDebug.COLOR_TRACER_LIVE)
+				LIBDebug.EntityTextAtPosition(trHitPos, "Hit", LIBDebug.COLOR_TRACER_HIT_TEXT)
+			else
+				LIBDebug.Cross(trEnd, 1, LIBDebug.COLOR_TRACER_DEAD)
 			end
 
 			LIBDebug.ResetIgnoreZ()
 		end
 
 		if trHit then
-			if isDebug then
-				LIBDebug.SetIgnoreZ(true)
-				LIBDebug.Cross(trHitPos, 1, Color_trGreen)
-				LIBDebug.EntityTextAtPosition(trHitPos, "Hit", Color_trTextHit)
-				LIBDebug.ResetIgnoreZ()
-			end
-
 			break
 		end
 	end
@@ -136,8 +129,8 @@ local TRACER_VECTOR_CHAIN_BUFFER = {}
 function LIB.Tracer(ent, vecStart, vecEnd, filterfunc, result)
 	if not IsValid(ent) then return nil end
 
-	vecStart = vecStart or Vector()
-	vecEnd = vecEnd or Vector()
+	vecStart = vecStart or CONSTANTS.vecZero
+	vecEnd = vecEnd or CONSTANTS.vecZero
 
 	TRACER_VECTOR_CHAIN_BUFFER[1] = vecStart
 	TRACER_VECTOR_CHAIN_BUFFER[2] = vecEnd

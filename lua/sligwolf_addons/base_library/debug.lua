@@ -13,6 +13,8 @@ end
 SligWolf_Addons.Debug = SligWolf_Addons.Debug or {}
 table.Empty(SligWolf_Addons.Debug)
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIB = SligWolf_Addons.Debug
 
 local LIBConvar = nil
@@ -21,8 +23,12 @@ local LIBPrint = nil
 local g_nextThink = 0
 local g_debugModeLock = nil
 
+LIB.DEBUG_LIFETIME_DEFAULT = 0.2
+LIB.DEBUG_LIFETIME_SHORT = 1
+LIB.DEBUG_LIFETIME_MEDIUM = 3
+LIB.DEBUG_LIFETIME_LONG = 10
+
 LIB.DEBUG_SIZE = 8
-LIB.DEBUG_LIFETIME = 0.20
 LIB.DEBUG_MAXDRAW_DISTANCE_SQR = 4096 ^ 2
 
 LIB.DEBUG_REALM_MARKER       = "● "
@@ -40,20 +46,9 @@ else
 	LIB.DEBUG_REALM_MARKER_NC = "● [CL] "
 end
 
-local Color_trGreen = Color(50, 255, 50)
-local Color_trBlue = Color(50, 50, 255)
-local Color_trTextHit = Color(100, 255, 100)
-
-local Color_trText = Color(137, 222, 255)
-local Color_trCross = Color(167, 222, 255)
-
-local LineOffset_trText = -3
-
-if CLIENT then
-	Color_trText = Color(255, 222, 102)
-	Color_trCross = Color(255, 222, 132)
-	LineOffset_trText = 0
-end
+LIB.COLOR_TRACER_LIVE = Color(50, 255, 50)
+LIB.COLOR_TRACER_DEAD = Color(50, 50, 255)
+LIB.COLOR_TRACER_HIT_TEXT = Color(100, 255, 100)
 
 function LIB.IsDeveloper()
 	if not LIBConvar then
@@ -149,7 +144,7 @@ function LIB.CanDraw(pos)
 end
 
 local g_ignoreZ = false
-local g_lifetime = LIB.DEBUG_LIFETIME
+local g_lifetime = LIB.DEBUG_LIFETIME_DEFAULT
 
 function LIB.SetIgnoreZ(ignoreZ)
 	if ignoreZ then
@@ -167,17 +162,17 @@ function LIB.SetLifetime(lifetime)
 	if lifetime and lifetime > 0 then
 		g_lifetime = lifetime
 	else
-		g_lifetime = LIB.DEBUG_LIFETIME
+		g_lifetime = LIB.DEBUG_LIFETIME_DEFAULT
 	end
 end
 
 function LIB.ResetLifetime()
-	g_lifetime = LIB.DEBUG_LIFETIME
+	g_lifetime = LIB.DEBUG_LIFETIME_DEFAULT
 end
 
 function LIB.Cross(pos, size, color)
 	if not pos then
-		pos = Vector()
+		pos = CONSTANTS.vecZero
 		LIB.Debug("Debug.Cross: Missing 'pos'")
 	end
 
@@ -198,12 +193,12 @@ end
 
 function LIB.Line(pos1, pos2, color)
 	if not pos1 then
-		pos1 = Vector(0, 0, -1)
+		pos1 = CONSTANTS.vecPOne
 		LIB.Debug("Debug.Line: Missing 'pos1'")
 	end
 
 	if not pos2 then
-		pos2 = Vector(0, 0, 1)
+		pos2 = CONSTANTS.vecNOne
 		LIB.Debug("Debug.Line: Missing 'pos2'")
 	end
 
@@ -220,7 +215,7 @@ end
 
 function LIB.Axis(pos, ang, size)
 	if not pos then
-		pos = Vector()
+		pos = CONSTANTS.vecZero
 		LIB.Debug("Debug.Axis: Missing 'pos'")
 	end
 
@@ -229,7 +224,7 @@ function LIB.Axis(pos, ang, size)
 	end
 
 	if not ang then
-		ang = Angle()
+		ang = CONSTANTS.angZero
 	end
 
 	if not size or size <= 0 then
@@ -240,8 +235,12 @@ function LIB.Axis(pos, ang, size)
 end
 
 function LIB.EntityTextAtPosition(pos, text, lineOrColor, color)
+	if istable(lineOrColor) then
+		return LIB.EntityTextAtPosition(pos, text, nil, lineOrColor)
+	end
+
 	if not pos then
-		pos = Vector()
+		pos = CONSTANTS.vecZero
 		LIB.Debug("Debug.EntityTextAtPosition: Missing 'pos'")
 	end
 
@@ -252,10 +251,6 @@ function LIB.EntityTextAtPosition(pos, text, lineOrColor, color)
 	text = tostring(text or "")
 	if text == "" then
 		return
-	end
-
-	if istable(lineOrColor) then
-		return LIB.EntityTextAtPosition(pos, text, nil, lineOrColor)
 	end
 
 	local line = tonumber(lineOrColor or 0) or 0
@@ -302,8 +297,8 @@ end
 
 function LIB.Text(pos, text)
 	if not pos then
-		pos = Vector()
-		LIB.Debug("Debug.EntityTextAtPosition: Missing 'pos'")
+		pos = CONSTANTS.vecZero
+		LIB.Debug("Debug.Text: Missing 'pos'")
 	end
 
 	if not LIB.CanDraw(pos) then
@@ -320,100 +315,234 @@ function LIB.Text(pos, text)
 	debugoverlay.Text(pos, text, g_lifetime, not g_ignoreZ)
 end
 
+local g_tmpMin = Vector()
+local g_tmpMax = Vector()
 
-local function debugText(pos, lineoffset, textTop, textBottom, lifetime, color)
+function LIB.Box(pos, size, angOrColor, color)
+	if not pos then
+		pos = CONSTANTS.vecZero
+		LIB.Debug("Debug.Box: Missing 'pos'")
+	end
+
+	if not LIB.CanDraw(pos) then
+		return
+	end
+
+	if not size or size <= 0 then
+		size = LIB.DEBUG_SIZE
+	end
+
+	size = size / 2
+
+	g_tmpMin.x = -size
+	g_tmpMin.y = -size
+	g_tmpMin.z = -size
+
+	g_tmpMax.x = size
+	g_tmpMax.y = size
+	g_tmpMax.z = size
+
+	LIB.BoxEx(pos, g_tmpMin, g_tmpMax, angOrColor, color)
+end
+
+function LIB.BoxEx(pos, min, max, angOrColor, color)
+	if istable(angOrColor) then
+		return LIB.BoxEx(pos, min, max, nil, angOrColor)
+	end
+
+	if not pos then
+		pos = CONSTANTS.vecZero
+		LIB.Debug("Debug.BoxEx: Missing 'pos'")
+	end
+
+	if not LIB.CanDraw(pos) then
+		return
+	end
+
+	if not min then
+		min = CONSTANTS.vecNOne
+		LIB.Debug("Debug.BoxEx: Missing 'min'")
+	end
+
+	if not max then
+		max = CONSTANTS.vecPOne
+		LIB.Debug("Debug.BoxEx: Missing 'max'")
+	end
+
+	if not angOrColor then
+		angOrColor = CONSTANTS.angZero
+	end
+
+	if not color then
+		color = LIB.COLOR_TEXT
+	end
+
+	debugoverlay.SweptBox(pos, pos, min, max, angOrColor, g_lifetime, color)
+end
+
+function LIB.SweptBox(pos1, pos2, min, max, angOrColor, color)
+	if istable(angOrColor) then
+		return LIB.SweptBox(pos1, pos2, min, max, nil, angOrColor)
+	end
+
+	if not pos1 then
+		pos1 = CONSTANTS.vecPOne
+		LIB.Debug("Debug.SweptBox: Missing 'pos1'")
+	end
+
+	if not pos2 then
+		pos2 = CONSTANTS.vecNOne
+		LIB.Debug("Debug.SweptBox: Missing 'pos2'")
+	end
+
+	if not LIB.CanDraw(pos1) and not LIB.CanDraw(pos2) then
+		return
+	end
+
+	if not min then
+		min = CONSTANTS.vecNOne
+		LIB.Debug("Debug.SweptBox: Missing 'min'")
+	end
+
+	if not max then
+		max = CONSTANTS.vecPOne
+		LIB.Debug("Debug.SweptBox: Missing 'max'")
+	end
+
+	if not angOrColor then
+		angOrColor = CONSTANTS.angZero
+	end
+
+	if not color then
+		color = LIB.COLOR_TEXT
+	end
+
+	debugoverlay.SweptBox(pos1, pos2, min, max, angOrColor, g_lifetime, color)
+end
+
+
+local function debugText(pos, textTop, textBottom)
 	if textTop ~= "" then
-		debugoverlay.EntityTextAtPosition(pos, lineoffset, textTop, lifetime, color)
-		debugoverlay.EntityTextAtPosition(pos, lineoffset + 1, textBottom, lifetime, color)
+		LIB.EntityTextAtPosition(pos, textTop)
+		LIB.EntityTextAtPosition(pos, textBottom, 1)
 	else
-		debugoverlay.EntityTextAtPosition(pos, lineoffset, textBottom, lifetime, color)
+		LIB.EntityTextAtPosition(pos, textBottom)
 	end
 end
 
-function LIB.ShowTrace(trace, traceResult, text, lifetime)
+function LIB.DrawLineTrace(traceLineParams, traceLineResult, text)
 	if not LIB.IsDeveloper() then
 		return
 	end
 
-	if not trace then
-		return
-	end
-
-	if not traceResult then
+	if not traceLineParams then
+		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineParams'")
 		return
 	end
 
 	text = tostring(text or "")
-	lifetime = lifetime or 1
+	traceLineParams = traceLineParams or {}
 
-	local trStart = traceResult.StartPos
-	local trEnd = trace.endpos
-	local trHitPos = traceResult.HitPos
-	local trHit = traceResult.Hit
-	local trHitNormal = traceResult.HitNormal
+	local trStart = traceLineParams.start
+	local trEnd = traceLineParams.endpos
+
+	if not trStart then
+		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineParams.start'")
+		return
+	end
+
+	if not trEnd then
+		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineParams.endpos'")
+		return
+	end
+
+	if not LIB.CanDraw(trStart) and not LIB.CanDraw(trEnd) then
+		return
+	end
+
+	local trHitPos = traceLineResult.HitPos or trEnd
+	local trHit = traceLineResult.Hit or false
+	local trHitNormal = traceLineResult.HitNormal or CONSTANTS.vecZero
 	local trHitNormalEnd = trHitPos + trHitNormal * 8
 
-	debugText(trStart, LineOffset_trText, text, "Start", lifetime, Color_trText)
+	debugText(trStart, text, "Start")
 
-	debugoverlay.Cross(trStart, 1, lifetime, Color_trGreen, true)
-	debugoverlay.Line(trStart, trHitPos, lifetime, Color_trGreen, true)
-	debugoverlay.Line(trHitPos, trEnd, lifetime, Color_trBlue, true)
-	debugoverlay.Cross(trEnd, 1, lifetime, Color_trBlue, true)
+	LIB.Cross(trStart, 1, LIB.COLOR_TRACER_LIVE)
+	LIB.Line(trStart, trHitPos, LIB.COLOR_TRACER_LIVE)
+	LIB.Line(trHitPos, trEnd, LIB.COLOR_TRACER_DEAD)
+	LIB.Cross(trEnd, 1, LIB.COLOR_TRACER_DEAD)
 
 	if trHit then
-		debugoverlay.Cross(trHitPos, 1, lifetime, Color_trCross, true)
-		debugoverlay.Line(trHitPos, trHitNormalEnd, lifetime, Color_trCross, true)
-		debugText(trHitPos, LineOffset_trText, text, "Hit", lifetime, Color_trTextHit)
+		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_LIVE)
+		LIB.Line(trHitPos, trHitNormalEnd, LIB.COLOR_TRACER_LIVE)
 
+		debugText(trHitPos, text, "Hit", LIB.COLOR_TRACER_HIT_TEXT)
 	else
-		debugText(trEnd, LineOffset_trText, text, "End", lifetime, Color_trText)
+		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_DEAD)
+
+		debugText(trEnd, text, "End")
 	end
 end
 
-function LIB.ShowHullTrace(traceHull, traceHullResult, text, lifetime)
+function LIB.DrawHullTrace(traceHullParams, traceHullResult, text)
 	if not LIB.IsDeveloper() then
 		return
 	end
 
-	if not traceHull then
-		return
-	end
-
-	if not traceHullResult then
+	if not traceHullParams then
+		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullParams'")
 		return
 	end
 
 	text = tostring(text or "")
-	lifetime = lifetime or 1
+	traceHullResult = traceHullResult or {}
 
-	local trStart = traceHullResult.StartPos
-	local trEnd = traceHull.endpos
-	local trHitPos = traceHullResult.HitPos
-	local trHit = traceHullResult.Hit
-	local trHitNormal = traceHullResult.HitNormal
+	local trStart = traceHullParams.start
+	local trEnd = traceHullParams.endpos
+
+	if not trStart then
+		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullParams.start'")
+		return
+	end
+
+	if not trEnd then
+		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullParams.endpos'")
+		return
+	end
+
+	if not LIB.CanDraw(trStart) and not LIB.CanDraw(trEnd) then
+		return
+	end
+
+	local trMins = traceHullParams.mins or CONSTANTS.vecZero
+	local trMaxs = traceHullParams.maxs or CONSTANTS.vecZero
+
+	local trHitPos = traceHullResult.HitPos or trEnd
+	local trHit = traceHullResult.Hit or false
+	local trHitNormal = traceHullResult.HitNormal or CONSTANTS.vecZero
 	local trHitNormalEnd = trHitPos + trHitNormal * 8
-
-	local trMins = traceHull.mins
-	local trMaxs = traceHull.maxs
 
 	local trMinsHit = trMins + Vector(1, 1, 0)
 	local trMaxsHit = trMaxs - Vector(1, 1, 1)
 
-	debugText(trStart, LineOffset_trText, text, "Start", lifetime, Color_trText)
+	debugText(trStart, text, "Start")
 
-	debugoverlay.Cross(trStart, 1, lifetime, Color_trGreen, true)
-	debugoverlay.SweptBox(trStart, trHitPos, trMins, trMaxs, Angle(), lifetime, Color_trGreen)
-	debugoverlay.Line(trHitPos, trEnd, lifetime, Color_trBlue, true)
-	debugoverlay.Cross(trEnd, 1, lifetime, Color_trBlue, true)
+	LIB.Cross(trStart, 1, LIB.COLOR_TRACER_LIVE)
+	LIB.SweptBox(trStart, trHitPos, trMins, trMaxs, LIB.COLOR_TRACER_LIVE)
+	LIB.Line(trHitPos, trEnd, LIB.COLOR_TRACER_DEAD)
+	LIB.Cross(trEnd, 1, LIB.COLOR_TRACER_DEAD)
 
 	if trHit then
-		debugoverlay.Cross(trHitPos, 1, lifetime, Color_trCross, true)
-		debugoverlay.Line(trHitPos, trHitNormalEnd, lifetime, Color_trCross, true)
-		debugoverlay.SweptBox(trHitPos, trHitPos, trMinsHit, trMaxsHit, Angle(), lifetime, Color_trCross)
+		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_LIVE)
+		LIB.Line(trHitPos, trHitNormalEnd, LIB.COLOR_TRACER_LIVE)
 
-		debugText(trHitPos, LineOffset_trText, text, "Hit", lifetime, Color_trTextHit)
+		LIB.BoxEx(trHitPos, trMinsHit, trMaxsHit, LIB.COLOR_TRACER_LIVE)
+
+		debugText(trHitPos, text, "Hit", LIB.COLOR_TRACER_HIT_TEXT)
 	else
-		debugText(trEnd, LineOffset_trText, text, "End", lifetime, Color_trText)
+		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_DEAD)
+
+		debugText(trEnd, text, "End")
 	end
 end
 

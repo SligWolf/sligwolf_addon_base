@@ -11,7 +11,10 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBCamera = SligWolf_Addons.Camera
+local LIBDebug = SligWolf_Addons.Debug
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
@@ -146,21 +149,29 @@ function ENT:DrawTranslucent(...)
 	cam.End3D2D()
 end
 
-function ENT:Debug(Size, Col, Time, ...)
+function ENT:Debug(size, color)
 	if not self:IsDeveloper() then
 		return
 	end
 
-	Size = Size or 10
-	Col = Col or color_white
-	Time = Time or FrameTime()
+	size = size or 10
+	color = color or CONSTANTS.colorDefault
+
+	local time = nil
+	if CLIENT then
+		time = FrameTime()
+	end
 
 	local dpos, dang = self:GetDisplayPos()
 	local originname = self:GetDisplayOriginName()
 	local debugtext = tostring(self) .. " 2d3dpos ('" .. originname .. "')"
 
-	debugoverlay.EntityTextAtPosition(dpos, 0, debugtext, Time, color_white)
-	debugoverlay.Axis(dpos, dang, Size, Time, true)
-	debugoverlay.Cross(dpos, Size / 10, Time, Col, true)
+	LIBDebug.SetLifetime(time)
+	LIBDebug.SetIgnoreZ(true)
+	LIBDebug.EntityTextAtPosition(dpos, debugtext)
+	LIBDebug.Axis(dpos, dang, size)
+	LIBDebug.Cross(dpos, size / 10, color)
+	LIBDebug.ResetIgnoreZ()
+	LIBDebug.ResetLifetime()
 end
 

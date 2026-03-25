@@ -19,6 +19,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = nil
 local LIBCamera = nil
+local LIBDebug = nil
 local LIBHook = nil
 
 local g_trace = {}
@@ -89,7 +90,7 @@ local function thirdpersonCalcVehicleView(vehicle, ply, view)
 
 	angles:Normalize()
 
-	debugoverlay.Cross(origin, 20, 0.01, col_calcViewOrigin, true)
+	LIBDebug.Cross(origin, 20, col_calcViewOrigin)
 
 	local TargetOrigin = origin + (-angles:Forward() * radius)
 	local WallOffset = 4
@@ -159,6 +160,7 @@ function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBCamera = SligWolf_Addons.Camera
 	LIBHook = SligWolf_Addons.Hook
+	LIBDebug = SligWolf_Addons.Debug
 
 	if SERVER then
 		return

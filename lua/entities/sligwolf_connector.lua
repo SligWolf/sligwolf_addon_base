@@ -23,6 +23,7 @@ if not SligWolf_Addons.IsLoaded() then return end
 local LIBConstraints = SligWolf_Addons.Constraints
 local LIBCoupling = SligWolf_Addons.Coupling
 local LIBEntities = SligWolf_Addons.Entities
+local LIBDebug = SligWolf_Addons.Debug
 
 local function isButtom(ent)
 	local name = LIBEntities.GetName(ent)
@@ -286,7 +287,6 @@ function ENT:Debug()
 
 	local pos = self:GetPos()
 	local size = 4
-	local time = 0.33
 	local line = self:IsButtom() and 1 or 0
 
 	local kind = self._kind or ""
@@ -316,8 +316,12 @@ function ENT:Debug()
 		gender
 	)
 
-	debugoverlay.EntityTextAtPosition(pos, line, debugtext, time, color)
-	debugoverlay.Cross(pos, size, time, color, true)
+	LIBDebug.SetLifetime(0.5)
+	LIBDebug.SetIgnoreZ(true)
+	LIBDebug.EntityTextAtPosition(pos, debugtext, line, color)
+	LIBDebug.Cross(pos, size, color)
+	LIBDebug.ResetIgnoreZ()
+	LIBDebug.ResetLifetime(time)
 end
 
 function ENT:OnConnectionCheck(other)

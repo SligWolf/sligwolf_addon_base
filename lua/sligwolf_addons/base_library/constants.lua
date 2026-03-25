@@ -20,6 +20,8 @@ CONSTANTS.DEBUG_ERROR = false
 
 -- vectors
 CONSTANTS.vecZero = Vector()
+CONSTANTS.vecPOne = Vector(1, 1, 1)
+CONSTANTS.vecNOne = Vector(-1, -1, -1)
 CONSTANTS.vecBogie = Vector(0, 0, 1)
 
 -- angles
