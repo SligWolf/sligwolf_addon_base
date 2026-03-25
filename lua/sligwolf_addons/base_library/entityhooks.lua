@@ -37,7 +37,6 @@ function LIB.ListenToKeyValueForClasses(classes)
 	end
 end
 
-
 local function IsAllowed(ent, key, value)
 	local class = ent:GetClass()
 
@@ -50,39 +49,6 @@ local function IsAllowed(ent, key, value)
 	end
 
 	if string.StartsWith(key, "sligwolf_") then
-		return true
-	end
-
-	return false
-end
-
-local function parseIOString(ioString)
-	-- Newer Source Engine games use this symbol as a delimiter
-	local rawData = string.Explode("\x1B", ioString)
-	if #rawData < 2 then
-		rawData = string.Explode(",", ioString)
-
-		if #rawData < 2 then
-			return nil
-		end
-	end
-
-	local result = {}
-	result.target = rawData[1] or ""
-	result.input = rawData[2] or ""
-	result.param = rawData[3] or ""
-	result.delay = tonumber(rawData[4]) or 0
-	result.times = tonumber(rawData[5]) or -1
-
-	return result
-end
-
-local function isIOString(ioString)
-	if string.find(ioString, "\x1B", 0, true) then
-		return true
-	end
-
-	if string.find(ioString, ",", 0, true) then
 		return true
 	end
 
@@ -105,18 +71,18 @@ function LIB.Load()
 			local keyValues = entTable.keyValues or {}
 			entTable.keyValues = keyValues
 
-			local mapIO = entTable.mapIO or {}
-			entTable.mapIO = mapIO
+			local mapOutputs = entTable.mapOutputs or {}
+			entTable.mapOutputs = mapOutputs
 
-			local isMapIO = isIOString(value)
+			local isMapOutputs = LIBEntities.IsMapOutputString(value)
 
-			if isMapIO then
-				local outputs = mapIO[key] or {}
-
-				local value = parseIOString(value)
+			if isMapOutputs then
+				local value = LIBEntities.ParseMapOutputString(key, value)
 				if value then
+					local outputs = mapOutputs[key] or {}
+					mapOutputs[key] = outputs
+
 					table.insert(outputs, value)
-					mapIO[key] = outputs
 				end
 			else
 				keyValues[key] = value

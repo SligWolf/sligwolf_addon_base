@@ -150,7 +150,10 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 		addonname = addonname or parent.sligwolf_addonname
 	end
 
-	LIB.SetName(ent, name)
+	if name ~= nil then
+		LIB.SetName(ent, name)
+	end
+
 	LIB.SetParent(ent, parent)
 
 	if ent.sligwolf_baseEntity and addonname then
@@ -488,8 +491,26 @@ function LIB.DoPropSpawnedEffect(ent)
 	ent:SetSpawnEffect(true)
 end
 
+local g_nameTmp = {}
+
 local function GenerateUnknownEntityName(ent)
-	local name = util.MD5(tostring(ent))
+	table.Empty(g_nameTmp)
+
+	table.insert(g_nameTmp, ent:GetClass())
+	table.insert(g_nameTmp, ent:EntIndex())
+
+	if ent:CreatedByMap() then
+		table.insert(g_nameTmp, "map")
+		table.insert(g_nameTmp, game.GetMap())
+		table.insert(g_nameTmp, ent:MapCreationID())
+	else
+		table.insert(g_nameTmp, "spawn")
+		table.insert(g_nameTmp, ent:GetCreationID())
+	end
+
+	local name = table.concat(g_nameTmp, "_")
+	name = util.SHA1(name)
+
 	return name
 end
 
@@ -501,6 +522,7 @@ function LIB.GetName(ent)
 
 	if CLIENT and name == "" then
 		name = GenerateUnknownEntityName(ent)
+		entTable.Name = name
 	end
 
 	return name
@@ -1265,35 +1287,166 @@ function LIB.GetKeyValues(ent)
 	return keyValuesRef
 end
 
-function LIB.GetMapIO(ent)
+local g_inputBlacklist = {
+	["addoutput"] = true,
+	["runpassedcode"] = true,
+}
+
+function LIB.IsAllowedMapInput(inputName)
+	inputName = string.Trim(string.lower(inputName or ""))
+	if inputName == "" then
+		return false
+	end
+
+	if g_inputBlacklist[inputName] then
+		-- Prevent potentially dangerous IO from being executed
+		return false
+	end
+
+	return true
+end
+
+function LIB.IsAllowedMapOutput(outputName)
+	outputName = string.Trim(string.lower(outputName or ""))
+	if outputName == "" then
+		return false
+	end
+
+	return true
+end
+
+function LIB.ParseMapOutputString(outputName, outputString)
+	-- Newer Source Engine games use this symbol as a delimiter
+	local rawData = string.Explode("\x1B", outputString)
+	if #rawData < 2 then
+		rawData = string.Explode(",", outputString)
+
+		if #rawData < 2 then
+			return nil
+		end
+	end
+
+	local outputName = string.lower(string.Trim(outputName or ""))
+	if not LIB.IsAllowedMapOutput(outputName) then
+		return nil
+	end
+
+	local inputName = string.lower(string.Trim(rawData[2] or ""))
+	if not LIB.IsAllowedMapInput(inputName) then
+		return nil
+	end
+
+	local result = {}
+	result.targetName = rawData[1] or ""
+	result.inputName = inputName
+	result.param = rawData[3] or ""
+	result.delay = tonumber(rawData[4] or 0) or 0
+	result.times = tonumber(rawData[5] or -1) or -1
+	result.outputName = outputName
+
+	return result
+end
+
+function LIB.IsMapOutputString(ioString)
+	if string.find(ioString, "\x1B", 0, true) then
+		return true
+	end
+
+	if string.find(ioString, ",", 0, true) then
+		return true
+	end
+
+	return false
+end
+
+function LIB.GetMapOutputs(ent, filterFunc)
 	if CLIENT then
 		return {}
 	end
 
 	local entTable = ent:SligWolf_GetTable()
-	return entTable.mapIO
-end
 
-function LIB.SetMapIOOutput(ent, key, output)
-	if CLIENT then
-		return
+	local ioList = entTable.mapOutputs or {}
+	local ioListResult = {}
+
+	for _, outputs in pairs(ioList) do
+		for _, output in ipairs(outputs) do
+			local outputName = string.lower(string.Trim(output.outputName or ""))
+			if not LIB.IsAllowedMapOutput(outputName) then
+				continue
+			end
+
+			local inputName = string.lower(string.Trim(output.inputName or ""))
+			if not LIB.IsAllowedMapInput(inputName) then
+				continue
+			end
+
+			local output = table.Copy(output)
+			output.inputName = inputName
+
+			if isfunction(filterFunc) and filterFunc(output) == false then
+				continue
+			end
+
+			local ioListResultOutputs = ioListResult[outputName] or {}
+			ioListResult[outputName] = ioListResultOutputs
+
+			table.insert(ioListResultOutputs, output)
+		end
 	end
 
-	local outputParams = {output.target, output.input, output.param, output.delay, output.times}
-	outputParams = table.concat(outputParams, "\x1B")
-
-	ent:SetKeyValue(key, outputParams)
-
-	-- -- AddOutput, template: "<output> <target>:[input]:[parameter_override]:[delay]:[times to fire]"
-	-- local outputParams = string.format(
-	--  	"%s %s:%s:%s:%f:%i",
-	--  	key, output.target, output.input, output.param, output.delay, output.times
-	-- )
-
-	-- newEnt:Input("AddOutput", nil, nil, outputParams)
+	return ioListResult
 end
 
-function LIB.SetMapIO(ent, ioList)
+function LIB.SetMapOutput(ent, output)
+	if CLIENT then
+		return false
+	end
+
+	local outputName = string.lower(string.Trim(output.outputName or ""))
+	if not LIB.IsAllowedMapOutput(outputName) then
+		return false
+	end
+
+	local inputName = string.lower(string.Trim(output.inputName or ""))
+	if not LIB.IsAllowedMapInput(inputName) then
+		return false
+	end
+
+	local outputCopy = {}
+
+	outputCopy.targetName = tostring(output.targetName or "")
+	outputCopy.inputName = inputName
+	outputCopy.param = tostring(output.param or "")
+	outputCopy.delay = tonumber(output.delay or 0) or 0
+	outputCopy.times = tonumber(output.times or -1) or -1
+	outputCopy.outputName = outputName
+
+	local outputParams = {
+		outputCopy.targetName,
+		outputCopy.inputName,
+		outputCopy.param,
+		outputCopy.delay,
+		outputCopy.times
+	}
+
+	outputParams = table.concat(outputParams, "\x1B")
+	ent:SetKeyValue(outputName, outputParams)
+
+	local entTable = ent:SligWolf_GetTable()
+
+	local mapOutputs = entTable.mapOutputs or {}
+	entTable.mapOutputs = mapOutputs
+
+	local outputs = mapOutputs[outputName] or {}
+	mapOutputs[outputName] = outputs
+
+	table.insert(outputs, outputCopy)
+
+	return true
+end
+
+function LIB.SetMapOutputs(ent, ioList)
 	if CLIENT then
 		return
 	end
@@ -1302,9 +1455,9 @@ function LIB.SetMapIO(ent, ioList)
 		return
 	end
 
-	for key, outputs in pairs(ioList) do
-		for i, output in ipairs(outputs) do
-			LIB.SetMapIOOutput(ent, key, output)
+	for _, outputs in pairs(ioList) do
+		for _, output in ipairs(outputs) do
+			LIB.SetMapOutput(ent, output)
 		end
 	end
 end
@@ -1322,8 +1475,8 @@ function LIB.IsCreatedByMap(ent, alsoCheckHammerId)
 		return false
 	end
 
-	local hammerid = LIB.GetKeyValue(ent, "hammerid") or ""
-	if hammerid ~= "" then
+	local hammerid = tonumber(LIB.GetKeyValue(ent, "hammerid") or 0) or 0
+	if hammerid ~= 0 then
 		return true
 	end
 
