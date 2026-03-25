@@ -653,14 +653,9 @@ end
 
 LIBHook.Add("PopulateContent", "Library_Spawnmenu_PopulateProplistContent", PopulateProplistContent, 20000)
 
-local g_EntityOrder = 0
-
 local function g_SENTSetup(ply, sent)
 	if not IsValid(sent) then return end
 	if not sent.sligwolf_baseEntity then return end
-
-	local entTable = sent:SligWolf_GetTable()
-	if entTable.isDuped then return end
 
 	local spawnname = sent:GetSpawnName()
 	if not spawnname then return end
@@ -680,7 +675,7 @@ local function g_SENTSetup(ply, sent)
 	local dupedata = {}
 	dupedata.spawnname = spawnname
 
-	duplicator.StoreEntityModifier(sent, "SLIGWOLF_Common_SENTDupe", dupedata)
+	duplicator.StoreEntityModifier(sent, "SLIGWOLF_Library_Spawnmenu_SENTDupe", dupedata)
 end
 
 local function g_SENTDupe(ply, sent, data)
@@ -691,11 +686,7 @@ local function g_SENTDupe(ply, sent, data)
 	if not data.spawnname then return end
 
 	sent.spawnname = data.spawnname
-
 	g_SENTSetup(ply, sent)
-
-	local entTable = sent:SligWolf_GetTable()
-	entTable.isDuped = true
 end
 
 local g_entityAliases = {}
@@ -757,6 +748,8 @@ function LIB.GetEntityAliasList()
 
 	return result
 end
+
+local g_EntityOrder = 0
 
 function LIB.AddEntity(addonname, spawnname, obj)
 	addonname = tostring(addonname or "")
@@ -820,7 +813,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 
 	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 2000)
 
-	duplicator.RegisterEntityModifier("SLIGWOLF_Common_SENTDupe", g_SENTDupe)
+	duplicator.RegisterEntityModifier("SLIGWOLF_Library_Spawnmenu_SENTDupe", g_SENTDupe)
 end
 
 local function PopulateEntitylistContent(pnlContent, tree)
