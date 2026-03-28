@@ -36,7 +36,7 @@ function LIB.TracerChain(ent, vectorChain, filterfunc, result)
 		end
 	end
 
-	local isDebug = LIBDebug.IsDeveloper()
+	local isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
 
 	local tr = TRACE_RESULT_BUFFER
 	local params = TRACE_RESULT_PARAMS
@@ -169,7 +169,7 @@ function LIB.TracerAttachmentToAttachment(ent, attachmentA, attachmentB, filterf
 	local posB = LIBPosition.GetAttachmentPosAng(ent, attachmentB)
 	if not posB then return end
 
-	local isDebug = LIBDebug.IsDeveloper()
+	local isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
 
 	if isDebug then
 		LIBDebug.EntityTextAtPosition(posA, attachmentA, 1)
@@ -184,7 +184,7 @@ local TRACER_ATTACHMENT_CHAIN_BUFFER = {}
 function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc, result)
 	table.Empty(TRACER_ATTACHMENT_CHAIN_BUFFER)
 
-	local isDebug = LIBDebug.IsDeveloper()
+	local isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
 
 	for _, attachmentChainItem in ipairs(attachmentChain) do
 		local pos = LIBPosition.GetAttachmentPosAng(ent, attachmentChainItem)
