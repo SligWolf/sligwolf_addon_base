@@ -21,9 +21,15 @@ local LIBConvar = nil
 local LIBPrint = nil
 
 local g_nextThink = 0
-local g_debugModeLock = nil
+local g_settingsLockMode = nil
+local g_settingsLockTracer = nil
+
+local g_debugEnabled = false
+local g_debugMode = false
+local g_debugTraceEnabled = false
 
 LIB.DEBUG_LIFETIME_DEFAULT = 0.2
+LIB.DEBUG_LIFETIME_FRAME = engine.TickInterval()
 LIB.DEBUG_LIFETIME_SHORT = 1
 LIB.DEBUG_LIFETIME_MEDIUM = 3
 LIB.DEBUG_LIFETIME_LONG = 10
@@ -50,12 +56,13 @@ LIB.COLOR_TRACER_LIVE = Color(50, 255, 50)
 LIB.COLOR_TRACER_DEAD = Color(50, 50, 255)
 LIB.COLOR_TRACER_HIT_TEXT = Color(100, 255, 100)
 
-function LIB.IsDeveloper()
-	if not LIBConvar then
-		return false
-	end
+LIB.ENUM_DEBUG_MODE_DISABLED = 0
+LIB.ENUM_DEBUG_MODE_SHARED = 1
+LIB.ENUM_DEBUG_MODE_SERVER = 2
+LIB.ENUM_DEBUG_MODE_CLIENT = 3
 
-	if not LIBConvar.IsDebug() then
+function LIB.IsDeveloper()
+	if not g_debugEnabled then
 		return false
 	end
 
@@ -86,19 +93,11 @@ end
 LIB.Print = LIB.Debug
 
 function LIB.GetDebugMode()
-	if not LIBConvar then
-		return 0
-	end
-
-	return LIBConvar.GetDebugMode()
+	return g_debugMode
 end
 
-function LIB.SetDebugMode(mode)
-	if not LIBConvar then
-		return
-	end
-
-	LIBConvar.SetDebugMode(mode)
+function LIB.GetDebugTraceEnabled()
+	return g_debugTraceEnabled
 end
 
 local g_debugPlayer = nil
@@ -435,6 +434,10 @@ function LIB.DrawLineTrace(traceLineParams, traceLineResult, text)
 		return
 	end
 
+	if not LIB.GetDebugTraceEnabled() then
+		return
+	end
+
 	if not traceLineParams then
 		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineParams'")
 		return
@@ -486,6 +489,10 @@ end
 
 function LIB.DrawHullTrace(traceHullParams, traceHullResult, text)
 	if not LIB.IsDeveloper() then
+		return
+	end
+
+	if not LIB.GetDebugTraceEnabled() then
 		return
 	end
 
@@ -626,10 +633,38 @@ function LIB.Load()
 	LIBConvar = SligWolf_Addons.Convar
 	LIBPrint = SligWolf_Addons.Print
 
-	LIB.ENUM_DEBUG_MODE_DISABLED = LIBConvar.ENUM_DEBUG_MODE_DISABLED
-	LIB.ENUM_DEBUG_MODE_SHARED = LIBConvar.ENUM_DEBUG_MODE_SHARED
-	LIB.ENUM_DEBUG_MODE_SERVER = LIBConvar.ENUM_DEBUG_MODE_SERVER
-	LIB.ENUM_DEBUG_MODE_CLIENT = LIBConvar.ENUM_DEBUG_MODE_CLIENT
+	local cvDebugMode = LIBConvar.AddConvar("sv_sligwolf_addons_debug_mode", {
+		default = LIB.ENUM_DEBUG_MODE_DISABLED,
+		flags = bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL, FCVAR_REPLICATED),
+		help = "Sets the debug mode. This requires 'developer 1' or above. 0 = Disabled, 1 = Shared, 2 = Server only, 2 = Client only, Default: 0",
+		min = 0,
+		max = 3,
+		modifier = function(var)
+			return math.Clamp(tonumber(var or 0) or 0, 0, 3)
+		end,
+	})
+
+	local cvDebugTraceEnable = LIBConvar.AddConvar("sv_sligwolf_addons_debug_trace_enable", {
+		default = true,
+		flags = bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL, FCVAR_REPLICATED),
+		help = "Enable drawing tracer debugging. This requires 'developer 1' or above. 0 = Disabled, 1 = Enabled, Default: 1",
+	})
+
+	LIBConvar.AddVarModifier("developer", function(var)
+		return tonumber(var or 0) or 0
+	end)
+
+	LIBConvar.AddChangeCallback("developer", function(value)
+		g_debugEnabled = value > 0
+	end, "DebugUpdate")
+
+	LIBConvar.AddChangeCallback("sv_sligwolf_addons_debug_mode", function(value)
+		g_debugMode = value
+	end, "DebugUpdate")
+
+	LIBConvar.AddChangeCallback("sv_sligwolf_addons_debug_trace_enable", function(value)
+		g_debugTraceEnabled = value
+	end, "DebugUpdate")
 
 	if SERVER then
 		local LIBHook = SligWolf_Addons.Hook
@@ -645,30 +680,30 @@ function LIB.Load()
 		end
 
 		local function doModeSwitcherThink()
-			if not LIBConvar.IsDebug() then
+			if not g_debugEnabled then
 				return
 			end
 
 			local ply = LIB.GetDebugPlayer()
 			if not IsValid(ply) then
-				g_debugModeLock = nil
+				g_settingsLockMode = nil
 				return
 			end
 
 			-- Switch debug mode by holding ALT and E (default)
 			if not ply:KeyDown(IN_WALK) then
-				g_debugModeLock = nil
+				g_settingsLockMode = nil
 				return
 			end
 
 			if not ply:KeyDown(IN_USE) then
-				g_debugModeLock = nil
+				g_settingsLockMode = nil
 				return
 			end
 
 			local now = RealTime()
 
-			if g_debugModeLock and g_debugModeLock > now then
+			if g_settingsLockMode and g_settingsLockMode > now then
 				return
 			end
 
@@ -681,23 +716,77 @@ function LIB.Load()
 			local message = nil
 
 			if debugMode == LIB.ENUM_DEBUG_MODE_DISABLED then
-				LIB.SetDebugMode(LIB.ENUM_DEBUG_MODE_SHARED)
+				cvDebugMode:SetInt(LIB.ENUM_DEBUG_MODE_SHARED)
 				message = LIBPrint.FormatMessage("Debug Mode: Shared")
 			elseif debugMode == LIB.ENUM_DEBUG_MODE_SHARED then
-				LIB.SetDebugMode(LIB.ENUM_DEBUG_MODE_SERVER)
+				cvDebugMode:SetInt(LIB.ENUM_DEBUG_MODE_SERVER)
 				message = LIBPrint.FormatMessage("Debug Mode: Server")
 			elseif debugMode == LIB.ENUM_DEBUG_MODE_SERVER then
-				LIB.SetDebugMode(LIB.ENUM_DEBUG_MODE_CLIENT)
+				cvDebugMode:SetInt(LIB.ENUM_DEBUG_MODE_CLIENT)
 				message = LIBPrint.FormatMessage("Debug Mode: Client")
 			elseif debugMode == LIB.ENUM_DEBUG_MODE_CLIENT then
-				LIB.SetDebugMode(LIB.ENUM_DEBUG_MODE_DISABLED)
-				message = LIBPrint.FormatMessage("Debug Mode: Off")
+				cvDebugMode:SetInt(LIB.ENUM_DEBUG_MODE_DISABLED)
+				message = LIBPrint.FormatMessage("Debug Mode: Disabled")
 			end
+
+			LIBConvar.Refresh()
 
 			LIBPrint.Notify(LIBPrint.NOTIFY_GENERIC, message, 3, sendThisPlayerOnly)
 			playSwitchSound(ply, "eli_lab.al_buttonmash", sendThisPlayerOnly)
 
-			g_debugModeLock = now + 1
+			g_settingsLockMode = now + 1
+		end
+
+		local function doTracerSwitcherThink()
+			if not g_debugEnabled then
+				return
+			end
+
+			local ply = LIB.GetDebugPlayer()
+			if not IsValid(ply) then
+				g_settingsLockTracer = nil
+				return
+			end
+
+			-- Switch debug mode by holding ALT and E (default)
+			if not ply:KeyDown(IN_WALK) then
+				g_settingsLockTracer = nil
+				return
+			end
+
+			if not ply:KeyDown(IN_RELOAD) then
+				g_settingsLockTracer = nil
+				return
+			end
+
+			local now = RealTime()
+
+			if g_settingsLockTracer and g_settingsLockTracer > now then
+				return
+			end
+
+			local tracerEnabled = LIB.GetDebugTraceEnabled()
+
+			local sendThisPlayerOnly = RecipientFilter()
+			sendThisPlayerOnly:RemoveAllPlayers()
+			sendThisPlayerOnly:AddPlayer(ply)
+
+			local message = nil
+
+			if tracerEnabled then
+				cvDebugTraceEnable:SetBool(false)
+				message = LIBPrint.FormatMessage("Debug Tracer: Disabled")
+			else
+				cvDebugTraceEnable:SetBool(true)
+				message = LIBPrint.FormatMessage("Debug Tracer: Enabled")
+			end
+
+			LIBConvar.Refresh()
+
+			LIBPrint.Notify(LIBPrint.NOTIFY_GENERIC, message, 3, sendThisPlayerOnly)
+			playSwitchSound(ply, "eli_lab.al_buttonmash", sendThisPlayerOnly)
+
+			g_settingsLockTracer = now + 1
 		end
 
 		LIBHook.Add("Think", "DebugUpdate", function()
@@ -705,6 +794,7 @@ function LIB.Load()
 
 			if g_nextThink < now then
 				doModeSwitcherThink()
+				doTracerSwitcherThink()
 				g_nextThink = now + 0.20
 			end
 		end)
