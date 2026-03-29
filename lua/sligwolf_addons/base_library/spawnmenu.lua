@@ -15,9 +15,9 @@ table.Empty(SligWolf_Addons.Spawnmenu)
 
 local LIB = SligWolf_Addons.Spawnmenu
 
-local LIBTimer = SligWolf_Addons.Timer
-local LIBHook = SligWolf_Addons.Hook
-local LIBUtil = SligWolf_Addons.Util
+local LIBTimer = nil
+local LIBHook = nil
+local LIBUtil = nil
 
 -- Tell the user something is wrong ("Broken") with the addons in case they see the usually hidden placeholder node.
 local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Broken)"
@@ -635,24 +635,6 @@ function LIB.AddProp(addonname, model, obj)
 	end
 end
 
-local function PopulateProplistContent(pnlContent, tree)
-	PopulateSpawnmenuListContent(
-		pnlContent,
-		tree,
-		"prop",
-		"icon16/page.png",
-		function(node, propPanel, item)
-			spawnmenu.CreateContentIcon("model", propPanel, {
-				model = item.model,
-				skin = item.skin,
-				body = item.bodygroup,
-			})
-		end
-	)
-end
-
-LIBHook.Add("PopulateContent", "Library_Spawnmenu_PopulateProplistContent", PopulateProplistContent, 20000)
-
 local function g_SENTSetup(ply, sent)
 	if not IsValid(sent) then return end
 	if not sent.sligwolf_baseEntity then return end
@@ -816,27 +798,6 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	duplicator.RegisterEntityModifier("SLIGWOLF_Library_Spawnmenu_SENTDupe", g_SENTDupe)
 end
 
-local function PopulateEntitylistContent(pnlContent, tree)
-	PopulateSpawnmenuListContent(
-		pnlContent,
-		tree,
-		"entity",
-		"icon16/bricks.png",
-		function(node, propPanel, item)
-			spawnmenu.CreateContentIcon("entity", propPanel, {
-				nicename = item.title,
-				spawnname = item.spawnName,
-				material = item.icon or "entities/" .. item.spawnName .. ".png",
-				admin = item.adminOnly
-			})
-		end
-	)
-
-	RemoveDefaultNode(tree)
-end
-
-LIBHook.Add("PopulateEntities", "Library_Spawnmenu_PopulateEntitylistContent", PopulateEntitylistContent, 20000)
-
 local g_WeaponOrder = 0
 
 function LIB.AddWeapon(addonname, spawnname, obj)
@@ -896,27 +857,6 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 
 	list.Set("Weapon", spawnname, weaponItem)
 end
-
-local function PopulateWeaponlistContent(pnlContent, tree)
-	PopulateSpawnmenuListContent(
-		pnlContent,
-		tree,
-		"weapon",
-		"icon16/gun.png",
-		function(node, propPanel, item)
-			spawnmenu.CreateContentIcon("weapon", propPanel, {
-				nicename = item.title,
-				spawnname = item.spawnName,
-				material = item.icon or "entities/" .. item.spawnName .. ".png",
-				admin = item.adminOnly
-			})
-		end
-	)
-
-	RemoveDefaultNode(tree)
-end
-
-LIBHook.Add("PopulateWeapons", "Library_Spawnmenu_PopulateWeaponlistContent", PopulateWeaponlistContent, 20000)
 
 local function g_NPCSetup(ply, npc)
 	if not IsValid(npc) then return end
@@ -1014,28 +954,6 @@ function LIB.AddNPC(addonname, spawnname, obj)
 	LIBHook.Add("PlayerSpawnedNPC", "Library_Spawnmenu_NPCSetup", g_NPCSetup, 20000)
 end
 
-local function PopulateNPClistContent(pnlContent, tree)
-	PopulateSpawnmenuListContent(
-		pnlContent,
-		tree,
-		"npc",
-		"icon16/monkey.png",
-		function(node, propPanel, item)
-			spawnmenu.CreateContentIcon("npc", propPanel, {
-				nicename = item.title,
-				spawnname = item.spawnName,
-				material = item.icon or "entities/" .. item.spawnName .. ".png",
-				admin = item.adminOnly,
-				weapon = item.weapons,
-			})
-		end
-	)
-
-	RemoveDefaultNode(tree)
-end
-
-LIBHook.Add("PopulateNPCs", "Library_Spawnmenu_PopulateNPClistContent", PopulateNPClistContent, 20000)
-
 local g_VehicleOrder = 0
 
 function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
@@ -1080,6 +998,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 					spawnName = spawnname,
 					adminOnly = obj.adminOnly or false,
 					icon = obj.icon,
+					trainOptions = obj.trainOptions,
 				}
 			}
 		)
@@ -1110,26 +1029,180 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	list.Set("Vehicles", spawnname, vehicleListItem)
 end
 
-local function PopulateVehiclelistContent(pnlContent, tree)
-	PopulateSpawnmenuListContent(
-		pnlContent,
-		tree,
-		"vehicle",
-		"icon16/car.png",
-		function(node, propPanel, item)
-			spawnmenu.CreateContentIcon("vehicle", propPanel, {
-				nicename = item.title,
-				spawnname = item.spawnName,
-				material = item.icon or "entities/" .. item.spawnName .. ".png",
-				admin = item.adminOnly,
-			})
-		end
-	)
+if CLIENT then
+	spawnmenu.AddContentType("sligwolf_train", function(container, obj)
+		if not obj.material then return end
+		if not obj.nicename then return end
+		if not obj.spawnname then return end
 
-	RemoveDefaultNode(tree)
+		local icon = vgui.Create("ContentIcon", container)
+
+		icon:SetContentType("vehicle")
+		icon:SetSpawnName(obj.spawnname)
+		icon:SetName(obj.nicename)
+		icon:SetMaterial(obj.material)
+		icon:SetAdminOnly(obj.admin)
+		icon:SetColor(Color(0, 0, 0, 255))
+
+		local toolTip = language.GetPhrase(obj.nicename)
+
+		local trainOptions = trainOptions or {}
+
+		-- Generate a nice tooltip with extra info
+		local VehInfo = list.GetEntry("Vehicles", obj.spawnname)
+		if VehInfo then
+			local extraInfo = ""
+			if VehInfo.Information and VehInfo.Information ~= "" then extraInfo = extraInfo .. "\n" .. VehInfo.Information end
+			if VehInfo.Author and VehInfo.Author ~= "" then extraInfo = extraInfo .. "\n" .. language.GetPhrase("entityinfo.author") .. " " .. VehInfo.Author end
+			if #extraInfo > 0 then toolTip = toolTip .. "\n" .. extraInfo end
+		end
+
+		icon:SetTooltip(toolTip)
+		icon.DoClick = function()
+			-- @TODO: Add auto gauge detection from trainOptions
+
+			print("this is a train", obj.spawnname)
+
+			RunConsoleCommand("gm_spawnvehicle", obj.spawnname)
+			surface.PlaySound("ui/buttonclickrelease.wav")
+		end
+
+		icon.OpenMenuExtra = function(self, menu)
+			-- @TODO: Add gauge options from trainOptions
+
+			menu:AddOption("#spawnmenu.menu.spawn_with_toolgun", function()
+				RunConsoleCommand("gmod_tool", "creator")
+				RunConsoleCommand("creator_type", "1")
+				RunConsoleCommand("creator_name", obj.spawnname)
+			end):SetIcon("icon16/brick_add.png")
+		end
+
+		icon.OpenMenu = icon.OpenGenericSpawnmenuRightClickMenu
+
+		if IsValid(container) then
+			container:Add(icon)
+		end
+
+		return icon
+	end)
 end
 
-LIBHook.Add("PopulateVehicles", "Library_Spawnmenu_PopulateVehiclelistContent", PopulateVehiclelistContent, 20000)
+function LIB.Load()
+	LIBTimer = SligWolf_Addons.Timer
+	LIBHook = SligWolf_Addons.Hook
+	LIBUtil = SligWolf_Addons.Util
+
+	local function PopulatePropListContent(pnlContent, tree)
+		PopulateSpawnmenuListContent(
+			pnlContent,
+			tree,
+			"prop",
+			"icon16/page.png",
+			function(node, propPanel, item)
+				spawnmenu.CreateContentIcon("model", propPanel, {
+					model = item.model,
+					skin = item.skin,
+					body = item.bodygroup,
+				})
+			end
+		)
+	end
+
+	local function PopulateEntityListContent(pnlContent, tree)
+		PopulateSpawnmenuListContent(
+			pnlContent,
+			tree,
+			"entity",
+			"icon16/bricks.png",
+			function(node, propPanel, item)
+				spawnmenu.CreateContentIcon("entity", propPanel, {
+					nicename = item.title,
+					spawnname = item.spawnName,
+					material = item.icon or "entities/" .. item.spawnName .. ".png",
+					admin = item.adminOnly
+				})
+			end
+		)
+
+		RemoveDefaultNode(tree)
+	end
+
+	local function PopulateWeaponListContent(pnlContent, tree)
+		PopulateSpawnmenuListContent(
+			pnlContent,
+			tree,
+			"weapon",
+			"icon16/gun.png",
+			function(node, propPanel, item)
+				spawnmenu.CreateContentIcon("weapon", propPanel, {
+					nicename = item.title,
+					spawnname = item.spawnName,
+					material = item.icon or "entities/" .. item.spawnName .. ".png",
+					admin = item.adminOnly
+				})
+			end
+		)
+
+		RemoveDefaultNode(tree)
+	end
+
+	local function PopulateNPCListContent(pnlContent, tree)
+		PopulateSpawnmenuListContent(
+			pnlContent,
+			tree,
+			"npc",
+			"icon16/monkey.png",
+			function(node, propPanel, item)
+				spawnmenu.CreateContentIcon("npc", propPanel, {
+					nicename = item.title,
+					spawnname = item.spawnName,
+					material = item.icon or "entities/" .. item.spawnName .. ".png",
+					admin = item.adminOnly,
+					weapon = item.weapons,
+				})
+			end
+		)
+
+		RemoveDefaultNode(tree)
+	end
+
+	local function PopulateVehicleListContent(pnlContent, tree)
+		PopulateSpawnmenuListContent(
+			pnlContent,
+			tree,
+			"vehicle",
+			"icon16/car.png",
+			function(node, propPanel, item)
+				local trainOptions = item.trainOptions
+
+				if trainOptions then
+					spawnmenu.CreateContentIcon("sligwolf_train", propPanel, {
+						nicename = item.title,
+						spawnname = item.spawnName,
+						material = item.icon or "entities/" .. item.spawnName .. ".png",
+						admin = item.adminOnly,
+						trainOptions = trainOptions,
+					})
+				else
+					spawnmenu.CreateContentIcon("vehicle", propPanel, {
+						nicename = item.title,
+						spawnname = item.spawnName,
+						material = item.icon or "entities/" .. item.spawnName .. ".png",
+						admin = item.adminOnly,
+					})
+				end
+			end
+		)
+
+		RemoveDefaultNode(tree)
+	end
+
+	LIBHook.Add("PopulateContent", "Library_Spawnmenu_PopulateProplistContent", PopulatePropListContent, 20000)
+	LIBHook.Add("PopulateEntities", "Library_Spawnmenu_PopulateEntitylistContent", PopulateEntityListContent, 20000)
+	LIBHook.Add("PopulateWeapons", "Library_Spawnmenu_PopulateWeaponlistContent", PopulateWeaponListContent, 20000)
+	LIBHook.Add("PopulateNPCs", "Library_Spawnmenu_PopulateNPClistContent", PopulateNPCListContent, 20000)
+	LIBHook.Add("PopulateVehicles", "Library_Spawnmenu_PopulateVehiclelistContent", PopulateVehicleListContent, 20000)
+end
 
 return true
 
