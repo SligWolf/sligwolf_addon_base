@@ -593,7 +593,7 @@ function LIB.ScanRail(ply, tr, parameters)
 
 	local maxRailTopTraceZ = parameters.maxRailTopTraceZ or 32
 	local minRailTopTraceZ = parameters.minRailTopTraceZ or 0
-	local marginRailTopTrace = parameters.marginRailTopTrace or 2
+	local marginRailTopTrace = parameters.marginRailTopTrace or 3
 
 	local marginRailEdgeBelow = parameters.marginRailEdgeBelow or 4
 	local marginRailEdgeAbove = parameters.marginRailEdgeAbove or 2
@@ -868,7 +868,7 @@ function LIB.Load()
 	-- 			minGauge = 28,
 	-- 			maxRailTopTraceZ = 32,
 	-- 			minRailTopTraceZ = 0,
-	-- 			marginRailTopTrace = 2,
+	-- 			marginRailTopTrace = 3,
 	-- 			marginRailEdgeBelow = 4,
 	-- 			marginRailEdgeAbove = 2,
 	-- 			marginStraight = 2,
