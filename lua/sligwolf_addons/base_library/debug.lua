@@ -54,7 +54,11 @@ end
 
 LIB.COLOR_TRACER_LIVE = Color(50, 255, 50)
 LIB.COLOR_TRACER_DEAD = Color(50, 50, 255)
-LIB.COLOR_TRACER_HIT_TEXT = Color(100, 255, 100)
+LIB.COLOR_TRACER_HIT_TEXT = Color(50, 255, 50)
+
+LIB.COLOR_AXIS_X = Color(255, 0, 0)
+LIB.COLOR_AXIS_Y = Color(0, 255, 0)
+LIB.COLOR_AXIS_Z = Color(0, 0, 255)
 
 LIB.ENUM_DEBUG_MODE_DISABLED = 0
 LIB.ENUM_DEBUG_MODE_SHARED = 1
@@ -230,7 +234,27 @@ function LIB.Axis(pos, ang, size)
 		size = LIB.DEBUG_SIZE
 	end
 
-	debugoverlay.Axis(pos, ang, size, g_lifetime, g_ignoreZ)
+	-- Left hand rule implementation to be more practical with GLua's 3D functions.
+	-- debugoverlay.Axis uses the right hand rule. See: https://wiki.facepunch.com/gmod/debugoverlay.Axis
+
+	-- Forward: +X, red
+	local forward = ang:Forward()
+	forward:Mul(size)
+	forward:Add(pos)
+
+	-- Right: -Y, green
+	local right = ang:Right()
+	right:Mul(size)
+	right:Add(pos)
+
+	-- Up: +Z, blue
+	local up = ang:Up()
+	up:Mul(size)
+	up:Add(pos)
+
+	debugoverlay.Line(pos, forward, g_lifetime, LIB.COLOR_AXIS_X, g_ignoreZ)
+	debugoverlay.Line(pos, right, g_lifetime, LIB.COLOR_AXIS_Y, g_ignoreZ)
+	debugoverlay.Line(pos, up, g_lifetime, LIB.COLOR_AXIS_Z, g_ignoreZ)
 end
 
 function LIB.EntityTextAtPosition(pos, text, lineOrColor, color)
