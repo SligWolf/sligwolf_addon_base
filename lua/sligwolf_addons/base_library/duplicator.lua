@@ -34,7 +34,7 @@ function LIB.RemoveBadDupeData(data)
 
 	data.spawnname = nil
 	data.spawnProperties = nil
-	data.defaultSpawnProperties = nil
+	data.DefaultSpawnProperties = nil
 
 	data.addonCache = nil
 	data.addonIdCache = nil

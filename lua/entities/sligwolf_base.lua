@@ -432,8 +432,8 @@ function ENT:GetSpawnProperties()
 	end
 
 	if not self:HasSpawnProperties() then
-		self.defaultSpawnProperties = self.defaultSpawnProperties or {}
-		return self.defaultSpawnProperties
+		self.DefaultSpawnProperties = self.DefaultSpawnProperties or {}
+		return self.DefaultSpawnProperties
 	end
 
 	return self.spawnProperties
@@ -450,7 +450,7 @@ function ENT:GetSpawnProperty(name)
 		return spawnProperties[name]
 	end
 
-	local defaultSpawnProperties = self.defaultSpawnProperties
+	local defaultSpawnProperties = self.DefaultSpawnProperties
 	if not defaultSpawnProperties then
 		return nil
 	end

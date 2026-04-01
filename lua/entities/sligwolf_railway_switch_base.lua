@@ -205,7 +205,13 @@ function ENT:SetStateByID(stateId)
 		return
 	end
 
-	local state = states.ordered[stateId]
+	local ordered = states.ordered
+	if not ordered then
+		self:ResetState()
+		return
+	end
+
+	local state = ordered[stateId]
 	if not state then
 		self:ResetState()
 		return
@@ -247,11 +253,14 @@ function ENT:SwitchState()
 		return
 	end
 
+	local statecount = states.count
+	if not statecount then
+		return
+	end
+
 	local state = self._state or {}
 
-	local statecount = states.count
 	local stateid = math.Clamp(state.id or 0, 1, statecount)
-
 	local nextstateid = stateid + 1
 
 	if nextstateid > statecount then
@@ -270,7 +279,13 @@ function ENT:ResetState()
 		return
 	end
 
-	local state = states.indexed["default"]
+	local indexed = states.indexed
+	if not indexed then
+		self._setStateName = "default"
+		return
+	end
+
+	local state = indexed["default"]
 	if not state then
 		return
 	end

@@ -3,8 +3,9 @@ local SligWolf_Addons = SligWolf_Addons
 
 DEFINE_BASECLASS("sligwolf_phys")
 
-ENT.Spawnable			= false
-ENT.RenderGroup 		= RENDERGROUP_OPAQUE
+ENT.Spawnable 			= false
+ENT.AdminOnly 			= false
+ENT.RenderGroup 		= RENDERGROUP_TRANSLUCENT
 ENT.DoNotDuplicate 		= true
 
 ENT.sligwolf_isConnector = true
@@ -20,9 +21,12 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBConstraints = SligWolf_Addons.Constraints
 local LIBCoupling = SligWolf_Addons.Coupling
 local LIBEntities = SligWolf_Addons.Entities
+local LIBModel = SligWolf_Addons.Model
 local LIBDebug = SligWolf_Addons.Debug
 
 local function isButtom(ent)
@@ -38,6 +42,8 @@ end
 
 function ENT:Initialize()
 	BaseClass.Initialize(self)
+
+	LIBModel.SetModel(self, CONSTANTS.mdlSphere4)
 
 	self._allowedTypes = nil
 	self._gender = LIBCoupling.GENDER_NEUTRAL

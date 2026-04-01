@@ -40,7 +40,38 @@ function LIB.AddConvar(convarName, parameters)
 		max = 1
 		modifier = modifier or tobool
 	elseif isnumber(default) then
-		modifier = modifier or tonumber
+		if not modifier then
+			local toLimitedNumber = nil
+
+			if min and max then
+				toLimitedNumber = function(num)
+					num = tonumber(num or 0) or 0
+					num = math.Clamp(num, min, max)
+
+					return num
+				end
+			elseif min and not max then
+				toLimitedNumber = function(num)
+					num = tonumber(num or 0) or 0
+					num = math.max(num, min)
+
+					return num
+				end
+			elseif not min and max then
+				toLimitedNumber = function(num)
+					num = tonumber(num or 0) or 0
+					num = math.min(num, max)
+
+					return num
+				end
+			else
+				toLimitedNumber = function(num)
+					return tonumber(num or 0) or 0
+				end
+			end
+
+			modifier = toLimitedNumber
+		end
 	end
 
 	default = tostring(default)
@@ -81,7 +112,38 @@ function LIB.AddClientConvar(convarName, parameters)
 		max = 1
 		modifier = modifier or tobool
 	elseif isnumber(default) then
-		modifier = modifier or tonumber
+		if not modifier then
+			local toLimitedNumber = nil
+
+			if min and max then
+				toLimitedNumber = function(num)
+					num = tonumber(num or 0) or 0
+					num = math.Clamp(num, min, max)
+
+					return num
+				end
+			elseif min and not max then
+				toLimitedNumber = function(num)
+					num = tonumber(num or 0) or 0
+					num = math.max(num, min)
+
+					return num
+				end
+			elseif not min and max then
+				toLimitedNumber = function(num)
+					num = tonumber(num or 0) or 0
+					num = math.min(num, max)
+
+					return num
+				end
+			else
+				toLimitedNumber = function(num)
+					return tonumber(num or 0) or 0
+				end
+			end
+
+			modifier = toLimitedNumber
+		end
 	end
 
 	default = tostring(default)
@@ -169,9 +231,6 @@ if CLIENT then
 		help = "Sets the rendering mode of sliders. 0 = Disabled, 1 = Render when grapped with Phygun, 2 = Always render, Default: 1",
 		min = 0,
 		max = 2,
-		modifier = function(var)
-			return math.Clamp(tonumber(var or 0) or 0, 0, 2)
-		end,
 	})
 
 	function LIB.GetSliderRenderMode()

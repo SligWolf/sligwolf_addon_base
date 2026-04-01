@@ -3,7 +3,8 @@ local SligWolf_Addons = SligWolf_Addons
 
 DEFINE_BASECLASS("sligwolf_animatable")
 
-ENT.Spawnable			= false
+ENT.Spawnable 			= false
+ENT.AdminOnly 			= false
 ENT.RenderGroup 		= RENDERGROUP_OPAQUE
 ENT.DoNotDuplicate 		= true
 

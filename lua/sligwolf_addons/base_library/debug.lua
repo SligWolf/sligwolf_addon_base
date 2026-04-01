@@ -653,6 +653,32 @@ function LIB.HighlightEntities(entities, color)
 	end
 end
 
+function LIB.IsDebugKeyDown(ply, inKey)
+	if not IsValid(ply) then
+		return false
+	end
+
+	-- Debug control modifier, hold ALT, SHIFT (default)
+	if not ply:KeyDown(IN_WALK) then
+		return false
+	end
+
+	if not ply:KeyDown(IN_SPEED) then
+		return false
+	end
+
+	if not inKey then
+		return true
+	end
+
+	-- Debug control key
+	if not ply:KeyDown(inKey) then
+		return false
+	end
+
+	return true
+end
+
 function LIB.Load()
 	LIBConvar = SligWolf_Addons.Convar
 	LIBPrint = SligWolf_Addons.Print
@@ -663,9 +689,6 @@ function LIB.Load()
 		help = "Sets the debug mode. This requires 'developer 1' or above. 0 = Disabled, 1 = Shared, 2 = Server only, 2 = Client only, Default: 0",
 		min = 0,
 		max = 3,
-		modifier = function(var)
-			return math.Clamp(tonumber(var or 0) or 0, 0, 3)
-		end,
 	})
 
 	local cvDebugTraceEnable = LIBConvar.AddConvar("sv_sligwolf_addons_debug_trace_enable", {
@@ -709,18 +732,9 @@ function LIB.Load()
 			end
 
 			local ply = LIB.GetDebugPlayer()
-			if not IsValid(ply) then
-				g_settingsLockMode = nil
-				return
-			end
 
-			-- Switch debug mode by holding ALT and E (default)
-			if not ply:KeyDown(IN_WALK) then
-				g_settingsLockMode = nil
-				return
-			end
-
-			if not ply:KeyDown(IN_USE) then
+			-- Switch debug mode by holding ALT, SHIFT and E (default)
+			if not LIB.IsDebugKeyDown(ply, IN_USE) then
 				g_settingsLockMode = nil
 				return
 			end
@@ -767,19 +781,10 @@ function LIB.Load()
 			end
 
 			local ply = LIB.GetDebugPlayer()
-			if not IsValid(ply) then
-				g_settingsLockTracer = nil
-				return
-			end
 
-			-- Switch debug mode by holding ALT and E (default)
-			if not ply:KeyDown(IN_WALK) then
-				g_settingsLockTracer = nil
-				return
-			end
-
-			if not ply:KeyDown(IN_RELOAD) then
-				g_settingsLockTracer = nil
+			-- Switch debug tracers by holding ALT, SHIFT and Z (default)
+			if not LIB.IsDebugKeyDown(ply, IN_ZOOM) then
+				g_settingsLockMode = nil
 				return
 			end
 
