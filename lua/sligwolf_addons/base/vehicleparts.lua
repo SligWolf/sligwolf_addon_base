@@ -70,7 +70,7 @@ local g_FallbackComponentsParams = {
 		},
 		connector = {
 			collision = COLLISION_GROUP_IN_VEHICLE,
-			connectortype = "unknown",
+			connectortype = LIBCoupling.TYPE_UNKNOWN,
 			gender = LIBCoupling.GENDER_NEUTRAL,
 			searchRadius = CONSTANTS.numConRadius,
 			model = CONSTANTS.mdlSphere4,

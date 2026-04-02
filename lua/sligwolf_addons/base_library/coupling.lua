@@ -24,6 +24,18 @@ LIB.GENDER_MALE = "M"
 LIB.GENDER_FEMALE = "F"
 LIB.GENDER_NEUTRAL = "N"
 
+LIB.TYPE_UNKNOWN = "unknown"
+
+LIB.TYPE_CAR = "car"
+LIB.TYPE_TRACTOR = "tractor"
+LIB.TYPE_TANDEM = "tandem"
+LIB.TYPE_SEMITRAILER = "semitrailer"
+LIB.TYPE_TRAIN = "train"
+
+LIB.TYPE_MINITRAIN = "minitrain"
+LIB.TYPE_METROJOINT = "metrojoint"
+LIB.TYPE_ST3TRAM = "st3tram"
+
 function LIB.Load()
 	LIBVehicleControl = SligWolf_Addons.VehicleControl
 	LIBEntities = SligWolf_Addons.Entities
