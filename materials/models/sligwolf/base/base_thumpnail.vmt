@@ -1,0 +1,10 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/sligwolf/base/base_thumpnail"
+	"$nocull"    "1"
+
+	"$detail" "models/sligwolf/base/base_thumpnail"
+   	"$detailscale" "1.0"
+   	"$detailblendfactor" "1.0"
+   	"$detailblendmode" "5"
+}

@@ -19,7 +19,7 @@ if not SligWolf_Addons.IsLoaded() then return end
 
 ENT.Spawnable 		= true
 
-ENT.FallbackModel 	= "models/sligwolf/base/error.mdl"
+ENT.FallbackModel 	= "models/sligwolf/base/help.mdl"
 ENT.DefaultSpawnProperties = {
 	helpName = "",
 }
