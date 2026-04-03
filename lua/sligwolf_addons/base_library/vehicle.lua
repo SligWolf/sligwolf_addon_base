@@ -16,6 +16,7 @@ table.Empty(SligWolf_Addons.Vehicle)
 local LIB = SligWolf_Addons.Vehicle
 
 local LIBConstraints = nil
+local LIBSpawnmenu = nil
 local LIBEntities = nil
 local LIBPosition = nil
 local LIBPhysics = nil
@@ -196,6 +197,93 @@ function LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 	return nil
 end
 
+function LIB.GuessFallbackVehicleSpawnname(model)
+	model = tostring(model or "")
+	if model == "" then
+		return nil
+	end
+
+	local registerdVehicleSpawnnamesByModel = LIBSpawnmenu.g_RegisterdVehicleSpawnnamesByModel
+	if not registerdVehicleSpawnnamesByModel then
+		return nil
+	end
+
+	local vehicleSpawnname = registerdVehicleSpawnnamesByModel[model]
+	if not vehicleSpawnname then
+		return nil
+	end
+
+	return vehicleSpawnname
+end
+
+function LIB.ValidateVehicleTable(vehicle, vehicleTable)
+	if not IsValid(vehicle) then return false end
+	if not vehicle:IsVehicle() then return false end
+
+	if not vehicleTable then return false end
+	if not vehicleTable.Is_SLIGWOLF then return false end
+
+	local addonname = vehicleTable.SLIGWOLF_Addonname
+	if not addonname then return false end
+
+	local addon = SligWolf_Addons.GetAddon(addonname)
+	if not addon then return false end
+
+	local tableName = vehicleTable.Name
+
+	local vehicleClass = vehicle:GetClass() or ""
+	local tableClass = vehicleTable.Class or ""
+
+	if vehicleClass ~= tableClass then
+		addon:ErrorNoHalt(
+			"Class missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
+			tableName,
+			vehicle,
+			tableClass,
+			vehicleClass
+		)
+
+		return false
+	end
+
+	if SERVER then
+		local vehicleKeyValues = LIBEntities.GetKeyValues(vehicle)
+		local tableKeyValues = vehicleTable.KeyValues or {}
+
+		local vehicleScript = vehicleKeyValues.vehiclescript or ""
+		local tableScript = tableKeyValues.vehiclescript or ""
+
+		if vehicleScript ~= tableScript then
+			addon:ErrorNoHalt(
+				"Vehicle script missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
+				tableName,
+				vehicle,
+				tableScript,
+				vehicleScript
+			)
+
+			return false
+		end
+	end
+
+	local vehicleModel = vehicle:GetModel() or ""
+	local tableModel = vehicleTable.Model or ""
+
+	if vehicleModel ~= tableModel then
+		addon:ErrorNoHalt(
+			"Model missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
+			tableName,
+			vehicle,
+			tableModel,
+			vehicleModel
+		)
+
+		return false
+	end
+
+	return true
+end
+
 function LIB.IsSpawnedByEngine(vehicle)
 	if not IsValid(vehicle) then return false end
 	if not vehicle:IsVehicle() then return false end
@@ -236,11 +324,14 @@ function LIB.EnableWheels(vehicle, enable)
 	local wheels = vehicle:GetWheelCount() or 0
 
 	for i = 1, wheels do
-		local phys = vehicle:GetWheel(i)
+		local phys = vehicle:GetWheel(i - 1)
+
 		if not LIBPhysics.IsValidPhysObject(phys, true) then
 			continue
 		end
 
+		phys:EnableDrag(enable)
+		phys:EnableGravity(enable)
 		phys:EnableCollisions(enable)
 	end
 end
@@ -249,7 +340,7 @@ function LIB.WheelsOnGround(vehicle)
 	local wheels = vehicle:GetWheelCount() or 0
 
 	for i = 1, wheels do
-		local _, _, onGround = vehicle:GetWheelContactPoint(i)
+		local _, _, onGround = vehicle:GetWheelContactPoint(i - 1)
 
 		if onGround then
 			return true
@@ -412,8 +503,25 @@ function LIB.GetNpcPassengerVehicle(npc)
 	return currentPassengerVehicle
 end
 
-local g_passenger_handling_timer = "NpcPassengerHandling"
-local g_passenger_handling_timeout = 60
+function LIB.NPCPassengerIsInVehicle(npc, vehicle)
+	if not IsValid(npc) then return false end
+	if not npc:IsNPC() then return false end
+	if not npc:Alive() then return false end
+
+	if not IsValid(vehicle) then return false end
+	if not vehicle:IsVehicle() then return false end
+
+	if npc:GetParent() ~= vehicle then
+		return false
+	end
+
+	return true
+end
+
+local g_passengerHandlingTimer = "NpcPassengerHandling"
+local g_passengerHandlingTimeout = 60
+
+local g_passengerRevertTmpVehicleName = "NpcPassengerHandling_RevertTmpVehicleName"
 
 local function isUniqueVehicleName(vehicleName)
 	if vehicleName == "" then
@@ -453,12 +561,17 @@ local function revertTmpVehicleName(vehicle, vehicleTable)
 	vehicle:SetName(oldVehicleName)
 end
 
-local function npcEnterVehicleInternal(vehicle, vehicleTable, npc)
+local function npcEnterVehicleInternal(vehicle, vehicleTable, npc, immediately)
 	local vehicleName = vehicle:GetName()
 
 	local isUnique = isUniqueVehicleName(vehicleName)
 	if isUnique then
-		npc:Fire("EnterVehicle", vehicleName)
+		if immediately then
+			npc:Fire("EnterVehicleImmediately", vehicleName)
+		else
+			npc:Fire("EnterVehicle", vehicleName)
+		end
+
 		return
 	end
 
@@ -476,10 +589,27 @@ local function npcEnterVehicleInternal(vehicle, vehicleTable, npc)
 	vehicleTable.currentPassengerVehicleTmpName = tmpVehicleName
 
 	vehicle:SetName(tmpVehicleName)
-	npc:Fire("EnterVehicle", tmpVehicleName)
+
+	if immediately then
+		npc:Fire("EnterVehicleImmediately", tmpVehicleName)
+	else
+		npc:Fire("EnterVehicle", tmpVehicleName)
+	end
+
+	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passengerRevertTmpVehicleName)
+	LIBTimer.Remove(timerName)
+
+	-- The temporary name has to be reverted in the next frame.
+	LIBTimer.NextFrame(timerName, function()
+		if not IsValid(vehicle) then
+			return
+		end
+
+		revertTmpVehicleName(vehicle, vehicleTable)
+	end)
 end
 
-function LIB.NpcEnterVehicle(vehicle, npc, callback)
+function LIB.NpcEnterVehicle(vehicle, npc, immediately, callback)
 	callback = callback or function() end
 
 	if not LIB.NpcCanEnterVehicle(vehicle, npc) then
@@ -490,7 +620,7 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 	local npcTable = npc:SligWolf_GetTable()
 	local vehicleTable = vehicle:SligWolf_GetTable()
 
-	npcEnterVehicleInternal(vehicle, vehicleTable, npc)
+	npcEnterVehicleInternal(vehicle, vehicleTable, npc, immediately, vehicleName or "uwootm8")
 
 	npcTable.passengerLock = true
 	npcTable.currentPassengerVehicle = vehicle
@@ -499,7 +629,17 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 	vehicleTable.currentPassengerNpc = npc
 	vehicleTable.passengerEnterAbort = nil
 
-	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passenger_handling_timer)
+	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passengerHandlingTimer)
+	LIBTimer.Remove(timerName)
+
+	if immediately then
+		npcTable.passengerLock = nil
+		vehicleTable.passengerLock = nil
+		vehicleTable.passengerEnterAbort = nil
+
+		callback(vehicle, npc, true)
+		return
+	end
 
 	LIBTimer.Until(timerName, 0.25, function(running, ...)
 		local validNpc = IsValid(npc)
@@ -517,8 +657,6 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 			vehicleTable.passengerLock = nil
 			vehicleTable.currentPassengerNpc = nil
 
-			revertTmpVehicleName(vehicle, vehicleTable)
-
 			if validNpc then
 				npcTable.passengerLock = nil
 				npcTable.currentPassengerVehicle = nil
@@ -529,7 +667,7 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 			return true
 		end
 
-		local isInVehicle = npc:GetParent() == vehicle
+		local isInVehicle = LIB.NPCPassengerIsInVehicle(npc, vehicle)
 
 		if not isInVehicle then
 			if not running then
@@ -540,10 +678,8 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 				vehicleTable.passengerLock = nil
 				vehicleTable.currentPassengerNpc = nil
 
-				revertTmpVehicleName(vehicle, vehicleTable)
-
 				vehicleTable.passengerEnterAbort = true
-				LIB.NpcExitVehicle(vehicle, npc, function()
+				LIB.NpcExitVehicle(vehicle, npc, false, function()
 					vehicleTable.passengerEnterAbort = nil
 
 					callback(vehicle, npc, false)
@@ -559,14 +695,13 @@ function LIB.NpcEnterVehicle(vehicle, npc, callback)
 		npcTable.passengerLock = nil
 		vehicleTable.passengerLock = nil
 
-		revertTmpVehicleName(vehicle, vehicleTable)
 		callback(vehicle, npc, true)
 
 		return true
-	end, 0, g_passenger_handling_timeout)
+	end, 0, g_passengerHandlingTimeout)
 end
 
-function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
+function LIB.NpcExitVehicle(npcOrVehicle, npc, immediately, callback)
 	if not IsValid(npcOrVehicle) then return end
 
 	local vehicle = nil
@@ -601,9 +736,29 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 	local passengerNoCollide = vehicleTable.passengerNoCollide
 
 	npc:Fire("ExitVehicle")
-	revertTmpVehicleName(vehicle, vehicleTable)
 
-	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passenger_handling_timer)
+	if immediately then
+		npc:SetParent()
+	end
+
+	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passengerHandlingTimer)
+	LIBTimer.Remove(timerName)
+
+	if immediately then
+		npcTable.passengerLock = nil
+		npcTable.currentPassengerVehicle = nil
+
+		vehicleTable.passengerLock = nil
+		vehicleTable.currentPassengerNpc = nil
+
+		SafeRemoveEntity(vehicleTable.passengerNoCollide)
+		vehicleTable.passengerNoCollide = nil
+
+		vehicleTable.passengerEnterAbort = nil
+
+		callback(vehicle, npc, true)
+		return
+	end
 
 	LIBTimer.Until(timerName, 0.25, function(running)
 		local validNpc = IsValid(npc)
@@ -625,11 +780,10 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 			SafeRemoveEntity(vehicleTable.passengerNoCollide)
 			vehicleTable.passengerNoCollide = nil
 
-			revertTmpVehicleName(vehicle, vehicleTable)
 			return true
 		end
 
-		local isInVehicle = npc:GetParent() == vehicle and npc:Alive()
+		local isInVehicle = LIB.NPCPassengerIsInVehicle(npc, vehicle)
 
 		if isInVehicle then
 			if not running then
@@ -643,15 +797,13 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 				SafeRemoveEntity(vehicleTable.passengerNoCollide)
 				vehicleTable.passengerNoCollide = nil
 
-				revertTmpVehicleName(vehicle, vehicleTable)
-
 				if vehicleTable.passengerEnterAbort then
 					-- prevent infinite loop
 					callback(vehicle, npc, false)
 					return true
 				end
 
-				LIB.NpcEnterVehicle(vehicle, npc, function()
+				LIB.NpcEnterVehicle(vehicle, npc, true, function()
 					callback(vehicle, npc, false)
 				end)
 
@@ -671,16 +823,16 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, callback)
 		SafeRemoveEntity(vehicleTable.passengerNoCollide)
 		vehicleTable.passengerNoCollide = nil
 
-		revertTmpVehicleName(vehicle, vehicleTable)
 		callback(vehicle, npc, true)
 
 		return true
-	end, 0, g_passenger_handling_timeout)
+	end, 0, g_passengerHandlingTimeout)
 end
 
 
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
+	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPosition = SligWolf_Addons.Position
 	LIBPhysics = SligWolf_Addons.Physics
@@ -704,8 +856,12 @@ function LIB.Load()
 		local vat = vehicle:SligWolf_GetAddonTable(addonname)
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnVehicleFinished", vehicle, vat, ply)
 
+		local vehicleTable = LIB.GetVehicleTableFromVehicle(vehicle) or {}
+		spawnFreezed = vehicleTable.SLIGWOLF_SpawnFreezed or false
+
 		if SERVER then
 			LIBEntities.ApplySpawnState(vehicle)
+			LIBEntities.EnableMotion(vehicle, not spawnFreezed)
 		end
 	end
 
@@ -779,7 +935,33 @@ function LIB.Load()
 	LIBHook.Add("PlayerSpawnedVehicle", "Library_Vehicle_PlayerSpawnedVehicle", PlayerSpawnedVehicle, 10000)
 
 	local function HandleVehicleSpawn(vehicle)
-		SligWolf_Addons.CallFunctionOnAllAddons("HandleVehicleSpawn", vehicle)
+		if not IsValid(vehicle) then return end
+		if not vehicle:IsVehicle() then return end
+		if not vehicle:IsValidVehicle() then return end
+
+		local vehicleSpawnname = LIB.GetVehicleSpawnnameFromVehicle(vehicle)
+		if not vehicleSpawnname then
+			vehicleSpawnname = LIB.GuessFallbackVehicleSpawnname(vehicle:GetModel())
+		end
+
+		if not vehicleSpawnname then
+			return
+		end
+
+		local vehicleTable = LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
+		if not vehicleTable then
+			return
+		end
+
+		if not LIB.ValidateVehicleTable(vehicle, vehicleTable) then
+			-- Ensure the vehicle has the right properties and matches to the vehicle table
+			return
+		end
+
+		local addonname = vehicleTable.SLIGWOLF_Addonname
+		if not addonname then return end
+
+		SligWolf_Addons.CallFunctionOnAddon(addonname, "HandleVehicleSpawn", vehicle, vehicleSpawnname, vehicleTable)
 	end
 
 	LIBHook.AddCustom("OnVehicleCreated", "Library_Vehicle_HandleVehicleSpawn", HandleVehicleSpawn, 10000)

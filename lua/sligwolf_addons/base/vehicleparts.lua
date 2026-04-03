@@ -408,6 +408,40 @@ local g_ConstraintCreateFunctions = {
 	Keepupright = CreateKeepupright,
 }
 
+local g_namePrefix = {
+	prop = "Prop",
+	slider = "Slider",
+	bogie = "Bogie",
+	camera = "Camera",
+	propParent = "ParentedProp",
+	seatGroup = "SeatGroup",
+	animatable = "Animatable",
+	speedometer = "Speedometer",
+	trigger = "Trigger",
+	help = "Help",
+	door = "Door",
+	connector = "Connector",
+	connectorButton = "ConnectorButton",
+	button = "Button",
+	animatedWheel = "Wheel",
+	light = "Light",
+	glow = "Glow",
+	smoke = "Smoke",
+	pod = "Seat",
+	display = "Display",
+	bendi = "Bendi",
+	jeep = "Jeep",
+	airboat = "Airboat",
+	hoverball = "Hoverball",
+}
+
+local function GetName(component)
+	local componentName = component.name or ""
+	local componentType = g_namePrefix[component.type] or "X"
+
+	return string.format("%s_%s", componentType, componentName)
+end
+
 function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraintInfos)
 	if LIBEntities.IsMarkedForDeletion(ent) then
 		return nil
@@ -417,15 +451,21 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 		return nil
 	end
 
-	local func = g_ConstraintCreateFunctions[constraintName]
+	local parentTable = parent:SligWolf_GetTable()
+	local vehiclePartsConstraint = parentTable.vehiclePartsConstraint or {}
+	local preExistingConstraintEnt = vehiclePartsConstraint[constraintName]
 
+	if IsValid(preExistingConstraintEnt) then
+		return preExistingConstraintEnt
+	end
+
+	local func = g_ConstraintCreateFunctions[constraintName]
 	if not func then
 		self:Error("%s is not a valid constraint type", constraintName)
 		return nil
 	end
 
 	local constraintEnt = func(ent, parent, constraintInfos)
-
 	if not IsValid(constraintEnt) then
 		self:RemoveFaultyEntities(
 			{ent, parent},
@@ -438,12 +478,8 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 		return nil
 	end
 
-	local parentTable = parent:SligWolf_GetTable()
-
-	local vehiclePartsConstraint = parentTable.vehiclePartsConstraint or {}
 	parentTable.vehiclePartsConstraint = vehiclePartsConstraint
-
-	vehiclePartsConstraint[constraintName] = constraintInfos
+	vehiclePartsConstraint[constraintName] = constraintEnt
 
 	return constraintEnt
 end
@@ -469,21 +505,6 @@ function SLIGWOLF_ADDON:CreateConstraints(ent, parent, componentConstraints)
 	end
 
 	return true
-end
-
-function SLIGWOLF_ADDON:RecreateConstraints(ent, parent)
-	if LIBEntities.IsMarkedForDeletion(ent) then
-		return false
-	end
-
-	if LIBEntities.IsMarkedForDeletion(parent) then
-		return false
-	end
-
-	local parentTable = parent:SligWolf_GetTable()
-	local vehiclePartsConstraint = parentTable.vehiclePartsConstraint or {}
-
-	return self:CreateConstraints(ent, parent, vehiclePartsConstraint)
 end
 
 local function ProceedVehicleSetUp(ent, tb)
@@ -769,52 +790,79 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 
 	component = SetUnsetComponentsValuesToDefaults(component)
 
-	local funcs = {
-		prop = self.SetUpVehicleProp,
-		slider = self.SetUpVehicleSlider,
-		bogie = self.SetUpVehicleBogie,
-		camera = self.SetUpVehicleCamera,
-		propParent = self.SetUpVehiclePropParented,
-		seatGroup = self.SetUpVehicleSeatGroup,
-		animatable = self.SetUpVehicleAnimatable,
-		speedometer = self.SetUpVehicleSpeedometer,
-		trigger = self.SetUpVehicleTrigger,
-		help = self.SetUpVehicleHelp,
-		door = self.SetUpVehicleDoor,
-		connector = self.SetUpVehicleConnector,
-		connectorButton = self.SetUpVehicleConnectorButton,
-		button = self.SetUpVehicleButton,
-		animatedWheel = self.SetUpVehicleAnimatedWheel,
-		light = self.SetUpVehicleLight,
-		glow = self.SetUpVehicleGlow,
-		smoke = self.SetUpVehicleSmoke,
-		pod = self.SetUpVehiclePod,
-		display = self.SetUpVehicleDisplay,
-		bendi = self.SetUpVehicleBendi,
-		jeep = self.SetUpVehicleJeep,
-		airboat = self.SetUpVehicleAirboat,
-		hoverball = self.SetUpVehicleHoverball,
-	}
+	local preExistingPart = LIBEntities.GetChild(parent, GetName(component))
+	local newPartEnt = nil
 
-	local componentType = component.type
-	local func = funcs[componentType]
+	local nextStep = function(thisNewPartEnt)
+		if not IsValid(thisNewPartEnt) then return end
 
-	if not isfunction(func) then
-		self:Error("%s is not a valid part type", componentType)
-		return
-	end
-
-	local newPartEnt = func(self, parent, component, ply, superparent, function(newPartEnt)
-		if not IsValid(newPartEnt) then return end
-
-		self:HandleSpawnFinishedEvent(newPartEnt)
+		self:HandleSpawnFinishedEvent(thisNewPartEnt)
 
 		if isfunction(callback) then
-			callback(newPartEnt)
+			callback(thisNewPartEnt)
 		end
 
-		self:SetUpVehicleParts(newPartEnt, component.children, dtr, ply, superparent)
-	end)
+		self:SetUpVehicleParts(thisNewPartEnt, component.children, dtr, ply, superparent)
+	end
+
+	if IsValid(preExistingPart) then
+		-- Entity already exists from engine savegame
+		if IsValid(superparent) then
+			local superparentEntTable = superparent:SligWolf_GetTable()
+			superparentEntTable.isDoneSpawningParts = nil
+			superparentEntTable.isSpawningParts = nil
+			superparentEntTable.wasHandleSpawnFinishedEventRequested = nil
+		end
+
+		local preExistingPartEntTable = preExistingPart:SligWolf_GetTable()
+		preExistingPartEntTable.isDoneSpawningParts = nil
+		preExistingPartEntTable.isSpawningParts = nil
+		preExistingPartEntTable.wasHandleSpawnFinishedEventRequested = nil
+
+		LIBTimer.SimpleNextFrame(function()
+			nextStep(preExistingPart)
+		end)
+
+		newPartEnt = preExistingPart
+	else
+		-- Entity will be newly created
+		local funcs = {
+			prop = self.SetUpVehicleProp,
+			slider = self.SetUpVehicleSlider,
+			bogie = self.SetUpVehicleBogie,
+			camera = self.SetUpVehicleCamera,
+			propParent = self.SetUpVehiclePropParented,
+			seatGroup = self.SetUpVehicleSeatGroup,
+			animatable = self.SetUpVehicleAnimatable,
+			speedometer = self.SetUpVehicleSpeedometer,
+			trigger = self.SetUpVehicleTrigger,
+			help = self.SetUpVehicleHelp,
+			door = self.SetUpVehicleDoor,
+			connector = self.SetUpVehicleConnector,
+			connectorButton = self.SetUpVehicleConnectorButton,
+			button = self.SetUpVehicleButton,
+			animatedWheel = self.SetUpVehicleAnimatedWheel,
+			light = self.SetUpVehicleLight,
+			glow = self.SetUpVehicleGlow,
+			smoke = self.SetUpVehicleSmoke,
+			pod = self.SetUpVehiclePod,
+			display = self.SetUpVehicleDisplay,
+			bendi = self.SetUpVehicleBendi,
+			jeep = self.SetUpVehicleJeep,
+			airboat = self.SetUpVehicleAirboat,
+			hoverball = self.SetUpVehicleHoverball,
+		}
+
+		local componentType = component.type
+		local func = funcs[componentType]
+
+		if not isfunction(func) then
+			self:Error("%s is not a valid part type", componentType)
+			return
+		end
+
+		newPartEnt = func(self, parent, component, ply, superparent, nextStep)
+	end
 
 	if not IsValid(newPartEnt) then
 		return
@@ -843,10 +891,10 @@ function SLIGWOLF_ADDON:SetUpVehicleProp(parent, component, ply, superparent, ca
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_phys", ply, parent, "Prop_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_phys", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -859,10 +907,10 @@ function SLIGWOLF_ADDON:SetUpVehicleSlider(parent, component, ply, superparent, 
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_slider", ply, parent, "Slider_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_slider", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -875,10 +923,10 @@ function SLIGWOLF_ADDON:SetUpVehicleBogie(parent, component, ply, superparent, c
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_bogie", ply, parent, "Bogie_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_bogie", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -891,11 +939,11 @@ function SLIGWOLF_ADDON:SetUpVehiclePropParented(parent, component, ply, superpa
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local boneMerge = component.boneMerge
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_phys", ply, parent, "ParentedProp_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_phys", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -913,12 +961,12 @@ function SLIGWOLF_ADDON:SetUpVehicleSeatGroup(parent, component, ply, superparen
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local seatModel = component.seatModel
 	local seatKeyValues = component.seatKeyValues
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_seat_group", ply, parent, "SeatGroup_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_seat_group", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -934,11 +982,11 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatable(parent, component, ply, superpare
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local boneMerge = component.boneMerge
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_animatable", ply, parent, "Animatable_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_animatable", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -956,7 +1004,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local minSpeed = component.minSpeed
 	local maxSpeed = component.maxSpeed
@@ -964,7 +1012,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSpeedometer(parent, component, ply, superpar
 	local maxPoseValue = component.maxPoseValue
 	local poseName = component.poseName
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_speedometer", ply, parent, "Speedometer_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_speedometer", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -989,7 +1037,7 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent,
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local minSize = component.minSize
 	local maxSize = component.maxSize
@@ -1000,7 +1048,7 @@ function SLIGWOLF_ADDON:SetUpVehicleTrigger(parent, component, ply, superparent,
 		return
 	end
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_trigger", ply, parent, "Trigger_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_trigger", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	ent:SetTriggerAABB(minSize, maxSize)
@@ -1019,12 +1067,12 @@ function SLIGWOLF_ADDON:SetUpVehicleHelp(parent, component, ply, superparent, ca
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local model = component.model
 	local helpName = component.helpName
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_help", ply, parent, "Help_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_help", ply, parent, name)
 	if not IsValid(ent) then
 		return
 	end
@@ -1044,7 +1092,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent, ca
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local disableUse = component.disableUse
 	local model = component.model
@@ -1067,7 +1115,7 @@ function SLIGWOLF_ADDON:SetUpVehicleDoor(parent, component, ply, superparent, ca
 		return
 	end
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_door", ply, parent, "Door_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_door", ply, parent, name)
 	if not IsValid(ent) then
 		return
 	end
@@ -1108,12 +1156,13 @@ function SLIGWOLF_ADDON:SetUpVehicleConnector(parent, component, ply, superparen
 	if not attachment then return end
 
 	local name = component.name
+	local fullname = GetName(component)
 	local class = component.class
 	local connectortype = component.connectortype
 	local gender = component.gender
 	local searchRadius = component.searchRadius
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_connector", ply, parent, "Connector_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_connector", ply, parent, fullname)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -1197,10 +1246,11 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	if not attachment then return end
 
 	local name = component.name
+	local fullname = GetName(component)
 	local class = component.class
 	local inVehicle = component.inVehicle
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_button", ply, parent, "ConnectorButton_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_button", ply, parent, fullname)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -1223,7 +1273,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent, 
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local inVehicle = component.inVehicle
 	local func = component.func
@@ -1233,7 +1283,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent, 
 		return
 	end
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_button", ply, parent, "Button_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_button", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -1254,7 +1304,7 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent, 
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local forceThirdperson = component.forceThirdperson
 	local allowThirdperson = component.allowThirdperson
@@ -1262,7 +1312,7 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent, 
 	local defaultDistance = component.defaultDistance
 	local selfAttachment = component.selfAttachment
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_camera", ply, parent, "Camera_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_camera", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	ent:Spawn()
@@ -1301,7 +1351,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local keyValues = component.keyValues
 	local inputFires = component.inputFires
@@ -1316,7 +1366,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	local endAlpha = component.endAlpha
 	local selfAttachment = component.selfAttachment
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_particle", ply, parent, "Smoke_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_particle", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	SetPartKeyValues(ent, keyValues)
@@ -1363,7 +1413,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local keyValues = component.keyValues
 	local inputFires = component.inputFires
@@ -1373,7 +1423,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	local shadowRenderDist = component.shadowRenderDist
 	local selfAttachment = component.selfAttachment
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_light_cone", ply, parent, "Light_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_light_cone", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	SetPartKeyValues(ent, keyValues)
@@ -1415,7 +1465,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local keyValues = component.keyValues
 	local inputFires = component.inputFires
@@ -1426,7 +1476,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	local alphaReduce = component.alphaReduce
 	local selfAttachment = component.selfAttachment
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_glow", ply, parent, "Glow_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_glow", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	SetPartKeyValues(ent, keyValues)
@@ -1468,10 +1518,10 @@ function SLIGWOLF_ADDON:SetUpVehiclePod(parent, component, ply, superparent, cal
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local boneMerge = component.boneMerge
 
-	local ent = self:MakeEntEnsured("prop_vehicle_prisoner_pod", ply, parent, "Seat_" .. name)
+	local ent = self:MakeEntEnsured("prop_vehicle_prisoner_pod", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -1496,13 +1546,13 @@ function SLIGWOLF_ADDON:SetUpVehicleAnimatedWheel(parent, component, ply, superp
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local size = component.size
 	local restrate = component.restrate
 	local boneMerge = component.boneMerge
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_wheel", ply, parent, "Wheel_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_wheel", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -1523,13 +1573,13 @@ function SLIGWOLF_ADDON:SetUpVehicleDisplay(parent, component, ply, superparent,
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local class = component.class
 	local scale = component.scale
 	local maxDrawDistance = component.maxDrawDistance
 	local functionName = component.functionName
 
-	local ent = self:MakeEntEnsured(class or "sligwolf_display", ply, parent, "Display_" .. name)
+	local ent = self:MakeEntEnsured(class or "sligwolf_display", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -1547,7 +1597,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent, c
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local parentNameFront = component.parentNameFront
 	local parentNameRear = component.parentNameRear
 	local parentFront = parent
@@ -1561,7 +1611,7 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent, c
 		parentRear = LIBEntities.GetChildFromPath(parent, parentNameRear)
 	end
 
-	local ent = self:MakeEntEnsured("prop_ragdoll", ply, parent, "Bendi_" .. name)
+	local ent = self:MakeEntEnsured("prop_ragdoll", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
@@ -1622,9 +1672,9 @@ function SLIGWOLF_ADDON:SetUpVehicleJeep(parent, component, ply, superparent, ca
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 
-	local ent = self:MakeEntEnsured("prop_vehicle_jeep", ply, parent, "Jeep_" .. name)
+	local ent = self:MakeEntEnsured("prop_vehicle_jeep", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetUpVehicle(ent, parent, component, attachment, superparent, callback)
@@ -1636,9 +1686,9 @@ function SLIGWOLF_ADDON:SetUpVehicleAirboat(parent, component, ply, superparent,
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 
-	local ent = self:MakeEntEnsured("prop_vehicle_airboat", ply, parent, "Airboat_" .. name)
+	local ent = self:MakeEntEnsured("prop_vehicle_airboat", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetUpVehicle(ent, parent, component, attachment, superparent, callback)
@@ -1650,7 +1700,7 @@ function SLIGWOLF_ADDON:SetUpVehicleHoverball(parent, component, ply, superparen
 	local attachment = self:CheckToProceedToCreateEnt(parent, component)
 	if not attachment then return end
 
-	local name = component.name
+	local name = GetName(component)
 	local speed = component.speed
 	local airResistance = component.airResistance
 	local strength = component.strength
@@ -1659,7 +1709,7 @@ function SLIGWOLF_ADDON:SetUpVehicleHoverball(parent, component, ply, superparen
 	local numBackDown = component.numBackDown
 	local numBackUp = component.numBackUp
 
-	local ent = self:MakeEntEnsured("gmod_hoverball", ply, parent, "Hoverball_" .. name)
+	local ent = self:MakeEntEnsured("gmod_hoverball", ply, parent, name)
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)

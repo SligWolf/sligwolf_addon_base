@@ -173,8 +173,8 @@ function LIB.IsValidPhysObject(phys, dontIgnoreWheels)
 	end
 
 	if not dontIgnoreWheels then
-		local name = string.lower(phys:GetName())
-		if name == "vehiclewheel" then
+		local name = string.lower(phys:GetName() or "")
+		if name == "" or name == "vehiclewheel" then
 			-- Wheels do act crazy when messed with
 			return false
 		end
@@ -200,7 +200,7 @@ function LIB.GetPhysObjects(ent)
 			return nil
 		end
 
-		if IsValid(cache[1]) then
+		if LIB.IsValidPhysObject(cache[1]) then
 			-- Invalidate cache if phys objects were destroyed or recreated.
 			return cache
 		end

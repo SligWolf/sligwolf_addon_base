@@ -46,86 +46,6 @@ function SLIGWOLF_ADDON:MakeVehicleEnsured(spawnname, plyOwner, parent, name)
 	return ent
 end
 
-function SLIGWOLF_ADDON:GuessFallbackVehicleSpawnname(model)
-	model = tostring(model or "")
-	if model == "" then return nil end
-
-	local registerdVehicleSpawnnamesByModel = self.RegisterdVehicleSpawnnamesByModel
-	if not registerdVehicleSpawnnamesByModel then return nil end
-
-	local vehicleSpawnname = registerdVehicleSpawnnamesByModel[model]
-	if not vehicleSpawnname then return nil end
-
-	return vehicleSpawnname
-end
-
-function SLIGWOLF_ADDON:ValidateVehicleTable(vehicle, vehicleTable)
-	if not IsValid(vehicle) then return false end
-	if not vehicle:IsVehicle() then return false end
-
-	if not vehicleTable then return false end
-	if not vehicleTable.Is_SLIGWOLF then return false end
-
-	if vehicleTable.SLIGWOLF_Addonname ~= self.Addonname then
-		-- Make sure this vehicle belongs to our addon
-		return false
-	end
-
-	local tableName = vehicleTable.Name
-
-	local vehicleClass = vehicle:GetClass() or ""
-	local tableClass = vehicleTable.Class or ""
-
-	if vehicleClass ~= tableClass then
-		self:ErrorNoHalt(
-			"Class missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
-			tableName,
-			vehicle,
-			tableClass,
-			vehicleClass
-		)
-
-		return false
-	end
-
-	if SERVER then
-		local vehicleKeyValues = LIBEntities.GetKeyValues(vehicle)
-		local tableKeyValues = vehicleTable.KeyValues or {}
-
-		local vehicleScript = vehicleKeyValues.vehiclescript or ""
-		local tableScript = tableKeyValues.vehiclescript or ""
-
-		if vehicleScript ~= tableScript then
-			self:ErrorNoHalt(
-				"Vehicle script missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
-				tableName,
-				vehicle,
-				tableScript,
-				vehicleScript
-			)
-
-			return false
-		end
-	end
-
-	local vehicleModel = vehicle:GetModel() or ""
-	local tableModel = vehicleTable.Model or ""
-
-	if vehicleModel ~= tableModel then
-		self:ErrorNoHalt(
-			"Model missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
-			tableName,
-			vehicle,
-			tableModel,
-			vehicleModel
-		)
-
-		return false
-	end
-
-	return true
-end
-
 function SLIGWOLF_ADDON:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)
 	local addonname = self.Addonname
 	vehicle.sligwolf_addonname = addonname
@@ -177,35 +97,10 @@ function SLIGWOLF_ADDON:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawn
 	customSpawnProperties.denyToolReload = denyToolReloadIndexed
 end
 
-function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle)
-	if not IsValid(vehicle) then return end
-	if not vehicle:IsVehicle() then return end
-
-	local vehicleSpawnname = LIBVehicle.GetVehicleSpawnnameFromVehicle(vehicle)
-	if not vehicleSpawnname then
-		vehicleSpawnname = self:GuessFallbackVehicleSpawnname(vehicle:GetModel())
-	end
-
-	if not vehicleSpawnname then
-		return
-	end
-
-	local vehicleTable = LIBVehicle.GetVehicleTableFromSpawnname(vehicleSpawnname)
-	if not vehicleTable then
-		return
-	end
-
-	if not self:ValidateVehicleTable(vehicle, vehicleTable) then
-		-- Ensure the vehicle has the right properties and matches to the vehicle table
-		return
-	end
-
-	-- Copy the vehicle table to make sure nothing can accidentally change the original
-	vehicleTable = table.Copy(vehicleTable)
-
+function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTable)
 	local isSpawnedByEngine = LIBVehicle.IsSpawnedByEngine(vehicle)
 
-	local keyValues = vehicleTable.KeyValues or {}
+	local keyValues = table.Copy(vehicleTable.KeyValues or {})
 	local class = vehicleTable.Class
 	local members = vehicleTable.Members
 	local customSpawnProperties = vehicleTable.SLIGWOLF_Custom or {}

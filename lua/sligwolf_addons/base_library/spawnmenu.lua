@@ -27,6 +27,8 @@ local g_registeredSpawnMenuItemsOrdered = {}
 local g_registeredSpawnMenuItemsCategories = {}
 local g_registeredSpawnMenuItemsCategoriesByAddons = {}
 
+LIB.g_RegisterdVehicleSpawnnamesByModel = {}
+
 function LIB.AddSpawnMenuItemAddonCategory(addonName, itemClass, name, obj)
 	addonName = tostring(addonName or "")
 	if addonName == "" then
@@ -985,6 +987,10 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 
 	g_VehicleOrder = (g_VehicleOrder % 1000000) + 1
 
+	if not LIB.g_RegisterdVehicleSpawnnamesByModel[model] then
+		LIB.g_RegisterdVehicleSpawnnamesByModel[model] = spawnname
+	end
+
 	local hidden = obj.hidden or false
 	if not hidden then
 		AddSpawnMenuItem(
@@ -1004,6 +1010,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 		)
 	end
 
+	local spawnFreezed = obj.spawnFreezed or false
+
 	local vehicleListItem = {}
 
 	local members = table.Copy(obj.members or {})
@@ -1017,6 +1025,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.Is_SLIGWOLF = true
 	vehicleListItem.SLIGWOLF_Addonname = addonname
 	vehicleListItem.SLIGWOLF_Hidden = hidden
+	vehicleListItem.SLIGWOLF_Spawnname = spawnname
+	vehicleListItem.SLIGWOLF_SpawnFreezed = spawnFreezed
 
 	vehicleListItem.Members = members
 

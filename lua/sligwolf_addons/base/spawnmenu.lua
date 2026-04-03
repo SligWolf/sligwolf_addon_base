@@ -11,7 +11,7 @@ if not SLIGWOLF_ADDON then
 end
 
 local SligWolf_Addons = SligWolf_Addons
-local SpawnmenuLIB = SligWolf_Addons.Spawnmenu
+local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 
 local g_allAddonCategoryName = "All"
 local g_allAddonCategory = {
@@ -22,7 +22,7 @@ local g_allAddonCategory = {
 function SLIGWOLF_ADDON:AddSpawnMenuItemAddonCategory(itemClass, name, obj)
 	local addonName = self.Addonname
 
-	SpawnmenuLIB.AddSpawnMenuItemAddonCategory(addonName, itemClass, name, obj)
+	LIBSpawnmenu.AddSpawnMenuItemAddonCategory(addonName, itemClass, name, obj)
 end
 
 SLIGWOLF_ADDON:AddSpawnMenuItemAddonCategory("prop", g_allAddonCategoryName, g_allAddonCategory)
@@ -32,7 +32,7 @@ SLIGWOLF_ADDON:AddSpawnMenuItemAddonCategory("weapon", g_allAddonCategoryName, g
 SLIGWOLF_ADDON:AddSpawnMenuItemAddonCategory("vehicle", g_allAddonCategoryName, g_allAddonCategory)
 
 function SLIGWOLF_ADDON:AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
-	SpawnmenuLIB.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
+	LIBSpawnmenu.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
 end
 
 function SLIGWOLF_ADDON:AddProp(model, obj)
@@ -43,7 +43,7 @@ function SLIGWOLF_ADDON:AddProp(model, obj)
 		addonName = self.Addonname
 	end
 
-	SpawnmenuLIB.AddProp(addonName, model, obj)
+	LIBSpawnmenu.AddProp(addonName, model, obj)
 end
 
 function SLIGWOLF_ADDON:AddEntity(spawnname, obj)
@@ -54,7 +54,7 @@ function SLIGWOLF_ADDON:AddEntity(spawnname, obj)
 		addonName = self.Addonname
 	end
 
-	SpawnmenuLIB.AddEntity(addonName, spawnname, obj)
+	LIBSpawnmenu.AddEntity(addonName, spawnname, obj)
 end
 
 function SLIGWOLF_ADDON:AddWeapon(spawnname, obj)
@@ -65,7 +65,7 @@ function SLIGWOLF_ADDON:AddWeapon(spawnname, obj)
 		addonName = self.Addonname
 	end
 
-	SpawnmenuLIB.AddWeapon(addonName, spawnname, obj)
+	LIBSpawnmenu.AddWeapon(addonName, spawnname, obj)
 end
 
 function SLIGWOLF_ADDON:AddNPC(spawnname, obj)
@@ -76,7 +76,7 @@ function SLIGWOLF_ADDON:AddNPC(spawnname, obj)
 		addonName = self.Addonname
 	end
 
-	SpawnmenuLIB.AddNPC(addonName, spawnname, obj)
+	LIBSpawnmenu.AddNPC(addonName, spawnname, obj)
 end
 
 function SLIGWOLF_ADDON:AddVehicle(spawnname, vehiclescript, obj)
@@ -99,13 +99,7 @@ function SLIGWOLF_ADDON:AddVehicle(spawnname, vehiclescript, obj)
 		addonName = self.Addonname
 	end
 
-	SpawnmenuLIB.AddVehicle(addonName, spawnname, vehiclescript, obj)
-
-	self.RegisterdVehicleSpawnnamesByModel = self.RegisterdVehicleSpawnnamesByModel or {}
-
-	if not self.RegisterdVehicleSpawnnamesByModel[model] then
-		self.RegisterdVehicleSpawnnamesByModel[model] = spawnname
-	end
+	LIBSpawnmenu.AddVehicle(addonName, spawnname, vehiclescript, obj)
 end
 
 return true
