@@ -6,7 +6,7 @@ DEFINE_BASECLASS("sligwolf_phys")
 -- Tell the user something is wrong ("Broken") with the addons in case they see the usually hidden placeholder node.
 -- This item is moved to a different custom build category if everything is fine and the "Broken" one is hidden.
 ENT.Category			= "SligWolf's Addons (Broken)"
-ENT.PrintName 			= "Help"
+ENT.PrintName 			= "SligWolf's Addons Help"
 ENT.Spawnable 			= false
 ENT.AdminOnly 			= false
 ENT.DoNotDuplicate 		= false
@@ -19,7 +19,7 @@ if not SligWolf_Addons.IsLoaded() then return end
 
 ENT.Spawnable 		= true
 
-ENT.FallbackModel 	= "models/sligwolf/base/help.mdl"
+ENT.FallbackModel = "models/sligwolf/base/help.mdl"
 ENT.DefaultSpawnProperties = {
 	helpName = "",
 }
