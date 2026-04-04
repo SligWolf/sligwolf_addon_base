@@ -599,13 +599,15 @@ local function npcEnterVehicleInternal(vehicle, vehicleTable, npc, immediately)
 	local timerName = LIBTimer.GetEntityTimerName(vehicle, g_passengerRevertTmpVehicleName)
 	LIBTimer.Remove(timerName)
 
-	-- The temporary name has to be reverted in the next frame.
+	-- The temporary name has to be reverted after the next 2 frames.
 	LIBTimer.NextFrame(timerName, function()
-		if not IsValid(vehicle) then
-			return
-		end
+		LIBTimer.NextFrame(timerName, function()
+			if not IsValid(vehicle) then
+				return
+			end
 
-		revertTmpVehicleName(vehicle, vehicleTable)
+			revertTmpVehicleName(vehicle, vehicleTable)
+		end)
 	end)
 end
 
@@ -620,7 +622,7 @@ function LIB.NpcEnterVehicle(vehicle, npc, immediately, callback)
 	local npcTable = npc:SligWolf_GetTable()
 	local vehicleTable = vehicle:SligWolf_GetTable()
 
-	npcEnterVehicleInternal(vehicle, vehicleTable, npc, immediately, vehicleName or "uwootm8")
+	npcEnterVehicleInternal(vehicle, vehicleTable, npc, immediately, vehicleName)
 
 	npcTable.passengerLock = true
 	npcTable.currentPassengerVehicle = vehicle
