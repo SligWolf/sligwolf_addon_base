@@ -13,42 +13,42 @@ LIB._detourBackups = g_detourBackups
 
 function LIB.CreateRemoverToolHook()
 	g_detourBackups.utilEffect = g_detourBackups.utilEffect or util.Effect
-	local oldFunc = g_detourBackups.utilEffect
+	local oldFunc_utilEffect = g_detourBackups.utilEffect
 
 	-- We override util.Effect, because that the only way to detect the entity
 	-- being removed by the remover toolgun.
 
 	util.Effect = function(name, effectData, ...)
 		if name ~= "entity_remove" then
-			return oldFunc(name, effectData, ...)
+			return oldFunc_utilEffect(name, effectData, ...)
 		end
 
 		if not effectData then
-			return oldFunc(name, effectData, ...)
+			return oldFunc_utilEffect(name, effectData, ...)
 		end
 
 		local ent = effectData:GetEntity()
 		if not IsValid(ent) then
-			return oldFunc(name, effectData, ...)
+			return oldFunc_utilEffect(name, effectData, ...)
 		end
 
 		if ent:IsMarkedForDeletion() then
-			return oldFunc(name, effectData, ...)
+			return oldFunc_utilEffect(name, effectData, ...)
 		end
 
 		-- Make sure we only affect entities spawned by our addon code
 		if not ent.sligwolf_entity then
-			return oldFunc(name, effectData, ...)
+			return oldFunc_utilEffect(name, effectData, ...)
 		end
 
 		-- Make sure the effect is emitted from inside the remover tool function
 		if not ent:GetNoDraw() then
-			return oldFunc(name, effectData, ...)
+			return oldFunc_utilEffect(name, effectData, ...)
 		end
 
 		local entTable = ent:SligWolf_GetTable()
 		if entTable.hasCalledRemoveEffectHook then
-			return oldFunc(name, effectData, ...)
+			return oldFunc_utilEffect(name, effectData, ...)
 		end
 
 		entTable.hasCalledRemoveEffectHook = true
@@ -56,20 +56,20 @@ function LIB.CreateRemoverToolHook()
 
 		LIBHook.RunCustom("EntityRemovedByToolgun", ent)
 
-		return oldFunc(name, effectData, ...)
+		return oldFunc_utilEffect(name, effectData, ...)
 	end
 end
 
 function LIB.CreateDuplicaterPasteHooks()
 	g_detourBackups.duplicatorCreateEntityFromTable = g_detourBackups.duplicatorCreateEntityFromTable or duplicator.CreateEntityFromTable
-	local oldFunc = g_detourBackups.duplicatorCreateEntityFromTable
+	local oldFunc_duplicatorCreateEntityFromTable = g_detourBackups.duplicatorCreateEntityFromTable
 
 	-- We override duplicator.Paste, because that the only way to globally detect entity are being pasted.
 
 	duplicator.CreateEntityFromTable = function(ply, ...)
 		LIBHook.RunCustom("DuplicatorPrePaste", ply)
 
-		local result = {oldFunc(ply, ...)}
+		local result = {oldFunc_duplicatorCreateEntityFromTable(ply, ...)}
 		local ent = result[1]
 
 		if not IsValid(ent) then
@@ -83,46 +83,46 @@ end
 
 function LIB.FixSENTAliases()
 	g_detourBackups.scriptedentsGetMember = g_detourBackups.scriptedentsGetMember or scripted_ents.GetMember
-	local oldFunc = g_detourBackups.scriptedentsGetMember
+	local oldFunc_scriptedentsGetMember = g_detourBackups.scriptedentsGetMember
 
 	-- The affected functions do not respect scripted_ents.Alias(), so we had to add a substitute for it.
 
 	scripted_ents.GetMember = function(name, membername, ...)
 		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
-		return oldFunc(name, membername, ...)
+		return oldFunc_scriptedentsGetMember(name, membername, ...)
 	end
 
 	g_detourBackups.scriptedentsGetStored = g_detourBackups.scriptedentsGetStored or scripted_ents.GetStored
-	oldFunc = g_detourBackups.scriptedentsGetStored
+	local oldFunc_scriptedentsGetStored = g_detourBackups.scriptedentsGetStored
 
 	scripted_ents.GetStored = function(name, ...)
 		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
-		return oldFunc(name, ...)
+		return oldFunc_scriptedentsGetStored(name, ...)
 	end
 
 	g_detourBackups.scriptedentsGetType = g_detourBackups.scriptedentsGetType or scripted_ents.GetType
-	oldFunc = g_detourBackups.scriptedentsGetType
+	local oldFunc_scriptedentsGetType = g_detourBackups.scriptedentsGetType
 
 	scripted_ents.GetType = function(name, ...)
 		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
-		return oldFunc(name, ...)
+		return oldFunc_scriptedentsGetType(name, ...)
 	end
 
 	g_detourBackups.scriptedentsIsBasedOn = g_detourBackups.scriptedentsIsBasedOn or scripted_ents.IsBasedOn
-	oldFunc = g_detourBackups.scriptedentsIsBasedOn
+	local oldFunc_scriptedentsIsBasedOn = g_detourBackups.scriptedentsIsBasedOn
 
 	scripted_ents.IsBasedOn = function(name, base, ...)
 		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
 		base = LIBSpawnmenu.GetEntityClassFromAlias(base) or base
 
-		return oldFunc(name, base, ...)
+		return oldFunc_scriptedentsIsBasedOn(name, base, ...)
 	end
 
 	g_detourBackups.scriptedentsGetList = g_detourBackups.scriptedentsGetList or scripted_ents.GetList
-	oldFunc = g_detourBackups.scriptedentsGetList
+	local oldFunc_scriptedentsGetList = g_detourBackups.scriptedentsGetList
 
 	scripted_ents.GetList = function(...)
-		local realEntities = oldFunc(...)
+		local realEntities = oldFunc_scriptedentsGetList(...)
 		local result = {}
 
 		for class, data in pairs(realEntities) do
@@ -144,14 +144,14 @@ function LIB.FixSENTAliases()
 	end
 
 	g_detourBackups.scriptedentsGetSpawnable = g_detourBackups.scriptedentsGetSpawnable or scripted_ents.GetSpawnable
-	oldFunc = g_detourBackups.scriptedentsGetSpawnable
+	local oldFunc_scriptedentsGetSpawnable = g_detourBackups.scriptedentsGetSpawnable
 
 	scripted_ents.GetSpawnable = function(...)
-		local realEntities = oldFunc(...)
+		local realEntities = oldFunc_scriptedentsGetSpawnable(...)
 		local tmp = {}
 
-		-- @TODO: Fix Class
 		for _, data in ipairs(realEntities) do
+			local class = data.ClassName
 			tmp[class] = data
 		end
 
