@@ -35,6 +35,9 @@ local function getCache(ent)
 	local children = entCache.children or {}
 	entCache.children = children
 
+	local names = entCache.names or {}
+	entCache.names = names
+
 	return entCache
 end
 
@@ -47,6 +50,7 @@ local function clearChildrenCacheHelper(ent)
 	if not cache then return end
 
 	table.Empty(cache.children)
+	table.Empty(cache.names)
 end
 
 function LIB.ClearChildrenCache(ent)
@@ -60,6 +64,8 @@ function LIB.ClearChildrenCache(ent)
 	for _, parent in pairs(cache.parents) do
 		clearChildrenCacheHelper(parent)
 	end
+
+	table.Empty(cache.names)
 end
 
 function LIB.ClearCache(ent)
@@ -71,6 +77,7 @@ function LIB.ClearCache(ent)
 	if not cache then return end
 
 	table.Empty(cache.parents)
+	table.Empty(cache.names)
 end
 
 function LIB.ToString(ent)
@@ -787,20 +794,54 @@ function LIB.GetParentBody(ent)
 	return parentBody
 end
 
+function LIB.CalcEntityPath(ent)
+	if not IsValid(ent) then return end
+
+	local curparent = ent
+	local pathResult = {}
+
+	while true do
+		if not IsValid(curparent) then
+			break
+		end
+
+		pathResult[#pathResult + 1] = LIB.GetName(curparent)
+
+		local parent = LIB.GetParent(curparent)
+		if not IsValid(parent) then
+			break
+		end
+
+		if parent == ent then
+			break
+		end
+
+		curparent = parent
+	end
+
+	pathResult = table.Reverse(pathResult)
+	pathResult = table.concat(pathResult, "/")
+
+	return pathResult
+end
+
 function LIB.GetEntityPath(ent)
 	if not IsValid(ent) then return end
 
-	local name = LIB.GetName(ent)
-	local parent = LIB.GetParent(ent)
+	local cache = getCache(ent).names
 
-	if not IsValid(parent) then
-		return name
+	local entityPath = cache.EntityPath
+
+	if entityPath and entityPath ~= "" then
+		return entityPath
 	end
 
-	local parent_name = LIB.GetName(parent)
-	name = parent_name .. "/" .. name
+	entityPath = LIB.CalcEntityPath(ent)
 
-	return name
+	cache.EntityPath = entityPath
+	LIB.ClearChildrenCache(ent)
+
+	return entityPath
 end
 
 function LIB.GetChildren(ent)
