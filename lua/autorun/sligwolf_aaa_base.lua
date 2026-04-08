@@ -106,14 +106,10 @@ local function initLibGlobal()
 
 		local isManuallyReloading = thislib.IsManuallyReloading or false
 
-		print("ReloadAddonSystem 1")
-
 		-- debounce rapid reload calls
 		timer.Remove(g_reloadAddonTimerName)
 		timer.Create(g_reloadAddonTimerName, 0.25, 1, function()
 			timer.Remove(g_reloadAddonTimerName)
-
-			print("ReloadAddonSystem 2")
 
 			if thislib.Loading and not force then
 				return

@@ -27,7 +27,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "e930639742cfa87730b83a7f508cae5e05518443ae3b44ea2a9a4c2ecbdc47b1"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.6.10"
+SligWolf_Addons.BaseApiVersion = "1.7.0"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 251210
@@ -1278,7 +1278,7 @@ function SligWolf_Addons.IsLoaded()
 	end
 
 	if not sligwolfAddons.Loaded then
-		--return false
+		return false
 	end
 
 	if not sligwolfAddons.LibrariesLoaded then
@@ -1356,10 +1356,10 @@ if SERVER then
 
 			sligwolfAddons.IsManuallyReloading = true
 
-			sligwolfAddons.LoadAddon(name, true)
-
 			if name == sligwolfAddons.BASE_ADDON_NAME then
 				sligwolfAddons:ReloadAddonSystem()
+			else
+				sligwolfAddons.LoadAddon(name, true)
 			end
 
 			sligwolfAddons.IsManuallyReloading = false
@@ -1378,10 +1378,10 @@ else
 
 		sligwolfAddons.IsManuallyReloading = true
 
-		sligwolfAddons.LoadAddon(name, true)
-
 		if name == sligwolfAddons.BASE_ADDON_NAME then
 			sligwolfAddons:ReloadAddonSystem()
+		else
+			sligwolfAddons.LoadAddon(name, true)
 		end
 
 		sligwolfAddons.IsManuallyReloading = false
@@ -1396,20 +1396,15 @@ local status, loaded = xpcall(function()
 		return false
 	end
 
-	if sligwolfAddons.BASE_ADDON or sligwolfAddons.IsManuallyReloading then
-		sligwolfAddons.ReloadAllAddons()
+	sligwolfAddons.BASE_ADDON = nil
+
+	sligwolfAddons.ReloadAllAddons()
+
+	if sligwolfAddons.BASE_ADDON then
 		return true
 	end
 
-	sligwolfAddons.LoadLibraries()
-	sligwolfAddons.BASE_ADDON = nil
-
-	inValidateSortedAddondata()
-	local loaded = include("sligwolf_addons/base/init.lua") == true
-	inValidateSortedAddondata()
-
-	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon(sligwolfAddons.BASE_ADDON_NAME)
-	return loaded
+	return false
 end, ErrorNoHaltWithStack)
 
 if not status then

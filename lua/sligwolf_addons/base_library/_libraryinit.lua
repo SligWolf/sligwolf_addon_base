@@ -43,6 +43,14 @@ local function callLoaders()
 	callLoaderFunc("Load")
 end
 
+local function callPostLoaders()
+	callLoaderFunc("PostLoad")
+end
+
+local function callFirstFrameLoaders()
+	callLoaderFunc("FirstFrame")
+end
+
 local function callAllAddonsLoaded()
 	callLoaderFunc("AllAddonsLoaded")
 end
@@ -91,7 +99,9 @@ loadLib("thirdperson")
 loadLib("vgui")
 
 callLoaders()
+callPostLoaders()
 
+SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", callFirstFrameLoaders)
 SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded", callAllAddonsLoaded, 1000)
 
 return true
