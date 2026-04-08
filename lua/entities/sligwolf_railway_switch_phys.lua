@@ -18,6 +18,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+ENT.SWName = "RailwaySwitch"
+
 local LIBRail = SligWolf_Addons.Rail
 
 function ENT:SetupSwitchStates()

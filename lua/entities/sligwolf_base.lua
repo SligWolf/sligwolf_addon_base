@@ -35,6 +35,7 @@ local LIBDebug = SligWolf_Addons.Debug
 local LIBUtil = SligWolf_Addons.Util
 
 ENT.FallbackModel = CONSTANTS.mdlCube1
+ENT.SWName = ""
 
 function ENT:Initialize()
 	self:InitializeModel()
@@ -43,6 +44,11 @@ function ENT:Initialize()
 	if SERVER then
 		self:InitializePhysicsInternal()
 		self:SetUseType(SIMPLE_USE)
+	end
+
+	local swName = self.SWName
+	if swName and swName ~= "" then
+		LIBEntities.SetName(self, swName)
 	end
 
 	self:RunPostInitialize()

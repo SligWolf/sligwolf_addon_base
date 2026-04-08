@@ -438,8 +438,13 @@ local g_namePrefix = {
 local function GetName(component)
 	local componentName = component.name or ""
 	local componentType = g_namePrefix[component.type] or "X"
+	local prefix = componentType .. "_"
 
-	return string.format("%s_%s", componentType, componentName)
+	if string.find(componentName, prefix, 1, true) then
+		return componentName
+	end
+
+	return prefix .. componentName
 end
 
 function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraintInfos)
@@ -452,11 +457,16 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 	end
 
 	local parentTable = parent:SligWolf_GetTable()
-	local vehiclePartsConstraint = parentTable.vehiclePartsConstraint or {}
-	local preExistingConstraintEnt = vehiclePartsConstraint[constraintName]
 
+	local vehiclePartsConstraints = parentTable.vehiclePartsConstraints or {}
+	parentTable.vehiclePartsConstraints = vehiclePartsConstraints
+
+	local preExistingConstraintEnts = vehiclePartsConstraints[ent] or {}
+	vehiclePartsConstraints[ent] = preExistingConstraintEnts
+
+	local preExistingConstraintEnt = preExistingConstraintEnts[constraintName]
 	if IsValid(preExistingConstraintEnt) then
-		return preExistingConstraintEnt
+	 	return preExistingConstraintEnt
 	end
 
 	local func = g_ConstraintCreateFunctions[constraintName]
@@ -478,9 +488,7 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 		return nil
 	end
 
-	parentTable.vehiclePartsConstraint = vehiclePartsConstraint
-	vehiclePartsConstraint[constraintName] = constraintEnt
-
+	preExistingConstraintEnts[constraintName] = constraintEnt
 	return constraintEnt
 end
 
@@ -527,6 +535,18 @@ local function SetUnsetComponentsValuesToDefaults(component)
 	end
 	component.type = componentType
 
+	local componentName = tostring(component.name or "")
+	if componentName == "" then
+		error("component.name is not set! (component.type = '" .. componentType .. "')")
+		return nil
+	end
+	component.name = componentName
+
+	-- if componentName ~= GetName(component) then
+	-- 	error("component.name '" .. componentName .. "' is badly formatted! (component.type = '" .. componentType .. "')")
+	-- 	return nil
+	-- end
+
 	local mergedFallbackComponentsParams = table.Copy(g_FallbackComponentsParams)
 
 	local typeParams = mergedFallbackComponentsParams.typesParams[componentType] or {}
@@ -560,12 +580,6 @@ local function SetUnsetComponentsValuesToDefaults(component)
 	component.attachment = attachment
 
 	component.model = LIBModel.LoadModel(component.model, mergedFallbackComponentsParams.model)
-
-	local name = tostring(component.name or "")
-	if name == "" then
-		name = string.format("unnamed_%s_%09u", component.type, math.floor(math.random(0, 999999999)))
-	end
-	component.name = name
 
 	local class = tostring(component.class or "")
 	if class == "" then
@@ -738,6 +752,14 @@ function SLIGWOLF_ADDON:SetUpVehicleParts(parent, components, dtr, ply, superpar
 
 	dtr = dtr or {}
 	superparent = superparent or parent
+
+	if superparent == parent then
+		local name = LIBEntities.GetName(superparent) or ""
+
+		if name == "" then
+			LIBEntities.SetName(superparent, "MainVehicle")
+		end
+	end
 
 	local delay = LIBTimer.TickTime(2)
 

@@ -18,6 +18,8 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+ENT.SWName = "RailwaySwitch"
+
 local LIBProtection = SligWolf_Addons.Protection
 local LIBEntities = SligWolf_Addons.Entities
 
