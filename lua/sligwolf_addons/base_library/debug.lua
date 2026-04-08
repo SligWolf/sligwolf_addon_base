@@ -7,8 +7,11 @@ local LIB = SligWolf_Addons:NewLib("Debug")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local LIBEntities = nil
+local LIBTracer = nil
 local LIBConvar = nil
 local LIBPrint = nil
+local LIBTimer = nil
 
 local g_nextThink = 0
 local g_settingsLockMode = nil
@@ -23,12 +26,15 @@ LIB.DEBUG_LIFETIME_FRAME = engine.TickInterval()
 LIB.DEBUG_LIFETIME_SHORT = 1
 LIB.DEBUG_LIFETIME_MEDIUM = 3
 LIB.DEBUG_LIFETIME_LONG = 10
+LIB.DEBUG_LIFETIME_STATIC = 60
 
 LIB.DEBUG_SIZE = 8
 LIB.DEBUG_MAXDRAW_DISTANCE_SQR = 4096 ^ 2
 
 LIB.DEBUG_REALM_MARKER       = "● "
 LIB.DEBUG_REALM_MARKER_SPACE = "  "
+
+LIB.COLOR_NEUTRAL = Color(255, 255, 255)
 
 if CLIENT then
 	LIB.COLOR = Color(255, 222, 132)
@@ -49,6 +55,9 @@ LIB.COLOR_TRACER_HIT_TEXT = Color(50, 255, 50)
 LIB.COLOR_AXIS_X = Color(255, 0, 0)
 LIB.COLOR_AXIS_Y = Color(0, 255, 0)
 LIB.COLOR_AXIS_Z = Color(0, 0, 255)
+
+LIB.COLOR_ENTITY_NAME = Color(200, 255, 255)
+LIB.COLOR_ENTITY_PRINT = Color(200, 255, 200)
 
 LIB.ENUM_DEBUG_MODE_DISABLED = 0
 LIB.ENUM_DEBUG_MODE_SHARED = 1
@@ -113,6 +122,10 @@ function LIB.GetDebugPlayer()
 		end
 
 		if not ply:IsListenServerHost() then
+			continue
+		end
+
+		if not ply:IsSuperAdmin() then
 			continue
 		end
 
@@ -273,6 +286,8 @@ function LIB.EntityTextAtPosition(pos, text, lineOrColor, color)
 		color = LIB.COLOR_TEXT
 	end
 
+	local needsMarker = text[1] ~= " "
+
 	text = LIB.DEBUG_REALM_MARKER_SPACE .. text
 
 	local lineoffset = line
@@ -282,7 +297,10 @@ function LIB.EntityTextAtPosition(pos, text, lineOrColor, color)
 	end
 
 	debugoverlay.EntityTextAtPosition(pos, lineoffset, text, g_lifetime, color)
-	debugoverlay.EntityTextAtPosition(pos, lineoffset, LIB.DEBUG_REALM_MARKER, g_lifetime, LIB.COLOR_TEXT)
+
+	if needsMarker then
+		debugoverlay.EntityTextAtPosition(pos, lineoffset, LIB.DEBUG_REALM_MARKER, g_lifetime, LIB.COLOR_TEXT)
+	end
 end
 
 function LIB.ScreenText(x, y, text, color)
@@ -302,10 +320,16 @@ function LIB.ScreenText(x, y, text, color)
 		color = LIB.COLOR_TEXT
 	end
 
+	text = string.gsub(text, "[\n|\r]+", " ")
+	local needsMarker = text[1] ~= " "
+
 	text = LIB.DEBUG_REALM_MARKER_SPACE .. text
 
 	debugoverlay.ScreenText(x, y, text, g_lifetime, color)
-	debugoverlay.ScreenText(x, y, LIB.DEBUG_REALM_MARKER, g_lifetime, LIB.COLOR_TEXT)
+
+	if needsMarker then
+		debugoverlay.ScreenText(x, y, LIB.DEBUG_REALM_MARKER, g_lifetime, LIB.COLOR_TEXT)
+	end
 end
 
 function LIB.Text(pos, text)
@@ -323,9 +347,40 @@ function LIB.Text(pos, text)
 		return
 	end
 
+	text = string.gsub(text, "[\n|\r]+", " ")
+	local needsMarker = text[1] ~= " "
+
 	text = LIB.DEBUG_REALM_MARKER_NC .. text
 
-	debugoverlay.Text(pos, text, g_lifetime, not g_ignoreZ)
+	if needsMarker then
+		debugoverlay.Text(pos, text, g_lifetime, not g_ignoreZ)
+	end
+end
+
+function LIB.Msg(text, color)
+	if not LIB.IsDeveloper() then
+		return
+	end
+
+	text = tostring(text or "")
+	if text == "" then
+		return
+	end
+
+	if not color then
+		color = LIB.COLOR_TEXT
+	end
+
+	text = string.gsub(text, "[\n|\r]+", " ")
+	local needsMarker = text[1] ~= " "
+
+	if needsMarker then
+		MsgC(LIB.COLOR_TEXT, LIB.DEBUG_REALM_MARKER)
+	else
+		MsgC(LIB.COLOR_TEXT, LIB.DEBUG_REALM_MARKER_SPACE)
+	end
+
+	MsgC(color, text, "\n")
 end
 
 local g_tmpMin = Vector()
@@ -598,13 +653,9 @@ function LIB.GetRandomDistinguishableColor()
 	return color
 end
 
-function LIB.HighlightEntities(entities, color)
-	if not LIB.IsDeveloper() then
-		return
-	end
-
-	if not color then
-		color = LIB.GetRandomDistinguishableColor()
+local function normalizeEntityTable(entities)
+	if not entities then
+		return {}
 	end
 
 	if not istable(entities) then
@@ -623,10 +674,25 @@ function LIB.HighlightEntities(entities, color)
 		end
 	end
 
+	uniqueEntities = table.ClearKeys(uniqueEntities)
+	return uniqueEntities
+end
+
+function LIB.HighlightEntities(entities, color)
+	if not LIB.IsDeveloper() then
+		return
+	end
+
+	if not color then
+		color = LIB.GetRandomDistinguishableColor()
+	end
+
+	entities = normalizeEntityTable(entities)
+
 	local count = 0
 	local lastEnt = nil
 
-	for _, ent in pairs(uniqueEntities) do
+	for _, ent in ipairs(entities) do
 		ent:SetMaterial("models/debug/debugwhite")
 		ent:SetColor(color)
 
@@ -635,11 +701,198 @@ function LIB.HighlightEntities(entities, color)
 	end
 
 	if count <= 0 then
-		LIB.Print("Debug.HighlightEntities: No Entities to highlight")
+		LIB.Print("Debug.HighlightEntities: No entities to highlight")
 	elseif count == 1 then
-		LIB.Print("Debug.HighlightEntities: Highlighting 1 Entity:\n  %s", lastEnt)
+		LIB.Print("Debug.HighlightEntities: Highlighting 1 entity:\n  %s", lastEnt)
 	else
-		LIB.Print("Debug.HighlightEntities: Highlighting %i Entities", count)
+		LIB.Print("Debug.HighlightEntities: Highlighting %i entities", count)
+	end
+end
+
+function LIB.ShowEntityNames(entities)
+	if not LIB.IsDeveloper() then
+		return
+	end
+
+	entities = normalizeEntityTable(entities)
+
+	local positions = {}
+	local tolerance = 16
+
+	for _, ent in ipairs(entities) do
+		if not ent.sligwolf_entity then
+			continue
+		end
+
+		if ent.sligwolf_constraintEntity then
+			continue
+		end
+
+		local pos = ent:GetPos()
+
+		local index = string.format(
+			"%i_%i_%i",
+			math.floor(math.Round(pos.x * tolerance) / tolerance),
+			math.floor(math.Round(pos.y * tolerance) / tolerance),
+			math.floor(math.Round(pos.z * tolerance) / tolerance)
+		)
+
+		local name = LIBEntities.GetName(ent) or ""
+		local path = LIBEntities.GetEntityPath(ent) or ""
+
+		if name == "" then
+			name = "<unnamed>"
+		end
+
+		if path == "" then
+			path = "<unknown>"
+		end
+
+		local position = positions[index] or {}
+		positions[index] = position
+
+		local lastPos = position.pos or pos
+
+		position.pos = (lastPos + pos) / 2
+		position.names = position.names or {}
+
+		table.insert(position.names, {
+			pos = pos,
+			name = name,
+			path = path,
+			ent = ent,
+		})
+	end
+
+	LIB.SetIgnoreZ(true)
+	LIB.SetLifetime(LIB.DEBUG_LIFETIME_STATIC)
+
+	local count = 0
+
+	for _, position in pairs(positions) do
+		local pos = position.pos
+		local names = position.names
+
+		if table.IsEmpty(names) then
+			continue
+		end
+
+		local line = 2
+		local title = #names ~= 1 and "SW-Names:" or "SW-Name:"
+
+		if CLIENT then
+			LIB.EntityTextAtPosition(pos, title, line, LIB.COLOR_NEUTRAL)
+		end
+
+		LIB.Box(pos, tolerance, LIB.COLOR_ENTITY_NAME)
+
+		for i, nameItem in ipairs(names) do
+			local name = nameItem.name
+			local path = nameItem.path
+			local ent = nameItem.ent
+			local minipos = nameItem.pos
+
+			line = 2 + i * 3
+
+			local nameOutput = string.format("  %s:", name)
+			local entOutput  = string.format("    %s", tostring(ent))
+			local pathOutput = string.format("    %s", path)
+
+			LIB.Cross(minipos, 1, LIB.COLOR_ENTITY_NAME)
+
+			if SERVER then
+				LIB.EntityTextAtPosition(pos, entOutput,  line, LIB.COLOR_ENTITY_PRINT)
+				LIB.EntityTextAtPosition(pos, pathOutput, line + 1, LIB.COLOR_ENTITY_PRINT)
+				LIB.EntityTextAtPosition(pos, nameOutput, line + 2, LIB.COLOR_ENTITY_NAME)
+			else
+				LIB.EntityTextAtPosition(pos, nameOutput, line - 2, LIB.COLOR_ENTITY_NAME)
+				LIB.EntityTextAtPosition(pos, pathOutput, line - 1, LIB.COLOR_ENTITY_PRINT)
+				LIB.EntityTextAtPosition(pos, entOutput,  line, LIB.COLOR_ENTITY_PRINT)
+			end
+
+			count = count + 1
+		end
+
+		if SERVER then
+			line = line + 3
+			LIB.EntityTextAtPosition(pos, title, line, LIB.COLOR_NEUTRAL)
+		end
+	end
+
+	LIB.ResetLifetime()
+	LIB.ResetIgnoreZ()
+
+	if count <= 0 then
+		LIB.Print("Debug.ShowEntityNames: No entity names to show")
+	else
+		LIB.Print("Debug.ShowEntityNames: %i entity names shown", count)
+	end
+end
+
+function LIB.PrintEntityNames(entities)
+	if not LIB.IsDeveloper() then
+		return
+	end
+
+	entities = normalizeEntityTable(entities)
+
+	local items = {}
+
+	for _, ent in ipairs(entities) do
+		if not ent.sligwolf_entity then
+			continue
+		end
+
+		if ent.sligwolf_constraintEntity then
+			continue
+		end
+
+		local name = LIBEntities.GetName(ent) or ""
+		local path = LIBEntities.GetEntityPath(ent) or ""
+
+		if name == "" then
+			name = "<unnamed>"
+		end
+
+		if path == "" then
+			path = "<unknown>"
+		end
+
+		local order = string.format("%03i %s %s", #path, path, name)
+
+		table.insert(items, {
+			name = name,
+			path = path,
+			ent = ent,
+			order = order
+		})
+	end
+
+	local count = #items
+	local title = count ~= 1 and "SW-Names:" or "SW-Name:"
+
+	if count > 0 then
+		LIB.Msg(title, LIB.COLOR_NEUTRAL)
+	end
+
+	for _, item in SortedPairsByMemberValue(items, "path", false) do
+		local name = item.name
+		local path = item.path
+		local ent = item.ent
+
+		local nameOutput = string.format("  %s:", name)
+		local entOutput  = string.format("    %s", tostring(ent))
+		local pathOutput = string.format("    %s", path)
+
+		LIB.Msg(nameOutput, LIB.COLOR_ENTITY_NAME)
+		LIB.Msg(pathOutput, LIB.COLOR_ENTITY_PRINT)
+		LIB.Msg(entOutput,  LIB.COLOR_ENTITY_PRINT)
+	end
+
+	if count <= 0 then
+		LIB.Print("Debug.PrintEntityNames: No entity names to print")
+	else
+		LIB.Print("Debug.PrintEntityNames: %i entity names printed", count)
 	end
 end
 
@@ -669,9 +922,75 @@ function LIB.IsDebugKeyDown(ply, inKey)
 	return true
 end
 
+do
+	local helptext = "Show SW-Names of all SligWolf Addons entities for 60 secounds. Params: all, console"
+	local flags = FCVAR_GAMEDLL
+
+	concommand.Add("debug_sligwolf_addons_show_entity_names", function(cmdPly, cmd, args)
+		if not SERVER then
+		 	return
+		end
+
+		if not LIB.IsDeveloper() then
+			return
+		end
+
+		local ply = LIB.GetDebugPlayer()
+		if not IsValid(ply) or ply ~= cmdPly then
+			return
+		end
+
+		local all = false
+		local console = false
+
+		for _, arg in ipairs(args) do
+			arg = string.lower(arg or "")
+
+			if arg == "all" then
+				all = true
+				continue
+			end
+
+			if arg == "console" then
+				console = true
+				continue
+			end
+		end
+
+		local nextFrameFunc = function()
+			local entities = {}
+
+			if all then
+				entities = ents.GetAll()
+			else
+				local tr = LIBTracer.DoTrace(ply, 5000)
+				if tr and IsValid(tr.Entity) then
+					entities = LIBEntities.GetSystemEntities(tr.Entity)
+				end
+			end
+
+			if console then
+				LIB.PrintEntityNames(entities)
+			else
+				LIB.ShowEntityNames(entities, console)
+			end
+		end
+
+		if console then
+			nextFrameFunc()
+		else
+			-- Call in next frame, as debugoverlay.* function are not rendered when triggered by concommand callbacks.
+			LIBTimer.NextFrame("Debug_ShowEntityNames", nextFrameFunc)
+		end
+	end, nil, helptext, flags)
+end
+
 function LIB.Load()
+	LIBEntities = SligWolf_Addons.Entities
+	LIBTracer = SligWolf_Addons.Tracer
 	LIBConvar = SligWolf_Addons.Convar
 	LIBPrint = SligWolf_Addons.Print
+	LIBTimer = SligWolf_Addons.Timer
 
 	local cvDebugMode = LIBConvar.AddConvar("sv_sligwolf_addons_debug_mode", {
 		default = LIB.ENUM_DEBUG_MODE_DISABLED,
