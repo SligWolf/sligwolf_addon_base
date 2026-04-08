@@ -2,7 +2,7 @@ AddCSLuaFile()
 local SligWolf_Addons = SligWolf_Addons
 
 if not SLIGWOLF_ADDON then
-	SligWolf_Addons.AutoLoadAddon(function() end)
+	SligWolf_Addons:ReloadAddonSystem()
 	return
 end
 

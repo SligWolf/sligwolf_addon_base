@@ -6,7 +6,7 @@ if not SligWolf_Addons then
 end
 
 if not SLIGWOLF_ADDON then
-	SligWolf_Addons.AutoLoadAddon(function() end)
+	SligWolf_Addons:ReloadAddonSystem()
 	return
 end
 
@@ -23,6 +23,7 @@ SligWolf_Addons.Include("sligwolf_addons/base/vehiclecontrol.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehicleparts.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/lights.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/trackasm_adapter.lua")
+SligWolf_Addons.Include("sligwolf_addons/base/skin.lua")
 
 SLIGWOLF_ADDON:TrackAssamblerAddContent()
 

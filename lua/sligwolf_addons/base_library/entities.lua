@@ -1923,6 +1923,33 @@ function LIB.GetBodygroup(ent, idOrName)
 	return bodyGroupsCache.byName[idOrName]
 end
 
+function LIB.GetBodygroups(ent)
+	if not IsValid(ent) then
+		return
+	end
+
+	local bodyGroups = ent:GetBodyGroups()
+	local result = {}
+
+	for _, bodyGroup in ipairs(bodyGroups) do
+		local id = bodyGroup.id
+		local name = bodyGroup.name
+
+		if not id then
+			continue
+		end
+
+		if not name then
+			continue
+		end
+
+		local item = table.Copy(bodyGroup)
+		result[name] = item
+	end
+
+	return result
+end
+
 function LIB.GetBodygroupSubId(ent, idOrName)
 	if not IsValid(ent) then
 		return
