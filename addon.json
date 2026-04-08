@@ -4,6 +4,7 @@
 	"tags"		:	"fun",
 	"ignore"	:
 	[
+		"glualint.json",
 		"*.git*",
 		"*.vscode*",
 		"*.svn*",
