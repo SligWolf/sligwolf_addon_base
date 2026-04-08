@@ -1,5 +1,3 @@
-AddCSLuaFile()
-
 --[[
 	Rules for this addon:
 		1)  Use this addon as a legacy addon (folder version) for your server ONLY,
@@ -9,14 +7,19 @@ AddCSLuaFile()
 			Leave this code as it is, do not support such a bad behavior.
 ]]
 
-local SligWolf_Addons = _G.SligWolf_Addons or {}
-_G.SligWolf_Addons = nil
+local SligWolf_Addons = _G.SligWolf_Addons
+if not SligWolf_Addons then
+	error("SligWolf_Addons is missing")
+	return false
+end
 
-do
-	-- clear old instance of SligWolf_Addons, but keep the detourBackups
-	local detourBackups = table.Copy(SligWolf_Addons._detourBackups or {})
-	table.Empty(SligWolf_Addons)
-	SligWolf_Addons._detourBackups = detourBackups
+if not SligWolf_Addons.ReloadAddonSystem then
+	error("SligWolf_Addons.ReloadAddonSystem is missing")
+	return false
+end
+
+if SligWolf_Addons:ReloadAddonSystem() then
+	return true
 end
 
 -- Check sum of SW Base validation script "sligwolf_addons/basecheck.lua".
@@ -33,7 +36,7 @@ SligWolf_Addons.MinGameVersionClient = 251210
 SligWolf_Addons.Addondata = SligWolf_Addons.Addondata or {}
 SligWolf_Addons.AddondataSorted = nil
 
-SligWolf_Addons.IsManuallyReloading = false
+SligWolf_Addons.BASE_ADDON_NAME = "base"
 
 local ENUM_ERROR_UNSPECIFIED = "ERROR_UNSPECIFIED"
 local ENUM_ERROR_BAD_VERSION = "ERROR_BAD_VERSION"
@@ -746,6 +749,39 @@ local validAddonToString = function(thisAddon)
 	)
 end
 
+function SligWolf_Addons.UnloadAddon(addon)
+	if not addon then
+		return
+	end
+
+	local name = addon.Addonname or ""
+	if name == "" then
+		return
+	end
+
+	local unload = addon.Unload
+
+	if isfunction(unload) then
+		xpcall(unload, ErrorNoHaltWithStack, addon)
+		addon.Unload = nil
+	end
+
+	-- clear addon contents
+	for k, v in pairs(addon) do
+		if istable(v) then
+			-- Keep tables
+			continue
+		end
+
+		addon[k] = nil
+	end
+
+	addon.Addonname = name
+	addon.Loaded = false
+	addon.Loading = false
+	addon.ToString = emptyAddonToString
+end
+
 function SligWolf_Addons.LoadAddon(name, forceReload)
 	name = tostring(name or "")
 	if name == "" then
@@ -761,11 +797,20 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 		return false
 	end
 
+	local addondata = sligwolfAddons.Addondata
+	if not addondata then
+		return false
+	end
+
 	if not sligwolfAddons.IsLoadingAddon then
 		return false
 	end
 
 	if not sligwolfAddons.HasLoadedAddon then
+		return false
+	end
+
+	if not sligwolfAddons.UnloadAddon then
 		return false
 	end
 
@@ -777,15 +822,23 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 		return true
 	end
 
-	sligwolfAddons.Addondata = sligwolfAddons.Addondata or {}
+	local thisAddon = addondata[name]
+	if not thisAddon or thisAddon.Addonname ~= name then
+		thisAddon = {}
+		addondata[name] = thisAddon
 
-	if name ~= "base" and not ValidateBaseCheckScript() then
+		thisAddon.Addonname = name
+		inValidateSortedAddondata()
+	end
+
+	-- Unload the old addon instance in case it existed before
+	sligwolfAddons.UnloadAddon(thisAddon)
+
+	if name ~= sligwolfAddons.BASE_ADDON_NAME and not ValidateBaseCheckScript() then
 		local errorText = string.format("SW Base validation script corrupted or outdated, make sure this addon and 'SW Base' is up to date. Can not load addon '%s' at %s!", name, g_realmText)
 		MsgCError(errorText, sligwolfAddons.ERROR_BAD_VERSION)
 
 		ErrorNoHaltWithStack(errorText)
-
-		sligwolfAddons.Addondata[name] = nil
 		return false
 	end
 
@@ -795,8 +848,6 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	if not check then
 		local errorText = string.format("Unknown addon '%s' at %s!", name, g_realmText)
 		MsgCError(errorText, sligwolfAddons.ERROR_UNKNOWN_ADDON)
-
-		sligwolfAddons.Addondata[name] = nil
 		return false
 	end
 
@@ -809,14 +860,6 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	local wsAddons = GetWorkshopAddonsFromPath("lua/" .. initFile)
 	if not CheckWorkshopAddons(wsAddons, name) then
 		MsgCUnapprovedAddons(wsAddons, name)
-
-		sligwolfAddons.Addondata[name] = {
-			Addonname = name,
-			Loaded = false,
-			Loading = false,
-			ToString = emptyAddonToString,
-		}
-
 		return false
 	end
 
@@ -826,16 +869,7 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 		addWorkshopClientDownload(wsid, name)
 	end
 
-	sligwolfAddons.Addondata[name] = {
-		Addonname = name,
-		Loaded = false,
-		Loading = true,
-		ToString = emptyAddonToString,
-	}
-
 	local luaDirectory = "sligwolf_addons/" .. name
-
-	local thisAddon = {}
 
 	thisAddon.Addonname = name
 	thisAddon.LuaDirectory = luaDirectory
@@ -900,9 +934,6 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 		thisAddon.ToString = emptyAddonToString
 	end
 
-	sligwolfAddons.Addondata[name] = thisAddon
-	inValidateSortedAddondata()
-
 	if ok then
 		local loadFunc = thisAddon.Load
 
@@ -935,9 +966,7 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 		MsgCError(loadedText, lastErrorCode)
 	end
 
-	sligwolfAddons.Addondata[name] = thisAddon
 	inValidateSortedAddondata()
-
 	return true
 end
 
@@ -1030,7 +1059,7 @@ function SligWolf_Addons.CallFunctionOnAddon(addonname, addonFunc, ...)
 	return returnResult
 end
 
-function SligWolf_Addons.ReloadLibraries()
+function SligWolf_Addons.LoadLibraries()
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then return end
 
@@ -1044,7 +1073,7 @@ function SligWolf_Addons.ReloadLibraries()
 
 	sligwolfAddons.LibrariesLoaded = sligwolfAddons.HasNoIncludeErrors()
 
-	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon("base")
+	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon(sligwolfAddons.BASE_ADDON_NAME)
 end
 
 function SligWolf_Addons.ReloadAllAddons()
@@ -1054,30 +1083,38 @@ function SligWolf_Addons.ReloadAllAddons()
 	if not sligwolfAddons.LoadAddon then return end
 
 	g_validBase = nil
+	sligwolfAddons.LoadLibraries()
 
-	sligwolfAddons.ReloadLibraries()
+	local baseAddonName = sligwolfAddons.BASE_ADDON_NAME
 
 	local sortedAddondata = sligwolfAddons.GetAddonsSorted()
 	local reloadList = {}
 
 	for order, addonItem in ipairs(sortedAddondata) do
-		if not addonItem then continue	end
+		if not addonItem then
+			continue
+		end
 
-		reloadList[#reloadList + 1] = addonItem.name
+		local addonName = addonItem.name
+		if addonName == baseAddonName then
+			-- base addon is always loaded first
+			continue
+		end
+
+		reloadList[#reloadList + 1] = addonName
 	end
 
 	local isAddonEnv = istable(SLIGWOLF_ADDON)
+	local forceReload = not isAddonEnv
+
+	sligwolfAddons.LoadAddon(baseAddonName, forceReload)
+	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon(baseAddonName)
 
 	for i, addonName in ipairs(reloadList) do
-		local isBase = addonName == "base"
-		local forceReload = not isBase or not isAddonEnv
-
 		sligwolfAddons.LoadAddon(addonName, forceReload)
 	end
 
 	inValidateSortedAddondata()
-
-	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon("base")
 
 	sligwolfAddons.AllAddonsLoaded = nil
 	sligwolfAddons.CallAllAddonsLoadedHook()
@@ -1240,6 +1277,10 @@ function SligWolf_Addons.IsLoaded()
 		return false
 	end
 
+	if not sligwolfAddons.Loaded then
+		--return false
+	end
+
 	if not sligwolfAddons.LibrariesLoaded then
 		return false
 	end
@@ -1283,19 +1324,6 @@ function SligWolf_Addons.CallAllAddonsLoadedHook()
 	sligwolfAddons.Hook.RunCustom("AllAddonsLoaded")
 end
 
-local function OnBaseReload(name)
-	if name ~= "base" then
-		return
-	end
-
-	local sligwolfAddons = _G.SligWolf_Addons
-	if not sligwolfAddons then
-		return
-	end
-
-	sligwolfAddons.ReloadAllAddons()
-end
-
 if SERVER then
 	util.AddNetworkString("sligwolf_reload_addon")
 
@@ -1315,55 +1343,83 @@ if SERVER then
 		local name = tostring(args[1] or "")
 
 		runAdminOnly(ply, function()
-			g_validBase = nil
+			local sligwolfAddons = _G.SligWolf_Addons
+			if not sligwolfAddons then
+				return
+			end
 
-			SligWolf_Addons.IsManuallyReloading = true
-			SligWolf_Addons.LoadAddon(name, true)
-			OnBaseReload(name)
-			SligWolf_Addons.IsManuallyReloading = false
+			g_validBase = nil
 
 			net.Start("sligwolf_reload_addon")
 				net.WriteString(name)
 			net.Broadcast()
+
+			sligwolfAddons.IsManuallyReloading = true
+
+			sligwolfAddons.LoadAddon(name, true)
+
+			if name == sligwolfAddons.BASE_ADDON_NAME then
+				sligwolfAddons:ReloadAddonSystem()
+			end
+
+			sligwolfAddons.IsManuallyReloading = false
 		end)
 	end)
 else
 	net.Receive("sligwolf_reload_addon", function(length)
 		local name = net.ReadString()
 
+		local sligwolfAddons = _G.SligWolf_Addons
+		if not sligwolfAddons then
+			return
+		end
+
 		g_validBase = nil
 
-		SligWolf_Addons.IsManuallyReloading = true
-		SligWolf_Addons.LoadAddon(name, true)
-		OnBaseReload(name)
-		SligWolf_Addons.IsManuallyReloading = false
+		sligwolfAddons.IsManuallyReloading = true
+
+		sligwolfAddons.LoadAddon(name, true)
+
+		if name == sligwolfAddons.BASE_ADDON_NAME then
+			sligwolfAddons:ReloadAddonSystem()
+		end
+
+		sligwolfAddons.IsManuallyReloading = false
 	end)
 end
 
-local status = ProtectedCall(function()
-	-- Make sure addons are globally accessible when everything is ready
-	_G.SligWolf_Addons = SligWolf_Addons
+SligWolf_Addons.Loaded = true
 
-	SligWolf_Addons.ReloadLibraries()
-	SligWolf_Addons.BASE_ADDON = nil
-
-	inValidateSortedAddondata()
-	include("sligwolf_addons/base/init.lua")
-	inValidateSortedAddondata()
-
-	SligWolf_Addons.BASE_ADDON = SligWolf_Addons.GetAddon("base")
-end)
-
-if not status then
-	-- In case of an error, destroy the corrupted SW addon system
-	table.Empty(SligWolf_Addons)
-
-	if istable(_G.SligWolf_Addons) then
-		table.Empty(_G.SligWolf_Addons)
+local status, loaded = xpcall(function()
+	local sligwolfAddons = _G.SligWolf_Addons
+	if not sligwolfAddons then
+		return false
 	end
 
-	_G.SligWolf_Addons = nil
-	return
+	if sligwolfAddons.BASE_ADDON or sligwolfAddons.IsManuallyReloading then
+		sligwolfAddons.ReloadAllAddons()
+		return true
+	end
+
+	sligwolfAddons.LoadLibraries()
+	sligwolfAddons.BASE_ADDON = nil
+
+	inValidateSortedAddondata()
+	local loaded = include("sligwolf_addons/base/init.lua") == true
+	inValidateSortedAddondata()
+
+	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon(sligwolfAddons.BASE_ADDON_NAME)
+	return loaded
+end, ErrorNoHaltWithStack)
+
+if not status then
+	SligWolf_Addons.Loaded = nil
+	return false
+end
+
+if not loaded then
+	SligWolf_Addons.Loaded = nil
+	return false
 end
 
 return true

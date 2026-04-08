@@ -1,29 +1,15 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Detours = SligWolf_Addons.Detours or {}
-table.Empty(SligWolf_Addons.Detours)
-
-local LIB = SligWolf_Addons.Detours
+local LIB = SligWolf_Addons:NewLib("Detours")
 
 local LIBSpawnmenu = nil
 local LIBHook = nil
 
-local g_detourBackups = SligWolf_Addons._detourBackups
-
-if not g_detourBackups then
-	error("SligWolf_Addons._detourBackups missing, bad install?")
-	return
-end
+local g_detourBackups = LIB._detourBackups or {}
+LIB._detourBackups = g_detourBackups
 
 function LIB.CreateRemoverToolHook()
 	g_detourBackups.utilEffect = g_detourBackups.utilEffect or util.Effect
@@ -107,7 +93,7 @@ function LIB.FixSENTAliases()
 	end
 
 	g_detourBackups.scriptedentsGetStored = g_detourBackups.scriptedentsGetStored or scripted_ents.GetStored
-	local oldFunc = g_detourBackups.scriptedentsGetStored
+	oldFunc = g_detourBackups.scriptedentsGetStored
 
 	scripted_ents.GetStored = function(name, ...)
 		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
@@ -115,7 +101,7 @@ function LIB.FixSENTAliases()
 	end
 
 	g_detourBackups.scriptedentsGetType = g_detourBackups.scriptedentsGetType or scripted_ents.GetType
-	local oldFunc = g_detourBackups.scriptedentsGetType
+	oldFunc = g_detourBackups.scriptedentsGetType
 
 	scripted_ents.GetType = function(name, ...)
 		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
@@ -123,7 +109,7 @@ function LIB.FixSENTAliases()
 	end
 
 	g_detourBackups.scriptedentsIsBasedOn = g_detourBackups.scriptedentsIsBasedOn or scripted_ents.IsBasedOn
-	local oldFunc = g_detourBackups.scriptedentsIsBasedOn
+	oldFunc = g_detourBackups.scriptedentsIsBasedOn
 
 	scripted_ents.IsBasedOn = function(name, base, ...)
 		name = LIBSpawnmenu.GetEntityClassFromAlias(name) or name
@@ -133,7 +119,7 @@ function LIB.FixSENTAliases()
 	end
 
 	g_detourBackups.scriptedentsGetList = g_detourBackups.scriptedentsGetList or scripted_ents.GetList
-	local oldFunc = g_detourBackups.scriptedentsGetList
+	oldFunc = g_detourBackups.scriptedentsGetList
 
 	scripted_ents.GetList = function(...)
 		local realEntities = oldFunc(...)
@@ -158,12 +144,13 @@ function LIB.FixSENTAliases()
 	end
 
 	g_detourBackups.scriptedentsGetSpawnable = g_detourBackups.scriptedentsGetSpawnable or scripted_ents.GetSpawnable
-	local oldFunc = g_detourBackups.scriptedentsGetSpawnable
+	oldFunc = g_detourBackups.scriptedentsGetSpawnable
 
 	scripted_ents.GetSpawnable = function(...)
 		local realEntities = oldFunc(...)
 		local tmp = {}
 
+		-- @TODO: Fix Class
 		for _, data in ipairs(realEntities) do
 			tmp[class] = data
 		end

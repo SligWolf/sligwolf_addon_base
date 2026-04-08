@@ -1,21 +1,11 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Bones = SligWolf_Addons.Bones or {}
-table.Empty(SligWolf_Addons.Bones)
+local LIB = SligWolf_Addons:NewLib("Bones")
 
 local CONSTANTS = SligWolf_Addons.Constants
-
-local LIB = SligWolf_Addons.Bones
 
 function LIB.ChangePoseParameter(ent, poseName, pose)
 	if not IsValid(ent) then return end

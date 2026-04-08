@@ -3,8 +3,7 @@ if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
+if SligWolf_Addons:ReloadAddonSystem() then
 	return
 end
 

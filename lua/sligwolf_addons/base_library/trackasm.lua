@@ -1,19 +1,10 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
+local LIB = SligWolf_Addons:NewLib("Trackasm")
 
-SligWolf_Addons.Trackasm = SligWolf_Addons.Trackasm or {}
-table.Empty(SligWolf_Addons.Trackasm)
-
-local LIB = SligWolf_Addons.Trackasm
 local LIBPrint = nil
 
 local g_trackasmlib = nil

@@ -5,7 +5,7 @@ if not SligWolf_Addons then
 end
 
 if not SLIGWOLF_BASE_OBJ then
-	SligWolf_Addons.ReloadAllAddons()
+	SligWolf_Addons:ReloadAddonSystem()
 	return
 end
 

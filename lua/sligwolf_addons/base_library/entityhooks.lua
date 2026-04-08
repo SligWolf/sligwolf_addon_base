@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Entityhooks = SligWolf_Addons.Entityhooks or {}
-table.Empty(SligWolf_Addons.Entityhooks)
-
-local LIB = SligWolf_Addons.Entityhooks
+local LIB = SligWolf_Addons:NewLib("Entityhooks")
 
 local g_keyValueClassWhiteList = LIB._KeyValueClassWhiteList or {}
 LIB._KeyValueClassWhiteList = g_keyValueClassWhiteList
@@ -77,7 +67,7 @@ function LIB.Load()
 			local isMapOutputs = LIBEntities.IsMapOutputString(value)
 
 			if isMapOutputs then
-				local value = LIBEntities.ParseMapOutputString(key, value)
+				value = LIBEntities.ParseMapOutputString(key, value)
 				if value then
 					local outputs = mapOutputs[key] or {}
 					mapOutputs[key] = outputs

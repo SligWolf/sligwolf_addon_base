@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Mapping = SligWolf_Addons.Mapping or {}
-table.Empty(SligWolf_Addons.Mapping)
-
-local LIB = SligWolf_Addons.Mapping
+local LIB = SligWolf_Addons:NewLib("Mapping")
 
 local LIBPrint = nil
 local LIBUtil = nil
@@ -112,7 +102,7 @@ local function replacePlaceholder(data, name, value)
 	local pattern = "%/%/[ \t]*%{%{" .. string.PatternSafe(name) .. "%}%}"
 	data = string.gsub(data, pattern, "{{" .. name .. "}}")
 
-	local pattern = "%{%{" .. string.PatternSafe(name) .. "%}%}"
+	pattern = "%{%{" .. string.PatternSafe(name) .. "%}%}"
 	data = string.gsub(data, pattern, value)
 
 	return data
@@ -213,7 +203,7 @@ function LIB.BuildCache(rebuildCache)
 
 	LIB.WriteFGDCache()
 
-	local validCache = LIB.IsValidFGDCache()
+	validCache = LIB.IsValidFGDCache()
 
 	if not validCache then
 		LIBPrint.Print("Mapping.BuildCache: Could not build FGD cache.")

@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Coupling = SligWolf_Addons.Coupling or {}
-table.Empty(SligWolf_Addons.Coupling)
-
-local LIB = SligWolf_Addons.Coupling
+local LIB = SligWolf_Addons:NewLib("Coupling")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
@@ -542,12 +532,9 @@ local function getTrailerMainVehicleInternal(vehicles, checkPattern)
 			end
 		end
 
-		if checkConnections then
+		if checkConnections and not LIB.IsTrailerEndVehicle(v) then
 			-- check if v is in the middle
-
-			if not LIB.IsTrailerEndVehicle(v) then
-				continue
-			end
+			continue
 		end
 
 		return v

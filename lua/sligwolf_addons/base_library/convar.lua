@@ -1,21 +1,11 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Convar = SligWolf_Addons.Convar or {}
-table.Empty(SligWolf_Addons.Convar)
+local LIB = SligWolf_Addons:NewLib("Convar")
 
 local CONSTANTS = SligWolf_Addons.Constants
-
-local LIB = SligWolf_Addons.Convar
 
 local LIBDebug = nil
 local LIBUtil = nil

@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Spawnmenu = SligWolf_Addons.Spawnmenu or {}
-table.Empty(SligWolf_Addons.Spawnmenu)
-
-local LIB = SligWolf_Addons.Spawnmenu
+local LIB = SligWolf_Addons:NewLib("Spawnmenu")
 
 local LIBTimer = nil
 local LIBHook = nil

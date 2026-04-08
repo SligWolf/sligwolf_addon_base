@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Hook = SligWolf_Addons.Hook or {}
-table.Empty(SligWolf_Addons.Hook)
-
-local LIB = SligWolf_Addons.Hook
+local LIB = SligWolf_Addons:NewLib("Hook")
 
 local g_namePrefixMain = "SLIGWOLF_mainHook_"
 local g_namePrefixCustom = "SLIGWOLF_"
@@ -177,22 +167,22 @@ function LIB.Run(eventName, ...)
 end
 
 function LIB.HasCustom(eventName, ...)
-	local eventName = getCustomHookIdentifier(eventName)
+	eventName = getCustomHookIdentifier(eventName)
 	return LIB.Has(eventName, ...)
 end
 
 function LIB.AddCustom(eventName, ...)
-	local eventName = getCustomHookIdentifier(eventName)
+	eventName = getCustomHookIdentifier(eventName)
 	return LIB.Add(eventName, ...)
 end
 
 function LIB.RemoveCustom(eventName, ...)
-	local eventName = getCustomHookIdentifier(eventName)
+	eventName = getCustomHookIdentifier(eventName)
 	return LIB.Remove(eventName, ...)
 end
 
 function LIB.RunCustom(eventName, ...)
-	local eventName = getCustomHookIdentifier(eventName)
+	eventName = getCustomHookIdentifier(eventName)
 	return LIB.Run(eventName, ...)
 end
 

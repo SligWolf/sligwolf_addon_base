@@ -1,21 +1,11 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Tracer = SligWolf_Addons.Tracer or {}
-table.Empty(SligWolf_Addons.Tracer)
+local LIB = SligWolf_Addons:NewLib("Tracer")
 
 local CONSTANTS = SligWolf_Addons.Constants
-
-local LIB = SligWolf_Addons.Tracer
 
 local LIBPosition = nil
 local LIBEntities = nil
@@ -233,16 +223,12 @@ function LIB.DoTrace(ply, maxdist, filter)
 		if camera.GetVehicle and ent == camera:GetVehicle() then return false end
 
 		if filter then
-			if isfunction(filter) then
-				if not filter(ent, ply, camera, ...) then
-					return false
-				end
+			if isfunction(filter) and not filter(ent, ply, camera, ...) then
+				return false
 			end
 
-			if istable(filter) then
-				if filter[ent] then
-					return false
-				end
+			if istable(filter) and filter[ent] then
+				return false
 			end
 
 			if filter == ent then

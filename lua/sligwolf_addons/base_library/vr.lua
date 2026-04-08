@@ -1,19 +1,10 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
+local LIB = SligWolf_Addons:NewLib("VR")
 
-SligWolf_Addons.VR = SligWolf_Addons.VR or {}
-table.Empty(SligWolf_Addons.VR)
-
-local LIB = SligWolf_Addons.VR
 local LIBHook = nil
 
 local g_vrmod = nil

@@ -5,8 +5,7 @@ if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
+if SligWolf_Addons:ReloadAddonSystem() then
 	return
 end
 
@@ -15,24 +14,28 @@ SligWolf_Addons.ResetIncludeErrorState()
 local function loadLib(name)
 	local path = string.format("sligwolf_addons/base_library/%s.lua", name)
 
+	SligWolf_Addons.AddCSLuaFile(path)
 	SligWolf_Addons.Include(path)
 end
 
 local function callLoaderFunc(name)
-	for _, lib in pairs(SligWolf_Addons) do
-		if not istable(lib) then
+	for _, sublib in pairs(SligWolf_Addons) do
+		if not istable(sublib) then
 			continue
 		end
 
-		local func = lib[name]
+		if not sublib.__isLib then
+			continue
+		end
 
+		local func = sublib[name]
 		if not isfunction(func) then
 			continue
 		end
 
 		func()
 
-		lib[name] = nil
+		sublib[name] = nil
 	end
 end
 
@@ -81,11 +84,11 @@ loadLib("rail")
 loadLib("trackasm")
 loadLib("vr")
 loadLib("wire")
-loadLib("vgui")
 loadLib("convar")
 loadLib("mapping")
 loadLib("model")
 loadLib("thirdperson")
+loadLib("vgui")
 
 callLoaders()
 

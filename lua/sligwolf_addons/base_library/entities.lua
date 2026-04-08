@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Entities = SligWolf_Addons.Entities or {}
-table.Empty(SligWolf_Addons.Entities)
-
-local LIB = SligWolf_Addons.Entities
+local LIB = SligWolf_Addons:NewLib("Entities")
 
 local LIBConstraints = nil
 local LIBPosition = nil
@@ -1326,7 +1316,7 @@ function LIB.ParseMapOutputString(outputName, outputString)
 		end
 	end
 
-	local outputName = string.lower(string.Trim(outputName or ""))
+	outputName = string.lower(string.Trim(outputName or ""))
 	if not LIB.IsAllowedMapOutput(outputName) then
 		return nil
 	end
@@ -1381,7 +1371,7 @@ function LIB.GetMapOutputs(ent, filterFunc)
 				continue
 			end
 
-			local output = table.Copy(output)
+			output = table.Copy(output)
 			output.inputName = inputName
 
 			if isfunction(filterFunc) and filterFunc(output) == false then

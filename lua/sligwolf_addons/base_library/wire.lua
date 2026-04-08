@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Wire = SligWolf_Addons.Wire or {}
-table.Empty(SligWolf_Addons.Wire)
-
-local LIB = SligWolf_Addons.Wire
+local LIB = SligWolf_Addons:NewLib("Wire")
 
 local g_HasWiremod = nil
 local g_wirelinkName = "wirelink"
@@ -109,10 +99,8 @@ function LIB.ApplyDupeInfo(ply, ent, data, entities)
 
 		local ident = entities[id]
 
-		if not IsValid(ident) then
-			if isnumber(id) then
-				ident = ents.GetByIndex(id)
-			end
+		if not IsValid(ident) and isnumber(id) then
+			ident = ents.GetByIndex(id)
 		end
 
 		if not IsValid(ident) then

@@ -1,21 +1,11 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Position = SligWolf_Addons.Position or {}
-table.Empty(SligWolf_Addons.Position)
+local LIB = SligWolf_Addons:NewLib("Position")
 
 local CONSTANTS = SligWolf_Addons.Constants
-
-local LIB = SligWolf_Addons.Position
 
 local LIBPrint = nil
 local LIBModel = nil
@@ -488,8 +478,8 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 	local mountPoint = entTable.mountPoint
 
 	if mountPoint and IsValid(mountPoint.parentEnt) then
-		local parentAttachmentName = LIB.GetAttachmentName(ent, mountPoint.parentAttachment)
-		local selfAttachmentName = LIB.GetAttachmentName(ent, mountPoint.selfAttachment)
+		local parentAttachmentName = LIB.GetAttachmentName(mountPoint.parentEnt, mountPoint.parentAttachment)
+		local selfAttachmentName = LIB.GetAttachmentName(selfEnt, mountPoint.selfAttachment)
 
 		LIBPrint.ErrorNoHaltWithStack(
 			"Entities already mounted %s <===> %s. Attachments %s <===> %s.",
@@ -502,8 +492,8 @@ function LIB.MountToAttachment(parentEnt, selfEnt, parentAttachment, selfAttachm
 		return false
 	end
 
-	local parentAttachment = LIB.GetAttachmentId(parentEnt, parentAttachment)
-	local selfAttachment = LIB.GetAttachmentId(selfEnt, selfAttachment)
+	parentAttachment = LIB.GetAttachmentId(parentEnt, parentAttachment)
+	selfAttachment = LIB.GetAttachmentId(selfEnt, selfAttachment)
 
 	if not LIB.SetEntAngPosViaAttachment(parentEnt, selfEnt, parentAttachment, selfAttachment, callback) then
 		return false
@@ -755,7 +745,7 @@ function LIB.Load()
 	LIBHook.Add("PlayerLeaveVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000)
 	LIBHook.Add("PlayerEnteredVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000)
 
-	local function UpdatePlayerPos(ply, key)
+	local function UpdatePlayerPos()
 		local badState = false
 
 		for i, ply in LIBUtil.GetPlayerIterator() do

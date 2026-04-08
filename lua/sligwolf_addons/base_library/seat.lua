@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Seat = SligWolf_Addons.Seat or {}
-table.Empty(SligWolf_Addons.Seat)
-
-local LIB = SligWolf_Addons.Seat
+local LIB = SligWolf_Addons:NewLib("Seat")
 
 local LIBPosition = nil
 local LIBEntities = nil
@@ -194,7 +184,7 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 		return seat
 	end
 
-	local seat = seatGroup:MakeEnt("prop_vehicle_prisoner_pod", name)
+	seat = seatGroup:MakeEnt("prop_vehicle_prisoner_pod", name)
 	if not IsValid(seat) then
 		return nil
 	end
@@ -421,7 +411,7 @@ local function traceGroundPattern(groundTrace, mins, maxs, size2D)
 			continue
 		end
 
-		local tr = tracePlayerPlace(tr.HitPos, mins, maxs)
+		tr = tracePlayerPlace(tr.HitPos, mins, maxs)
 		if not tr then
 			continue
 		end
@@ -479,7 +469,7 @@ function LIB.ExitSeatTrace(ply)
 	LIBDebug.ResetIgnoreZ()
 	LIBDebug.ResetLifetime()
 
-	local tr = traceGroundPattern(tr, mins, maxs, size2D)
+	tr = traceGroundPattern(tr, mins, maxs, size2D)
 	if not tr then
 		return nil
 	end

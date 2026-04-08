@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Velocity = SligWolf_Addons.Velocity or {}
-table.Empty(SligWolf_Addons.Velocity)
-
-local LIB = SligWolf_Addons.Velocity
+local LIB = SligWolf_Addons:NewLib("Velocity")
 
 local LIBPhysics = SligWolf_Addons.Physics
 
@@ -67,7 +57,7 @@ function LIB.IsMoving(ent, velocityThreshold)
 	end
 
 	local velocityThresholdSqr = velocityThreshold * velocityThreshold
-	local velocity = velocity:LengthSqr()
+	velocity = velocity:LengthSqr()
 
 	if velocity < velocityThresholdSqr then
 		return false

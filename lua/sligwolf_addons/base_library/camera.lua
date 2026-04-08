@@ -1,25 +1,14 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Camera = SligWolf_Addons.Camera or {}
-table.Empty(SligWolf_Addons.Camera)
-
-local LIB = SligWolf_Addons.Camera
+local LIB = SligWolf_Addons:NewLib("Camera")
 
 local LIBPosition = nil
 
 local g_CamPos = nil
 local g_InRenderScene = false
-
 
 function LIB.ControlCamera(camEnt, ply)
 	if not IsValid(ply) then return end

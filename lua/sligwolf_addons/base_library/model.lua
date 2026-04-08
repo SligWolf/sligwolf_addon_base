@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Model = SligWolf_Addons.Model or {}
-table.Empty(SligWolf_Addons.Model)
-
-local LIB = SligWolf_Addons.Model
+local LIB = SligWolf_Addons:NewLib("Model")
 
 local CONSTANTS = SligWolf_Addons.Constants
 

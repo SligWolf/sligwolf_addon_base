@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.File = SligWolf_Addons.File or {}
-table.Empty(SligWolf_Addons.File)
-
-local LIB = SligWolf_Addons.File
+local LIB = SligWolf_Addons:NewLib("File")
 
 local g_dataDirectoryMain = "sligwolf_addons/common"
 local g_dataDirectoryAddons = "sligwolf_addons/addon"
@@ -128,13 +118,13 @@ function LIB.GetAbsolutePath(fileName, addon, isStatic)
 end
 
 function LIB.Exists(fileName, addon, isStatic)
-	local fileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
-	return file.Exists(fileName, realm)
+	local thisFileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
+	return file.Exists(thisFileName, realm)
 end
 
 function LIB.IsDir(path, addon, isStatic)
-	local path, realm = LIB.GetAbsolutePath(path, addon, isStatic)
-	return file.IsDir(path, realm)
+	local thisPath, realm = LIB.GetAbsolutePath(path, addon, isStatic)
+	return file.IsDir(thisPath, realm)
 end
 
 function LIB.CreateDir(path, addon)
@@ -152,18 +142,18 @@ function LIB.CreateDir(path, addon)
 end
 
 function LIB.Open(fileName, fileMode, addon, isStatic)
-	local fileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
-	return file.Open(fileName, fileMode, realm)
+	local thisFileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
+	return file.Open(thisFileName, fileMode, realm)
 end
 
 function LIB.Read(fileName, addon, isStatic)
-	local fileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
+	local thisFileName, realm = LIB.GetAbsolutePath(fileName, addon, isStatic)
 
-	if not file.Exists(fileName, realm) then
+	if not file.Exists(thisFileName, realm) then
 		return nil
 	end
 
-	return file.Read(fileName, realm)
+	return file.Read(thisFileName, realm)
 end
 
 function LIB.Write(fileName, fileContent, addon)

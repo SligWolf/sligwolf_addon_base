@@ -1,27 +1,16 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Rail = SligWolf_Addons.Rail or {}
-table.Empty(SligWolf_Addons.Rail)
+local LIB = SligWolf_Addons:NewLib("Rail")
 
 local CONSTANTS = SligWolf_Addons.Constants
-
-local LIB = SligWolf_Addons.Rail
 
 local LIBPosition = nil
 local LIBEntities = nil
 local LIBDebug = nil
 local LIBTracer = nil
-local LIBHook = nil
 
 local g_maxRailCheckTraceAttachmentPairs = 4
 
@@ -219,10 +208,8 @@ function LIB.IsBogieOnRail(ent, bypassCache)
 
 	local bogie = LIB.GetBogie(body)
 
-	if not IsValid(bogie) then
-		if LIB.HasRailCheckAttachments(body) then
-			bogie = body
-		end
+	if not IsValid(bogie) and LIB.HasRailCheckAttachments(body) then
+		bogie = body
 	end
 
 	if not LIB.IsOnRail(bogie, bypassCache) then
@@ -824,9 +811,9 @@ function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBTracer = SligWolf_Addons.Tracer
 	LIBDebug = SligWolf_Addons.Debug
-	LIBHook = SligWolf_Addons.Hook
 
 	-- Test code
+	-- local LIBHook = SligWolf_Addons.Hook
 	-- LIBHook.Add("Think", "Rail.ScanRail", function()
 	-- 	local ply = LIBDebug.GetDebugPlayer()
 	-- 	if not IsValid(ply) then

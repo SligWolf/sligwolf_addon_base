@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Spamprotection = SligWolf_Addons.Spamprotection or {}
-table.Empty(SligWolf_Addons.Spamprotection)
-
-local LIB = SligWolf_Addons.Spamprotection
+local LIB = SligWolf_Addons:NewLib("Spamprotection")
 
 local g_maxCollisionSpamCount = 30
 local g_stableAfterTime = 10

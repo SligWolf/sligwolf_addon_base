@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Protection = SligWolf_Addons.Protection or {}
-table.Empty(SligWolf_Addons.Protection)
-
-local LIB = SligWolf_Addons.Protection
+local LIB = SligWolf_Addons:NewLib("Protection")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
@@ -197,10 +187,8 @@ function LIB.Load()
 
 		local tb = ent.sligwolf_blockTool
 
-		if istable(tb) then
-			if tb[mode] then
-				return false
-			end
+		if istable(tb) and tb[mode] then
+			return false
 		end
 	end
 

@@ -1,19 +1,9 @@
-AddCSLuaFile()
-local SligWolf_Addons = SligWolf_Addons
-
+local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
 	return
 end
 
-if not SligWolf_Addons.LoadingLibraries then
-	SligWolf_Addons.ReloadAllAddons()
-	return
-end
-
-SligWolf_Addons.Physgun = SligWolf_Addons.Physgun or {}
-table.Empty(SligWolf_Addons.Physgun)
-
-local LIB = SligWolf_Addons.Physgun
+local LIB = SligWolf_Addons:NewLib("Physgun")
 
 local LIBEntities = nil
 
@@ -225,9 +215,9 @@ function LIB.IsPhysgunCarried(ent, checkMode)
 	end
 
 	if CLIENT then
-		local isPhysgunCarried = root:GetNWBool("sligwolf_isPhysgunCarried", false)
+		local isPhysgunCarriedNw = root:GetNWBool("sligwolf_isPhysgunCarried", false)
 
-		if not isPhysgunCarried then
+		if not isPhysgunCarriedNw then
 			return false
 		end
 
