@@ -10,8 +10,11 @@ local CONSTANTS = SligWolf_Addons.Constants
 local LIBDebug = nil
 local LIBUtil = nil
 
-local g_callbacks = {}
-local g_varModifier = {}
+LIB.g_callbacks = LIB.g_callbacks or {}
+local g_callbacks = LIB.g_callbacks
+
+LIB.g_varModifier = LIB.g_varModifier or {}
+local g_varModifier = LIB.g_varModifier
 
 local g_nextThink = nil
 
@@ -261,7 +264,7 @@ if CLIENT then
 	end
 end
 
-local function pollChangeCallbacks()
+local function pollChangeCallbacks(force)
 	for convarName, convarCallbacks in pairs(g_callbacks) do
 		for identifier, convarCallback in pairs(convarCallbacks) do
 			local convar = convarCallback.convar
@@ -283,7 +286,7 @@ local function pollChangeCallbacks()
 				newValue = modifier(newValue)
 			end
 
-			if oldValue and newValue == oldValue then
+			if oldValue and newValue == oldValue and not force then
 				continue
 			end
 
@@ -317,6 +320,11 @@ function LIB.Load()
 			g_nextThink = now + 1 + math.random()
 		end
 	end)
+end
+
+function LIB.FirstFrame()
+	g_nextThink = nil
+	pollChangeCallbacks(true)
 end
 
 return true
