@@ -13,10 +13,18 @@ local LIBUtil = nil
 local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Broken)"
 
 local g_registeredSpawnMenuItems = {}
+local g_registeredSpawnMenuItemsUnique = {}
 local g_registeredSpawnMenuItemsOrdered = {}
 local g_registeredSpawnMenuItemsCategories = {}
 local g_registeredSpawnMenuItemsCategoriesByAddons = {}
-local g_shouldReloadSpawnmenu = false
+
+local g_lastSpawnMenuState = LIB.g_lastSpawnMenuState or {}
+LIB.g_lastSpawnMenuState = g_lastSpawnMenuState
+
+local g_tabPanelIndex = g_lastSpawnMenuState.tabPanelIndex or {}
+g_lastSpawnMenuState.tabPanelIndex = g_tabPanelIndex
+
+local g_spawnmenuLoaded = SligWolf_Addons.WasReloaded
 
 LIB.g_RegisterdVehicleSpawnnamesByModel = {}
 
@@ -156,25 +164,68 @@ local function AddSpawnMenuItem(addonName, itemClass, obj)
 		return
 	end
 
-	if not istable(obj.content) then
+	local id = obj.id
+	if not id then
+		error("obj has no id")
+		return
+	end
+
+	local content = obj.content
+	if not istable(content) then
 		error("obj has no or bad ContentData")
 		return
 	end
 
+	local header = tostring(obj.header or "")
 	local order = tonumber(obj.order or 0) or 0
 
 	local data = {}
 
 	data.addonName = addonName
-	data.header = tostring(obj.header or "")
+	data.header = header
 	data.itemClass = itemClass
 	data.order = order
-	data.content = obj.content
+	data.content = content
+
+	local uniqueid = {
+		"uniqueid",
+		addonName,
+		header,
+		itemClass,
+		id,
+		content.skin or "",
+		content.bodygroup or "",
+	}
+
+	uniqueid = table.concat(uniqueid, "_")
+	uniqueid = util.MD5(uniqueid)
+
+	data.uniqueid = uniqueid
+
+	local items = g_registeredSpawnMenuItems[itemClass] or {}
+	g_registeredSpawnMenuItems[itemClass] = items
+
+	local uniqueItems = g_registeredSpawnMenuItemsUnique[itemClass] or {}
+	g_registeredSpawnMenuItemsUnique[itemClass] = uniqueItems
 
 	g_registeredSpawnMenuItemsOrdered[itemClass] = nil
 
-	g_registeredSpawnMenuItems[itemClass] = g_registeredSpawnMenuItems[itemClass] or {}
-	table.insert(g_registeredSpawnMenuItems[itemClass], data)
+	local replaceIndex = uniqueItems[uniqueid]
+	if replaceIndex then
+		-- If the item already exist, replace it with the updated data
+		local oldData = items[replaceIndex]
+
+		if oldData then
+			table.CopyFromTo(data, oldData)
+		else
+			replaceIndex = nil
+		end
+	end
+
+	if not replaceIndex then
+		replaceIndex = table.insert(items, data)
+		uniqueItems[uniqueid] = replaceIndex
+	end
 
 	return data
 end
@@ -296,6 +347,36 @@ function LIB.GetSpawnMenuItemsOrdered(itemClass)
 	return g_registeredSpawnMenuItemsOrdered[itemClass]
 end
 
+local function BuildTabPanelIndex(creationMenu)
+	if not table.IsEmpty(g_tabPanelIndex) then
+		return g_tabPanelIndex
+	end
+
+	local tabs = creationMenu:GetCreationTabs()
+
+	for _, tab in pairs(tabs) do
+		local name = tab.Name
+
+		local panel = tab.Panel
+		if not IsValid(panel) then
+			continue
+		end
+
+		local tabPanel = tab.Tab
+		if not IsValid(tabPanel) then
+			continue
+		end
+
+		g_tabPanelIndex[panel] = {
+			name = name,
+			panel = panel,
+			tabPanel = tabPanel,
+		}
+	end
+
+	return g_tabPanelIndex
+end
+
 local function CreateCategoryNode(tree, parentNode, name, icon, cookieName)
 	if not ispanel(tree) then
 		error("invalid tree panel")
@@ -399,6 +480,7 @@ local function CreateContentContainer(pnlContent)
 	return container
 end
 
+
 local function CreateContentContainerNode(pnlContent, parentNode, title, icon, contentContainerBuilder)
 	if not ispanel(pnlContent) then
 		error("invalid pnlContent panel")
@@ -428,22 +510,83 @@ local function CreateContentContainerNode(pnlContent, parentNode, title, icon, c
 	end
 
 	local node = parentNode:AddNode(title, icon)
+	node.sligwolf_id = nil
 
 	node.DoPopulate = function(thisNode)
-		if thisNode.PropPanel then
+		if thisNode.sligwolf_propPanel then
 			return
 		end
 
 		local propPanel = CreateContentContainer(pnlContent)
-		thisNode.PropPanel = propPanel
+		thisNode.sligwolf_propPanel = propPanel
 
 		contentContainerBuilder(thisNode, propPanel)
 	end
 
 	node.DoClick = function(thisNode)
+		if not IsValid(pnlContent) then
+			return
+		end
+
 		thisNode:DoPopulate()
-		pnlContent:SwitchPanel(thisNode.PropPanel)
+		pnlContent:SwitchPanel(thisNode.sligwolf_propPanel)
+
+		g_lastSpawnMenuState.lastNodeId = thisNode.sligwolf_id
 	end
+
+	LIBTimer.SimpleNextFrame(function()
+		if not IsValid(pnlContent) then
+			return
+		end
+
+		if not IsValid(parentNode) then
+			return
+		end
+
+		if not IsValid(node) then
+			return
+		end
+
+		local tabContainer = pnlContent:GetParent()
+		if not IsValid(tabContainer) then
+			return
+		end
+
+		local creationMenu = tabContainer:GetParent()
+		if not IsValid(creationMenu) then
+			return
+		end
+
+		local tabIndex = BuildTabPanelIndex(creationMenu)
+		local tabItem = tabIndex[tabContainer]
+
+		if not tabItem then
+			return
+		end
+
+		local tabPanel = tabItem.tabPanel
+		if not IsValid(tabPanel) then
+			return
+		end
+
+		local pnlContentTitle = tabItem and tabItem.name or ""
+		local parentTitle = parentNode:GetText()
+		local nodeTitle = node:GetText()
+
+		local id = {"id", pnlContentTitle, parentTitle, nodeTitle}
+		id = table.concat(id, "_")
+		id = util.MD5(id)
+
+		node.sligwolf_id = id
+
+		if g_lastSpawnMenuState.lastNodeId and id == g_lastSpawnMenuState.lastNodeId then
+			creationMenu:SetActiveTab(tabPanel)
+			parentNode:SetExpanded(true)
+			node:SetExpanded(true)
+
+			node:InternalDoClick()
+		end
+	end)
 
 	return node
 end
@@ -616,6 +759,7 @@ function LIB.AddProp(addonname, model, obj)
 			addonname,
 			"prop",
 			{
+				id = model,
 				order = obj.order or g_PropOrder * 100,
 				header = obj.header,
 				content = {
@@ -626,7 +770,7 @@ function LIB.AddProp(addonname, model, obj)
 			}
 		)
 
-		g_shouldReloadSpawnmenu = true
+		LIB.RequestReloadSpawnmenu()
 	end
 end
 
@@ -751,6 +895,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 			addonname,
 			"entity",
 			{
+				id = spawnname,
 				order = obj.order or g_EntityOrder * 100,
 				header = obj.header,
 				content = {
@@ -762,7 +907,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 			}
 		)
 
-		g_shouldReloadSpawnmenu = true
+		LIB.RequestReloadSpawnmenu()
 	end
 
 	local SpawnableEntities = LIBUtil.GetList("SpawnableEntities")
@@ -820,6 +965,7 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 			addonname,
 			"weapon",
 			{
+				id = spawnname,
 				order = obj.order or g_WeaponOrder * 100,
 				header = obj.header,
 				content = {
@@ -831,7 +977,7 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 			}
 		)
 
-		g_shouldReloadSpawnmenu = true
+		LIB.RequestReloadSpawnmenu()
 	end
 
 	local SpawnableWeapons = LIBUtil.GetList("Weapon")
@@ -916,6 +1062,7 @@ function LIB.AddNPC(addonname, spawnname, obj)
 			addonname,
 			"npc",
 			{
+				id = spawnname,
 				order = obj.order or g_NpcOrder * 100,
 				header = obj.header,
 				content = {
@@ -928,7 +1075,7 @@ function LIB.AddNPC(addonname, spawnname, obj)
 			}
 		)
 
-		g_shouldReloadSpawnmenu = true
+		LIB.RequestReloadSpawnmenu()
 	end
 
 	local npcListItem = {}
@@ -996,6 +1143,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 			addonname,
 			"vehicle",
 			{
+				id = spawnname,
 				order = obj.order or g_VehicleOrder * 100,
 				header = obj.header,
 				content = {
@@ -1008,7 +1156,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 			}
 		)
 
-		g_shouldReloadSpawnmenu = true
+		LIB.RequestReloadSpawnmenu()
 	end
 
 	local spawnFreezed = obj.spawnFreezed or false
@@ -1046,7 +1194,6 @@ function LIB.ReloadSpawnmenu()
 	end
 
 	RunConsoleCommand("spawnmenu_reload")
-	print("spawnmenu_reload spawnmenu_reload spawnmenu_reload")
 end
 
 function LIB.RequestReloadSpawnmenu()
@@ -1054,12 +1201,17 @@ function LIB.RequestReloadSpawnmenu()
 		return
 	end
 
-	if not SligWolf_Addons.WasReloaded then
+	if not g_spawnmenuLoaded then
+		-- Avoid reloading the spawn menu if it has not been loaded yet
 		return
 	end
 
 	local timerName = "Library_Spawnmenu_RequestReloadSpawnmenu_Debounce"
 	LIBTimer.Once(timerName, 0.1, function()
+		if not g_spawnmenuLoaded then
+			return
+		end
+
 		LIB.ReloadSpawnmenu()
 	end)
 end
@@ -1128,6 +1280,9 @@ function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
 
 	local function PopulatePropListContent(pnlContent, tree)
+		g_spawnmenuLoaded = true
+		table.Empty(g_tabPanelIndex)
+
 		PopulateSpawnmenuListContent(
 			pnlContent,
 			tree,
@@ -1144,6 +1299,9 @@ function LIB.Load()
 	end
 
 	local function PopulateEntityListContent(pnlContent, tree)
+		g_spawnmenuLoaded = true
+		table.Empty(g_tabPanelIndex)
+
 		PopulateSpawnmenuListContent(
 			pnlContent,
 			tree,
@@ -1163,6 +1321,9 @@ function LIB.Load()
 	end
 
 	local function PopulateWeaponListContent(pnlContent, tree)
+		g_spawnmenuLoaded = true
+		table.Empty(g_tabPanelIndex)
+
 		PopulateSpawnmenuListContent(
 			pnlContent,
 			tree,
@@ -1182,6 +1343,9 @@ function LIB.Load()
 	end
 
 	local function PopulateNPCListContent(pnlContent, tree)
+		g_spawnmenuLoaded = true
+		table.Empty(g_tabPanelIndex)
+
 		PopulateSpawnmenuListContent(
 			pnlContent,
 			tree,
@@ -1202,6 +1366,9 @@ function LIB.Load()
 	end
 
 	local function PopulateVehicleListContent(pnlContent, tree)
+		g_spawnmenuLoaded = true
+		table.Empty(g_tabPanelIndex)
+
 		PopulateSpawnmenuListContent(
 			pnlContent,
 			tree,
@@ -1237,12 +1404,6 @@ function LIB.Load()
 	LIBHook.Add("PopulateWeapons", "Library_Spawnmenu_PopulateWeaponlistContent", PopulateWeaponListContent, 20000)
 	LIBHook.Add("PopulateNPCs", "Library_Spawnmenu_PopulateNPClistContent", PopulateNPCListContent, 20000)
 	LIBHook.Add("PopulateVehicles", "Library_Spawnmenu_PopulateVehiclelistContent", PopulateVehicleListContent, 20000)
-end
-
-function LIB.FirstFrame()
-	if g_shouldReloadSpawnmenu then
-		LIB.RequestReloadSpawnmenu()
-	end
 end
 
 return true
