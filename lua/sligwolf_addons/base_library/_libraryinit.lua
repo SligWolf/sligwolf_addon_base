@@ -39,20 +39,23 @@ local function callLoaderFunc(name)
 	end
 end
 
-local function callLoaders()
-	callLoaderFunc("Load")
-end
+-- This helps detecting load time behavour if the game is unfocused.
+-- This is only active if the code has been reloaded.
+-- If it blinks, the game is ready for testing.
+local function loadIndicator()
+	if not CLIENT then
+		return
+	end
 
-local function callPostLoaders()
-	callLoaderFunc("PostLoad")
-end
+	if not SligWolf_Addons.WasReloaded then
+		return
+	end
 
-local function callFirstFrameLoaders()
-	callLoaderFunc("FirstFrame")
-end
+	if system.HasFocus() then
+		return
+	end
 
-local function callAllAddonsLoaded()
-	callLoaderFunc("AllAddonsLoaded")
+	system.FlashWindow()
 end
 
 SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base_library/baseobject.lua")
@@ -98,11 +101,18 @@ loadLib("model")
 loadLib("thirdperson")
 loadLib("vgui")
 
-callLoaders()
-callPostLoaders()
+callLoaderFunc("Load")
+callLoaderFunc("PostLoad")
 
-SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", callFirstFrameLoaders)
-SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded", callAllAddonsLoaded, 1000)
+SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", function()
+	callLoaderFunc("FirstFrame")
+
+	SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", loadIndicator)
+end)
+
+SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded", function()
+	callLoaderFunc("AllAddonsLoaded")
+end, 1000)
 
 return true
 
