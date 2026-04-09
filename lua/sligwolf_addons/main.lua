@@ -27,7 +27,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "e930639742cfa87730b83a7f508cae5e05518443ae3b44ea2a9a4c2ecbdc47b1"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.7.0"
+SligWolf_Addons.BaseApiVersion = "1.7.1"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 251210
@@ -71,9 +71,15 @@ local g_DefaultHooks = {
 }
 
 local g_FunctionPathCache = {}
-local g_LuaFileExistsCache = {}
-local g_WorkshopAddonsCache = {}
-local g_WorkshopAddonsFilesCache = {}
+
+local g_LuaFileExistsCache = SligWolf_Addons.g_LuaFileExistsCache or {}
+SligWolf_Addons.g_LuaFileExistsCache = g_LuaFileExistsCache
+
+local g_WorkshopAddonsCache = SligWolf_Addons.g_WorkshopAddonsCache or {}
+SligWolf_Addons.g_WorkshopAddonsCache = g_WorkshopAddonsCache
+
+local g_WorkshopAddonsFilesCache = SligWolf_Addons.g_WorkshopAddonsFilesCache or {}
+SligWolf_Addons.g_WorkshopAddonsFilesCache = g_WorkshopAddonsFilesCache
 
 local g_WorkshopIDWhitelist = {
 	["base"] = "2866238940",
@@ -844,7 +850,7 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 
 	local initFile = "sligwolf_addons/" .. name .. "/init.lua"
 
-	local check = sligwolfAddons.LuaExists(initFile)
+	local check = luaExists(initFile)
 	if not check then
 		local errorText = string.format("Unknown addon '%s' at %s!", name, g_realmText)
 		MsgCError(errorText, sligwolfAddons.ERROR_UNKNOWN_ADDON)
@@ -1083,6 +1089,7 @@ function SligWolf_Addons.ReloadAllAddons()
 	if not sligwolfAddons.LoadAddon then return end
 
 	g_validBase = nil
+
 	sligwolfAddons.LoadLibraries()
 
 	local baseAddonName = sligwolfAddons.BASE_ADDON_NAME
@@ -1116,8 +1123,10 @@ function SligWolf_Addons.ReloadAllAddons()
 
 	inValidateSortedAddondata()
 
-	sligwolfAddons.AllAddonsLoaded = nil
-	sligwolfAddons.CallAllAddonsLoadedHook()
+	if sligwolfAddons.WasReloaded then
+		sligwolfAddons.AllAddonsLoaded = nil
+		sligwolfAddons.CallAllAddonsLoadedHook()
+	end
 end
 
 function SligWolf_Addons.AutoLoadAddon(funcobj)
