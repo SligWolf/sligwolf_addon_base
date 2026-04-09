@@ -1,8 +1,14 @@
 AddCSLuaFile()
 local SligWolf_Addons = SligWolf_Addons
 
-if not SligWolf_Addons then return end
-if not SLIGWOLF_ADDON then return end
+if not SligWolf_Addons then
+	return
+end
+
+if not SLIGWOLF_ADDON then
+	SligWolf_Addons:ReloadAddonSystem()
+	return
+end
 
 local LIBTrackasm = SligWolf_Addons.Trackasm
 local taSettings = SLIGWOLF_ADDON.TrackAssamblerSettings
