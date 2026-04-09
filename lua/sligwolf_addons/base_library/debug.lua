@@ -923,7 +923,7 @@ function LIB.IsDebugKeyDown(ply, inKey)
 end
 
 do
-	local helptext = "Show SW-Names of all SligWolf Addons entities for 60 secounds. Params: all, console"
+	local helptext = "Show SW-Names of all SligWolf Addons entities for 60 secounds. This requires 'developer 1' or above. Params: all, console"
 	local flags = FCVAR_GAMEDLL
 
 	concommand.Add("debug_sligwolf_addons_show_entity_names", function(cmdPly, cmd, args)
