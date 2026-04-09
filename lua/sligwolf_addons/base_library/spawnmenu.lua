@@ -16,6 +16,7 @@ local g_registeredSpawnMenuItems = {}
 local g_registeredSpawnMenuItemsOrdered = {}
 local g_registeredSpawnMenuItemsCategories = {}
 local g_registeredSpawnMenuItemsCategoriesByAddons = {}
+local g_shouldReloadSpawnmenu = false
 
 LIB.g_RegisterdVehicleSpawnnamesByModel = {}
 
@@ -624,6 +625,8 @@ function LIB.AddProp(addonname, model, obj)
 				}
 			}
 		)
+
+		g_shouldReloadSpawnmenu = true
 	end
 end
 
@@ -758,6 +761,8 @@ function LIB.AddEntity(addonname, spawnname, obj)
 				}
 			}
 		)
+
+		g_shouldReloadSpawnmenu = true
 	end
 
 	local SpawnableEntities = LIBUtil.GetList("SpawnableEntities")
@@ -825,6 +830,8 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 				}
 			}
 		)
+
+		g_shouldReloadSpawnmenu = true
 	end
 
 	local SpawnableWeapons = LIBUtil.GetList("Weapon")
@@ -920,6 +927,8 @@ function LIB.AddNPC(addonname, spawnname, obj)
 				}
 			}
 		)
+
+		g_shouldReloadSpawnmenu = true
 	end
 
 	local npcListItem = {}
@@ -998,6 +1007,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 				}
 			}
 		)
+
+		g_shouldReloadSpawnmenu = true
 	end
 
 	local spawnFreezed = obj.spawnFreezed or false
@@ -1027,6 +1038,30 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
 	list.Set("Vehicles", spawnname, vehicleListItem)
+end
+
+function LIB.ReloadSpawnmenu()
+	if not CLIENT then
+		return
+	end
+
+	RunConsoleCommand("spawnmenu_reload")
+	print("spawnmenu_reload spawnmenu_reload spawnmenu_reload")
+end
+
+function LIB.RequestReloadSpawnmenu()
+	if not CLIENT then
+		return
+	end
+
+	if not SligWolf_Addons.WasReloaded then
+		return
+	end
+
+	local timerName = "Library_Spawnmenu_RequestReloadSpawnmenu_Debounce"
+	LIBTimer.Once(timerName, 0.1, function()
+		LIB.ReloadSpawnmenu()
+	end)
 end
 
 if CLIENT then
@@ -1202,6 +1237,12 @@ function LIB.Load()
 	LIBHook.Add("PopulateWeapons", "Library_Spawnmenu_PopulateWeaponlistContent", PopulateWeaponListContent, 20000)
 	LIBHook.Add("PopulateNPCs", "Library_Spawnmenu_PopulateNPClistContent", PopulateNPCListContent, 20000)
 	LIBHook.Add("PopulateVehicles", "Library_Spawnmenu_PopulateVehiclelistContent", PopulateVehicleListContent, 20000)
+end
+
+function LIB.FirstFrame()
+	if g_shouldReloadSpawnmenu then
+		LIB.RequestReloadSpawnmenu()
+	end
 end
 
 return true
