@@ -123,12 +123,8 @@ local function initLibGlobal()
 			end
 
 			thislib.IsManuallyReloading = isManuallyReloading
-			local a = SysTime()
 			init()
-			local b = SysTime()
 			thislib.IsManuallyReloading = false
-
-			print("load time", (b - a) * 1000, "ms")
 		end)
 
 		-- we are reloading, if we return true here, the caller should return immediately
