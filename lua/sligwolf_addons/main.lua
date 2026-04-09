@@ -27,7 +27,6 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "e930639742cfa87730b83a7f508cae5e05518443ae3b44ea2a9a4c2ecbdc47b1"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.7.1"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 251210
@@ -973,6 +972,11 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	end
 
 	inValidateSortedAddondata()
+
+	if sligwolfAddons.Util then
+		sligwolfAddons.Util.FlashWindow()
+	end
+
 	return true
 end
 
@@ -1154,11 +1158,11 @@ function SligWolf_Addons.AutoLoadAddon(funcobj)
 
 	if not CheckWorkshopAddons(wsAddons, name) then
 		MsgCUnapprovedAddons(wsAddons, name)
-
 		return false
 	end
 
-	return sligwolfAddons.LoadAddon(name, true)
+	local result = sligwolfAddons.LoadAddon(name, true)
+	return result
 end
 
 function SligWolf_Addons.GetLoadedAddonsCount()
