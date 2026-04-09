@@ -39,25 +39,6 @@ local function callLoaderFunc(name)
 	end
 end
 
--- This helps detecting load time behavour if the game is unfocused.
--- This is only active if the code has been reloaded.
--- If it blinks, the game is ready for testing.
-local function loadIndicator()
-	if not CLIENT then
-		return
-	end
-
-	if not SligWolf_Addons.WasReloaded then
-		return
-	end
-
-	if system.HasFocus() then
-		return
-	end
-
-	system.FlashWindow()
-end
-
 SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base_library/baseobject.lua")
 
 loadLib("constants")
@@ -106,8 +87,7 @@ callLoaderFunc("PostLoad")
 
 SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", function()
 	callLoaderFunc("FirstFrame")
-
-	SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", loadIndicator)
+	SligWolf_Addons.Util.FlashWindow()
 end)
 
 SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded", function()

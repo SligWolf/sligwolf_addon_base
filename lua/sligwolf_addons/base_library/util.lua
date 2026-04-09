@@ -7,6 +7,8 @@ local LIB = SligWolf_Addons:NewLib("Util")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local LIBTimer = nil
+
 local g_uid = 0
 function LIB.Uid()
 	g_uid = (g_uid + 1) % (2 ^ 30)
@@ -289,6 +291,65 @@ function LIB.CheckSumOfFile(filePath, gamePath)
 	return hash
 end
 
+function LIB.FlashWindow()
+	-- This helps detecting load time behavour if the game is unfocused.
+	-- This is only active if the code has been reloaded.
+	-- If it blinks, the game is ready for testing.
+
+	if not CLIENT then
+		return
+	end
+
+	if LIB.IsEarly() then
+		-- We don't want to blink during load time.
+		return
+	end
+
+	local timerName = "Library_Util_FlashWindow"
+	LIBTimer.Remove(timerName)
+
+	if system.HasFocus() then
+		return
+	end
+
+	-- Debounce the flash effect by a frame and 2 x 0.1 sec
+	LIBTimer.NextFrame(timerName, function()
+		if system.HasFocus() then
+			return
+		end
+
+		LIBTimer.Once(timerName, 0.1, function()
+			if system.HasFocus() then
+				return
+			end
+
+			LIBTimer.Once(timerName, 0.1, function()
+				if system.HasFocus() then
+					return
+				end
+
+				system.FlashWindow()
+			end)
+		end)
+	end)
+end
+
+function LIB.IsEarly()
+	-- Detects if we are early in the game, e.g:
+	--  It is sill starting up the map.
+	--  It just started up the map.
+
+	if not LIBTimer then
+		return true
+	end
+
+	if UnPredictedCurTime() < 10 then
+		return true
+	end
+
+	return false
+end
+
 local g_inext = ipairs({})
 local g_PlayerCache = nil
 
@@ -306,6 +367,7 @@ end
 
 function LIB.Load()
 	local LIBHook = SligWolf_Addons.Hook
+	LIBTimer = SligWolf_Addons.Timer
 
 	local function PlayerIterator_InvalidatePlayerCache(ply)
 		if not ply or ply:IsPlayer() then
@@ -318,6 +380,7 @@ function LIB.Load()
 	LIBHook.Add("PlayerDisconnected", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
 	LIBHook.Add("PlayerInitialSpawn", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
 end
+
 
 return true
 
