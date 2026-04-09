@@ -11,10 +11,6 @@ if not SligWolf_Addons then
 	return
 end
 
-if SligWolf_Addons.CallAddonsLoadedEvent then
-	return
-end
-
 if SligWolf_Addons.CallAllAddonsLoadedHook then
 	SligWolf_Addons.CallAllAddonsLoadedHook()
 end

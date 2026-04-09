@@ -69,6 +69,8 @@ end
 local function initLibGlobal()
 	timer.Remove(g_reloadAddonTimerName)
 
+	local isReloading = _G.SligWolf_Addons ~= nil
+
 	local lib = _G.SligWolf_Addons or {}
 	_G.SligWolf_Addons = lib
 
@@ -76,6 +78,7 @@ local function initLibGlobal()
 
 	emptyLib(lib)
 
+	lib.WasReloaded = isReloading
 	lib.IsManuallyReloading = oldIsManuallyReloading
 
 	lib.Loaded = nil
@@ -120,8 +123,12 @@ local function initLibGlobal()
 			end
 
 			thislib.IsManuallyReloading = isManuallyReloading
+			local a = SysTime()
 			init()
+			local b = SysTime()
 			thislib.IsManuallyReloading = false
+
+			print("load time", (b - a) * 1000, "ms")
 		end)
 
 		-- we are reloading, if we return true here, the caller should return immediately
