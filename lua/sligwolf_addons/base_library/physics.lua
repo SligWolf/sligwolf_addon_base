@@ -151,15 +151,10 @@ function LIB.IsValidPhysObject(phys, dontIgnoreWheels)
 
 	-- PhysObj:IsValid() is super slow as found in:
 	-- https://github.com/Facepunch/garrysmod-requests/issues/2928
+	-- But there is no useful replacement for it yet.
 
-	-- if not phys:IsValid() then
-	-- 	return false
-	-- end
-
-	-- So we need to replace it with a hack, a Developer's DIY.
-	local physId = string.lower(tostring(phys))
-	if physId == "[null physobject]" then
-		return false
+	if not phys:IsValid() then
+	 	return false
 	end
 
 	if not dontIgnoreWheels then
