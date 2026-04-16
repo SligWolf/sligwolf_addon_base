@@ -25,7 +25,7 @@ local function isSimilarPosAng(posA, posB, angA, angB, debug_ent)
 
 	if not isSimilarPos then
 		-- if debug_ent then
-		-- 	LIBPrint.Print("Pos, %s: %s | %s | %s > %s", debug_ent, posA, posB, posA:DistToSqr(posB) ^ 0.5, g_asyncPositioningDistanceToleranceSqr ^ 0.5)
+		--     LIBPrint.Print("Pos, %s: %s | %s | %s > %s", debug_ent, posA, posB, posA:DistToSqr(posB) ^ 0.5, g_asyncPositioningDistanceToleranceSqr ^ 0.5)
 		-- end
 
 		return false
@@ -33,7 +33,7 @@ local function isSimilarPosAng(posA, posB, angA, angB, debug_ent)
 
 	if not isSimilasAng then
 		-- if debug_ent then
-		-- 	LIBPrint.Print("Ang, %s: %s | %s | %s > %s", debug_ent, angA, angB, LIB.GetAnglesDifference(angA, angB), g_asyncPositioningDistanceAngle)
+		--     LIBPrint.Print("Ang, %s: %s | %s | %s > %s", debug_ent, angA, angB, LIB.GetAnglesDifference(angA, angB), g_asyncPositioningDistanceAngle)
 		-- end
 
 		return false
@@ -42,7 +42,7 @@ local function isSimilarPosAng(posA, posB, angA, angB, debug_ent)
 	return true
 end
 
-local function closeAsyncPositioning(ent, entTable, timerName, callCallbacks)
+local function closeAsyncPositioning(ent, entTable, callCallbacks)
 	local asyncPositioning = entTable.asyncPositioning or {}
 	entTable.asyncPositioning = asyncPositioning
 
@@ -64,16 +64,19 @@ local function closeAsyncPositioning(ent, entTable, timerName, callCallbacks)
 		thisCallback(ent)
 	end
 
-	LIBTimer.Remove(timerName)
+	local timerName = asyncPositioning.timerName
+	if timerName then
+		LIBTimer.Remove(timerName)
+	end
 end
 
-local function pollAsyncPositioning(ent, entTable, timerName)
+local function pollAsyncPositioning(ent, entTable)
 	if not IsValid(ent) then
 		return true
 	end
 
 	if entTable.noAsycPositioning then
-		closeAsyncPositioning(ent, entTable, timerName, true)
+		closeAsyncPositioning(ent, entTable, true)
 
 		return true
 	end
@@ -88,7 +91,7 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 	asyncPositioning.active = true
 
 	if lifetime <= 0 then
-		closeAsyncPositioning(ent, entTable, timerName, false)
+		closeAsyncPositioning(ent, entTable, false)
 		LIBPrint.ErrorNoHaltWithStack("Position.SetPosAng: Async positioning did not return after %i attempts at %s.", g_asyncPositioningLifetime, ent)
 
 		return true
@@ -135,7 +138,7 @@ local function pollAsyncPositioning(ent, entTable, timerName)
 		return false
 	end
 
-	closeAsyncPositioning(ent, entTable, timerName, true)
+	closeAsyncPositioning(ent, entTable, true)
 
 	return true
 end
@@ -183,6 +186,7 @@ function LIB.SetPosAng(ent, pos, ang, callback)
 	asyncPositioning.hasPos = nil
 	asyncPositioning.hasAng = nil
 	asyncPositioning.lifetime = g_asyncPositioningLifetime
+	asyncPositioning.timerName = timerName
 
 	if isfunction(callback) then
 		LIB.AddPositioningCallback(ent, callback)
@@ -202,12 +206,12 @@ function LIB.SetPosAng(ent, pos, ang, callback)
 	-- So we need to check them to have moved with it before actual using them.
 	-- This function calls the given callback when the attachments are ready to be used.
 
-	if pollAsyncPositioning(ent, entTable, timerName) then
+	if pollAsyncPositioning(ent, entTable) then
 		return true
 	end
 
 	LIBTimer.Until(timerName, g_asyncPositioningPollTime, function()
-		return pollAsyncPositioning(ent, entTable, timerName)
+		return pollAsyncPositioning(ent, entTable)
 	end)
 
 	return true

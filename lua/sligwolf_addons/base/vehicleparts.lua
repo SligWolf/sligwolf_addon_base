@@ -242,6 +242,33 @@ local g_FallbackConstraintsParams = {
 	},
 }
 
+local g_allowChildrenParts = {
+	prop = true,
+	slider = false,
+	bogie = true,
+	camera = false,
+	decor = false,
+	seatGroup = false,
+	animatable = true,
+	speedometer = true,
+	trigger = false,
+	help = true,
+	door = true,
+	connector = false,
+	connectorButton = false,
+	button = false,
+	animatedWheel = true,
+	light = false,
+	glow = false,
+	smoke = false,
+	pod = true,
+	display = false,
+	bendi = false,
+	jeep = true,
+	airboat = true,
+	hoverball = false,
+}
+
 local function GetColor(superparent, colorOrColorName)
 	if not IsValid(superparent) then
 		error("Superparent is missing!")
@@ -434,7 +461,7 @@ function SLIGWOLF_ADDON:CreateConstraint(ent, parent, constraintName, constraint
 
 	local func = g_ConstraintCreateFunctions[constraintName]
 	if not func then
-		self:Error("%s is not a valid constraint type", constraintName)
+		self:Error("Invalid constraint type: %s", constraintName)
 		return nil
 	end
 
@@ -504,6 +531,16 @@ local function SetUnsetComponentsValuesToDefaults(component)
 		return nil
 	end
 	component.name = componentName
+
+	local children = component.children
+	local hasChildren = children and not table.IsEmpty(children)
+
+	if hasChildren and not g_allowChildrenParts[componentType] then
+		error("component must not have children! (component.name = '" .. componentName .. "', component.type = '" .. componentType .. "')")
+		return
+	end
+
+	component.hasChildren = hasChildren
 
 	local mergedFallbackComponentsParams = table.Copy(g_FallbackComponentsParams)
 
@@ -603,7 +640,8 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local isBody = component.isBody
 	local selfAttachment = component.selfAttachment
 	local freeze = component.freeze
-	local noAsycPositioning = component.noAsycPositioning
+	local hasChildren = component.hasChildren
+	local noAsycPositioning = component.noAsycPositioning or not hasChildren
 
 	local entTable = ent:SligWolf_GetTable()
 	entTable.noAsycPositioning = noAsycPositioning
@@ -770,6 +808,7 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 
 	component = SetUnsetComponentsValuesToDefaults(component)
 	local name = component.name
+	local componentType = component.type
 
 	local preExistingPart = LIBEntities.GetChild(parent, name)
 	local newPartEnt = nil
@@ -783,7 +822,12 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 			callback(thisNewPartEnt)
 		end
 
-		self:SetUpVehicleParts(thisNewPartEnt, component.children, dtr, ply, superparent)
+		local children = component.children
+		local hasChildren = component.hasChildren
+
+		if hasChildren then
+			self:SetUpVehicleParts(thisNewPartEnt, children, dtr, ply, superparent)
+		end
 	end
 
 	if IsValid(preExistingPart) then
@@ -834,11 +878,10 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 			hoverball = self.SetUpVehicleHoverball,
 		}
 
-		local componentType = component.type
 		local func = funcs[componentType]
 
 		if not isfunction(func) then
-			self:Error("%s is not a valid part type", componentType)
+			self:Error("Unknown part type for component: %s (%s)", name, componentType)
 			return
 		end
 
@@ -1307,6 +1350,9 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent, 
 	local ent = self:MakeEntEnsured(class or "sligwolf_camera", ply, parent, name)
 	if not IsValid(ent) then return end
 
+	local entTable = ent:SligWolf_GetTable()
+	entTable.noAsycPositioning = true
+
 	ent:Spawn()
 	ent:Activate()
 
@@ -1360,6 +1406,9 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 
 	local ent = self:MakeEntEnsured(class or "sligwolf_particle", ply, parent, name)
 	if not IsValid(ent) then return end
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.noAsycPositioning = true
 
 	SetPartKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
@@ -1418,6 +1467,9 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	local ent = self:MakeEntEnsured(class or "sligwolf_light_cone", ply, parent, name)
 	if not IsValid(ent) then return end
 
+	local entTable = ent:SligWolf_GetTable()
+	entTable.noAsycPositioning = true
+
 	SetPartKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
@@ -1470,6 +1522,9 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 
 	local ent = self:MakeEntEnsured(class or "sligwolf_glow", ply, parent, name)
 	if not IsValid(ent) then return end
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.noAsycPositioning = true
 
 	SetPartKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
