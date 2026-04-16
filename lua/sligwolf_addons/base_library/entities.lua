@@ -1010,9 +1010,14 @@ function LIB.ForEachFilteredChild(ent, name, func)
 	local index = 0
 
 	for k, v in pairs(found) do
-		index = index + 1
-		local bbreak = func(ent, index, k, v)
-		if bbreak then break end
+		if IsValid(v) then
+			index = index + 1
+
+			local bbreak = func(ent, index, k, v)
+			if bbreak then
+				break
+			end
+		end
 	end
 end
 
