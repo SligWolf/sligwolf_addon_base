@@ -28,6 +28,8 @@ local g_spawnmenuLoaded = SligWolf_Addons.WasReloaded
 
 LIB.g_RegisterdVehicleSpawnnamesByModel = {}
 
+local g_AddonContentContainers = {}
+
 function LIB.AddSpawnMenuItemAddonCategory(addonName, itemClass, name, obj)
 	addonName = tostring(addonName or "")
 	if addonName == "" then
@@ -186,6 +188,8 @@ local function AddSpawnMenuItem(addonName, itemClass, obj)
 	data.itemClass = itemClass
 	data.order = order
 	data.content = content
+
+	data.content.addonName = addonName
 
 	local uniqueid = {
 		"uniqueid",
@@ -473,13 +477,29 @@ local function CreateAddonCategoryNode(tree, parentNode, itemClass, addonCategor
 end
 
 local function CreateContentContainer(pnlContent)
-	local container = vgui.Create("ContentContainer", pnlContent)
-	container:SetVisible(false)
+
+	local containerDivider = vgui.Create("DVerticalDivider", pnlContent)
+
+	local container = vgui.Create("ContentContainer")
 	container.IconList:SetReadOnly(true)
+	container:SetVisible(true)
 
-	return container
+	containerDivider:SetTop(container)
+	containerDivider:SetVisible(false)
+
+	local height = 100000
+	containerDivider:SetTopMin(height)
+	containerDivider:SetTopMax(height)
+	containerDivider:SetTopHeight(height)
+
+	containerDivider:SetBottomMin(0)
+	containerDivider:SetDividerHeight(0)
+
+	containerDivider.sligwolf_container = container
+	container.sligwolf_containerDivider = containerDivider
+
+	return container, containerDivider
 end
-
 
 local function CreateContentContainerNode(pnlContent, parentNode, title, icon, contentContainerBuilder)
 	if not ispanel(pnlContent) then
@@ -513,12 +533,27 @@ local function CreateContentContainerNode(pnlContent, parentNode, title, icon, c
 	node.sligwolf_id = nil
 
 	node.DoPopulate = function(thisNode)
-		if thisNode.sligwolf_propPanel then
+		if IsValid(thisNode.sligwolf_propPanelDivider) then
 			return
 		end
 
-		local propPanel = CreateContentContainer(pnlContent)
-		thisNode.sligwolf_propPanel = propPanel
+		local titleId = thisNode.sligwolf_titleId
+		if not titleId then
+			return
+		end
+
+		local propPanelDivider = g_AddonContentContainers[titleId]
+		local propPanel = nil
+
+		if IsValid(propPanelDivider) then
+			thisNode.sligwolf_propPanelDivider = propPanelDivider
+			return
+		end
+
+		propPanel, propPanelDivider = CreateContentContainer(pnlContent)
+
+		thisNode.sligwolf_propPanelDivider = propPanelDivider
+		g_AddonContentContainers[titleId] = propPanelDivider
 
 		contentContainerBuilder(thisNode, propPanel)
 	end
@@ -528,8 +563,16 @@ local function CreateContentContainerNode(pnlContent, parentNode, title, icon, c
 			return
 		end
 
+		g_lastSpawnMenuState.lastNodeId = nil
+
 		thisNode:DoPopulate()
-		pnlContent:SwitchPanel(thisNode.sligwolf_propPanel)
+
+		local propPanelDivider = thisNode.sligwolf_propPanelDivider
+		if not IsValid(propPanelDivider) then
+			return
+		end
+
+		pnlContent:SwitchPanel(propPanelDivider)
 
 		g_lastSpawnMenuState.lastNodeId = thisNode.sligwolf_id
 	end
@@ -573,13 +616,18 @@ local function CreateContentContainerNode(pnlContent, parentNode, title, icon, c
 		local parentTitle = parentNode:GetText()
 		local nodeTitle = node:GetText()
 
-		local id = {"id", pnlContentTitle, parentTitle, nodeTitle}
-		id = table.concat(id, "_")
+		local id = string.format("id_%s_%s_%s", pnlContentTitle, parentTitle, nodeTitle)
 		id = util.MD5(id)
 
+		local titleId = string.format("id_%s_%s", pnlContentTitle, nodeTitle)
+		titleId = util.MD5(titleId)
+
 		node.sligwolf_id = id
+		node.sligwolf_titleId = titleId
 
 		if g_lastSpawnMenuState.lastNodeId and id == g_lastSpawnMenuState.lastNodeId then
+			g_lastSpawnMenuState.lastNodeId = nil
+
 			creationMenu:SetActiveTab(tabPanel)
 			parentNode:SetExpanded(true)
 			node:SetExpanded(true)
@@ -1274,6 +1322,40 @@ if CLIENT then
 	end)
 end
 
+local function AddExtraContent(propPanel, addonname)
+	if propPanel.sligwolf_extraHasContent then
+		return
+	end
+
+	propPanel.sligwolf_extraHasContent = true
+
+	-- LIBTimer.SimpleNextFrame(function()
+	-- 	local containerDivider = propPanel.sligwolf_containerDivider
+	-- 	if not IsValid(containerDivider) then
+	-- 		return
+	-- 	end
+
+	-- 	local panel = vgui.Create("DPanel")
+	-- 	local label = vgui.Create("DLabel", panel)
+
+	-- 	label:SetDark(true)
+	-- 	label:SetText("aaaaaaaaaaaaaaa")
+
+	-- 	containerDivider:SetBottom(panel)
+
+	-- 	containerDivider:SetDividerHeight(8)
+	-- 	containerDivider:SetBottomMin(0)
+
+	-- 	containerDivider:DoConstraints()
+
+	-- 	local height = containerDivider:GetTall()
+
+	-- 	containerDivider:SetTopMin(height - 200)
+	-- 	containerDivider:SetTopMax(height)
+	-- 	containerDivider:SetTopHeight(height - 100)
+	-- end)
+end
+
 function LIB.Load()
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
@@ -1314,6 +1396,8 @@ function LIB.Load()
 					material = item.icon or "entities/" .. item.spawnName .. ".png",
 					admin = item.adminOnly
 				})
+
+				AddExtraContent(propPanel, item.addonName)
 			end
 		)
 
@@ -1336,6 +1420,8 @@ function LIB.Load()
 					material = item.icon or "entities/" .. item.spawnName .. ".png",
 					admin = item.adminOnly
 				})
+
+				AddExtraContent(propPanel, item.addonName)
 			end
 		)
 
@@ -1359,6 +1445,8 @@ function LIB.Load()
 					admin = item.adminOnly,
 					weapon = item.weapons,
 				})
+
+				AddExtraContent(propPanel, item.addonName)
 			end
 		)
 
@@ -1393,6 +1481,8 @@ function LIB.Load()
 						admin = item.adminOnly,
 					})
 				end
+
+				AddExtraContent(propPanel, item.addonName)
 			end
 		)
 
