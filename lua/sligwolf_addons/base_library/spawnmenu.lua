@@ -1346,7 +1346,6 @@ local function AddExtraContent(propPanel, addonname)
 
 		for a = 1, 10 do
 			colorSkinPicker:AddOption("teat" .. a, {
-				icon = "entities/sligwolf_help.png",
 			})
 		end
 
@@ -1410,59 +1409,96 @@ local function AddExtraContent(propPanel, addonname)
 	end)
 end
 
--- local function test()
--- 	local testName = "aaaaaaaaaaaaaaaaaaa"
+local function test()
+	local testName = "aaaaaaaaaaaaaaaaaaa"
 
--- 	LIBTimer.NextFrame(testName, function()
--- 		local frame = _G.sw_frame
+	LIBTimer.NextFrame(testName, function()
+		local frame = _G.sw_frame
 
--- 		if IsValid(frame) then
--- 			frame:Remove()
--- 		end
+		if IsValid(frame) then
+			frame:Remove()
+		end
 
--- 		frame = vgui.Create("DFrame")
--- 		_G.sw_frame = frame
+		frame = vgui.Create("DFrame")
+		_G.sw_frame = frame
 
--- 		local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker", frame)
+		local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker", frame)
 
--- 		colorSkinPicker:Dock(FILL)
+		colorSkinPicker:Dock(FILL)
 
--- 		local num = vgui.Create("DNumSlider", frame)
--- 		num:SetTall(30)
--- 		num:SetDecimals(0)
--- 		num:SetMinMax(1, 100)
+		local num = vgui.Create("DNumSlider", frame)
+		num:SetTall(30)
+		num:SetDecimals(0)
+		num:SetMinMax(0, 100)
+		num:SetValue(1)
 
--- 		num:Dock(BOTTOM)
+		num:Dock(BOTTOM)
+		num:SetText("Count")
 
--- 		frame:SetSize(300, 300)
--- 		frame:SetSizable(true)
--- 		frame:MakePopup()
+		local num2 = vgui.Create("DNumSlider", frame)
+		num2:SetTall(30)
+		num2:SetDecimals(0)
+		num2:SetMinMax(0, 100)
+		num2:SetValue(1)
 
--- 		function num:OnValueChanged()
--- 			LIBTimer.Once(testName, 0.1, function()
--- 				if not IsValid(num) then
--- 					return
--- 				end
+		num2:Dock(BOTTOM)
+		num2:SetText("Colors")
 
--- 				if not IsValid(colorSkinPicker) then
--- 					return
--- 				end
+		frame:SetSize(300, 300)
+		frame:SetSizable(true)
+		frame:MakePopup()
 
--- 				local value = math.Round(num:GetValue())
+		function num:OnValueChanged()
+			LIBTimer.Once(testName .. "_num1", 0.1, function()
+				if not IsValid(num) then
+					return
+				end
 
--- 				colorSkinPicker:Clear()
+				if not IsValid(colorSkinPicker) then
+					return
+				end
 
--- 				for a = 1, value do
--- 					colorSkinPicker:AddOption("teat" .. a, {
--- 						icon = "entities/sligwolf_help.png",
--- 					})
--- 				end
--- 			end)
--- 		end
+				local value = math.Round(num:GetValue())
 
--- 		num:OnValueChanged()
--- 	end)
--- end
+				colorSkinPicker:Clear()
+
+				for a = 1, value do
+					colorSkinPicker:AddOption("teat" .. a, {
+					})
+				end
+
+				if IsValid(num2) then
+					num2:OnValueChanged()
+				end
+			end)
+		end
+
+		function num2:OnValueChanged()
+			LIBTimer.Once(testName .. "_num2", 0.1, function()
+				if not IsValid(num2) then
+					return
+				end
+
+				if not IsValid(colorSkinPicker) then
+					return
+				end
+
+				local value = math.Round(num2:GetValue())
+
+				for _, button in ipairs(colorSkinPicker:GetButtons()) do
+					button:ClearColors()
+
+					for i = 1, value do
+						button:AddColor(ColorRand())
+					end
+				end
+			end)
+		end
+
+		num:OnValueChanged()
+		num2:OnValueChanged()
+	end)
+end
 
 function LIB.Load()
 	LIBTimer = SligWolf_Addons.Timer
@@ -1532,8 +1568,6 @@ function LIB.Load()
 					material = item.icon or "entities/" .. item.spawnName .. ".png",
 					admin = item.adminOnly
 				})
-
-				AddExtraContent(propPanel, item.addonName)
 			end
 		)
 

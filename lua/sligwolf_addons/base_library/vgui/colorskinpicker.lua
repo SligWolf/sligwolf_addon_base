@@ -190,10 +190,6 @@ function PANEL:AddOption(name, params)
 		item.button = itemButton
 	end
 
-	if icon ~= "" then
-		itemButton:SetMaterial(icon)
-	end
-
 	if title == "" then
 		title = name
 	end
@@ -251,6 +247,26 @@ function PANEL:Clear(...)
 
 	self.BaseClass.Clear(self, ...)
 	self:InvalidateLayout()
+end
+
+function PANEL:GetButtons()
+	if self.isDirty then
+		self:RebuildButtonList()
+	end
+
+	local buttons = {}
+	local itemsOrdered = self.itemsOrdered
+
+	for i, item in ipairs(itemsOrdered) do
+		local itemButton = item.button
+		if not IsValid(itemButton) then
+			continue
+		end
+
+		table.insert(buttons, itemButton)
+	end
+
+	return buttons
 end
 
 vgui.Register("SligWolf_ColorSkinPicker", PANEL, "DPanel")
