@@ -28,6 +28,14 @@ function LIB.UniqueString(prefix)
 	return uniqueString
 end
 
+local g_order = 0
+function LIB.Order()
+	g_order = (g_order + 1) % 10000000
+
+	local order = -100000000 + g_order
+	return order
+end
+
 function LIB.ValidateName(name)
 	name = tostring(name or "")
 	name = string.gsub(name, "^!", "", 1)
