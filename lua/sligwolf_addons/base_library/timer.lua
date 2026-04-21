@@ -160,6 +160,10 @@ function LIB.Simple(delay, func)
 	-- timer.Simple is unrelaible to always run next tick, see this:
 	-- https://github.com/Facepunch/garrysmod-issues/issues/6668
 
+	if not LIBUtil then
+		LIBUtil = SligWolf_Addons.Util
+	end
+
 	local identifier = LIBUtil.UniqueString("_SimpleThrowAwayTimer_UniqueId")
 	LIB.Once(identifier, delay, func)
 end
