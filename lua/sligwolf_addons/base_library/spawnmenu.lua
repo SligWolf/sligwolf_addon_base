@@ -498,6 +498,9 @@ local function CreateContentContainer(pnlContent)
 	containerDivider.sligwolf_container = container
 	container.sligwolf_containerDivider = containerDivider
 
+	local dragBar = containerDivider.m_DragBar
+	dragBar.Paint = function() end
+
 	return container, containerDivider
 end
 
@@ -1329,37 +1332,146 @@ local function AddExtraContent(propPanel, addonname)
 
 	propPanel.sligwolf_extraHasContent = true
 
-	-- LIBTimer.SimpleNextFrame(function()
-	-- 	local containerDivider = propPanel.sligwolf_containerDivider
-	-- 	if not IsValid(containerDivider) then
-	-- 		return
-	-- 	end
+	LIBTimer.SimpleNextFrame(function()
+		if not IsValid(propPanel) then
+			return
+		end
 
-	-- 	local panel = vgui.Create("DPanel")
-	-- 	local label = vgui.Create("DLabel", panel)
+		local containerDivider = propPanel.sligwolf_containerDivider
+		if not IsValid(containerDivider) then
+			return
+		end
 
-	-- 	label:SetDark(true)
-	-- 	label:SetText("aaaaaaaaaaaaaaa")
+		local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker")
 
-	-- 	containerDivider:SetBottom(panel)
+		for a = 1, 10 do
+			colorSkinPicker:AddOption("teat" .. a, {
+				icon = "entities/sligwolf_help.png",
+			})
+		end
 
-	-- 	containerDivider:SetDividerHeight(8)
-	-- 	containerDivider:SetBottomMin(0)
+		containerDivider:SetBottom(colorSkinPicker)
 
-	-- 	containerDivider:DoConstraints()
+		containerDivider:SetDividerHeight(16)
+		containerDivider:SetBottomMin(0)
 
-	-- 	local height = containerDivider:GetTall()
+		containerDivider:DoConstraints()
 
-	-- 	containerDivider:SetTopMin(height - 200)
-	-- 	containerDivider:SetTopMax(height)
-	-- 	containerDivider:SetTopHeight(height - 100)
-	-- end)
+		propPanel.sligwold_oldPerformLayout = propPanel.sligwold_oldPerformLayout or propPanel.PerformLayout
+		propPanel.PerformLayout = function(this, w, h, ...)
+			this.sligwold_oldPerformLayout(this, w, h, ...)
+
+			if not IsValid(containerDivider) then
+				return
+			end
+
+			local height = containerDivider:GetTall()
+
+			if height <= 200 then
+				return
+			end
+
+			local topMin = math.Clamp(height - 200, 0, height)
+			local topMax = height
+			local topHeight = math.Clamp(height - 100, topMin, height)
+
+			containerDivider:SetTopMin(topMin)
+			containerDivider:SetTopMax(topMax)
+			containerDivider:SetTopHeight(topHeight)
+
+			this.PerformLayout = this.sligwold_oldPerformLayout or this.PerformLayout
+		end
+
+		local dragBar = containerDivider.m_DragBar
+		local dragBarSkin = dragBar:GetSkin()
+
+		dragBar.Paint = function(_, w, h)
+			local lineH = math.floor(h / 6)
+			local lineW = math.min(math.floor(w * 0.95), w - lineH * 4)
+
+			local lineX = math.floor((w - lineW) / 2)
+			local lineY1 = lineH * 3
+			local lineY2 = h - lineH * 3
+
+			local fgColor = dragBarSkin.Colours.Label.Default
+
+			surface.SetDrawColor(0, 0, 0, 120)
+			surface.DrawRect(lineX + 1, lineY1 + 1, lineW, lineH)
+			surface.SetDrawColor(fgColor)
+			surface.DrawRect(lineX, lineY1, lineW, lineH)
+
+			surface.SetDrawColor(0, 0, 0, 120)
+			surface.DrawRect(lineX + 1, lineY2 + 1, lineW, lineH)
+			surface.SetDrawColor(fgColor)
+			surface.DrawRect(lineX, lineY2, lineW, lineH)
+		end
+
+		propPanel:InvalidateLayout()
+	end)
 end
+
+-- local function test()
+-- 	local testName = "aaaaaaaaaaaaaaaaaaa"
+
+-- 	LIBTimer.NextFrame(testName, function()
+-- 		local frame = _G.sw_frame
+
+-- 		if IsValid(frame) then
+-- 			frame:Remove()
+-- 		end
+
+-- 		frame = vgui.Create("DFrame")
+-- 		_G.sw_frame = frame
+
+-- 		local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker", frame)
+
+-- 		colorSkinPicker:Dock(FILL)
+
+-- 		local num = vgui.Create("DNumSlider", frame)
+-- 		num:SetTall(30)
+-- 		num:SetDecimals(0)
+-- 		num:SetMinMax(1, 100)
+
+-- 		num:Dock(BOTTOM)
+
+-- 		frame:SetSize(300, 300)
+-- 		frame:SetSizable(true)
+-- 		frame:MakePopup()
+
+-- 		function num:OnValueChanged()
+-- 			LIBTimer.Once(testName, 0.1, function()
+-- 				if not IsValid(num) then
+-- 					return
+-- 				end
+
+-- 				if not IsValid(colorSkinPicker) then
+-- 					return
+-- 				end
+
+-- 				local value = math.Round(num:GetValue())
+
+-- 				colorSkinPicker:Clear()
+
+-- 				for a = 1, value do
+-- 					colorSkinPicker:AddOption("teat" .. a, {
+-- 						icon = "entities/sligwolf_help.png",
+-- 					})
+-- 				end
+-- 			end)
+-- 		end
+
+-- 		num:OnValueChanged()
+-- 	end)
+-- end
 
 function LIB.Load()
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util
+
+	-- if CLIENT then
+	-- 	xpcall(test, ErrorNoHaltWithStack)
+	-- end
 
 	local function PopulatePropListContent(pnlContent, tree)
 		g_spawnmenuLoaded = true
