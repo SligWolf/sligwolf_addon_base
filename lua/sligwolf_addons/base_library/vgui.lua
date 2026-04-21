@@ -19,6 +19,8 @@ local function loadVgui(name)
 end
 
 loadVgui("ctrlnumpad")
+loadVgui("colorskinpicker")
+loadVgui("colorskinpickerbutton")
 
 return true
 
