@@ -11,6 +11,7 @@ local LIBUtil = SligWolf_Addons.Util
 
 local PANEL = {}
 AccessorFunc(PANEL, "m_ConVar", "ConVar")
+AccessorFunc(PANEL, "m_Selected", "Selected")
 
 function PANEL:Init()
 	self:SetPaintBackground(false)
@@ -18,7 +19,7 @@ function PANEL:Init()
 
 	self.itemsOrdered = {}
 	self.itemsByName = {}
-	self.isDirty = false
+	self.needsRebuildButtonList = false
 end
 
 function PANEL:SetLabel(txt)
@@ -33,8 +34,63 @@ local g_buttonSizes = {
 	32
 }
 
+function PANEL:OnSelected(selectedName)
+end
+
+function PANEL:SetSelected(newSelected)
+	local oldSelected = self.m_Selected
+	local oldSelectedButton = self:GetSelectedButton()
+
+	if oldSelected ~= newSelected then
+		self.m_Selected = newSelected
+		self.m_SelectedButton = nil
+	end
+
+	local newSelectedButton = self:GetSelectedButton()
+
+	if IsValid(oldSelectedButton) and newSelectedButton ~= oldSelectedButton then
+		oldSelectedButton:SetSelected(false)
+	end
+
+	if IsValid(newSelectedButton) and not newSelectedButton:IsSelected() then
+		newSelectedButton:SetSelected(true)
+		self:OnSelected(newSelected)
+	end
+end
+
+function PANEL:IsSelected(selectedName)
+	if not selectedName then
+		return false
+	end
+
+	return self.m_Selected == selectedName
+end
+
+function PANEL:GetSelectedButton()
+	local selectedButton = self.m_SelectedButton
+
+	if IsValid(selectedButton) then
+		return selectedButton
+	end
+
+	selectedButton = nil
+
+	local itemsByName = self.itemsByName
+	local name = self.m_Selected
+
+	local item = name and itemsByName[name]
+	local itemButton = item and item.button
+
+	if IsValid(itemButton) then
+		selectedButton = itemButton
+	end
+
+	self.m_SelectedButton = selectedButton
+	return selectedButton
+end
+
 function PANEL:PerformLayout(w, h)
-	if self.isDirty then
+	if self.needsRebuildButtonList then
 		self:RebuildButtonList()
 	end
 
@@ -134,6 +190,15 @@ function PANEL:RebuildButtonList()
 
 	table.Empty(itemsOrdered)
 
+	local foundSelection = nil
+	local doClickSelection = function(thisButton)
+		if not IsValid(self) then
+			return
+		end
+
+		self:SetSelected(thisButton:GetColorSkinName())
+	end
+
 	for i, item in SortedPairsByMemberValue(itemsByName, "order") do
 		local name = item.name
 		if not name then
@@ -159,10 +224,22 @@ function PANEL:RebuildButtonList()
 		itemButton:SetZPos(index)
 		itemButton:SetVisible(true)
 
+		if self:IsSelected(name) then
+			foundSelection = name
+		end
+
+		itemButton:SetSelected(false)
+		itemButton.DoClick = doClickSelection
+
 		itemsOrdered[index] = item
 	end
 
-	self.isDirty = false
+	self.needsRebuildButtonList = false
+
+	if foundSelection then
+		self:SetSelected(foundSelection)
+	end
+
 	self:InvalidateLayout()
 end
 
@@ -194,11 +271,17 @@ function PANEL:AddOption(name, params)
 		title = name
 	end
 
+	itemButton:ClearColors()
+
+	if params.colors then
+		itemButton:AddColors(params.colors)
+	end
+
 	itemButton:SetTitle(title)
 	itemButton:SetColorSkinName(name)
 	itemButton:SetVisible(false)
 
-	self.isDirty = true
+	self.needsRebuildButtonList = true
 
 	self:Add(itemButton)
 
@@ -215,7 +298,7 @@ function PANEL:RemoveOption(name)
 		return
 	end
 
-	self.isDirty = true
+	self.needsRebuildButtonList = true
 
 	local itemButton = item.button
 	table.Empty(item)
@@ -231,7 +314,7 @@ function PANEL:Clear(...)
 	local itemsByName = self.itemsByName
 	local itemsOrdered = self.itemsOrdered
 
-	self.isDirty = true
+	self.needsRebuildButtonList = true
 
 	for name, item in pairs(itemsByName) do
 		local itemButton = item.button
@@ -250,7 +333,7 @@ function PANEL:Clear(...)
 end
 
 function PANEL:GetButtons()
-	if self.isDirty then
+	if self.needsRebuildButtonList then
 		self:RebuildButtonList()
 	end
 

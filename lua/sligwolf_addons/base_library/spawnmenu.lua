@@ -1346,6 +1346,11 @@ local function AddExtraContent(propPanel, addonname)
 
 		for a = 1, 10 do
 			colorSkinPicker:AddOption("teat" .. a, {
+				colors = {
+					ColorRand(),
+					ColorRand(),
+					ColorRand(),
+				}
 			})
 		end
 
@@ -1444,6 +1449,7 @@ local function test()
 		num2:Dock(BOTTOM)
 		num2:SetText("Colors")
 
+		frame:SetPos(200, 200)
 		frame:SetSize(300, 300)
 		frame:SetSizable(true)
 		frame:MakePopup()

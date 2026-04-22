@@ -9,7 +9,24 @@ end
 
 local PANEL = {}
 
-AccessorFunc( PANEL, "m_ColorSkinName", "ColorSkinName" )
+AccessorFunc(PANEL, "m_ColorSkinName", "ColorSkinName")
+
+local function buildSelectionBoxColors(innerColor, outerColor, steps)
+	local result = {}
+
+	for i = 1, steps do
+		local color = outerColor:Lerp(innerColor, i / 5)
+		table.insert(result, color)
+	end
+
+	return result
+end
+
+local g_selectionBoxColors = buildSelectionBoxColors(
+	Color(85, 160, 200, 180),
+	Color(255, 255, 255, 255),
+	5
+)
 
 function PANEL:Init()
 	self:SetPaintBackground(false)
@@ -20,8 +37,8 @@ function PANEL:Init()
 
 	self.m_Title = ""
 
-	self.Colors = {}
-	self.Chart = {}
+	self.colors = {}
+	self.chart = {}
 end
 
 function PANEL:SetTitle(title)
@@ -48,26 +65,37 @@ end
 function PANEL:DoClick()
 end
 
+function PANEL:OnDepressionChanged(b)
+end
+
+function PANEL:SetSelected(bool)
+	self.m_Selected = bool
+end
+
+function PANEL:IsSelected()
+	return self.m_Selected
+end
+
 function PANEL:AddColor(color)
-	table.insert(self.Colors, color)
-	self.isDirty = true
+	table.insert(self.colors, color)
+	self.needsRebuildChart = true
 end
 
 function PANEL:AddColors(colors)
 	for key, color in ipairs(colors) do
-		table.insert(self.Colors, color)
+		table.insert(self.colors, color)
 	end
 
-	self.isDirty = true
+	self.needsRebuildChart = true
 end
 
 function PANEL:ClearColors()
-	table.Empty(self.Colors)
-	self.isDirty = true
+	table.Empty(self.colors)
+	self.needsRebuildChart = true
 end
 
 function PANEL:PerformLayout(w, h)
-	self.isDirty = true
+	self.needsRebuildChart = true
 end
 
 local function GetSquareEdgePoint(cx, cy, size, degrees)
@@ -80,9 +108,10 @@ local function GetSquareEdgePoint(cx, cy, size, degrees)
 	return cx + cos * scale, cy + sin * scale
 end
 
+
 function PANEL:BuildChart(x, y, w, h)
-	local chart = self.Chart
-	local colors = self.Colors
+	local chart = self.chart
+	local colors = self.colors
 	local count = #colors
 
 	table.Empty(chart)
@@ -96,7 +125,7 @@ function PANEL:BuildChart(x, y, w, h)
 			})
 		end
 
-		self.isDirty = false
+		self.needsRebuildChart = false
 		return
 	end
 
@@ -144,15 +173,15 @@ function PANEL:BuildChart(x, y, w, h)
 		})
 	end
 
-	self.isDirty = false
+	self.needsRebuildChart = false
 end
 
 function PANEL:PaintColorChart(x, y, w, h)
-	if self.isDirty then
+	if self.needsRebuildChart then
 		self:BuildChart(x, y, w, h)
 	end
 
-	local chart = self.Chart
+	local chart = self.chart
 	local count = #chart
 
 	draw.NoTexture()
@@ -178,39 +207,78 @@ function PANEL:PaintColorChart(x, y, w, h)
 	end
 end
 
-
 function PANEL:Paint(w, h)
+	local boxSize = math.min(w, h)
+
+	local isDepressed = self.Depressed and not self.Dragging
+	local oldIsDepressed = self.oldIsDepressed
+
+	local isHovered = self:IsHovered() or self:IsChildHovered()
+	local oldIsHovered = self.oldIsHovered
+
+	local isSelected = self:IsSelected()
+
+	local depressionBorder = 0
+	local hoveredBorder = 0
+
+	if oldIsDepressed ~= isDepressed then
+		self.needsRebuildChart = true
+		self.oldIsDepressed = isDepressed
+		self:OnDepressionChanged(isDepressed)
+	end
+
+	if oldIsHovered ~= isHovered then
+		self.needsRebuildChart = true
+		self.oldIsHovered = isHovered
+	end
+
+	local depressionBorderSize = math.min(boxSize / 16, 4)
+	depressionBorder = isDepressed and depressionBorderSize or 0
+
+	local hoveredBorderSize = math.min(boxSize / 32, 2)
+	hoveredBorder = isHovered and hoveredBorderSize or 0
+
 	draw.NoTexture()
 
-	local border = 2
+	local outerBorder = math.max(depressionBorder, hoveredBorder)
+
+	local x = outerBorder
+	local y = outerBorder
+
+	local innerBorder = 2
 	local shadow = 2
 
-	local borderBoxW = w - shadow
-	local borderBoxH = h - shadow
+	local borderBoxW = w - shadow - 2 * outerBorder
+	local borderBoxH = h - shadow - 2 * outerBorder
 
-	local innerBoxW = borderBoxW - border * 2
-	local innerBoxH = borderBoxW - border * 2
+	local innerBoxW = borderBoxW - innerBorder * 2
+	local innerBoxH = borderBoxW - innerBorder * 2
+
+	local innerBoxX = x + innerBorder
+	local innerBoxY = y + innerBorder
 
 	local shadowBoxW = borderBoxW
 	local shadowBoxH = borderBoxH
 
-	surface.SetDrawColor(0, 0, 0, 120)
-	surface.DrawRect(2, 2, shadowBoxW, shadowBoxH)
-
-	surface.SetDrawColor(0, 0, 0, 120)
-	surface.DrawRect(1, 1, shadowBoxW, shadowBoxH)
-
-	self:PaintColorChart(border, border, innerBoxW, innerBoxH)
-
-	if self:IsHovered() then
-		surface.SetDrawColor(0, 0, 0, 50)
-		surface.DrawRect(border, border, innerBoxW, innerBoxH)
+	for i = 1, shadow do
+		surface.SetDrawColor(0, 0, 0, 120)
+		surface.DrawRect(x + i, y + i, shadowBoxW, shadowBoxH)
 	end
 
-	surface.SetDrawColor(0, 0, 0, 255)
-	surface.DrawOutlinedRect(0, 0, borderBoxW, borderBoxH, border)
-end
+	self:PaintColorChart(innerBoxX, innerBoxY, innerBoxW, innerBoxH)
 
+	surface.SetDrawColor(0, 0, 0, 255)
+	surface.DrawOutlinedRect(x, y, borderBoxW, borderBoxH, innerBorder)
+
+	if isSelected then
+		for i, color in ipairs(g_selectionBoxColors) do
+			local border = 1 + i
+
+			surface.SetDrawColor(color)
+			surface.DrawOutlinedRect(x + border, y + border, borderBoxW - border * 2, borderBoxH - border * 2, 1)
+		end
+	end
+end
 
 vgui.Register("SligWolf_ColorSkinPickerButton", PANEL, "DButton")
 
