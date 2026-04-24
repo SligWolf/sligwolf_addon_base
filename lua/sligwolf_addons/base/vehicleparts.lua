@@ -269,7 +269,8 @@ local g_allowChildrenParts = {
 	hoverball = false,
 }
 
-local function GetColor(superparent, colorOrColorName)
+
+local function GetColor(superparent, colorOrColorName) -- @TODO remove
 	if not IsValid(superparent) then
 		error("Superparent is missing!")
 		return nil
@@ -290,28 +291,18 @@ local function GetColor(superparent, colorOrColorName)
 		return colorOrColorName
 	end
 
-	local superparentTable = superparent:SligWolf_GetTable()
-
-	local customProperties = superparentTable.customSpawnProperties or {}
-	local colors = customProperties.colors or {}
-
-	local color = colors[colorOrColorName]
-	if not color or not IsColor(color) then
-		ErrorNoHaltWithStack(
-			string.format(
-				"Color named '%s' is invalid or missing at entity '%s', replaced with a fallback color!",
-				colorOrColorName,
-				LIBVehicle.ToString(superparent)
-			)
+	ErrorNoHaltWithStack(
+		string.format(
+			"Color named '%s' is invalid or missing at entity '%s', replaced with a fallback color!",
+			colorOrColorName,
+			LIBVehicle.ToString(superparent)
 		)
+	)
 
-		return CONSTANTS.colorError2
-	end
-
-	return color
+	return CONSTANTS.colorError2
 end
 
-local function GetSkin(superparent, skinOrSkinName)
+local function GetSkin(superparent, skinOrSkinName) -- @TODO remove
 	if not IsValid(superparent) then
 		error("Superparent is missing!")
 		return nil
@@ -332,25 +323,15 @@ local function GetSkin(superparent, skinOrSkinName)
 		return skinOrSkinName
 	end
 
-	local superparentTable = superparent:SligWolf_GetTable()
-
-	local customProperties = superparentTable.customSpawnProperties or {}
-	local skins = customProperties.skins or {}
-
-	local skinValue = skins[skinOrSkinName]
-	if not skinValue or not isnumber(skinValue)  then
-		ErrorNoHaltWithStack(
-			string.format(
-				"Skin named '%s' is invalid or missing at entity '%s', replaced with a fallback skin!",
-				skinOrSkinName,
-				LIBVehicle.ToString(superparent)
-			)
+	ErrorNoHaltWithStack(
+		string.format(
+			"Skin named '%s' is invalid or missing at entity '%s', replaced with a fallback skin!",
+			skinOrSkinName,
+			LIBVehicle.ToString(superparent)
 		)
+	)
 
-		return CONSTANTS.skinError
-	end
-
-	return skinValue
+	return CONSTANTS.skinError
 end
 
 local function SetPartKeyValues(ent, keyValues)
@@ -626,7 +607,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local model = component.model
 	local color = GetColor(superparent, component.color)
 	local skin = GetSkin(superparent, component.skin)
-	local bodygroups = component.bodygroups
+	local bodygroups = component.bodygroups -- @TODO: themeData.bodygroups
 	local shadow = component.shadow
 	local nodraw = component.nodraw
 	local solid = component.solid
@@ -677,6 +658,12 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		ent:Spawn()
 		ent:Activate()
 	end
+
+	local path = LIBEntities.GetEntityPath(ent, true)
+	local themeData = self:SkinGetAppliedThemeData(superparent, path)
+
+	color = themeData and themeData.color or color
+	skin = themeData and themeData.skin or skin
 
 	ent:SetColor(color)
 	ent:SetSkin(skin)
@@ -1429,6 +1416,11 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 		return
 	end
 
+	local path = LIBEntities.GetEntityPath(ent, true)
+	local themeData = self:SkinGetAppliedThemeData(superparent, path)
+
+	color = themeData and themeData.color or color
+
 	ent:AttachToEnt(parent, attachment)
 	ent:SetParticleSpawnTime(spawnTime)
 	ent:SetParticleVelocity(velocity)
@@ -1489,6 +1481,11 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 		return
 	end
 
+	local path = LIBEntities.GetEntityPath(ent, true)
+	local themeData = self:SkinGetAppliedThemeData(superparent, path)
+
+	color = themeData and themeData.color or color
+
 	ent:AttachToEnt(parent, attachment)
 	ent:SetLightConeFOV(fov)
 	ent:SetLightConeFarZ(farZ)
@@ -1544,6 +1541,11 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 
 		return
 	end
+
+	local path = LIBEntities.GetEntityPath(ent, true)
+	local themeData = self:SkinGetAppliedThemeData(superparent, path)
+
+	color = themeData and themeData.color or color
 
 	ent:SetColor(color)
 	ent:AttachToEnt(parent, attachment)

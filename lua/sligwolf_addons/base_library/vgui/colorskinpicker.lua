@@ -251,12 +251,10 @@ function PANEL:AddOption(name, params)
 
 	table.Empty(item)
 
-	local icon = params.icon or ""
 	local title = params.title or ""
 	local order = params.order or LIBUtil.Order()
 
 	item.name = name
-	item.icon = icon
 	item.title = title
 	item.order = order
 
