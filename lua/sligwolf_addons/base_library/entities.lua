@@ -135,6 +135,63 @@ function LIB.GetSentTableFromSpawnname(sentSpawnname)
 	return sentTable
 end
 
+function LIB.GetSpawnname(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	if ent:IsVehicle() then
+		return ent.VehicleName
+	elseif ent:IsNPC() then
+		return ent.NPCName
+	elseif ent:IsWeapon() then
+		return ent.ClassName
+	elseif ent.EntityName then
+		return ent.EntityName
+	end
+
+	return nil
+end
+
+function LIB.GetSpawntable(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	local name = nil
+	local listName = nil
+
+	if ent:IsVehicle() then
+		name = ent.VehicleName
+		listName = "Vehicles"
+	elseif ent:IsNPC() then
+		name = ent.NPCName
+		listName = "NPC"
+	elseif ent:IsWeapon() then
+		name = ent.ClassName
+		listName = "Weapon"
+	elseif ent.EntityName then
+		name = ent.EntityName
+		listName = "SpawnableEntities"
+	end
+
+	if not listName then
+		return nil
+	end
+
+	local sentList = LIBUtil.GetList(listName)
+	if not sentList then
+		return nil
+	end
+
+	local listEntry = sentList[name]
+	if not listEntry then
+		return nil
+	end
+
+	return listEntry
+end
+
 function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 	if not SERVER then return end
 
@@ -794,7 +851,7 @@ function LIB.GetParentBody(ent)
 	return parentBody
 end
 
-function LIB.CalcEntityPath(ent)
+function LIB.CalcEntityPath(ent, dontIncludeRoot)
 	if not IsValid(ent) then return end
 
 	local curparent = ent
@@ -809,10 +866,18 @@ function LIB.CalcEntityPath(ent)
 
 		local parent = LIB.GetParent(curparent)
 		if not IsValid(parent) then
+			if dontIncludeRoot then
+				pathResult[#pathResult] = nil
+			end
+
 			break
 		end
 
-		if parent == ent then
+		if parent == curparent then
+			if dontIncludeRoot then
+				pathResult[#pathResult] = nil
+			end
+
 			break
 		end
 
@@ -825,20 +890,31 @@ function LIB.CalcEntityPath(ent)
 	return pathResult
 end
 
-function LIB.GetEntityPath(ent)
+function LIB.GetEntityPath(ent, dontIncludeRoot)
 	if not IsValid(ent) then return end
 
 	local cache = getCache(ent).names
 
-	local entityPath = cache.EntityPath
+	local entityPath = nil
+
+	if dontIncludeRoot then
+		entityPath = cache.EntityPathWithoutRoot
+	else
+		entityPath = cache.EntityPathWithRoot
+	end
 
 	if entityPath and entityPath ~= "" then
 		return entityPath
 	end
 
-	entityPath = LIB.CalcEntityPath(ent)
+	entityPath = LIB.CalcEntityPath(ent, dontIncludeRoot)
 
-	cache.EntityPath = entityPath
+	if dontIncludeRoot then
+		cache.EntityPathWithoutRoot = entityPath
+	else
+		cache.EntityPathWithRoot = entityPath
+	end
+
 	LIB.ClearChildrenCache(ent)
 
 	return entityPath
