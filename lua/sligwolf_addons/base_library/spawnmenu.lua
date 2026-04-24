@@ -844,22 +844,22 @@ local function g_SENTSetup(ply, sent)
 	local data_custom = data.SLIGWOLF_Custom or {}
 	sent:SetSpawnProperties(data_custom)
 
-	local dupedata = {}
-	dupedata.spawnname = spawnname
+	-- local dupedata = {}
+	-- dupedata.spawnname = spawnname
 
-	duplicator.StoreEntityModifier(sent, "SLIGWOLF_Library_Spawnmenu_SENTDupe", dupedata)
+	-- duplicator.StoreEntityModifier(sent, "SLIGWOLF_Library_Spawnmenu_SENTDupe", dupedata)
 end
 
-local function g_SENTDupe(ply, sent, data)
-	if not IsValid(sent) then return end
-	if not sent.sligwolf_baseEntity then return end
+-- local function g_SENTDupe(ply, sent, data)
+-- 	if not IsValid(sent) then return end
+-- 	if not sent.sligwolf_baseEntity then return end
 
-	if not data then return end
-	if not data.spawnname then return end
+-- 	if not data then return end
+-- 	if not data.spawnname then return end
 
-	sent.spawnname = data.spawnname
-	g_SENTSetup(ply, sent)
-end
+-- 	sent.spawnname = data.spawnname
+-- 	g_SENTSetup(ply, sent)
+-- end
 
 local g_entityAliases = {}
 
@@ -975,10 +975,13 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	entityItem.SLIGWOLF_Addonname = addonname
 	entityItem.SLIGWOLF_Hidden = hidden
 
+	entityItem.SLIGWOLF_SkinCategory = "entity"
+	entityItem.SLIGWOLF_SkinMapName = obj.skinMapName
+
 	local keyValues = table.Copy(obj.keyValues or {})
 
 	entityItem.KeyValues = keyValues
-	entityItem.KeyValues.sligwolf_spawnname = spawnname
+	--entityItem.KeyValues.sligwolf_spawnname = spawnname
 
 	entityItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
@@ -988,7 +991,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 
 	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 2000)
 
-	duplicator.RegisterEntityModifier("SLIGWOLF_Library_Spawnmenu_SENTDupe", g_SENTDupe)
+	--duplicator.RegisterEntityModifier("SLIGWOLF_Library_Spawnmenu_SENTDupe", g_SENTDupe)
 end
 
 local g_WeaponOrder = 0
@@ -1044,10 +1047,13 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 	weaponItem.SLIGWOLF_Addonname = addonname
 	weaponItem.SLIGWOLF_Hidden = hidden
 
+	weaponItem.SLIGWOLF_SkinCategory = "weapon"
+	weaponItem.SLIGWOLF_SkinMapName = obj.skinMapName
+
 	local keyValues = table.Copy(obj.keyValues or {})
 
 	weaponItem.KeyValues = keyValues
-	weaponItem.KeyValues.sligwolf_spawnname = spawnname
+	--weaponItem.KeyValues.sligwolf_spawnname = spawnname
 
 	weaponItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
@@ -1144,8 +1150,12 @@ function LIB.AddNPC(addonname, spawnname, obj)
 	npcListItem.SLIGWOLF_Addonname = addonname
 	npcListItem.SLIGWOLF_Hidden = hidden
 
+	npcListItem.SLIGWOLF_SkinCategory = "npc"
+	npcListItem.SLIGWOLF_SkinMapName = obj.skinMapName
+
 	npcListItem.SpawnFlags = obj.spawnFlags
 	npcListItem.KeyValues = table.Copy(obj.keyValues or {})
+
 	npcListItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
 	list.Set("NPC", spawnname, npcListItem)
@@ -1225,8 +1235,10 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.Is_SLIGWOLF = true
 	vehicleListItem.SLIGWOLF_Addonname = addonname
 	vehicleListItem.SLIGWOLF_Hidden = hidden
-	vehicleListItem.SLIGWOLF_Spawnname = spawnname
 	vehicleListItem.SLIGWOLF_SpawnFreezed = spawnFreezed
+
+	vehicleListItem.SLIGWOLF_SkinCategory = "vehicle"
+	vehicleListItem.SLIGWOLF_SkinMapName = obj.skinMapName
 
 	vehicleListItem.Members = members
 

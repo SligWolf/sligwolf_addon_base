@@ -464,29 +464,33 @@ function ENT:GetSpawnProperty(name)
 	return defaultSpawnProperties[name]
 end
 
+-- function ENT:GetSpawnName()
+-- 	local spawnname = self.spawnname
+-- 	if spawnname then
+-- 		return spawnname
+-- 	end
+
+-- 	local entTable = self:SligWolf_GetTable()
+
+-- 	local class = self:GetClass()
+-- 	self.spawnname = class
+
+-- 	local keyValues = entTable.keyValues
+-- 	if not keyValues then
+-- 		return class
+-- 	end
+
+-- 	spawnname = keyValues.sligwolf_spawnname
+-- 	if not spawnname then
+-- 		return class
+-- 	end
+
+-- 	self.spawnname = spawnname
+-- 	return spawnname
+-- end
+
 function ENT:GetSpawnName()
-	local spawnname = self.spawnname
-	if spawnname then
-		return spawnname
-	end
-
-	local entTable = self:SligWolf_GetTable()
-
-	local class = self:GetClass()
-	self.spawnname = class
-
-	local keyValues = entTable.keyValues
-	if not keyValues then
-		return class
-	end
-
-	local spawnname = keyValues.sligwolf_spawnname
-	if not spawnname then
-		return class
-	end
-
-	self.spawnname = spawnname
-	return spawnname
+	return self.EntityName
 end
 
 function ENT:OnEntityCopyTableFinish(data)
