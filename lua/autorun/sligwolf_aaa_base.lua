@@ -74,12 +74,9 @@ local function initLibGlobal()
 	local lib = _G.SligWolf_Addons or {}
 	_G.SligWolf_Addons = lib
 
-	local oldIsManuallyReloading = lib.IsManuallyReloading or false
-
 	emptyLib(lib)
 
 	lib.WasReloaded = isReloading
-	lib.IsManuallyReloading = oldIsManuallyReloading
 
 	lib.Loaded = nil
 	lib.Loading = true
@@ -107,8 +104,6 @@ local function initLibGlobal()
 			return false
 		end
 
-		local isManuallyReloading = thislib.IsManuallyReloading or false
-
 		-- debounce rapid reload calls
 		timer.Remove(g_reloadAddonTimerName)
 		timer.Create(g_reloadAddonTimerName, 0.25, 1, function()
@@ -122,9 +117,7 @@ local function initLibGlobal()
 				return
 			end
 
-			thislib.IsManuallyReloading = isManuallyReloading
 			init()
-			thislib.IsManuallyReloading = false
 		end)
 
 		-- we are reloading, if we return true here, the caller should return immediately
@@ -147,7 +140,6 @@ init = function()
 	local SligWolf_Addons = _G.SligWolf_Addons
 
 	SligWolf_Addons.Loading = nil
-	SligWolf_Addons.IsManuallyReloading = false
 
 	if not status then
 		SligWolf_Addons.Loaded = nil

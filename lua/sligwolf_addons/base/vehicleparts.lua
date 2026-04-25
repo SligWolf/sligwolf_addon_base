@@ -20,6 +20,7 @@ local LIBCoupling = SligWolf_Addons.Coupling
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
 local LIBModel = SligWolf_Addons.Model
+local LIBPrint = SligWolf_Addons.Print
 local LIBTimer = SligWolf_Addons.Timer
 
 local g_FallbackComponentsParams = {
@@ -269,71 +270,6 @@ local g_allowChildrenParts = {
 	hoverball = false,
 }
 
-
-local function GetColor(superparent, colorOrColorName) -- @TODO remove
-	if not IsValid(superparent) then
-		error("Superparent is missing!")
-		return nil
-	end
-
-	if not isstring(colorOrColorName) then
-		if not IsColor(colorOrColorName) then
-			ErrorNoHaltWithStack(
-				string.format(
-					"Invalid or missing color at entity '%s', replaced with a fallback color!",
-					LIBVehicle.ToString(superparent)
-				)
-			)
-
-			return CONSTANTS.colorError1
-		end
-
-		return colorOrColorName
-	end
-
-	ErrorNoHaltWithStack(
-		string.format(
-			"Color named '%s' is invalid or missing at entity '%s', replaced with a fallback color!",
-			colorOrColorName,
-			LIBVehicle.ToString(superparent)
-		)
-	)
-
-	return CONSTANTS.colorError2
-end
-
-local function GetSkin(superparent, skinOrSkinName) -- @TODO remove
-	if not IsValid(superparent) then
-		error("Superparent is missing!")
-		return nil
-	end
-
-	if not isstring(skinOrSkinName) then
-		if not isnumber(skinOrSkinName) then
-			ErrorNoHaltWithStack(
-				string.format(
-					"Invalid or missing skin at entity '%s', replaced with a fallback skin!",
-					LIBVehicle.ToString(superparent)
-				)
-			)
-
-			return CONSTANTS.skinError
-		end
-
-		return skinOrSkinName
-	end
-
-	ErrorNoHaltWithStack(
-		string.format(
-			"Skin named '%s' is invalid or missing at entity '%s', replaced with a fallback skin!",
-			skinOrSkinName,
-			LIBVehicle.ToString(superparent)
-		)
-	)
-
-	return CONSTANTS.skinError
-end
-
 local function SetPartKeyValues(ent, keyValues)
 	if not keyValues then return end
 
@@ -501,14 +437,14 @@ end
 local function SetUnsetComponentsValuesToDefaults(component)
 	local componentType = tostring(component.type or "")
 	if componentType == "" then
-		error("component.type is not set!")
+		LIBPrint.Error("component.type is not set!")
 		return nil
 	end
 	component.type = componentType
 
 	local componentName = tostring(component.name or "")
 	if componentName == "" then
-		error("component.name is not set! (component.type = '" .. componentType .. "')")
+		LIBPrint.Error("component.name is not set! (component.type = '%s')", componentType)
 		return nil
 	end
 	component.name = componentName
@@ -517,11 +453,30 @@ local function SetUnsetComponentsValuesToDefaults(component)
 	local hasChildren = children and not table.IsEmpty(children)
 
 	if hasChildren and not g_allowChildrenParts[componentType] then
-		error("component must not have children! (component.name = '" .. componentName .. "', component.type = '" .. componentType .. "')")
+		LIBPrint.Error("component must not have children! (component.name = '%s', component.type = '%s')", componentName, componentType)
 		return
 	end
 
 	component.hasChildren = hasChildren
+
+	local color = component.color
+	local skin = tonumber(component.skin)
+	local bodygroups = component.bodygroups
+
+	if color and not IsColor(color) then
+		LIBPrint.Error("component.color must be a color object! (component.name = '%s', component.type = '%s')", componentName, componentType)
+		return
+	end
+
+	if skin and not isnumber(skin) then
+		LIBPrint.Error("component.skin must be a number! (component.name = '%s', component.type = '%s')", componentName, componentType)
+		return
+	end
+
+	if bodygroups and not istable(bodygroups) then
+		LIBPrint.Error("component.bodygroups must be a table! (component.name = '%s', component.type = '%s')", componentName, componentType)
+		return
+	end
 
 	local mergedFallbackComponentsParams = table.Copy(g_FallbackComponentsParams)
 
@@ -543,14 +498,9 @@ local function SetUnsetComponentsValuesToDefaults(component)
 		component[k] = table.Merge(v, component[k] or {})
 	end
 
-	local color = component.color
-	if not color then
-		color = mergedFallbackComponentsParams.color
-	end
-
 	local attachment = tostring(component.attachment or "")
 	if attachment == "" then
-		error("component.attachment is not set!")
+		LIBPrint.Error("component.attachment is not set! (component.name = '%s', component.type = '%s')", componentName, componentType)
 		return nil
 	end
 	component.attachment = attachment
@@ -605,9 +555,6 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	if not IsValid(ent) then return end
 
 	local model = component.model
-	local color = GetColor(superparent, component.color)
-	local skin = GetSkin(superparent, component.skin)
-	local bodygroups = component.bodygroups -- @TODO: themeData.bodygroups
 	local shadow = component.shadow
 	local nodraw = component.nodraw
 	local solid = component.solid
@@ -659,19 +606,25 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		ent:Activate()
 	end
 
-	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeData(superparent, path)
-
-	color = themeData and themeData.color or color
-	skin = themeData and themeData.skin or skin
-
-	ent:SetColor(color)
-	ent:SetSkin(skin)
-
 	ent.DoNotDuplicate = true
 
-	for bodygroupName, bodygroup in pairs(bodygroups) do
-		LIBEntities.SetBodygroupSubId(ent, bodygroup.index, bodygroup.mesh)
+	local path = LIBEntities.GetEntityPath(ent, true)
+	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
+
+	local color = themeData and themeData.color or component.color
+	local mdlSkin = themeData and themeData.skin or component.skin
+	local bodygroups = themeData and themeData.bodygroups or component.bodygroups
+
+	if color then
+		ent:SetColor(color)
+	end
+
+	if mdlSkin then
+		ent:SetSkin(mdlSkin)
+	end
+
+	if bodygroups then
+		LIBEntities.SetBodygroupMeshIds(ent, bodygroups)
 	end
 
 	ent:DrawShadow(shadow)
@@ -1380,7 +1333,6 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	local class = component.class
 	local keyValues = component.keyValues
 	local inputFires = component.inputFires
-	local color = GetColor(superparent, component.color)
 	local spawnTime = component.spawnTime
 	local velocity = component.velocity
 	local startSize = component.startSize
@@ -1417,14 +1369,17 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	end
 
 	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeData(superparent, path)
+	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
 
-	color = themeData and themeData.color or color
+	local color = themeData and themeData.color or component.color
+
+	if color then
+		ent:SetColor(color)
+	end
 
 	ent:AttachToEnt(parent, attachment)
 	ent:SetParticleSpawnTime(spawnTime)
 	ent:SetParticleVelocity(velocity)
-	ent:SetColor(color)
 	ent:SetParticleStartSize(startSize)
 	ent:SetParticleEndSize(endSize)
 	ent:SetParticleLifeTime(lifeTime)
@@ -1452,7 +1407,6 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	local inputFires = component.inputFires
 	local fov = component.fov
 	local farZ = component.farZ
-	local color = GetColor(superparent, component.color)
 	local shadowRenderDist = component.shadowRenderDist
 	local selfAttachment = component.selfAttachment
 
@@ -1482,14 +1436,17 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	end
 
 	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeData(superparent, path)
+	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
 
-	color = themeData and themeData.color or color
+	local color = themeData and themeData.color or component.color
+
+	if color then
+		ent:SetColor(color)
+	end
 
 	ent:AttachToEnt(parent, attachment)
 	ent:SetLightConeFOV(fov)
 	ent:SetLightConeFarZ(farZ)
-	ent:SetColor(color)
 	ent:SetLightConeShadowRenderDist(shadowRenderDist)
 
 	ent.sligwolf_blockedprop = true
@@ -1510,7 +1467,6 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	local class = component.class
 	local keyValues = component.keyValues
 	local inputFires = component.inputFires
-	local color = GetColor(superparent, component.color)
 	local size = component.size
 	local enlarge = component.enlarge
 	local count = component.count
@@ -1543,11 +1499,14 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	end
 
 	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeData(superparent, path)
+	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
 
-	color = themeData and themeData.color or color
+	local color = themeData and themeData.color or component.color
 
-	ent:SetColor(color)
+	if color then
+		ent:SetColor(color)
+	end
+
 	ent:AttachToEnt(parent, attachment)
 	ent:SetGlowSize(size)
 	ent:SetGlowEnlarge(enlarge)

@@ -272,16 +272,8 @@ function LIB.CountEntities(entities)
 	return i
 end
 
-local g_listCache = {}
-
 function LIB.GetList(name)
-	if g_listCache[name] then
-		return g_listCache[name]
-	end
-
 	local listItem = list.GetForEdit(name)
-
-	g_listCache[name] = listItem
 	return listItem
 end
 

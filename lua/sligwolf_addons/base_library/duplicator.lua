@@ -11,6 +11,8 @@ local LIBTimer = nil
 local LIBMeta = nil
 
 local g_mainEntityModifierName = "SLIGWOLF_Library_Duplicator_MainEntityModifier"
+local g_isDupedEntityModifierName = "SLIGWOLF_Library_Duplicator_IsDupedEntityModifier"
+
 local g_emptyFunction = function() end
 
 function LIB.RemoveBadDupeData(data)
@@ -58,19 +60,68 @@ function LIB.RemoveBadDupeData(data)
 	end
 end
 
-local function postCopyCallback(ply, ent, data)
+function LIB.WasDuped(ent)
 	if not IsValid(ent) then
 		return
 	end
 
-	data = data or {}
+	local entTable = ent:SligWolf_GetTable()
+	return entTable.isDuped
+end
 
-	local timerName = LIBTimer.GetEntityTimerName(ent, "RegisterEntityModifierCallback")
+function LIB.StoreIsDupedEntityModifier(ent)
+	if not IsValid(ent) then
+		return
+	end
+
+	duplicator.StoreEntityModifier(ent, g_isDupedEntityModifierName, {})
+end
+
+local function isDupedEntityModifier(ply, ent, data)
+	if not IsValid(ent) then
+		return
+	end
 
 	local entTable = ent:SligWolf_GetTable()
 
 	-- Make sure we mark this entity as duplicated, so we can apply different logic and restrictions
 	entTable.isDuped = true
+end
+
+duplicator.RegisterEntityModifier(g_isDupedEntityModifierName, isDupedEntityModifier)
+
+local function mainPostCopyCallback(ply, ent, data)
+	if not IsValid(ent) then
+		return
+	end
+
+	data = table.Copy(data or {})
+
+	local entTable = ent:SligWolf_GetTable()
+
+	-- Make sure we mark this entity as duplicated, so we can apply different logic and restrictions
+	entTable.isDuped = true
+
+	local dupeRegister = entTable.dupeRegister
+	if not dupeRegister then
+		-- call this function again as soon as dupeRegister is being build
+		entTable.dupedCallBackData = {ply, ent, data}
+		return
+	end
+
+	entTable.dupedCallBackData = nil
+
+	for name, dupeRegisterItem in pairs(dupeRegister) do
+		if not dupeRegisterItem.postCopyFirstCallback then
+			continue
+		end
+
+		local thisData = data[name] or {}
+
+		dupeRegisterItem.postCopyFirstCallback(ent, thisData)
+	end
+
+	local timerName = LIBTimer.GetEntityTimerName(ent, "RegisterEntityModifierCallback")
 
 	LIBTimer.Remove(timerName)
 	LIBTimer.Until(timerName, 0.1, function()
@@ -93,30 +144,21 @@ local function postCopyCallback(ply, ent, data)
 			return false
 		end
 
-		local dupeRegister = superparentEntTable.dupeRegister
-		if not dupeRegister then
-			return false
-		end
-
-		for name, dupeRegisterItem in pairs(dupeRegister) do
-			if not dupeRegisterItem.isRegistered then
+		for name, dupeRegisterItem in pairs(superparentEntTable.dupeRegister or {}) do
+			if not dupeRegisterItem.postCopyAllCallback then
 				continue
 			end
 
-			if not dupeRegisterItem.postcopycallback then
-				continue
-			end
+			local thisData = data[name] or {}
 
-			local thisData = table.Copy(data[name] or {})
-
-			dupeRegisterItem.postcopycallback(superparent, thisData)
+			dupeRegisterItem.postCopyAllCallback(superparent, thisData)
 		end
 
 		return true
 	end, 100)
 end
 
-duplicator.RegisterEntityModifier(g_mainEntityModifierName, postCopyCallback)
+duplicator.RegisterEntityModifier(g_mainEntityModifierName, mainPostCopyCallback)
 
 local function preEntityCopyCallback(ent)
 	if not IsValid(ent) then
@@ -144,16 +186,12 @@ local function preEntityCopyCallback(ent)
 	local data = {}
 
 	for name, dupeRegisterItem in pairs(dupeRegister) do
-		if not dupeRegisterItem.isRegistered then
-			continue
-		end
-
-		if not dupeRegisterItem.precopycallback then
+		if not dupeRegisterItem.preCopyCallback then
 			continue
 		end
 
 		local thisData = {}
-		local tmp = dupeRegisterItem.precopycallback(superparent, thisData)
+		local tmp = dupeRegisterItem.preCopyCallback(superparent, thisData)
 
 		if istable(tmp) then
 			thisData = tmp
@@ -188,22 +226,26 @@ function LIB.RegisterEntityDuplicatorModifier(ent, params)
 		return
 	end
 
-	local precopycallback = params.copy
-	local postcopycallback = params.paste
+	local preCopyCallback = params.copy
+	local postCopyFirstCallback = params.pastedFirst
+	local postCopyAllCallback = params.pastedAll
 
-	if not isfunction(precopycallback) then
-		precopycallback = g_emptyFunction
+	if not isfunction(preCopyCallback) then
+		preCopyCallback = g_emptyFunction
 	end
 
-	if not isfunction(postcopycallback) then
-		postcopycallback = g_emptyFunction
+	if not isfunction(postCopyFirstCallback) then
+		postCopyFirstCallback = g_emptyFunction
+	end
+
+	if not isfunction(postCopyAllCallback) then
+		postCopyAllCallback = g_emptyFunction
 	end
 
 	dupeRegisterItem.name = name
-	dupeRegisterItem.precopycallback = precopycallback
-	dupeRegisterItem.postcopycallback = postcopycallback
-
-	dupeRegisterItem.isRegistered = true
+	dupeRegisterItem.preCopyCallback = preCopyCallback
+	dupeRegisterItem.postCopyFirstCallback = postCopyFirstCallback
+	dupeRegisterItem.postCopyAllCallback = postCopyAllCallback
 
 	if superparentEntTable.dupeRegisterCallbacksRegistered then
 		return
@@ -222,6 +264,10 @@ function LIB.RegisterEntityDuplicatorModifier(ent, params)
 	superparent.OnEntityCopyTableFinish = function(thisent, data, ...)
 		LIB.RemoveBadDupeData(data)
 		return oldOnEntityCopyTableFinish(thisent, data, ...)
+	end
+
+	if superparentEntTable.dupedCallBackData then
+		mainPostCopyCallback(unpack(superparentEntTable.dupedCallBackData))
 	end
 end
 

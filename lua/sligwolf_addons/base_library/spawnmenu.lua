@@ -844,22 +844,22 @@ local function g_SENTSetup(ply, sent)
 	local data_custom = data.SLIGWOLF_Custom or {}
 	sent:SetSpawnProperties(data_custom)
 
-	-- local dupedata = {}
-	-- dupedata.spawnname = spawnname
+	local dupedata = {}
+	dupedata.spawnname = spawnname
 
-	-- duplicator.StoreEntityModifier(sent, "SLIGWOLF_Library_Spawnmenu_SENTDupe", dupedata)
+	duplicator.StoreEntityModifier(sent, "SLIGWOLF_Library_Spawnmenu_SENTDupe", dupedata)
 end
 
--- local function g_SENTDupe(ply, sent, data)
--- 	if not IsValid(sent) then return end
--- 	if not sent.sligwolf_baseEntity then return end
+local function g_SENTDupe(ply, sent, data)
+	if not IsValid(sent) then return end
+	if not sent.sligwolf_baseEntity then return end
 
--- 	if not data then return end
--- 	if not data.spawnname then return end
+	if not data then return end
+	if not data.spawnname then return end
 
--- 	sent.spawnname = data.spawnname
--- 	g_SENTSetup(ply, sent)
--- end
+	sent.spawnname = data.spawnname
+	g_SENTSetup(ply, sent)
+end
 
 local g_entityAliases = {}
 
@@ -981,7 +981,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	local keyValues = table.Copy(obj.keyValues or {})
 
 	entityItem.KeyValues = keyValues
-	--entityItem.KeyValues.sligwolf_spawnname = spawnname
+	entityItem.KeyValues.sligwolf_spawnname = spawnname
 
 	entityItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
@@ -989,9 +989,9 @@ function LIB.AddEntity(addonname, spawnname, obj)
 
 	LIB.AddEntityAlias(spawnname, entityItem.ClassName)
 
-	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 2000)
+	LIBHook.Add("PlayerSpawnedSENT", "Library_Spawnmenu_SENTSetup", g_SENTSetup, 20000)
 
-	--duplicator.RegisterEntityModifier("SLIGWOLF_Library_Spawnmenu_SENTDupe", g_SENTDupe)
+	duplicator.RegisterEntityModifier("SLIGWOLF_Library_Spawnmenu_SENTDupe", g_SENTDupe)
 end
 
 local g_WeaponOrder = 0
@@ -1053,7 +1053,7 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 	local keyValues = table.Copy(obj.keyValues or {})
 
 	weaponItem.KeyValues = keyValues
-	--weaponItem.KeyValues.sligwolf_spawnname = spawnname
+	weaponItem.KeyValues.sligwolf_spawnname = spawnname
 
 	weaponItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
@@ -1337,7 +1337,121 @@ if CLIENT then
 	end)
 end
 
-local function AddExtraContent(propPanel, addonname)
+local function AddColorSkinPicker(propPanel, addonname, category)
+	if not IsValid(propPanel) then
+		return
+	end
+
+	local containerDivider = propPanel.sligwolf_containerDivider
+	if not IsValid(containerDivider) then
+		return
+	end
+
+	local addon = SligWolf_Addons.GetAddon(addonname)
+	if not addon then
+		return
+	end
+
+	local themes = addon:SkinGetThemes(category)
+	if not themes or #themes <= 1 then
+		return
+	end
+
+	local convar = addon:SkinAddConvar(category)
+	if not convar then
+		return
+	end
+
+	local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker")
+
+	colorSkinPicker:SetConVar(convar)
+
+	for i, theme in ipairs(themes) do
+		local name = theme.name
+		local order = theme.order
+		local buttonParams = theme.button
+		local title = buttonParams.title
+		local colors = buttonParams.colors
+
+		colorSkinPicker:AddOption(name, {
+			title = title,
+			order = order,
+			colors = colors,
+		})
+	end
+
+	local selected = colorSkinPicker:GetSelected()
+	if selected == "" then
+		local defaultTheme = addon:SkinGetDefaultTheme(category)
+		if defaultTheme then
+			colorSkinPicker:SetSelected(defaultTheme.name)
+		end
+	end
+
+	containerDivider:SetBottom(colorSkinPicker)
+
+	containerDivider:SetDividerHeight(16)
+	containerDivider:SetBottomMin(0)
+
+	containerDivider:DoConstraints()
+
+	propPanel.sligwold_oldPerformLayout = propPanel.sligwold_oldPerformLayout or propPanel.PerformLayout
+	propPanel.PerformLayout = function(this, w, h, ...)
+		this.sligwold_oldPerformLayout(this, w, h, ...)
+
+		if not IsValid(containerDivider) then
+			return
+		end
+
+		local height = containerDivider:GetTall()
+
+		if height <= 200 then
+			return
+		end
+
+		local topMin = math.Clamp(height - 200, 0, height)
+		local topMax = height
+		local topHeight = math.Clamp(height - 100, topMin, height)
+
+		containerDivider:SetTopMin(topMin)
+		containerDivider:SetTopMax(topMax)
+		containerDivider:SetTopHeight(topHeight)
+
+		this.PerformLayout = this.sligwold_oldPerformLayout or this.PerformLayout
+	end
+
+	local dragBar = containerDivider.m_DragBar
+	local dragBarSkin = dragBar:GetSkin()
+
+	dragBar.Paint = function(_, w, h)
+		local lineH = math.floor(h / 6)
+		local lineW = math.min(math.floor(w * 0.95), w - lineH * 4)
+
+		local lineX = math.floor((w - lineW) / 2)
+		local lineY1 = lineH * 3
+		local lineY2 = h - lineH * 3
+
+		local fgColor = dragBarSkin.Colours.Label.Default
+
+		surface.SetDrawColor(0, 0, 0, 120)
+		surface.DrawRect(lineX + 1, lineY1 + 1, lineW, lineH)
+		surface.SetDrawColor(fgColor)
+		surface.DrawRect(lineX, lineY1, lineW, lineH)
+
+		surface.SetDrawColor(0, 0, 0, 120)
+		surface.DrawRect(lineX + 1, lineY2 + 1, lineW, lineH)
+		surface.SetDrawColor(fgColor)
+		surface.DrawRect(lineX, lineY2, lineW, lineH)
+	end
+
+	propPanel:InvalidateLayout()
+end
+
+local function RequestAddColorSkinPicker(propPanel, addonname, category)
+	if not IsValid(propPanel) then
+		return
+	end
+
 	if propPanel.sligwolf_extraHasContent then
 		return
 	end
@@ -1345,84 +1459,7 @@ local function AddExtraContent(propPanel, addonname)
 	propPanel.sligwolf_extraHasContent = true
 
 	LIBTimer.SimpleNextFrame(function()
-		if not IsValid(propPanel) then
-			return
-		end
-
-		local containerDivider = propPanel.sligwolf_containerDivider
-		if not IsValid(containerDivider) then
-			return
-		end
-
-		local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker")
-
-		for a = 1, 10 do
-			colorSkinPicker:AddOption("teat" .. a, {
-				colors = {
-					ColorRand(),
-					ColorRand(),
-					ColorRand(),
-				}
-			})
-		end
-
-		containerDivider:SetBottom(colorSkinPicker)
-
-		containerDivider:SetDividerHeight(16)
-		containerDivider:SetBottomMin(0)
-
-		containerDivider:DoConstraints()
-
-		propPanel.sligwold_oldPerformLayout = propPanel.sligwold_oldPerformLayout or propPanel.PerformLayout
-		propPanel.PerformLayout = function(this, w, h, ...)
-			this.sligwold_oldPerformLayout(this, w, h, ...)
-
-			if not IsValid(containerDivider) then
-				return
-			end
-
-			local height = containerDivider:GetTall()
-
-			if height <= 200 then
-				return
-			end
-
-			local topMin = math.Clamp(height - 200, 0, height)
-			local topMax = height
-			local topHeight = math.Clamp(height - 100, topMin, height)
-
-			containerDivider:SetTopMin(topMin)
-			containerDivider:SetTopMax(topMax)
-			containerDivider:SetTopHeight(topHeight)
-
-			this.PerformLayout = this.sligwold_oldPerformLayout or this.PerformLayout
-		end
-
-		local dragBar = containerDivider.m_DragBar
-		local dragBarSkin = dragBar:GetSkin()
-
-		dragBar.Paint = function(_, w, h)
-			local lineH = math.floor(h / 6)
-			local lineW = math.min(math.floor(w * 0.95), w - lineH * 4)
-
-			local lineX = math.floor((w - lineW) / 2)
-			local lineY1 = lineH * 3
-			local lineY2 = h - lineH * 3
-
-			local fgColor = dragBarSkin.Colours.Label.Default
-
-			surface.SetDrawColor(0, 0, 0, 120)
-			surface.DrawRect(lineX + 1, lineY1 + 1, lineW, lineH)
-			surface.SetDrawColor(fgColor)
-			surface.DrawRect(lineX, lineY1, lineW, lineH)
-
-			surface.SetDrawColor(0, 0, 0, 120)
-			surface.DrawRect(lineX + 1, lineY2 + 1, lineW, lineH)
-			surface.SetDrawColor(fgColor)
-			surface.DrawRect(lineX, lineY2, lineW, lineH)
-		end
-
-		propPanel:InvalidateLayout()
+		AddColorSkinPicker(propPanel, addonname, category)
 	end)
 end
 
@@ -1563,7 +1600,7 @@ function LIB.Load()
 					admin = item.adminOnly
 				})
 
-				AddExtraContent(propPanel, item.addonName)
+				RequestAddColorSkinPicker(propPanel, item.addonName, "entity")
 			end
 		)
 
@@ -1586,6 +1623,8 @@ function LIB.Load()
 					material = item.icon or "entities/" .. item.spawnName .. ".png",
 					admin = item.adminOnly
 				})
+
+				RequestAddColorSkinPicker(propPanel, item.addonName, "weapon")
 			end
 		)
 
@@ -1610,7 +1649,7 @@ function LIB.Load()
 					weapon = item.weapons,
 				})
 
-				AddExtraContent(propPanel, item.addonName)
+				RequestAddColorSkinPicker(propPanel, item.addonName, "npc")
 			end
 		)
 
@@ -1646,7 +1685,7 @@ function LIB.Load()
 					})
 				end
 
-				AddExtraContent(propPanel, item.addonName)
+				RequestAddColorSkinPicker(propPanel, item.addonName, "vehicle")
 			end
 		)
 

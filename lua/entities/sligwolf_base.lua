@@ -27,6 +27,7 @@ end
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPhysics = SligWolf_Addons.Physics
 local LIBBones = SligWolf_Addons.Bones
@@ -36,6 +37,7 @@ local LIBUtil = SligWolf_Addons.Util
 
 ENT.FallbackModel = CONSTANTS.mdlCube1
 ENT.SWName = ""
+ENT.WaitForAsyncPositioning = false
 
 function ENT:Initialize()
 	self:InitializeModel()
@@ -58,6 +60,17 @@ function ENT:Initialize()
 			self:UpdateChildren(nil, nil, LIBEntities.GetParent(self))
 		end)
 	end
+
+	self._positioningDone = nil
+
+	if SERVER then
+		if not self.WaitForAsyncPositioning then
+			self._positioningDone = true
+			self:OnPositioningDone()
+		else
+			self._positioningDone = false
+		end
+	end
 end
 
 function ENT:InitializePhysicsInternal()
@@ -73,6 +86,10 @@ end
 
 function ENT:PostInitialize()
 	self:HandleSpawnFinishedEvent()
+end
+
+function ENT:OnPositioningDone()
+	-- override me
 end
 
 function ENT:InitializeModel()
@@ -259,12 +276,19 @@ function ENT:Think()
 
 	local result = self:ThinkInternal()
 
-	local nextSlowThink = self.NextSlowThink or 0
+	local nextSlowThink = self._nextSlowThink or 0
 	local now = CurTime()
 
 	if nextSlowThink < now then
 		self:SlowThink()
-		self.NextSlowThink = now + 0.5
+		self._nextSlowThink = now + 0.5
+	end
+
+	if SERVER and self._positioningDone == false then
+		if not LIBPosition.IsAsyncPositioning(self) then
+			self._positioningDone = true
+			self:OnPositioningDone()
+		end
 	end
 
 	if self.isAnimated then
@@ -464,33 +488,29 @@ function ENT:GetSpawnProperty(name)
 	return defaultSpawnProperties[name]
 end
 
--- function ENT:GetSpawnName()
--- 	local spawnname = self.spawnname
--- 	if spawnname then
--- 		return spawnname
--- 	end
-
--- 	local entTable = self:SligWolf_GetTable()
-
--- 	local class = self:GetClass()
--- 	self.spawnname = class
-
--- 	local keyValues = entTable.keyValues
--- 	if not keyValues then
--- 		return class
--- 	end
-
--- 	spawnname = keyValues.sligwolf_spawnname
--- 	if not spawnname then
--- 		return class
--- 	end
-
--- 	self.spawnname = spawnname
--- 	return spawnname
--- end
-
 function ENT:GetSpawnName()
-	return self.EntityName
+	local spawnname = self.spawnname
+	if spawnname then
+		return spawnname
+	end
+
+	local entTable = self:SligWolf_GetTable()
+
+	local class = self:GetClass()
+	self.spawnname = class
+
+	local keyValues = entTable.keyValues
+	if not keyValues then
+		return class
+	end
+
+	spawnname = keyValues.sligwolf_spawnname
+	if not spawnname then
+		return class
+	end
+
+	self.spawnname = spawnname
+	return spawnname
 end
 
 function ENT:OnEntityCopyTableFinish(data)

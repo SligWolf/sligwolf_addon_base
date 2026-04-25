@@ -141,6 +141,8 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 
 	entTable.customSpawnProperties = customSpawnProperties
 
+	local ply = entTable.spawnerPlayer
+
 	if isSpawnedByEngine then
 		if vehicle.SetVehicleClass and SERVER then
 			vehicle:SetVehicleClass(vehicleSpawnname)
@@ -166,7 +168,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 
 		self:CallAddonFunctionWithErrorNoHalt(
 			"SpawnVehicle",
-			entTable.spawnerPlayer,
+			ply,
 			thisVehicle,
 			vat,
 			customSpawnProperties

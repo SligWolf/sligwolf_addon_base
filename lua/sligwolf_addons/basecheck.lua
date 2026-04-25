@@ -183,7 +183,7 @@ end
 function SLIGWOLF_BASECHECK.DoRuntimeChecks()
 	local SligWolf_Addons = SligWolf_Addons
 
-	if not SLIGWOLF_BASECHECK.CheckBaseAddonVersion(SligWolf_Addons.IsManuallyReloading) then
+	if not SLIGWOLF_BASECHECK.CheckBaseAddonVersion() then
 		return SligWolf_Addons.ERROR_BAD_VERSION
 	end
 

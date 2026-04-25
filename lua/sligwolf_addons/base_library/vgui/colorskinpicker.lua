@@ -10,8 +10,11 @@ end
 local LIBUtil = SligWolf_Addons.Util
 
 local PANEL = {}
+
 AccessorFunc(PANEL, "m_ConVar", "ConVar")
 AccessorFunc(PANEL, "m_Selected", "Selected")
+
+Derma_Install_Convar_Functions( PANEL )
 
 function PANEL:Init()
 	self:SetPaintBackground(false)
@@ -20,12 +23,20 @@ function PANEL:Init()
 	self.itemsOrdered = {}
 	self.itemsByName = {}
 	self.needsRebuildButtonList = false
+
+	self.m_Selected = ""
 end
 
-function PANEL:SetLabel(txt)
+function PANEL:Think()
+	self:ConVarStringThink()
 end
 
-function PANEL:SetConVar(cvar)
+function PANEL:SetValue(value)
+	self:SetSelected(value)
+end
+
+function PANEL:GetValue()
+	return self:GetSelected()
 end
 
 local g_buttonSizes = {
@@ -38,12 +49,17 @@ function PANEL:OnSelected(selectedName)
 end
 
 function PANEL:SetSelected(newSelected)
+	newSelected = tostring(newSelected or "")
+
 	local oldSelected = self.m_Selected
 	local oldSelectedButton = self:GetSelectedButton()
+	local changed = false
 
 	if oldSelected ~= newSelected then
 		self.m_Selected = newSelected
 		self.m_SelectedButton = nil
+
+		changed = true
 	end
 
 	local newSelectedButton = self:GetSelectedButton()
@@ -56,13 +72,14 @@ function PANEL:SetSelected(newSelected)
 		newSelectedButton:SetSelected(true)
 		self:OnSelected(newSelected)
 	end
+
+	if changed then
+		self:ConVarChanged(newSelected)
+	end
 end
 
 function PANEL:IsSelected(selectedName)
-	if not selectedName then
-		return false
-	end
-
+	newSelected = tostring(newSelected or "")
 	return self.m_Selected == selectedName
 end
 
@@ -75,10 +92,7 @@ function PANEL:GetSelectedButton()
 
 	selectedButton = nil
 
-	local itemsByName = self.itemsByName
-	local name = self.m_Selected
-
-	local item = name and itemsByName[name]
+	local item = self.itemsByName[self.m_Selected]
 	local itemButton = item and item.button
 
 	if IsValid(itemButton) then

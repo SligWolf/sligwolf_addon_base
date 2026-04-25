@@ -24,10 +24,10 @@ end
 
 -- Check sum of SW Base validation script "sligwolf_addons/basecheck.lua".
 -- It contains logic to validate the SW Base addon being installed, up to date and active. (SHA256)
-local BASECHECK_SCRIPT_CHECKSUM = "e930639742cfa87730b83a7f508cae5e05518443ae3b44ea2a9a4c2ecbdc47b1"
+local BASECHECK_SCRIPT_CHECKSUM = "9755358f8f6aba3eec3821b1fcfb82f8ae1387e10288b9266cb47badfff5a3a7"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "1.7.3"
+SligWolf_Addons.BaseApiVersion = "2.0.0"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 251210
@@ -68,6 +68,7 @@ local g_DefaultHooks = {
 
 	AllAddonsLoaded = "SLIGWOLF_AllAddonsLoaded",
 	TrackAssamblerContentAutoInclude = "SLIGWOLF_AllAddonsLoaded",
+	RunDelayedInclude = "SLIGWOLF_FirstFrame",
 }
 
 local g_FunctionPathCache = {}
@@ -1336,70 +1337,6 @@ function SligWolf_Addons.CallAllAddonsLoadedHook()
 
 	sligwolfAddons.AllAddonsLoaded = true
 	sligwolfAddons.Hook.RunCustom("AllAddonsLoaded")
-end
-
-if SERVER then
-	util.AddNetworkString("sligwolf_reload_addon")
-
-	local function runAdminOnly(ply, func)
-		if IsValid(ply) then
-			if ply:IsAdmin() then
-				func()
-			end
-
-			return
-		end
-
-		func()
-	end
-
-	concommand.Add("sv_sligwolf_reload_addon", function(ply, cmd, args)
-		local name = tostring(args[1] or "")
-
-		runAdminOnly(ply, function()
-			local sligwolfAddons = _G.SligWolf_Addons
-			if not sligwolfAddons then
-				return
-			end
-
-			g_validBase = nil
-
-			net.Start("sligwolf_reload_addon")
-				net.WriteString(name)
-			net.Broadcast()
-
-			sligwolfAddons.IsManuallyReloading = true
-
-			if name == sligwolfAddons.BASE_ADDON_NAME then
-				sligwolfAddons:ReloadAddonSystem()
-			else
-				sligwolfAddons.LoadAddon(name, true)
-			end
-
-			sligwolfAddons.IsManuallyReloading = false
-		end)
-	end)
-else
-	net.Receive("sligwolf_reload_addon", function(length)
-		local name = net.ReadString()
-
-		local sligwolfAddons = _G.SligWolf_Addons
-		if not sligwolfAddons then
-			return
-		end
-
-		g_validBase = nil
-
-		sligwolfAddons.IsManuallyReloading = true
-
-		if name == sligwolfAddons.BASE_ADDON_NAME then
-			sligwolfAddons:ReloadAddonSystem()
-		else
-			sligwolfAddons.LoadAddon(name, true)
-		end
-
-		sligwolfAddons.IsManuallyReloading = false
-	end)
 end
 
 SligWolf_Addons.Loaded = true

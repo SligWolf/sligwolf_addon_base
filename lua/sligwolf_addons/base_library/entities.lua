@@ -140,17 +140,27 @@ function LIB.GetSpawnname(ent)
 		return nil
 	end
 
+	local name = nil
+
 	if ent:IsVehicle() then
-		return ent.VehicleName
+		name = ent.VehicleName
 	elseif ent:IsNPC() then
-		return ent.NPCName
+		name = ent.NPCName
 	elseif ent:IsWeapon() then
-		return ent.ClassName
+		name = ent.ClassName
+	elseif ent.GetSpawnName then
+		name = ent:GetSpawnName()
 	elseif ent.EntityName then
-		return ent.EntityName
+		name = ent.EntityName
+	elseif ent.ClassName then
+		name = ent.ClassName
 	end
 
-	return nil
+	if not name then
+		return nil
+	end
+
+	return name
 end
 
 function LIB.GetSpawntable(ent)
@@ -170,8 +180,14 @@ function LIB.GetSpawntable(ent)
 	elseif ent:IsWeapon() then
 		name = ent.ClassName
 		listName = "Weapon"
+	elseif ent.GetSpawnName then
+		name = ent:GetSpawnName()
+		listName = "SpawnableEntities"
 	elseif ent.EntityName then
 		name = ent.EntityName
+		listName = "SpawnableEntities"
+	elseif ent.ClassName then
+		name = ent.ClassName
 		listName = "SpawnableEntities"
 	end
 
@@ -1964,23 +1980,23 @@ function LIB.GetBodygroup(ent, idOrName)
 
 	local entTable = ent:SligWolf_GetTable()
 
-	local bodyGroupsCache = entTable.bodyGroupCache
+	local bodygroupsCache = entTable.bodygroupCache
 
-	if not bodyGroupsCache or not bodyGroupsCache.byId or not bodyGroupsCache.byName then
-		bodyGroupsCache = {}
-		entTable.bodyGroupCache = bodyGroupsCache
+	if not bodygroupsCache or not bodygroupsCache.byId or not bodygroupsCache.byName then
+		bodygroupsCache = {}
+		entTable.bodygroupCache = bodygroupsCache
 
 		local byId = {}
 		local byName = {}
 
-		bodyGroupsCache.byId = byId
-		bodyGroupsCache.byName = byName
+		bodygroupsCache.byId = byId
+		bodygroupsCache.byName = byName
 
-		local bodyGroups = ent:GetBodyGroups()
+		local bodygroups = ent:GetBodyGroups()
 
-		for _, bodyGroup in ipairs(bodyGroups) do
-			local id = bodyGroup.id
-			local name = bodyGroup.name
+		for _, bodygroup in ipairs(bodygroups) do
+			local id = bodygroup.id
+			local name = bodygroup.name
 
 			if not id then
 				continue
@@ -1990,7 +2006,7 @@ function LIB.GetBodygroup(ent, idOrName)
 				continue
 			end
 
-			local item = table.Copy(bodyGroup)
+			local item = table.Copy(bodygroup)
 
 			byId[id] = item
 			byName[name] = item
@@ -1998,10 +2014,10 @@ function LIB.GetBodygroup(ent, idOrName)
 	end
 
 	if isnumber(idOrName) then
-		return bodyGroupsCache.byId[idOrName]
+		return bodygroupsCache.byId[idOrName]
 	end
 
-	return bodyGroupsCache.byName[idOrName]
+	return bodygroupsCache.byName[idOrName]
 end
 
 function LIB.GetBodygroups(ent)
@@ -2009,12 +2025,12 @@ function LIB.GetBodygroups(ent)
 		return
 	end
 
-	local bodyGroups = ent:GetBodyGroups()
+	local bodygroups = ent:GetBodyGroups()
 	local result = {}
 
-	for _, bodyGroup in ipairs(bodyGroups) do
-		local id = bodyGroup.id
-		local name = bodyGroup.name
+	for _, bodygroup in ipairs(bodygroups) do
+		local id = bodygroup.id
+		local name = bodygroup.name
 
 		if not id then
 			continue
@@ -2024,39 +2040,87 @@ function LIB.GetBodygroups(ent)
 			continue
 		end
 
-		local item = table.Copy(bodyGroup)
+		local item = table.Copy(bodygroup)
 		result[name] = item
 	end
 
 	return result
 end
 
-function LIB.GetBodygroupSubId(ent, idOrName)
+function LIB.SetBodygroupMeshId(ent, idOrName, meshId)
 	if not IsValid(ent) then
 		return
 	end
 
-	local bodyGroup = LIB.GetBodygroup(ent, idOrName)
-	if not bodyGroup then
+	meshId = tonumber(meshId or 0) or 0
+
+	local bodygroup = LIB.GetBodygroup(ent, idOrName)
+	if not bodygroup then
 		return
 	end
 
-	return ent:GetBodygroup(bodyGroup.id)
+	ent:SetBodygroup(bodygroup.id, meshId)
 end
 
-function LIB.SetBodygroupSubId(ent, idOrName, subId)
+function LIB.SetBodygroupMeshIds(ent, bodygroups)
 	if not IsValid(ent) then
 		return
 	end
 
-	subId = tonumber(subId or 0) or 0
-
-	local bodyGroup = LIB.GetBodygroup(ent, idOrName)
-	if not bodyGroup then
+	if not bodygroups then
 		return
 	end
 
-	ent:SetBodygroup(bodyGroup.id, subId)
+	for _, bodygroup in ipairs(bodygroups) do
+		local id = tonumber(bodygroup.id) or tostring(bodygroup.name)
+		local meshId = tonumber(bodygroup.meshId or 0) or 0
+
+		if not id or id == "" then
+			error("missing id or name")
+			return
+		end
+
+		LIB.SetBodygroupMeshId(ent, id, meshId)
+	end
+end
+
+function LIB.GetBodygroupMeshId(ent, idOrName)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	local bodygroup = LIB.GetBodygroup(ent, idOrName)
+	if not bodygroup then
+		return nil
+	end
+
+	return ent:GetBodygroup(bodygroup.id)
+end
+
+function LIB.GetBodygroupMeshIds(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	local bodygroups = LIB.GetBodygroups(ent)
+	local result = {}
+
+	for name, bodygroup in ipairs(bodygroups) do
+		local id = tonumber(bodygroup.id)
+		if not id then
+			continue
+		end
+
+		local meshId = LIB.GetBodygroupMeshId(ent, id)
+
+		table.insert(result, {
+			id = id,
+			name = name,
+			meshId = meshId,
+		})
+	end
+
+	return result
 end
 
 return true

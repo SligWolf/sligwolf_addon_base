@@ -68,6 +68,7 @@ loadLib("net")
 loadLib("protection")
 loadLib("spamprotection")
 loadLib("spawnmenu")
+loadLib("skinsystem")
 loadLib("vehicle")
 loadLib("velocity")
 loadLib("physgun")
@@ -85,13 +86,15 @@ loadLib("vgui")
 callLoaderFunc("Load")
 callLoaderFunc("PostLoad")
 
-SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", function()
-	callLoaderFunc("FirstFrame")
-	SligWolf_Addons.Util.FlashWindow()
-end)
-
 SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded", function()
 	callLoaderFunc("AllAddonsLoaded")
+
+	SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", function()
+		callLoaderFunc("FirstFrame")
+
+		SligWolf_Addons.Hook.RunCustom("FirstFrame")
+		SligWolf_Addons.Util.FlashWindow()
+	end)
 end, 1000)
 
 return true
