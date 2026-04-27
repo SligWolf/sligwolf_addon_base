@@ -2020,33 +2020,6 @@ function LIB.GetBodygroup(ent, idOrName)
 	return bodygroupsCache.byName[idOrName]
 end
 
-function LIB.GetBodygroups(ent)
-	if not IsValid(ent) then
-		return
-	end
-
-	local bodygroups = ent:GetBodyGroups()
-	local result = {}
-
-	for _, bodygroup in ipairs(bodygroups) do
-		local id = bodygroup.id
-		local name = bodygroup.name
-
-		if not id then
-			continue
-		end
-
-		if not name then
-			continue
-		end
-
-		local item = table.Copy(bodygroup)
-		result[name] = item
-	end
-
-	return result
-end
-
 function LIB.SetBodygroupMeshId(ent, idOrName, meshId)
 	if not IsValid(ent) then
 		return
@@ -2102,7 +2075,7 @@ function LIB.GetBodygroupMeshIds(ent)
 		return nil
 	end
 
-	local bodygroups = LIB.GetBodygroups(ent)
+	local bodygroups = ent:GetBodyGroups()
 	local result = {}
 
 	for name, bodygroup in ipairs(bodygroups) do
