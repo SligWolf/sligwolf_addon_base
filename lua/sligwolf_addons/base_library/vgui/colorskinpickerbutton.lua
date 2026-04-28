@@ -46,22 +46,6 @@ function PANEL:SetTitle(title)
 	self.m_Title = title
 end
 
-function PANEL:SetCursor(cursor)
-	self.m_InternalCursor = cursor
-end
-
-function PANEL:GetCursor()
-	return self.m_InternalCursor or "arrow"
-end
-
-function PANEL:SetTooltip(tooltip)
-	self.m_InternalTooltip = tooltip
-end
-
-function PANEL:GetTooltip()
-	return self.m_InternalTooltip
-end
-
 function PANEL:DoClick()
 end
 
