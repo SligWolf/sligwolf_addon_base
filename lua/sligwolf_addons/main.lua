@@ -30,8 +30,8 @@ local BASECHECK_SCRIPT_CHECKSUM = "9755358f8f6aba3eec3821b1fcfb82f8ae1387e10288b
 SligWolf_Addons.BaseApiVersion = "2.0.0"
 
 -- Minimum supported game version.
-SligWolf_Addons.MinGameVersionServer = 251210
-SligWolf_Addons.MinGameVersionClient = 251210
+SligWolf_Addons.MinGameVersionServer = 260428
+SligWolf_Addons.MinGameVersionClient = 260428
 
 SligWolf_Addons.Addondata = SligWolf_Addons.Addondata or {}
 SligWolf_Addons.AddondataSorted = nil
