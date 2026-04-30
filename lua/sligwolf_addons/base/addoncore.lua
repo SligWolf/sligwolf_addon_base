@@ -26,6 +26,7 @@ SligWolf_Addons.Include("sligwolf_addons/base/trackasm_adapter.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/skinsystem.lua")
 
 SLIGWOLF_ADDON:TrackAssamblerAddContent()
+SLIGWOLF_ADDON:SpawnmenuContentAutoInclude()
 
 return true
 

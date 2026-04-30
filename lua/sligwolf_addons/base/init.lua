@@ -6,7 +6,7 @@ if not SligWolf_Addons then
 end
 
 if not SLIGWOLF_ADDON then
-	SligWolf_Addons.AutoLoadAddon(function() end)
+	SligWolf_Addons.AutoLoadAddon()
 	return
 end
 

@@ -69,9 +69,8 @@ local g_DefaultHooks = {
 	AllAddonsLoaded = "SLIGWOLF_AllAddonsLoaded",
 	TrackAssamblerContentAutoInclude = "SLIGWOLF_AllAddonsLoaded",
 	RunDelayedInclude = "SLIGWOLF_FirstFrame",
+	SpawnmenuContentAutoInclude = "SLIGWOLF_InitSpawnmenuContent",
 }
-
-local g_FunctionPathCache = {}
 
 local g_LuaFileExistsCache = SligWolf_Addons.g_LuaFileExistsCache or {}
 SligWolf_Addons.g_LuaFileExistsCache = g_LuaFileExistsCache
@@ -311,38 +310,35 @@ local function ValidateBaseCheckScript()
 	return true
 end
 
-local function GetPathOfFunction(funcobj)
-	if not isfunction(funcobj) then
-		return nil
-	end
+local g_folderNameBlacklist = {
+	[""] = true,
+	["addons"] = true,
+	["lua"] = true,
+	["autorun"] = true,
+	["sw_addonbase"] = true,
+	["sligwolf_addons"] = true,
+	["spawnmenu_content"] = true,
+}
 
-	if g_FunctionPathCache[funcobj] then
-		return g_FunctionPathCache[funcobj]
-	end
-
-	local info = debug.getinfo(funcobj) or {}
-	local path = tostring(info.short_src or info.source or "")
+local function GetAddonNameFromPath(path)
+	path = path or ""
 
 	if path == "" then
-		return nil
-	end
-
-	g_FunctionPathCache = {}
-	g_FunctionPathCache[funcobj] = path
-	return path
-end
-
-local function GetAddonNameOfFunction(funcobj)
-	local path = GetPathOfFunction(funcobj)
-	if not path then
 		return nil
 	end
 
 	local folders = string.Explode("/", path, false)
 	local count = #folders
 
-	local name = folders[count-1]
-	return name
+	for i = count - 1, 1, -1 do
+		local name = folders[i] or ""
+
+		if not g_folderNameBlacklist[name] then
+			return name
+		end
+	end
+
+	return nil
 end
 
 local function GetWorkshopAddonsFromPath(path)
@@ -392,20 +388,6 @@ local function GetWorkshopAddonsFromPath(path)
 	end
 
 	return g_WorkshopAddonsFilesCache[path]
-end
-
-local function GetWorkshopAddonsOfFunction(funcobj)
-	local path = GetPathOfFunction(funcobj)
-	if not path then
-		return nil
-	end
-
-	local addons = GetWorkshopAddonsFromPath(path)
-	if not addons then
-		return nil
-	end
-
-	return addons
 end
 
 local function GetWorkshopID(name)
@@ -975,6 +957,10 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 
 	inValidateSortedAddondata()
 
+	if sligwolfAddons.Hook then
+		sligwolfAddons.Hook.RunCustom("AddonLoaded", thisAddon)
+	end
+
 	if sligwolfAddons.Util then
 		sligwolfAddons.Util.FlashWindow()
 	end
@@ -1135,7 +1121,7 @@ function SligWolf_Addons.ReloadAllAddons()
 	end
 end
 
-function SligWolf_Addons.AutoLoadAddon(funcobj)
+function SligWolf_Addons.AutoLoadAddon()
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then
 		return false
@@ -1145,12 +1131,15 @@ function SligWolf_Addons.AutoLoadAddon(funcobj)
 		return false
 	end
 
-	if not isfunction(funcobj) then
+	local info = debug.getinfo(2) or {}
+	local path = tostring(info.short_src or info.source or "")
+
+	local name = GetAddonNameFromPath(path)
+	if not name then
 		return false
 	end
 
-	local name = GetAddonNameOfFunction(funcobj)
-	local wsAddons = GetWorkshopAddonsOfFunction(funcobj)
+	local wsAddons = GetWorkshopAddonsFromPath(path)
 
 	-- We check the authenticity of the workshop copy, because:
 	--   1) We don't want to support or to tolerate stolen copies on the workshop.

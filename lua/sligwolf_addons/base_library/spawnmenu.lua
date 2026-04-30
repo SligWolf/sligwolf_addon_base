@@ -25,6 +25,7 @@ local g_tabPanelIndex = g_lastSpawnMenuState.tabPanelIndex or {}
 g_lastSpawnMenuState.tabPanelIndex = g_tabPanelIndex
 
 local g_spawnmenuLoaded = SligWolf_Addons.WasReloaded
+local g_waitInitSpawnmenuContent = false
 
 LIB.g_RegisterdVehicleSpawnnamesByModel = {}
 
@@ -1251,34 +1252,6 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	list.Set("Vehicles", spawnname, vehicleListItem)
 end
 
-function LIB.ReloadSpawnmenu()
-	if not CLIENT then
-		return
-	end
-
-	RunConsoleCommand("spawnmenu_reload")
-end
-
-function LIB.RequestReloadSpawnmenu()
-	if not CLIENT then
-		return
-	end
-
-	if not g_spawnmenuLoaded then
-		-- Avoid reloading the spawn menu if it has not been loaded yet
-		return
-	end
-
-	local timerName = "Library_Spawnmenu_RequestReloadSpawnmenu_Debounce"
-	LIBTimer.Once(timerName, 0.1, function()
-		if not g_spawnmenuLoaded then
-			return
-		end
-
-		LIB.ReloadSpawnmenu()
-	end)
-end
-
 if CLIENT then
 	spawnmenu.AddContentType("sligwolf_train", function(container, obj)
 		if not obj.material then return end
@@ -1463,106 +1436,59 @@ local function RequestAddColorSkinPicker(propPanel, addonname, category)
 	end)
 end
 
-local function test()
-	local testName = "aaaaaaaaaaaaaaaaaaa"
+function LIB.ReloadSpawnmenu()
+	if not CLIENT then
+		return
+	end
 
-	LIBTimer.NextFrame(testName, function()
-		local frame = _G.sw_frame
+	RunConsoleCommand("spawnmenu_reload")
+end
 
-		if IsValid(frame) then
-			frame:Remove()
+function LIB.RequestReloadSpawnmenu()
+	if not CLIENT then
+		return
+	end
+
+	if not g_spawnmenuLoaded then
+		-- Avoid reloading the spawnmenu if it has not been loaded yet
+		return
+	end
+
+	if g_waitInitSpawnmenuContent then
+		-- Avoid reloading the spawnmenu if it is being build
+		return
+	end
+
+	local timerName = "Library_Spawnmenu_RequestReloadSpawnmenu_Debounce"
+	LIBTimer.Once(timerName, 0.1, function()
+		if not g_spawnmenuLoaded then
+			return
 		end
 
-		frame = vgui.Create("DFrame")
-		_G.sw_frame = frame
-
-		local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker", frame)
-
-		colorSkinPicker:Dock(FILL)
-
-		local num = vgui.Create("DNumSlider", frame)
-		num:SetTall(30)
-		num:SetDecimals(0)
-		num:SetMinMax(0, 100)
-		num:SetValue(1)
-
-		num:Dock(BOTTOM)
-		num:SetText("Count")
-
-		local num2 = vgui.Create("DNumSlider", frame)
-		num2:SetTall(30)
-		num2:SetDecimals(0)
-		num2:SetMinMax(0, 100)
-		num2:SetValue(1)
-
-		num2:Dock(BOTTOM)
-		num2:SetText("Colors")
-
-		frame:SetPos(200, 200)
-		frame:SetSize(300, 300)
-		frame:SetSizable(true)
-		frame:MakePopup()
-
-		function num:OnValueChanged()
-			LIBTimer.Once(testName .. "_num1", 0.1, function()
-				if not IsValid(num) then
-					return
-				end
-
-				if not IsValid(colorSkinPicker) then
-					return
-				end
-
-				local value = math.Round(num:GetValue())
-
-				colorSkinPicker:Clear()
-
-				for a = 1, value do
-					colorSkinPicker:AddOption("teat" .. a, {
-					})
-				end
-
-				if IsValid(num2) then
-					num2:OnValueChanged()
-				end
-			end)
-		end
-
-		function num2:OnValueChanged()
-			LIBTimer.Once(testName .. "_num2", 0.1, function()
-				if not IsValid(num2) then
-					return
-				end
-
-				if not IsValid(colorSkinPicker) then
-					return
-				end
-
-				local value = math.Round(num2:GetValue())
-
-				for _, button in ipairs(colorSkinPicker:GetButtons()) do
-					button:ClearColors()
-
-					for i = 1, value do
-						button:AddColor(ColorRand())
-					end
-				end
-			end)
-		end
-
-		num:OnValueChanged()
-		num2:OnValueChanged()
+		LIB.ReloadSpawnmenu()
 	end)
+end
+
+function LIB.InitSpawnmenuContent()
+	if g_waitInitSpawnmenuContent then
+		return false
+	end
+
+	g_waitInitSpawnmenuContent = true
+	xpcall(LIBHook.RunCustom, ErrorNoHaltWithStack, "InitSpawnmenuContent")
+
+	local timerName = "Library_Spawnmenu_InitSpawnmenuContent_ReverseDebounce"
+	LIBTimer.Once(timerName, 0.1, function()
+		g_waitInitSpawnmenuContent = false
+	end)
+
+	return true
 end
 
 function LIB.Load()
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util
-
-	-- if CLIENT then
-	-- 	xpcall(test, ErrorNoHaltWithStack)
-	-- end
 
 	local function PopulatePropListContent(pnlContent, tree)
 		g_spawnmenuLoaded = true
@@ -1697,6 +1623,10 @@ function LIB.Load()
 	LIBHook.Add("PopulateWeapons", "Library_Spawnmenu_PopulateWeaponlistContent", PopulateWeaponListContent, 20000)
 	LIBHook.Add("PopulateNPCs", "Library_Spawnmenu_PopulateNPClistContent", PopulateNPCListContent, 20000)
 	LIBHook.Add("PopulateVehicles", "Library_Spawnmenu_PopulateVehiclelistContent", PopulateVehicleListContent, 20000)
+end
+
+function LIB.FirstFrame()
+	LIB.InitSpawnmenuContent()
 end
 
 return true

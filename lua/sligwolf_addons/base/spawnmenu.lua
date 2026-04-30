@@ -102,5 +102,25 @@ function SLIGWOLF_ADDON:AddVehicle(spawnname, vehiclescript, obj)
 	LIBSpawnmenu.AddVehicle(addonName, spawnname, vehiclescript, obj)
 end
 
+SLIGWOLF_ADDON.hasSpawnMenuContent = false
+SLIGWOLF_ADDON.hasSpawnMenuContentLoaded = false
+
+function SLIGWOLF_ADDON:SpawnmenuContentAutoInclude()
+	if not self.hasSpawnMenuContent then
+		return
+	end
+
+	self:CallAddonFunctionWithAddonEnvironment(function()
+		self:LuaInclude("spawnmenu_content.lua")
+	end)
+
+	self.hasSpawnMenuContentLoaded = true
+end
+
+if SLIGWOLF_ADDON:LuaExists("spawnmenu_content.lua") then
+	SLIGWOLF_ADDON:AddCSLuaFile("spawnmenu_content.lua")
+	SLIGWOLF_ADDON.hasSpawnMenuContent = true
+end
+
 return true
 
