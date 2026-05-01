@@ -46,18 +46,6 @@ function SLIGWOLF_ADDON:LuaIncludeSimple(luafile)
 	return SligWolf_Addons.IncludeSimple(luafile)
 end
 
-function SLIGWOLF_ADDON:LuaIncludeDelayed(luafile)
-	-- Some files have to be loaded with a delay, e.g. some spawnlists
-
-	luafile = self:GetLuaPath(luafile)
-	SligWolf_Addons.AddCSLuaFile(luafile)
-
-	local delayedInclude = self.DelayedInclude or {}
-	self.DelayedInclude = delayedInclude
-
-	table.insert(delayedInclude, luafile)
-end
-
 function SLIGWOLF_ADDON:AddCSLuaFile(luafile)
 	luafile = self:GetLuaPath(luafile)
 	return SligWolf_Addons.AddCSLuaFile(luafile)
@@ -77,21 +65,6 @@ function SLIGWOLF_ADDON:CallAddonFunctionWithAddonEnvironment(func, ...)
 	SLIGWOLF_ADDON = TMP_SLIGWOLF_ADDON
 
 	return status, result
-end
-
-function SLIGWOLF_ADDON:RunDelayedInclude()
-	self:CallAddonFunctionWithAddonEnvironment(function()
-		local delayedInclude = self.DelayedInclude
-		self.DelayedInclude = nil
-
-		if not delayedInclude then
-			return
-		end
-
-		for _, luafile in ipairs(delayedInclude) do
-			SligWolf_Addons.Include(luafile)
-		end
-	end)
 end
 
 return true

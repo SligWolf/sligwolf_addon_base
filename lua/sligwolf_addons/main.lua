@@ -68,7 +68,6 @@ local g_DefaultHooks = {
 
 	AllAddonsLoaded = "SLIGWOLF_AllAddonsLoaded",
 	TrackAssamblerContentAutoInclude = "SLIGWOLF_AllAddonsLoaded",
-	RunDelayedInclude = "SLIGWOLF_FirstFrame",
 	SpawnmenuContentAutoInclude = "SLIGWOLF_InitSpawnmenuContent",
 }
 

@@ -1344,12 +1344,12 @@ local function AddColorSkinPicker(propPanel, addonname, category)
 		local order = theme.order
 		local buttonParams = theme.button
 		local title = buttonParams.title
-		local colors = buttonParams.colors
+		local pieces = buttonParams.pieces
 
 		colorSkinPicker:AddOption(name, {
 			title = title,
 			order = order,
-			colors = colors,
+			pieces = pieces,
 		})
 	end
 

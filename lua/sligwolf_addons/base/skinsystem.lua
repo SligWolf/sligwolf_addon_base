@@ -18,6 +18,7 @@ local g_root_path = "ROOT"
 
 SLIGWOLF_ADDON.g_skinMaps = {}
 SLIGWOLF_ADDON.g_skinThemes = {}
+SLIGWOLF_ADDON.g_skinThemesForRandom = {}
 SLIGWOLF_ADDON.g_skinThemesOrdered = {}
 SLIGWOLF_ADDON.g_skinThemesDefaults = {}
 
@@ -76,7 +77,7 @@ function SLIGWOLF_ADDON:SkinGetSelectedThemeName(ply, category)
 	local convarName = self:SkinGetConvarName(category)
 	local themeName = tostring(ply:GetInfo(convarName))
 
-	local theme = self:SkinGetTheme(category, themeName)
+	local theme = self:SkinGetTheme(category, themeName, false)
 	if not theme then
 		return defaultThemeName
 	end
@@ -214,6 +215,7 @@ function SLIGWOLF_ADDON:SkinAddTheme(category, name, themeData)
 	theme.name = name
 	theme.category = category
 	theme.order = themeData.order or LIBUtil.Order()
+	theme.isRandom = themeData.isRandom or false
 
 	if themeData.isDefault and not self.g_skinThemesDefaults[category] then
 		self.g_skinThemesDefaults[category] = theme
@@ -225,7 +227,7 @@ function SLIGWOLF_ADDON:SkinAddTheme(category, name, themeData)
 
 	theme.button = {
 		title = buttonParams.title,
-		colors = buttonParams.colors,
+		pieces = buttonParams.pieces,
 	}
 
 	local themeParamsInternal = {}
@@ -242,9 +244,10 @@ function SLIGWOLF_ADDON:SkinAddTheme(category, name, themeData)
 	resolveSkinItemNames(themeParamsInternal)
 
 	self.g_skinThemesOrdered[category] = {}
+	self.g_skinThemesForRandom[category] = {}
 end
 
-function SLIGWOLF_ADDON:SkinGetTheme(category, name)
+function SLIGWOLF_ADDON:SkinGetTheme(category, name, resolveRandom)
 	category = tostring(category or "")
 	name = tostring(name or "")
 
@@ -266,7 +269,30 @@ function SLIGWOLF_ADDON:SkinGetTheme(category, name)
 		return nil
 	end
 
-	return theme
+	if not resolveRandom or not theme.isRandom then
+		return theme
+	end
+
+	local nonRandomThemes = self.g_skinThemesForRandom[category] or {}
+
+	if table.IsEmpty(nonRandomThemes) then
+		for _, nonRandomTheme in pairs(themeCategory) do
+			if nonRandomTheme.isRandom then
+				continue
+			end
+
+			table.insert(nonRandomThemes, nonRandomTheme)
+		end
+	end
+
+	local randomKey = math.random(#nonRandomThemes)
+	local randomTheme = nonRandomThemes[randomKey]
+
+	if not randomTheme then
+		return nil
+	end
+
+	return randomTheme
 end
 
 function SLIGWOLF_ADDON:SkinGetThemes(category)
@@ -431,7 +457,7 @@ function SLIGWOLF_ADDON:SkinApplyThemeByName(superparent, themeName)
 		return
 	end
 
-	local theme = self:SkinGetTheme(categoryName, themeName)
+	local theme = self:SkinGetTheme(categoryName, themeName, true)
 	if not theme then
 		return
 	end

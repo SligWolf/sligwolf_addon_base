@@ -72,7 +72,7 @@ function LIB.LoadPngMaterial(path, params, fallbackPath)
 	params = tostring(params or "")
 	fallbackPath = tostring(fallbackPath or "")
 
-	local err = CONSTANTS.errorPngMaterial
+	local err = CONSTANTS.matPngError
 
 	if path == "" then
 		path = err

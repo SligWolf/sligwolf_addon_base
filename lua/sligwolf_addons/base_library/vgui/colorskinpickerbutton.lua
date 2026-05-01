@@ -7,6 +7,10 @@ if SligWolf_Addons:ReloadAddonSystem() then
 	return
 end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
+local LIBUtil = SligWolf_Addons.Util
+
 local PANEL = {}
 
 AccessorFunc(PANEL, "m_ColorSkinName", "ColorSkinName")
@@ -37,7 +41,7 @@ function PANEL:Init()
 
 	self.m_Title = ""
 
-	self.colors = {}
+	self.pieces = {}
 	self.chart = {}
 end
 
@@ -60,21 +64,67 @@ function PANEL:IsSelected()
 	return self.m_Selected
 end
 
-function PANEL:AddColor(color)
-	table.insert(self.colors, color)
-	self.needsRebuildChart = true
-end
-
-function PANEL:AddColors(colors)
-	for key, color in ipairs(colors) do
-		table.insert(self.colors, color)
+local function NormalizeMaterial(mat)
+	if not mat then
+		return nil
 	end
 
+	if istable(mat) then
+		-- don't pass colors
+		return nil
+	end
+
+	if type(mat) == "IMaterial" then
+		if mat:IsError() then
+			mat = LIBUtil.LoadPngMaterial("", "nocull noclamp")
+		end
+
+		return mat
+	end
+
+	mat = tostring(mat)
+	mat = LIBUtil.LoadPngMaterial(mat, "nocull noclamp")
+
+	return mat
+end
+
+local function NormalizeColor(color)
+	if IsColor(color) then
+		return Color(
+			color.r or 0,
+			color.g or 0,
+			color.b or 0,
+			255
+		)
+	end
+
+	return CONSTANTS.colorNone
+end
+
+function PANEL:AddPiece(piece)
+	local tmp = {}
+
+	if istable(piece) and not IsColor(piece) then
+		tmp.color = NormalizeColor(piece.color)
+		tmp.materialOverlay = NormalizeMaterial(piece.materialOverlay)
+		tmp.material = NormalizeMaterial(piece.material)
+	else
+		tmp.color = NormalizeColor(piece)
+		tmp.material = NormalizeMaterial(piece)
+	end
+
+	table.insert(self.pieces, tmp)
 	self.needsRebuildChart = true
 end
 
-function PANEL:ClearColors()
-	table.Empty(self.colors)
+function PANEL:AddPieces(pieces)
+	for key, piece in ipairs(pieces) do
+		self:AddPiece(piece)
+	end
+end
+
+function PANEL:ClearPieces()
+	table.Empty(self.pieces)
 	self.needsRebuildChart = true
 end
 
@@ -92,25 +142,35 @@ local function GetSquareEdgePoint(cx, cy, size, degrees)
 	return cx + cos * scale, cy + sin * scale
 end
 
-
 function PANEL:BuildChart(x, y, w, h)
 	local chart = self.chart
-	local colors = self.colors
-	local count = #colors
+	local pieces = self.pieces
+	local count = #pieces
 
 	table.Empty(chart)
 
 	if count <= 1 then
-		local color = colors[1]
+		local piece = pieces[1] or {}
 
-		if color then
-			table.insert(chart, {
-				color = color:Copy()
-			})
-		end
+		local chartItem = {}
+
+		chartItem.color = piece.color
+		chartItem.material = piece.material
+		chartItem.materialOverlay = piece.materialOverlay
+
+		table.insert(chart, chartItem)
 
 		self.needsRebuildChart = false
 		return
+	end
+
+	local addVertex = function(vertices, vx, vy)
+		table.insert(vertices, {
+			x = vx,
+			y = vy,
+			u = (vx - x) / w,
+			v = (vy - y) / h,
+		})
 	end
 
 	local cx = x + w / 2
@@ -131,30 +191,34 @@ function PANEL:BuildChart(x, y, w, h)
 
 		local vertices = {}
 		-- start at center
-		table.insert(vertices, { x = cx, y = cy })
+		addVertex(vertices, cx, cy)
 
 		-- first start point at the edge
 		local sx, sy = GetSquareEdgePoint(cx, cy, size, startAng)
-		table.insert(vertices, { x = sx, y = sy })
+		addVertex(vertices, sx, sy)
 
 		-- add corners within the segment angle
 		for _, cAng in ipairs(cornerAngles) do
 			if cAng > startAng and cAng < endAng then
 				local ex, ey = GetSquareEdgePoint(cx, cy, size, cAng)
-				table.insert(vertices, { x = ex, y = ey })
+				addVertex(vertices, ex, ey)
 			end
 		end
 
 		-- end point at the edge
 		local ex, ey = GetSquareEdgePoint(cx, cy, size, endAng)
-		table.insert(vertices, { x = ex, y = ey })
+		addVertex(vertices, ex, ey)
 
-		local color = colors[i]
+		local piece = pieces[i] or {}
 
-		table.insert(chart, {
-			vertices = vertices,
-			color = color:Copy()
-		})
+		local chartItem = {}
+
+		chartItem.vertices = vertices
+		chartItem.color = piece.color
+		chartItem.material = piece.material
+		chartItem.materialOverlay = piece.materialOverlay
+
+		table.insert(chart, chartItem)
 	end
 
 	self.needsRebuildChart = false
@@ -168,26 +232,49 @@ function PANEL:PaintColorChart(x, y, w, h)
 	local chart = self.chart
 	local count = #chart
 
-	draw.NoTexture()
-
 	-- full color for single or no colors
 	if count <= 1 then
 		local chartItem = chart[1]
-
-		if chartItem then
-			surface.SetDrawColor(chartItem.color)
-		else
-			surface.SetDrawColor(0, 0, 0, 255)
+		if not chartItem then
+			return
 		end
 
-		surface.DrawRect(x, y, w, h)
+		if chartItem.material then
+			surface.SetDrawColor(CONSTANTS.colorNone)
+			surface.SetMaterial(chartItem.material)
+			surface.DrawTexturedRectUV(x, y, w, h, 0, 0, 1, 1)
+		else
+			draw.NoTexture()
+			surface.SetDrawColor(chartItem.color)
+			surface.DrawRect(x, y, w, h)
+		end
+
+		if chartItem.materialOverlay then
+			surface.SetDrawColor(CONSTANTS.colorNone)
+			surface.SetMaterial(chartItem.materialOverlay)
+			surface.DrawTexturedRectUV(x, y, w, h, 0, 0, 1, 1)
+		end
+
 		return
 	end
 
 	-- render chart
 	for _, chartItem in ipairs(chart) do
-		surface.SetDrawColor(chartItem.color)
-		surface.DrawPoly(chartItem.vertices)
+		if chartItem.material then
+			surface.SetMaterial(chartItem.material)
+			surface.SetDrawColor(CONSTANTS.colorNone)
+			surface.DrawPoly(chartItem.vertices)
+		else
+			draw.NoTexture()
+			surface.SetDrawColor(chartItem.color)
+			surface.DrawPoly(chartItem.vertices)
+		end
+
+		if chartItem.materialOverlay then
+			surface.SetMaterial(chartItem.materialOverlay)
+			surface.SetDrawColor(CONSTANTS.colorNone)
+			surface.DrawPoly(chartItem.vertices)
+		end
 	end
 end
 
@@ -249,7 +336,15 @@ function PANEL:Paint(w, h)
 		surface.DrawRect(x + i, y + i, shadowBoxW, shadowBoxH)
 	end
 
+	render.PushFilterMag(TEXFILTER.ANISOTROPIC)
+	render.PushFilterMin(TEXFILTER.ANISOTROPIC)
+
 	self:PaintColorChart(innerBoxX, innerBoxY, innerBoxW, innerBoxH)
+
+	render.PopFilterMin()
+	render.PopFilterMag()
+
+	draw.NoTexture()
 
 	surface.SetDrawColor(0, 0, 0, 255)
 	surface.DrawOutlinedRect(x, y, borderBoxW, borderBoxH, innerBorder)

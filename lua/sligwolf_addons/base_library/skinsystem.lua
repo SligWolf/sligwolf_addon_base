@@ -7,11 +7,13 @@ local LIB = SligWolf_Addons:NewLib("Skinsystem")
 
 local LIBDuplicator = nil
 local LIBEntities = nil
+local LIBTimer = nil
 local LIBHook = nil
 
 function LIB.Load()
 	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
+	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 
 	local function ApplySkinTheme(ply, ent)
@@ -31,11 +33,16 @@ function LIB.Load()
 			return
 		end
 
-		if not LIBDuplicator.WasDuped(ent) then
-			addon:SkinApplyThemeFromSelection(ent, ply)
-		end
+		-- LIBDuplicator.WasDuped might only be available in the next frame
+		LIBTimer.SimpleNextFrame(function()
+			if not IsValid(ent) then return end
 
-		LIBDuplicator.StoreIsDupedEntityModifier(ent)
+			if LIBDuplicator.WasDuped(ent) then
+				return
+			end
+
+			addon:SkinApplyThemeFromSelection(ent, ply)
+		end)
 	end
 
 	LIBHook.Add("PlayerSpawnedVehicle", "Library_Skinsystem_ApplySkinTheme", ApplySkinTheme, 11000)

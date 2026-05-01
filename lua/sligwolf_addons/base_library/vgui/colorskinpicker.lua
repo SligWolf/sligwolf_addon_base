@@ -283,10 +283,10 @@ function PANEL:AddOption(name, params)
 		title = name
 	end
 
-	itemButton:ClearColors()
+	itemButton:ClearPieces()
 
-	if params.colors then
-		itemButton:AddColors(params.colors)
+	if params.pieces then
+		itemButton:AddPieces(params.pieces)
 	end
 
 	itemButton:SetTitle(title)

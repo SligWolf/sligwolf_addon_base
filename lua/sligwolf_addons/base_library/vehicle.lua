@@ -904,13 +904,16 @@ function LIB.Load()
 
 	local function OnEntityCreated(ent)
 		if not IsValid(ent) then return end
+		if not ent:IsVehicle() then return end
 
 		LIBTimer.SimpleNextFrame(function()
-			if not IsValid(ent) then return end
-			if not ent:IsVehicle() then return end
-			if not ent:IsValidVehicle() then return end
+			LIBTimer.SimpleNextFrame(function()
+				if not IsValid(ent) then return end
+				if not ent:IsVehicle() then return end
+				if not ent:IsValidVehicle() then return end
 
-			LIBHook.RunCustom("OnVehicleCreated", ent)
+				LIBHook.RunCustom("OnVehicleCreated", ent)
+			end)
 		end)
 	end
 
