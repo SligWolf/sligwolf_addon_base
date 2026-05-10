@@ -16,6 +16,8 @@ LIB.NOTIFY_UNDO = 2
 LIB.NOTIFY_HINT = 3
 LIB.NOTIFY_CLEANUP = 4
 
+LIB.COLOR_WARN = Color(255, 90, 90)
+
 function LIB.Load()
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBEntities = SligWolf_Addons.Entities
@@ -141,6 +143,18 @@ function LIB.Print(format, ...)
 
 	local message = formatMessage(format, ...)
 	MsgN(message)
+end
+
+function LIB.Warn(format, ...)
+	format = tostring(format or "")
+
+	if format == "" then
+		format = "Empty message!"
+	end
+
+	local message = formatMessage(format, ...)
+	MsgC(LIB.COLOR_WARN, message)
+	MsgN("")
 end
 
 function LIB.Debug(format, ...)

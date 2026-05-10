@@ -214,10 +214,7 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 	seat:SetNWBool("sligwolf_noPickup", true)
 
 	local keyValues = seatGroup:GetSeatKeyValues()
-
-	for k, v in pairs(keyValues) do
-		seat:SetKeyValue(tostring(k), v)
-	end
+	LIBEntities.SetKeyValues(seat, keyValues)
 
 	seat:Spawn()
 	seat:Activate()

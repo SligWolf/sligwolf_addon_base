@@ -9,12 +9,6 @@ local LIBPrint = nil
 local LIBUtil = nil
 local LIBFile = nil
 
-function LIB.Load()
-	LIBPrint = SligWolf_Addons.Print
-	LIBUtil = SligWolf_Addons.Util
-	LIBFile = SligWolf_Addons.File
-end
-
 local function getVehicleTablesByClass()
 	local result = {}
 
@@ -35,13 +29,18 @@ local function getVehicleTablesByClass()
 			continue
 		end
 
-		local class = tostring(vehicleTable.Class or "")
+		local fgd = vehicleTable.SLIGWOLF_FGD
+		if not fgd then
+			continue
+		end
+
+		local class = tostring(fgd.class or "")
 		if class == "" then
 			continue
 		end
 
-		result[class] = result[class] or {}
-		local items = result[class]
+		local items = result[class] or {}
+		result[class] = items
 
 		table.insert(items, {
 			spawnname = spawnname,
@@ -109,7 +108,7 @@ local function replacePlaceholder(data, name, value)
 end
 
 local g_fgd_cache = nil
-local g_fgd_cache_filename = "mapping/cache/sligwolf_base.fgd.json"
+local g_fgd_cache_filename = "mapping/cache/sligwolf_base_template.fgd.json"
 
 function LIB.WriteFGDCache()
 	local data = util.TableToJSON(g_fgd_cache or {}, true)
@@ -232,13 +231,17 @@ end
 
 
 function LIB.GenerateFGD(rebuildCache)
-	local fileName = "mapping/sligwolf_base.fgd.txt"
+	local fileNameGenerated = "mapping/sligwolf_base.fgd.txt"
+	local fileNameGeneratedAbsolute = LIBFile.GetAbsolutePath(fileNameGenerated)
 
-	local fgd = LIBFile.Read(fileName, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC) or ""
-	if fgd == "" then
+	local fileNameTempate = "mapping/sligwolf_base_template.fgd.txt"
+	local fileNameTempateAbsolute = LIBFile.GetAbsolutePath(fileNameTempate, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC)
+
+	local fgdContent = LIBFile.Read(fileNameTempate, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC) or ""
+	if fgdContent == "" then
 		LIBPrint.Print(
 			"Mapping.GenerateFGD: FGD template '%s' not found or empty",
-			LIBFile.GetAbsolutePath(fileName, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC)
+			fileNameTempateAbsolute
 		)
 
 		return
@@ -251,42 +254,48 @@ function LIB.GenerateFGD(rebuildCache)
 
 	local vehicleTables = LIB.GetFGDCacheValue("SW_VEHICLE_TABLES")
 
-	fgd = replacePlaceholder(fgd, "SW_VERSION", SligWolf_Addons.BaseApiVersion)
-	fgd = replacePlaceholder(fgd, "SW_GENERATED_AT", os.date("%Y-%m-%d %H:%M:%S"))
+	fgdContent = replacePlaceholder(fgdContent, "SW_VERSION", SligWolf_Addons.BaseApiVersion)
+	fgdContent = replacePlaceholder(fgdContent, "SW_GENERATED_AT", os.date("%Y-%m-%d %H:%M:%S"))
+	fgdContent = replacePlaceholder(fgdContent, "SW_GENERATED_TEMPLATE", fileNameTempateAbsolute)
 
-	fgd = insertValueFromCache(fgd, "SW_VERSION", "SW_CACHE_VERSION")
-	fgd = insertValueFromCache(fgd, "SW_GENERATED_AT", "SW_CACHE_GENERATED_AT")
-	fgd = insertValueFromCache(fgd, "SW_ADDON_COUNT", "SW_CACHE_ADDON_COUNT")
-	fgd = insertValueFromCache(fgd, "SW_VEHICLE_COUNT", "SW_CACHE_VEHICLE_COUNT")
+	fgdContent = insertValueFromCache(fgdContent, "SW_VERSION", "SW_CACHE_VERSION")
+	fgdContent = insertValueFromCache(fgdContent, "SW_GENERATED_AT", "SW_CACHE_GENERATED_AT")
+	fgdContent = insertValueFromCache(fgdContent, "SW_ADDON_COUNT", "SW_CACHE_ADDON_COUNT")
+	fgdContent = insertValueFromCache(fgdContent, "SW_VEHICLE_COUNT", "SW_CACHE_VEHICLE_COUNT")
 
-	fgd = replacePlaceholder(
-		fgd,
-		"SW_SPAWNNAME_PROP_VEHICLE_PRISONER_POD_OPTIONS",
-		getSpawnnameOptionsList(vehicleTables["prop_vehicle_prisoner_pod"])
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_SPAWNNAME_AIRBOAT_OPTIONS",
+		getSpawnnameOptionsList(vehicleTables["prop_vehicle_sligwolf_airboat"])
 	)
 
-	fgd = replacePlaceholder(
-		fgd,
-		"SW_SPAWNNAME_PROP_VEHICLE_AIRBOAT_OPTIONS",
-		getSpawnnameOptionsList(vehicleTables["prop_vehicle_airboat"])
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_SPAWNNAME_JEEP_OPTIONS",
+		getSpawnnameOptionsList(vehicleTables["prop_vehicle_sligwolf_jeep"])
 	)
 
-	fgd = replacePlaceholder(
-		fgd,
-		"SW_SPAWNNAME_PROP_VEHICLE_JEEP_OPTIONS",
-		getSpawnnameOptionsList(vehicleTables["prop_vehicle_jeep"])
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_SPAWNNAME_POD_OPTIONS",
+		getSpawnnameOptionsList(vehicleTables["prop_vehicle_sligwolf_pod"])
 	)
 
-	fgd = LIBUtil.NormalizeNewlines(fgd, "\r\n")
-	fgd = string.Replace(fgd, "\\t", "\t")
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_SPAWNNAME_TRAIN_OPTIONS",
+		getSpawnnameOptionsList(vehicleTables["prop_vehicle_sligwolf_train"])
+	)
 
-	local success = LIBFile.Write(fileName, fgd)
-	local path = LIBFile.GetAbsolutePath(fileName)
+	fgdContent = LIBUtil.NormalizeNewlines(fgdContent, "\r\n")
+	fgdContent = string.Replace(fgdContent, "\\t", "\t")
+
+	local success = LIBFile.Write(fileNameGenerated, fgdContent)
 
 	if success then
-		LIBPrint.Print("Mapping.GenerateFGD: Written to 'data/%s'. Ready for copy and paste.", path)
+		LIBPrint.Print("Mapping.GenerateFGD: Written to 'data/%s'. Ready for copy and paste.", fileNameGeneratedAbsolute)
 	else
-		LIBPrint.Print("Mapping.GenerateFGD: Could not Write to 'data/%s'", path)
+		LIBPrint.Print("Mapping.GenerateFGD: Could not Write to 'data/%s'", fileNameGeneratedAbsolute)
 	end
 end
 
@@ -300,6 +309,12 @@ if SERVER then
 
 		LIB.GenerateFGD(rebuildCache)
 	end)
+end
+
+function LIB.Load()
+	LIBPrint = SligWolf_Addons.Print
+	LIBUtil = SligWolf_Addons.Util
+	LIBFile = SligWolf_Addons.File
 end
 
 return true

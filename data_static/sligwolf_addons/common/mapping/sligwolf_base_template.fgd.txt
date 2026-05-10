@@ -1,0 +1,160 @@
+//=============================================================================
+//======================= Game data for SW Base Addons ========================
+//============================= Made by SligWolf ==============================
+
+// Please also include garrysmod.fgd or halflife2.fgd in Hammer for optimal results.
+// It is not recommended to edit this file as it is automaticly generated.
+// Generated via concommand: sv_sligwolf_mapping_generate_fgd <rebuildCache (0/1)>
+
+// Generated:
+//   API Version:   {{SW_VERSION}}
+//   Generated at:  {{SW_GENERATED_AT}}
+//   Template:      {{SW_GENERATED_TEMPLATE}}
+//
+// Cache:
+//   API Version:   {{SW_CACHE_VERSION}}
+//   Generated at:  {{SW_CACHE_GENERATED_AT}}
+//   Addons count:  {{SW_CACHE_ADDON_COUNT}}
+//   Vehicle count: {{SW_CACHE_VEHICLE_COUNT}}
+ 
+@BaseClass base(Targetname, Global, Origin, Angles) = SLIGWOLF_BASE_vehicle
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	[
+		"" : "Nothing (No SW-ADDON Vehicle)"
+	]
+
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon: Vehicle lights state." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
+	]
+
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon: Vehicle engine state." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+
+	sligwolf_frozen(choices) : "[SW-ADDONS] Spawn frozen" : "0" : "\nSligWolf's Addon: Spawn frozen." =
+	[
+		"0" : "Auto (Use parameter from spawnname)"
+		"1" : "Unfrozen"
+		"2" : "Frozen"
+	]
+
+	sligwolf_colorskin(choices) : "[SW-ADDONS] Color Skin" : "0" : "\nSligWolf's Addon: Color skin." =
+	[
+		"0" : "TODO"
+	]
+]
+
+@BaseClass = SLIGWOLF_BASE_vehicle_disabled_kv
+[
+	vehiclescript(string) : "[Unused] Vehicle Script File" : "" : "This is unused."
+	model(studio) : "Studio model" : "" : "This is the studio model used as in-editor preview. It has no in-game effect."
+]
+
+@BaseClass base(SLIGWOLF_BASE_vehicle) = SLIGWOLF_BASE_train
+[
+	sligwolf_rail_gauge(choices) : "[SW-ADDONS] Rail Gauge (Trains Only)" : "0" : "\nSligWolf's Addon: Train track gauge." =
+	[
+		"0" : "TODO"
+	]
+]
+
+
+@PointClass base(SLIGWOLF_BASE_vehicle, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_airboat, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_airboat :
+	"SligWolf Vehicle. It spawns a prop_vehicle_airboat based vehicle by the given spawnname and passes every parameter to the spawned entity."
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	[
+//      {{SW_SPAWNNAME_AIRBOAT_OPTIONS}}
+	]
+
+	model(studio) : "Studio model" : "models/airboat.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
+]
+
+@PointClass base(SLIGWOLF_BASE_vehicle, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_jeep, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_jeep :
+	"SligWolf Vehicle. It spawns a prop_vehicle_jeep based vehicle by the given spawnname and passes every parameter to the spawned entity."
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	[
+//      {{SW_SPAWNNAME_JEEP_OPTIONS}}
+	]
+
+	model(studio) : "Studio model" : "models/buggy.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
+]
+
+@PointClass base(SLIGWOLF_BASE_vehicle, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_prisoner_pod, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_pod :
+	"SligWolf Vehicle. It spawns a prop_vehicle_prisoner_pod based vehicle by the given spawnname and passes every parameter to the spawned entity."
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	[
+//      {{SW_SPAWNNAME_POD_OPTIONS}}
+	]
+
+	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
+]
+
+@PointClass base(SLIGWOLF_BASE_train, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_prisoner_pod, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_train :
+	"SligWolf Train. It spawns a prop_vehicle_prisoner_pod based train by the given spawnname and passes every parameter to the spawned entity."
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	[
+//      {{SW_SPAWNNAME_TRAIN_OPTIONS}}
+	]
+
+	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
+]
+
+
+@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = SLIGWOLF_BASE_railway_switch_base
+[
+	SetBodyGroup(integer) : "Body Group" : 0
+
+	input SetBodyGroup(integer) : "Set the visible bodygroup, by index."
+	input Switch(void) : ""
+	input Reset(void) : ""
+	input SetStateByID(integer) : ""
+	input SetStateByName(string) : ""
+
+	output OnSwitch(void) : ""
+	output OnReset(void) : ""
+	output OnSwitchById(integer) : ""
+	output OnSwitchByName(string) : ""
+]
+
+@PointClass base(SLIGWOLF_BASE_railway_switch_base) studioprop() = sligwolf_railway_switch_static :
+	""
+[
+]
+
+@PointClass base(SLIGWOLF_BASE_railway_switch_base) studioprop() = sligwolf_railway_switch_phys :
+	""
+[
+]
+
+@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = Sligwolf_minitrains_building_base
+[
+	SetBodyGroup(integer) : "Body Group" : 0
+
+	input SetBodyGroup(integer) : "Set the visible bodygroup, by index."
+
+	output OnSizeChange(integer) : ""
+	output OnSizeMax(integer) : ""
+	output OnWagon(string) : ""
+	output OnWagonLoad(string) : ""
+	output OnWagonUnload(string) : ""
+]
+
+@PointClass base(Sligwolf_minitrains_building_base) studioprop() = sligwolf_minitrain_building_static :
+	""
+[
+]
+
+@PointClass base(Sligwolf_minitrains_building_base) studioprop() = sligwolf_minitrain_building_phys :
+	""
+[
+]
+

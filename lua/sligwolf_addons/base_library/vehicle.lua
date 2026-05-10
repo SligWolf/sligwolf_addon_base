@@ -7,6 +7,7 @@ local LIB = SligWolf_Addons:NewLib("Vehicle")
 
 local LIBConstraints = nil
 local LIBSpawnmenu = nil
+local LIBCoupling = nil
 local LIBEntities = nil
 local LIBPosition = nil
 local LIBPhysics = nil
@@ -116,7 +117,7 @@ function LIB.SetupVehicleKeyValues(vehicle, keyValues)
 			continue
 		end
 
-		vehicle:SetKeyValue(k, v)
+		LIBEntities.SetKeyValue(vehicle, k, v)
 	end
 end
 
@@ -825,6 +826,7 @@ end
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
 	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
+	LIBCoupling = SligWolf_Addons.Coupling
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPosition = SligWolf_Addons.Position
 	LIBPhysics = SligWolf_Addons.Physics
@@ -848,12 +850,43 @@ function LIB.Load()
 		local vat = vehicle:SligWolf_GetAddonTable(addonname)
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnVehicleFinished", vehicle, vat, ply)
 
-		local vehicleTable = LIB.GetVehicleTableFromVehicle(vehicle) or {}
-		spawnFreezed = vehicleTable.SLIGWOLF_SpawnFreezed or false
-
 		if SERVER then
+			local vehicleTable = LIB.GetVehicleTableFromVehicle(vehicle) or {}
+			local keyValues = LIBEntities.GetKeyValues(vehicle)
+
+			local spawnFrozen = false
+			local overrideBodyStates = false
+
+			local spawnFrozenKV = tonumber(keyValues.sligwolf_frozen or 0) or 0
+			if spawnFrozenKV == 0 then
+				spawnFrozen = vehicleTable.SLIGWOLF_SpawnFrozen or false
+				overrideBodyStates = false
+			elseif spawnFrozenKV == 1 then
+				spawnFrozen = false
+				overrideBodyStates = true
+			elseif spawnFrozenKV == 2 then
+				spawnFrozen = true
+				overrideBodyStates = true
+			end
+
 			LIBEntities.ApplySpawnState(vehicle)
-			LIBEntities.EnableMotion(vehicle, not spawnFreezed)
+			LIBEntities.EnableMotion(vehicle, not spawnFrozen)
+
+			if overrideBodyStates then
+				LIBEntities.EnableBodySystemMotion(vehicle, not spawnFrozen)
+			end
+
+			local isSpawnedByEngine = LIB.IsSpawnedByEngine(vehicle)
+			if isSpawnedByEngine then
+				local trailerData = LIBCoupling.GetTrailerData(vehicle)
+				trailerData.lightState = tobool(keyValues.sligwolf_light)
+
+				SligWolf_Addons.CallFunctionOnAddon(addonname, "LightsUpdateGlows", vehicle)
+
+				-- @TODO: Code a proper EngineState library/logic?
+				local engineState = tobool(keyValues.sligwolf_engine)
+				SligWolf_Addons.CallFunctionOnAddon(addonname, "EngineState", vehicle, vat, engineState)
+			end
 		end
 	end
 

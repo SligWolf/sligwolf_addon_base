@@ -157,6 +157,8 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 				duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
 			end
 		end
+
+
 	end
 
 	LIBEntities.EnableMotion(vehicle, false)

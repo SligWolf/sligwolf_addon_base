@@ -975,6 +975,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	entityItem.Is_SLIGWOLF = true
 	entityItem.SLIGWOLF_Addonname = addonname
 	entityItem.SLIGWOLF_Hidden = hidden
+	entityItem.SLIGWOLF_FGD = {}
 
 	entityItem.SLIGWOLF_SkinCategory = "entity"
 	entityItem.SLIGWOLF_SkinMapName = obj.skinMapName
@@ -1047,6 +1048,7 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 	weaponItem.Is_SLIGWOLF = true
 	weaponItem.SLIGWOLF_Addonname = addonname
 	weaponItem.SLIGWOLF_Hidden = hidden
+	weaponItem.SLIGWOLF_FGD = {}
 
 	weaponItem.SLIGWOLF_SkinCategory = "weapon"
 	weaponItem.SLIGWOLF_SkinMapName = obj.skinMapName
@@ -1150,6 +1152,7 @@ function LIB.AddNPC(addonname, spawnname, obj)
 	npcListItem.Is_SLIGWOLF = true
 	npcListItem.SLIGWOLF_Addonname = addonname
 	npcListItem.SLIGWOLF_Hidden = hidden
+	npcListItem.SLIGWOLF_FGD = {}
 
 	npcListItem.SLIGWOLF_SkinCategory = "npc"
 	npcListItem.SLIGWOLF_SkinMapName = obj.skinMapName
@@ -1165,6 +1168,12 @@ function LIB.AddNPC(addonname, spawnname, obj)
 end
 
 local g_VehicleOrder = 0
+
+local g_classToFGDClass = {
+	prop_vehicle_airboat = "prop_vehicle_sligwolf_airboat",
+	prop_vehicle_jeep = "prop_vehicle_sligwolf_jeep",
+	prop_vehicle_prisoner_pod = "prop_vehicle_sligwolf_pod",
+}
 
 function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	addonname = tostring(addonname or "")
@@ -1200,6 +1209,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	end
 
 	local hidden = obj.hidden or false
+	local isTrain = obj.trainOptions ~= nil
+
 	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
@@ -1221,7 +1232,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 		LIB.RequestReloadSpawnmenu()
 	end
 
-	local spawnFreezed = obj.spawnFreezed or false
+	local spawnFrozen = obj.spawnFrozen or false
 
 	local vehicleListItem = {}
 
@@ -1236,7 +1247,16 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.Is_SLIGWOLF = true
 	vehicleListItem.SLIGWOLF_Addonname = addonname
 	vehicleListItem.SLIGWOLF_Hidden = hidden
-	vehicleListItem.SLIGWOLF_SpawnFreezed = spawnFreezed
+	vehicleListItem.SLIGWOLF_SpawnFrozen = spawnFrozen
+
+	vehicleListItem.SLIGWOLF_FGD = {}
+	local fgd = vehicleListItem.SLIGWOLF_FGD
+
+	if not isTrain then
+		fgd.class = g_classToFGDClass[vehicleListItem.Class]
+	else
+		fgd.class = "prop_vehicle_sligwolf_train"
+	end
 
 	vehicleListItem.SLIGWOLF_SkinCategory = "vehicle"
 	vehicleListItem.SLIGWOLF_SkinMapName = obj.skinMapName

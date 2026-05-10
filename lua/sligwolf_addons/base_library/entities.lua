@@ -5,6 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Entities")
 
+local LIBEntityhooks = nil
 local LIBConstraints = nil
 local LIBPosition = nil
 local LIBPhysics = nil
@@ -15,6 +16,7 @@ local LIBUtil = nil
 local g_emptyFunction = function() end
 
 function LIB.Load()
+	LIBEntityhooks = SligWolf_Addons.Entityhooks
 	LIBConstraints = SligWolf_Addons.Constraints
 	LIBPosition = SligWolf_Addons.Position
 	LIBPhysics = SligWolf_Addons.Physics
@@ -1415,6 +1417,42 @@ function LIB.GetKeyValues(ent)
 	return keyValuesRef
 end
 
+function LIB.SetKeyValue(ent, key, value)
+	if CLIENT then
+		return
+	end
+
+	key = string.lower(tostring(key or ""))
+	if key == "" then
+		return
+	end
+
+	if value == true then
+		value = "1"
+	elseif value == false then
+		value = "0"
+	else
+		value = tostring(value or "")
+	end
+
+	ent:SetKeyValue(key, value)
+	LIBEntityhooks.RegisterKeyValue(ent, key, value)
+end
+
+function LIB.SetKeyValues(ent, keyValues)
+	if CLIENT then
+		return
+	end
+
+	if not keyValues then
+		return
+	end
+
+	for key, value in pairs(keyValues) do
+		LIB.SetKeyValue(ent, key, value)
+	end
+end
+
 local g_inputBlacklist = {
 	["addoutput"] = true,
 	["runpassedcode"] = true,
@@ -1559,17 +1597,9 @@ function LIB.SetMapOutput(ent, output)
 	}
 
 	outputParams = table.concat(outputParams, "\x1B")
+
 	ent:SetKeyValue(outputName, outputParams)
-
-	local entTable = ent:SligWolf_GetTable()
-
-	local mapOutputs = entTable.mapOutputs or {}
-	entTable.mapOutputs = mapOutputs
-
-	local outputs = mapOutputs[outputName] or {}
-	mapOutputs[outputName] = outputs
-
-	table.insert(outputs, outputCopy)
+	LIBEntityhooks.RegisterOutput(ent, outputName, outputCopy)
 
 	return true
 end

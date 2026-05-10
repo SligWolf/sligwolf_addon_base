@@ -5,6 +5,9 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Entityhooks")
 
+local LIBEntities = nil
+local LIBHook = nil
+
 local g_keyValueClassWhiteList = LIB._KeyValueClassWhiteList or {}
 LIB._KeyValueClassWhiteList = g_keyValueClassWhiteList
 
@@ -27,6 +30,38 @@ function LIB.ListenToKeyValueForClasses(classes)
 	end
 end
 
+function LIB.RegisterKeyValue(ent, key, value)
+	local entTable = ent:SligWolf_GetTable()
+
+	local keyValues = entTable.keyValues or {}
+	entTable.keyValues = keyValues
+
+	local isMapOutputs = LIBEntities.IsMapOutputString(value)
+
+	if isMapOutputs then
+		value = LIBEntities.ParseMapOutputString(key, value)
+		LIB.RegisterOutput(ent, key, value)
+	else
+		keyValues[key] = value
+	end
+end
+
+function LIB.RegisterOutput(ent, outputName, outputData)
+	if not outputData then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	local mapOutputs = entTable.mapOutputs or {}
+	entTable.mapOutputs = mapOutputs
+
+	local outputs = mapOutputs[outputName] or {}
+	mapOutputs[outputName] = outputs
+
+	table.insert(outputs, outputData)
+end
+
 local function IsAllowed(ent, key, value)
 	local class = ent:GetClass()
 
@@ -46,8 +81,14 @@ local function IsAllowed(ent, key, value)
 end
 
 function LIB.Load()
-	local LIBEntities = SligWolf_Addons.Entities
-	local LIBHook = SligWolf_Addons.Hook
+	LIBEntities = SligWolf_Addons.Entities
+	LIBHook = SligWolf_Addons.Hook
+
+	LIB.ListenToKeyValueForClasses({
+		"prop_vehicle_airboat",
+		"prop_vehicle_jeep",
+		"prop_vehicle_prisoner_pod",
+	})
 
 	if SERVER then
 		-- Make sure we get ALL key values for later,
@@ -56,27 +97,7 @@ function LIB.Load()
 			if not IsValid(ent) then return end
 			if not IsAllowed(ent, key, value) then return end
 
-			local entTable = ent:SligWolf_GetTable()
-
-			local keyValues = entTable.keyValues or {}
-			entTable.keyValues = keyValues
-
-			local mapOutputs = entTable.mapOutputs or {}
-			entTable.mapOutputs = mapOutputs
-
-			local isMapOutputs = LIBEntities.IsMapOutputString(value)
-
-			if isMapOutputs then
-				value = LIBEntities.ParseMapOutputString(key, value)
-				if value then
-					local outputs = mapOutputs[key] or {}
-					mapOutputs[key] = outputs
-
-					table.insert(outputs, value)
-				end
-			else
-				keyValues[key] = value
-			end
+			LIB.RegisterKeyValue(ent, key, value)
 		end
 
 		LIBHook.Add("EntityKeyValue", "Library_EntityHooks_RegisterKeyValue", RegisterKeyValue, 20000)

@@ -270,14 +270,6 @@ local g_allowChildrenParts = {
 	hoverball = false,
 }
 
-local function SetPartKeyValues(ent, keyValues)
-	if not keyValues then return end
-
-	for k, v in pairs(keyValues) do
-		ent:SetKeyValue(tostring(k), v)
-	end
-end
-
 local function SetPartInputFire(ent, inputFires)
 	if not inputFires then return end
 
@@ -576,7 +568,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 
 	LIBModel.SetModel(ent, model)
 
-	SetPartKeyValues(ent, keyValues)
+	LIBEntities.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	if ent.sligwolf_baseEntity then
@@ -1349,7 +1341,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	local entTable = ent:SligWolf_GetTable()
 	entTable.noAsycPositioning = true
 
-	SetPartKeyValues(ent, keyValues)
+	LIBEntities.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	ent:Spawn()
@@ -1416,7 +1408,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	local entTable = ent:SligWolf_GetTable()
 	entTable.noAsycPositioning = true
 
-	SetPartKeyValues(ent, keyValues)
+	LIBEntities.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	ent:Spawn()
@@ -1479,7 +1471,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	local entTable = ent:SligWolf_GetTable()
 	entTable.noAsycPositioning = true
 
-	SetPartKeyValues(ent, keyValues)
+	LIBEntities.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	ent:Spawn()
