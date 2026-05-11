@@ -7,6 +7,7 @@ local LIB = SligWolf_Addons:NewLib("Seat")
 
 local LIBPosition = nil
 local LIBEntities = nil
+local LIBSourceIO = nil
 local LIBDebug = nil
 local LIBTimer = nil
 local LIBModel = nil
@@ -214,7 +215,7 @@ function LIB.GetOrSpawnSeat(seatGroup, attachmentName)
 	seat:SetNWBool("sligwolf_noPickup", true)
 
 	local keyValues = seatGroup:GetSeatKeyValues()
-	LIBEntities.SetKeyValues(seat, keyValues)
+	LIBSourceIO.SetKeyValues(seat, keyValues)
 
 	seat:Spawn()
 	seat:Activate()
@@ -503,6 +504,7 @@ end
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
+	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBDebug = SligWolf_Addons.Debug
 	LIBTimer = SligWolf_Addons.Timer
 	LIBModel = SligWolf_Addons.Model

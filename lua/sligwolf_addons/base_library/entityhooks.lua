@@ -37,9 +37,11 @@ function LIB.RegisterKeyValue(ent, key, value)
 	entTable.keyValues = keyValues
 
 	local isMapOutputs = LIBEntities.IsMapOutputString(value)
+	local isMapOutputs = LIBSourceIO.IsMapOutputString(value)
 
 	if isMapOutputs then
 		value = LIBEntities.ParseMapOutputString(key, value)
+		value = LIBSourceIO.ParseMapOutputString(key, value)
 		LIB.RegisterOutput(ent, key, value)
 	else
 		keyValues[key] = value

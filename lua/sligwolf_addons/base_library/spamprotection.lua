@@ -9,6 +9,7 @@ local g_maxCollisionSpamCount = 30
 local g_stableAfterTime = 10
 
 local LIBEntities = nil
+local LIBSourceIO = nil
 local LIBPhysics = nil
 local LIBVehicle = nil
 local LIBTimer = nil
@@ -205,6 +206,7 @@ end
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
+	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBPhysics = SligWolf_Addons.Physics
 	LIBPhysgun = SligWolf_Addons.Physgun
 	LIBVehicle = SligWolf_Addons.Vehicle
@@ -273,7 +275,7 @@ function LIB.Load()
 						continue
 					end
 
-					if LIBEntities.IsCreatedByMap(superparent, true) then
+					if LIBSourceIO.IsCreatedByMap(superparent, true) then
 						continue
 					end
 

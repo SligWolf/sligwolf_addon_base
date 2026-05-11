@@ -15,6 +15,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBConstraints = SligWolf_Addons.Constraints
 local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBPosition = SligWolf_Addons.Position
 local LIBCoupling = SligWolf_Addons.Coupling
 local LIBVehicle = SligWolf_Addons.Vehicle
@@ -568,7 +569,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 
 	LIBModel.SetModel(ent, model)
 
-	LIBEntities.SetKeyValues(ent, keyValues)
+	LIBSourceIO.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	if ent.sligwolf_baseEntity then
@@ -1341,7 +1342,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	local entTable = ent:SligWolf_GetTable()
 	entTable.noAsycPositioning = true
 
-	LIBEntities.SetKeyValues(ent, keyValues)
+	LIBSourceIO.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	ent:Spawn()
@@ -1408,7 +1409,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	local entTable = ent:SligWolf_GetTable()
 	entTable.noAsycPositioning = true
 
-	LIBEntities.SetKeyValues(ent, keyValues)
+	LIBSourceIO.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	ent:Spawn()
@@ -1471,7 +1472,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	local entTable = ent:SligWolf_GetTable()
 	entTable.noAsycPositioning = true
 
-	LIBEntities.SetKeyValues(ent, keyValues)
+	LIBSourceIO.SetKeyValues(ent, keyValues)
 	SetPartInputFire(ent, inputFires)
 
 	ent:Spawn()

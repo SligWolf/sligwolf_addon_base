@@ -15,7 +15,7 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
-local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBTimer = SligWolf_Addons.Timer
 local LIBPrint = SligWolf_Addons.Print
 local LIBUtil = SligWolf_Addons.Util
@@ -76,7 +76,7 @@ end
 
 function ENT:SpawnVehicle()
 	local spawnname = self:GetSpawnName()
-	if not spawnname then
+	if spawnname == "" then
 		return
 	end
 
@@ -95,8 +95,8 @@ function ENT:SpawnVehicle()
 	vehicle:SetPos(self:GetPos())
 	vehicle:SetAngles(self:GetAngles())
 
-	local keyValues = LIBEntities.GetKeyValues(self)
-	local outputs = LIBEntities.GetMapOutputs(self)
+	local keyValues = LIBSourceIO.GetKeyValues(self)
+	local outputs = LIBSourceIO.GetMapOutputs(self)
 	local inputsOrderd = self._inputsOrderd or {}
 
 	-- Copy KeyValues to the new entity
@@ -105,19 +105,26 @@ function ENT:SpawnVehicle()
 			continue
 		end
 
-		LIBEntities.SetKeyValue(vehicle, key, value)
+		LIBSourceIO.SetKeyValue(vehicle, key, value)
 	end
 
 	-- Copy map outputs to the new entity
-	LIBEntities.SetMapOutputs(vehicle, outputs)
+	LIBSourceIO.SetMapOutputs(vehicle, outputs)
 
 	-- Trigger IO called before spawn on the new entity
 	for _, i in ipairs(inputsOrderd) do
 		vehicle:Input(i.name, i.activator, i.caller, i.param)
 	end
 
-	-- @TODO: skincolors
-	-- @TODO: skin picker, n-th skin, -2 random, -1 disabled (use colors), 0 default
+	-- Reattach children to the new entity 
+	local children = self:GetChildren()
+	for _, child in ipairs(children) do
+		if not IsValid(child) then
+			continue
+		end
+
+		child:SetParent(vehicle)
+	end
 
 	-- @TODO: gauges
 
@@ -128,20 +135,8 @@ function ENT:SpawnVehicle()
 end
 
 function ENT:GetSpawnData()
-	local spawndata = self._spawndata
-
-	if spawndata ~= nil then
-		if spawndata == false then
-			return nil
-		end
-
-		return spawndata
-	end
-
-	self._spawndata = false
-
 	local spawnname = self:GetSpawnName()
-	if not spawnname then
+	if spawnname == "" then
 		LIBPrint.Warn("Missing spawnname. (Entity: %s)", self)
 		return nil
 	end
@@ -166,10 +161,9 @@ function ENT:GetSpawnData()
 		return nil
 	end
 
-	self._spawndata = spawndata
 	return spawndata
 end
 
 function ENT:GetSpawnName()
-	return LIBEntities.GetKeyValue(self, "sligwolf_spawnname")
+	return LIBSourceIO.GetKeyValue(self, "sligwolf_spawnname") or ""
 end
