@@ -140,6 +140,7 @@ local g_WorkshopIDWhitelist = {
 	["trabant"] = "342855123",
 	["tractor"] = "1105243365",
 	["traincontroller"] = "3462401312",
+	["traintracks"] = "3724217284",
 	["tram"] = "114589891",
 	["truck"] = "194583946",
 	["vrhl2lambdaweapons"] = "3467257324",
