@@ -142,9 +142,10 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 	entTable.customSpawnProperties = customSpawnProperties
 
 	local ply = entTable.spawnerPlayer
+	local isDupe = entTable.isDuped
 
-	if isSpawnedByEngine then
-		if vehicle.SetVehicleClass and SERVER then
+	if SERVER and isSpawnedByEngine then
+		if vehicle.SetVehicleClass and vehicle.SetDTString then
 			vehicle:SetVehicleClass(vehicleSpawnname)
 		end
 
@@ -152,20 +153,15 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 
 		if members then
 			table.Merge(vehicle, members)
-
-			if SERVER then
-				duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
-			end
+			duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
 		end
-
-
 	end
 
 	LIBEntities.EnableMotion(vehicle, false)
 
 	self:HandleSpawnFinishedEvent(vehicle)
 
-	local spawnVehicle = function(thisVehicle)
+	local callSpawnVehicle = function(thisVehicle)
 		local vat = self:GetEntityTable(thisVehicle)
 
 		self:CallAddonFunctionWithErrorNoHalt(
@@ -178,7 +174,6 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 	end
 
 	local callsback = false
-	local isDupe = entTable.isDuped
 
 	if SERVER and not isSpawnedByEngine then
 		local pos = vehicle:GetPos()
@@ -194,12 +189,12 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 		end
 
 		if newpos and newang then
-			callsback = LIBPosition.SetPosAng(vehicle, newpos, newang, spawnVehicle)
+			callsback = LIBPosition.SetPosAng(vehicle, newpos, newang, callSpawnVehicle)
 		end
 	end
 
 	if not callsback then
-		spawnVehicle(vehicle)
+		callSpawnVehicle(vehicle)
 	end
 end
 

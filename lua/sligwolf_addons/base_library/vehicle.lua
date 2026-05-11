@@ -6,9 +6,9 @@ end
 local LIB = SligWolf_Addons:NewLib("Vehicle")
 
 local LIBConstraints = nil
-local LIBSpawnmenu = nil
 local LIBCoupling = nil
 local LIBEntities = nil
+local LIBSourceIO = nil
 local LIBPosition = nil
 local LIBPhysics = nil
 local LIBCamera = nil
@@ -16,26 +16,6 @@ local LIBTimer = nil
 local LIBModel = nil
 local LIBHook = nil
 local LIBUtil = nil
-
-function LIB.ToString(vehicle)
-	local vehicleStr = LIBEntities.ToString(vehicle)
-
-	if not IsValid(vehicle) then
-		return vehicleStr
-	end
-
-	if not vehicle:IsVehicle() then
-		return vehicleStr
-	end
-
-	local vehicleName = LIB.GetVehicleSpawnnameFromVehicle(vehicle) or ""
-	if vehicleName == "" then
-		vehicleName = "<unknown>"
-	end
-
-	local str = string.format("%s[spawnname: %s]", vehicleStr, vehicleName)
-	return str
-end
 
 function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	if not SERVER then return end
@@ -78,7 +58,7 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	vehicle.VehicleName = spawnname
 	vehicle.VehicleTable = vehicleTable
 
-	if vehicle.SetVehicleClass then
+	if vehicle.SetVehicleClass and vehicle.SetDTString then
 		vehicle:SetVehicleClass(spawnname)
 	end
 
@@ -86,10 +66,7 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 
 	if members then
 		table.Merge(vehicle, members)
-
-		if SERVER then
-			duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
-		end
+		duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
 	end
 
 	return vehicle
@@ -111,13 +88,13 @@ function LIB.SetupVehicleKeyValues(vehicle, keyValues)
 	if not keyValues then return end
 
 	for k, v in pairs(keyValues) do
-		local kLower = string.lower(k)
+		k = string.lower(k)
 
-		if not g_allowedVehicleKeyValues[kLower] then
+		if not g_allowedVehicleKeyValues[k] then
 			continue
 		end
 
-		LIBEntities.SetKeyValue(vehicle, k, v)
+		LIBSourceIO.SetKeyValue(vehicle, k, v)
 	end
 end
 
@@ -134,13 +111,13 @@ function LIB.SetupVehicleKeyValuesOverride(vehicle, keyValues)
 	entTable.keyValuesOverride = keyValuesOverride
 
 	for k, v in pairs(keyValues) do
-		local kLower = string.lower(k)
+		k = string.lower(k)
 
-		if not g_allowedVehicleKeyValues[kLower] then
+		if not g_allowedVehicleKeyValues[k] then
 			continue
 		end
 
-		keyValuesOverride[kLower] = v
+		keyValuesOverride[k] = v
 	end
 end
 
@@ -160,7 +137,7 @@ function LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 
 	local vehicleSpawnname = ""
 
-	if vehicle.GetVehicleClass then
+	if vehicle.GetVehicleClass and vehicle.GetDTString then
 		vehicleSpawnname = vehicle:GetVehicleClass()
 		vehicleSpawnname = tostring(vehicleSpawnname or "")
 
@@ -178,7 +155,7 @@ function LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 		return nil
 	end
 
-	vehicleSpawnname = LIBEntities.GetKeyValue(vehicle, "sligwolf_spawnname")
+	vehicleSpawnname = LIBSourceIO.GetKeyValue(vehicle, "sligwolf_spawnname")
 	vehicleSpawnname = tostring(vehicleSpawnname or "")
 
 	if vehicleSpawnname ~= "" then
@@ -186,93 +163,6 @@ function LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 	end
 
 	return nil
-end
-
-function LIB.GuessFallbackVehicleSpawnname(model)
-	model = tostring(model or "")
-	if model == "" then
-		return nil
-	end
-
-	local registerdVehicleSpawnnamesByModel = LIBSpawnmenu.g_RegisterdVehicleSpawnnamesByModel
-	if not registerdVehicleSpawnnamesByModel then
-		return nil
-	end
-
-	local vehicleSpawnname = registerdVehicleSpawnnamesByModel[model]
-	if not vehicleSpawnname then
-		return nil
-	end
-
-	return vehicleSpawnname
-end
-
-function LIB.ValidateVehicleTable(vehicle, vehicleTable)
-	if not IsValid(vehicle) then return false end
-	if not vehicle:IsVehicle() then return false end
-
-	if not vehicleTable then return false end
-	if not vehicleTable.Is_SLIGWOLF then return false end
-
-	local addonname = vehicleTable.SLIGWOLF_Addonname
-	if not addonname then return false end
-
-	local addon = SligWolf_Addons.GetAddon(addonname)
-	if not addon then return false end
-
-	local tableName = vehicleTable.Name
-
-	local vehicleClass = vehicle:GetClass() or ""
-	local tableClass = vehicleTable.Class or ""
-
-	if vehicleClass ~= tableClass then
-		addon:ErrorNoHalt(
-			"Class missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
-			tableName,
-			vehicle,
-			tableClass,
-			vehicleClass
-		)
-
-		return false
-	end
-
-	if SERVER then
-		local vehicleKeyValues = LIBEntities.GetKeyValues(vehicle)
-		local tableKeyValues = vehicleTable.KeyValues or {}
-
-		local vehicleScript = vehicleKeyValues.vehiclescript or ""
-		local tableScript = tableKeyValues.vehiclescript or ""
-
-		if vehicleScript ~= tableScript then
-			addon:ErrorNoHalt(
-				"Vehicle script missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
-				tableName,
-				vehicle,
-				tableScript,
-				vehicleScript
-			)
-
-			return false
-		end
-	end
-
-	local vehicleModel = vehicle:GetModel() or ""
-	local tableModel = vehicleTable.Model or ""
-
-	if vehicleModel ~= tableModel then
-		addon:ErrorNoHalt(
-			"Model missmatch in vehicle: %s (%s)\n  Expected: '%s'\n  Got: '%s'.\n  Ignoring vehicle for spawn setup.\n",
-			tableName,
-			vehicle,
-			tableModel,
-			vehicleModel
-		)
-
-		return false
-	end
-
-	return true
 end
 
 function LIB.IsSpawnedByEngine(vehicle)
@@ -286,7 +176,7 @@ function LIB.IsSpawnedByEngine(vehicle)
 
 	entTable.isSpawnedByEngine = true
 
-	if LIBEntities.IsCreatedByMap(vehicle, true) then
+	if LIBSourceIO.IsCreatedByMap(vehicle, true) then
 		return true
 	end
 
@@ -297,18 +187,6 @@ function LIB.IsSpawnedByEngine(vehicle)
 
 	entTable.isSpawnedByEngine = false
 	return false
-end
-
-function LIB.GetVehicleTableFromVehicle(vehicle)
-	local vehicleSpawnname = LIB.GetVehicleSpawnnameFromVehicle(vehicle)
-	if not vehicleSpawnname then
-		return nil
-	end
-
-	local vehicleTable = LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
-	if not vehicleTable then return nil end
-
-	return vehicleTable
 end
 
 function LIB.EnableWheels(vehicle, enable)
@@ -828,6 +706,7 @@ function LIB.Load()
 	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 	LIBCoupling = SligWolf_Addons.Coupling
 	LIBEntities = SligWolf_Addons.Entities
+	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBPosition = SligWolf_Addons.Position
 	LIBPhysics = SligWolf_Addons.Physics
 	LIBCamera = SligWolf_Addons.Camera
@@ -851,8 +730,8 @@ function LIB.Load()
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnVehicleFinished", vehicle, vat, ply)
 
 		if SERVER then
-			local vehicleTable = LIB.GetVehicleTableFromVehicle(vehicle) or {}
-			local keyValues = LIBEntities.GetKeyValues(vehicle)
+			local vehicleTable = LIBEntities.GetSpawntable(vehicle) or {}
+			local keyValues = LIBSourceIO.GetKeyValues(vehicle)
 
 			local spawnFrozen = false
 			local overrideBodyStates = false
@@ -935,22 +814,20 @@ function LIB.Load()
 
 	LIBHook.Add("PlayerLeaveVehicle", "Library_Vehicle_PlayerLeaveVehicle", PlayerLeaveVehicle, 20000)
 
-	local function OnEntityCreated(ent)
+	local function OnPostEntityCreated(ent)
 		if not IsValid(ent) then return end
 		if not ent:IsVehicle() then return end
 
 		LIBTimer.SimpleNextFrame(function()
-			LIBTimer.SimpleNextFrame(function()
-				if not IsValid(ent) then return end
-				if not ent:IsVehicle() then return end
-				if not ent:IsValidVehicle() then return end
+			if not IsValid(ent) then return end
+			if not ent:IsVehicle() then return end
+			if not ent:IsValidVehicle() then return end
 
-				LIBHook.RunCustom("OnVehicleCreated", ent)
-			end)
+			LIBHook.RunCustom("OnPostVehicleCreated", ent)
 		end)
 	end
 
-	LIBHook.Add("OnEntityCreated", "Library_Vehicle_OnEntityCreated", OnEntityCreated, 10000)
+	LIBHook.AddCustom("OnPostEntityCreated", "Library_Vehicle_OnPostEntityCreated", OnPostEntityCreated, 10000)
 
 	local function PlayerSpawnedVehicle(ply, vehicle)
 		if not IsValid(ply) then return end
@@ -967,32 +844,25 @@ function LIB.Load()
 		if not vehicle:IsVehicle() then return end
 		if not vehicle:IsValidVehicle() then return end
 
-		local vehicleSpawnname = LIB.GetVehicleSpawnnameFromVehicle(vehicle)
-		if not vehicleSpawnname then
-			vehicleSpawnname = LIB.GuessFallbackVehicleSpawnname(vehicle:GetModel())
-		end
-
+		local vehicleSpawnname = LIBEntities.GetSpawnname(vehicle)
 		if not vehicleSpawnname then
 			return
 		end
 
-		local vehicleTable = LIB.GetVehicleTableFromSpawnname(vehicleSpawnname)
+		local vehicleTable = LIBEntities.GetSpawntable(vehicle)
 		if not vehicleTable then
 			return
 		end
 
-		if not LIB.ValidateVehicleTable(vehicle, vehicleTable) then
-			-- Ensure the vehicle has the right properties and matches to the vehicle table
+		local addonname = vehicleTable.SLIGWOLF_Addonname
+		if not addonname then
 			return
 		end
-
-		local addonname = vehicleTable.SLIGWOLF_Addonname
-		if not addonname then return end
 
 		SligWolf_Addons.CallFunctionOnAddon(addonname, "HandleVehicleSpawn", vehicle, vehicleSpawnname, vehicleTable)
 	end
 
-	LIBHook.AddCustom("OnVehicleCreated", "Library_Vehicle_HandleVehicleSpawn", HandleVehicleSpawn, 10000)
+	LIBHook.AddCustom("OnPostVehicleCreated", "Library_Vehicle_HandleVehicleSpawn", HandleVehicleSpawn, 10000)
 end
 
 return true

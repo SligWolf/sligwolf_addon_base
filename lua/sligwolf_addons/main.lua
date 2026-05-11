@@ -985,19 +985,12 @@ function SligWolf_Addons.GetAddonsSorted()
 		return sligwolfAddons.AddondataSorted
 	end
 
-	local addondataSorted = {}
 	sligwolfAddons.AddondataSorted = nil
+	local addondataSorted = {}
 
 	for name, addon in SortedPairs(sligwolfAddons.Addondata) do
 		if not addon then continue end
-
-		local order = #addondataSorted + 1
-
-		addondataSorted[order] = {
-			order = order,
-			name = name,
-			addon = addon,
-		}
+		table.insert(addondataSorted, addon)
 	end
 
 	sligwolfAddons.AddondataSorted = addondataSorted
@@ -1016,11 +1009,7 @@ function SligWolf_Addons.CallFunctionOnAllAddons(addonFunc, ...)
 	local sortedAddondata = sligwolfAddons.GetAddonsSorted()
 	local returnResult = nil
 
-	for order, addonItem in ipairs(sortedAddondata) do
-		if not addonItem then continue end
-
-		local addon = addonItem.addon
-		if not addon then continue end
+	for _, addon in ipairs(sortedAddondata) do
 		if not addon.Loaded then continue end
 
 		local callAddonFunctionWithErrorNoHalt = addon.CallAddonFunctionWithErrorNoHalt
@@ -1089,18 +1078,14 @@ function SligWolf_Addons.ReloadAllAddons()
 	local sortedAddondata = sligwolfAddons.GetAddonsSorted()
 	local reloadList = {}
 
-	for order, addonItem in ipairs(sortedAddondata) do
-		if not addonItem then
-			continue
-		end
-
-		local addonName = addonItem.name
+	for _, addon in ipairs(sortedAddondata) do
+		local addonName = addon.Addonname
 		if addonName == baseAddonName then
 			-- base addon is always loaded first
 			continue
 		end
 
-		reloadList[#reloadList + 1] = addonName
+		table.insert(reloadList, addonName)
 	end
 
 	local isAddonEnv = istable(SLIGWOLF_ADDON)

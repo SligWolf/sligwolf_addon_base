@@ -19,33 +19,38 @@
  
 @BaseClass base(Targetname, Global, Origin, Angles) = SLIGWOLF_BASE_vehicle
 [
-	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. \n" +
+		"Used for model, logic and other spawn parameters." =
 	[
 		"" : "Nothing (No SW-ADDON Vehicle)"
 	]
 
-	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon: Vehicle lights state." =
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon: Vehicle lights state on spawn." =
 	[
 		"0" : "Lights off"
 		"1" : "Lights on"
 	]
 
-	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon: Vehicle engine state." =
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon: Vehicle engine state on spawn." =
 	[
 		"0" : "Don't start engine"
 		"1" : "Start engine"
 	]
 
-	sligwolf_frozen(choices) : "[SW-ADDONS] Spawn frozen" : "0" : "\nSligWolf's Addon: Spawn frozen." =
+	sligwolf_frozen(choices) : "[SW-ADDONS] Spawn frozen" : "0" : "\nSligWolf's Addon: Spawn frozen motion." =
 	[
 		"0" : "Auto (Use parameter from spawnname)"
 		"1" : "Unfrozen"
 		"2" : "Frozen"
 	]
 
-	sligwolf_colorskin(choices) : "[SW-ADDONS] Color Skin" : "0" : "\nSligWolf's Addon: Color skin." =
+	sligwolf_theme(choices) : "[SW-ADDONS] Theme" : "" : "\nSligWolf's Addon: Spawn with given theme. \n" +
+		"Auto: Selects the default theme of the addon, but can be overridden by skin keyvalue. \n" +
+		"Default: Same as 'Auto', but can not be overridden. \n" +
+		"Random: Selects a random theme of the addon. \n" +
+		"Anything else: Selects the actuall theme from all addons. Make sure the addon prefix matches to the addon of the selected spawnname." =
 	[
-		"0" : "TODO"
+//      {{SW_VEHICLE_THEMES_OPTIONS}}
 	]
 ]
 

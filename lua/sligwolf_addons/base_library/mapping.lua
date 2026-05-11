@@ -5,6 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Mapping")
 
+local LIBSkinsystem = nil
 local LIBPrint = nil
 local LIBUtil = nil
 local LIBFile = nil
@@ -52,6 +53,75 @@ local function getVehicleTablesByClass()
 	end
 
 	return result, count
+end
+
+local function getVehicleThemesByAddon()
+	local items = {}
+
+	local vehicleThemes = LIBSkinsystem.GetAllThemes("vehicle")
+
+	for _, themesInAddon in pairs(vehicleThemes) do
+		local themes = themesInAddon.themes
+		if not themes or #themes <= 1 then
+			continue
+		end
+
+		local addonname = themesInAddon.addonname
+		local addontitle = SligWolf_Addons.GetAddonTitle(addonname) or addonname
+
+		for _, theme in ipairs(themes) do
+			if theme.isRandom then
+				continue
+			end
+
+			local name = theme.name
+			local title = theme.button.title or name
+			local key = string.format("%s_%s", addonname, name)
+
+			table.insert(items, {
+				key = key,
+				title = title,
+				addontitle = addontitle,
+			})
+		end
+	end
+
+	return items
+end
+
+local function vehicleThemesOptionsListSorter(a, b)
+	return a.key < b.key
+end
+
+local function getVehicleThemesOptionsList(options)
+	options = options or {}
+
+	local lines = {}
+
+	table.insert(lines, [[\t\t"" : "Auto"]])
+	table.insert(lines, [[\t\t"default" : "Default"]])
+	table.insert(lines, [[\t\t"random" : "Random"]])
+
+	table.sort(options, vehicleThemesOptionsListSorter)
+
+	for _, item in ipairs(options) do
+		local key = item.key
+		local title = item.title
+		local addontitle = item.addontitle
+
+		local line = string.format(
+			[[\t\t"%s" : "%s (%s | %s)"]],
+			key,
+			key,
+			title,
+			addontitle
+		)
+
+		table.insert(lines, line)
+	end
+
+	lines = table.concat(lines, "\n")
+	return lines
 end
 
 local function spawnnameOptionsListSorter(a, b)
@@ -199,6 +269,7 @@ function LIB.BuildCache(rebuildCache)
 	LIB.SetFGDCacheValue("SW_ADDON_COUNT", SligWolf_Addons.GetLoadedAddonsCount())
 	LIB.SetFGDCacheValue("SW_VEHICLE_COUNT", vehicleTablesCount)
 	LIB.SetFGDCacheValue("SW_VEHICLE_TABLES", vehicleTables)
+	LIB.SetFGDCacheValue("SW_VEHICLE_THEMES", getVehicleThemesByAddon())
 
 	LIB.WriteFGDCache()
 
@@ -265,6 +336,12 @@ function LIB.GenerateFGD(rebuildCache)
 
 	fgdContent = replacePlaceholder(
 		fgdContent,
+		"SW_VEHICLE_THEMES_OPTIONS",
+		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_VEHICLE_THEMES"))
+	)
+
+	fgdContent = replacePlaceholder(
+		fgdContent,
 		"SW_SPAWNNAME_AIRBOAT_OPTIONS",
 		getSpawnnameOptionsList(vehicleTables["prop_vehicle_sligwolf_airboat"])
 	)
@@ -312,6 +389,7 @@ if SERVER then
 end
 
 function LIB.Load()
+	LIBSkinsystem = SligWolf_Addons.Skinsystem
 	LIBPrint = SligWolf_Addons.Print
 	LIBUtil = SligWolf_Addons.Util
 	LIBFile = SligWolf_Addons.File

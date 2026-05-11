@@ -5,7 +5,10 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Entityhooks")
 
+local LIBDuplicator = nil
 local LIBEntities = nil
+local LIBSourceIO = nil
+local LIBTimer = nil
 local LIBHook = nil
 
 local g_keyValueClassWhiteList = LIB._KeyValueClassWhiteList or {}
@@ -36,11 +39,9 @@ function LIB.RegisterKeyValue(ent, key, value)
 	local keyValues = entTable.keyValues or {}
 	entTable.keyValues = keyValues
 
-	local isMapOutputs = LIBEntities.IsMapOutputString(value)
 	local isMapOutputs = LIBSourceIO.IsMapOutputString(value)
 
 	if isMapOutputs then
-		value = LIBEntities.ParseMapOutputString(key, value)
 		value = LIBSourceIO.ParseMapOutputString(key, value)
 		LIB.RegisterOutput(ent, key, value)
 	else
@@ -83,7 +84,10 @@ local function IsAllowed(ent, key, value)
 end
 
 function LIB.Load()
+	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
+	LIBSourceIO = SligWolf_Addons.SourceIO
+	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 
 	LIB.ListenToKeyValueForClasses({
@@ -185,6 +189,39 @@ function LIB.Load()
 	end
 
 	LIBHook.Add("EntityRemoved", "Library_EntityHooks_RunCallOnRemove", RunCallOnRemove, 1000)
+
+	local function OnEntityCreated(ent)
+		if not IsValid(ent) then return end
+
+		if SERVER then
+			LIBDuplicator.StoreIsDupedEntityModifier(ent)
+		end
+
+		LIBTimer.SimpleNextFrame(function()
+			if not IsValid(ent) then return end
+
+			LIBHook.RunCustom("OnPostEntityCreated", ent)
+		end)
+	end
+
+	LIBHook.Add("OnEntityCreated", "Library_EntityHooks_OnEntityCreated", OnEntityCreated, 1000)
+
+	local function PlayerSpawnedEntity(ply, ent)
+		if not IsValid(ply) then return end
+		if not IsValid(ent) then return end
+
+		LIBTimer.SimpleNextFrame(function()
+			if not IsValid(ply) then return end
+			if not IsValid(ent) then return end
+
+			LIBHook.RunCustom("PostPlayerSpawnedEntity", ply, ent)
+		end)
+	end
+
+	LIBHook.Add("PlayerSpawnedVehicle", "Library_EntityHooks_PlayerSpawnedEntity", PlayerSpawnedEntity, 1000)
+	LIBHook.Add("PlayerSpawnedNPC", "Library_EntityHooks_PlayerSpawnedEntity", PlayerSpawnedEntity, 1000)
+	LIBHook.Add("PlayerSpawnedSENT", "Library_EntityHooks_PlayerSpawnedEntity", PlayerSpawnedEntity, 1000)
+	LIBHook.Add("PlayerSpawnedSWEP", "Library_EntityHooks_PlayerSpawnedEntity", PlayerSpawnedEntity, 1000)
 end
 
 return true

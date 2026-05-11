@@ -9,7 +9,6 @@ local LIBPosition = nil
 local LIBEntities = nil
 local LIBTimer = nil
 local LIBMeta = nil
-local LIBHook = nil
 
 local g_mainEntityModifierName = "SLIGWOLF_Library_Duplicator_MainEntityModifier"
 local g_isDupedEntityModifierName = "SLIGWOLF_Library_Duplicator_IsDupedEntityModifier"
@@ -75,7 +74,7 @@ function LIB.StoreIsDupedEntityModifier(ent)
 		return
 	end
 
-	duplicator.StoreEntityModifier(ent, g_isDupedEntityModifierName, {dummy = true})
+	duplicator.StoreEntityModifier(ent, g_isDupedEntityModifierName, {_ = true})
 end
 
 local function isDupedEntityModifier(ply, ent, data)
@@ -277,11 +276,6 @@ function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBTimer = SligWolf_Addons.Timer
 	LIBMeta = SligWolf_Addons.Meta
-	LIBHook = SligWolf_Addons.Hook
-
-	if SERVER then
-		LIBHook.Add("OnEntityCreated", "Library_Duplicator_ApplyIsDupedEntityModifier", LIB.StoreIsDupedEntityModifier, 100000)
-	end
 end
 
 return true
