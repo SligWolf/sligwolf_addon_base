@@ -210,6 +210,10 @@ function LIB.Load()
 		if not IsValid(ply) then return end
 		if not IsValid(ent) then return end
 
+		local entTable = ent:SligWolf_GetTable()
+		entTable.ownerPlayer = ply
+		entTable.spawnerPlayer = ply
+
 		LIBTimer.SimpleNextFrame(function()
 			if not IsValid(ply) then return end
 			if not IsValid(ent) then return end

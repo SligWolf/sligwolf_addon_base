@@ -10,6 +10,7 @@ if not SLIGWOLF_ADDON then
 	return
 end
 
+local LIBSkinsystem = SligWolf_Addons.Skinsystem
 local LIBEntities = SligWolf_Addons.Entities
 local LIBConvar = SligWolf_Addons.Convar
 local LIBPrint = SligWolf_Addons.Print
@@ -18,11 +19,14 @@ local LIBUtil = SligWolf_Addons.Util
 local g_root_path = "ROOT"
 
 SLIGWOLF_ADDON.g_skinMaps = {}
-SLIGWOLF_ADDON.g_skinThemes = {}
-SLIGWOLF_ADDON.g_skinThemesForRandom = {}
-SLIGWOLF_ADDON.g_skinThemesOrdered = {}
-SLIGWOLF_ADDON.g_skinThemesDefaults = {}
-SLIGWOLF_ADDON.g_skinThemesRandomPickers = {}
+SLIGWOLF_ADDON.g_skinThemeConfigs = {}
+SLIGWOLF_ADDON.g_skinThemeConfigsForRandom = {}
+SLIGWOLF_ADDON.g_skinThemeConfigsOrdered = {}
+SLIGWOLF_ADDON.g_skinThemeConfigsDefaults = {}
+SLIGWOLF_ADDON.g_skinThemeConfigsRandomPickers = {}
+SLIGWOLF_ADDON.g_skinThemeConfigsPlayerColored = {}
+
+local g_skinParamKeys = LIBSkinsystem.g_skinParamKeys
 
 function SLIGWOLF_ADDON:SkinGetConvarName(category)
 	local convarName = string.format("cl_sligwolf_%s_theme_%s", self.Addonname, category)
@@ -34,12 +38,12 @@ function SLIGWOLF_ADDON:SkinAddConvar(category)
 		return nil
 	end
 
-	local defaultTheme = self:SkinGetDefaultTheme(category)
-	if not defaultTheme then
+	local defaultThemeConfig = self:SkinGetDefaultThemeConfig(category)
+	if not defaultThemeConfig then
 		return nil
 	end
 
-	local defaultThemeName = defaultTheme.name
+	local defaultThemeName = defaultThemeConfig.name
 	local convarName = self:SkinGetConvarName(category)
 	local help = string.format("Set the color theme for the next spawned object for category '%s' in addon '%s'", category, self.Addonname)
 
@@ -58,12 +62,12 @@ function SLIGWOLF_ADDON:SkinGetSelectedThemeName(ply, category)
 		ply = LocalPlayer()
 	end
 
-	local defaultTheme = self:SkinGetDefaultTheme(category)
-	if not defaultTheme then
+	local defaultThemeConfig = self:SkinGetDefaultThemeConfig(category)
+	if not defaultThemeConfig then
 		return nil
 	end
 
-	local defaultThemeName = defaultTheme.name
+	local defaultThemeName = defaultThemeConfig.name
 	if not IsValid(ply) then
 		return defaultThemeName
 	end
@@ -84,16 +88,25 @@ function SLIGWOLF_ADDON:SkinGetSelectedThemeName(ply, category)
 	end
 
 	if themeName == "random" then
-		local theme = self:SkinGetRandomPickerTheme(category)
-		if not theme then
+		local themeConfig = self:SkinGetRandomPickerThemeConfig(category)
+		if not themeConfig then
 			return defaultThemeName
 		end
 
-		return theme.name
+		return themeConfig.name
 	end
 
-	local theme = self:SkinGetTheme(category, themeName, false)
-	if not theme then
+	if themeName == "player" then
+		local themeConfig = self:SkinGetPlayerColoredThemeConfig(category)
+		if not themeConfig then
+			return defaultThemeName
+		end
+
+		return themeConfig.name
+	end
+
+	local themeConfig = self:SkinGetThemeConfig(category, themeName, false)
+	if not themeConfig then
 		LIBPrint.Warn(
 			"Theme '%s' was not found in addon '%s'. Failing back to default.",
 			themeName,
@@ -103,31 +116,44 @@ function SLIGWOLF_ADDON:SkinGetSelectedThemeName(ply, category)
 		return defaultThemeName
 	end
 
-	return theme.name
+	return themeConfig.name
 end
 
 function SLIGWOLF_ADDON:GetThemeNameFromKeyValue(category, keyValue)
 	category = tostring(category or "")
 	keyValue = tostring(keyValue or "")
 
-	local defaultTheme = self:SkinGetDefaultTheme(category)
-	if not defaultTheme then
+	local defaultThemeConfig = self:SkinGetDefaultThemeConfig(category)
+	if not defaultThemeConfig then
 		return nil
 	end
 
-	local defaultThemeName = defaultTheme.name
+	local defaultThemeName = defaultThemeConfig.name
 
 	if keyValue == "" or keyValue == "default" then
 		return defaultThemeName
 	end
 
 	if keyValue == "random" then
-		local theme = self:SkinGetRandomPickerTheme(category)
-		if not theme then
+		local themeConfig = self:SkinGetRandomPickerThemeConfig(category)
+		if not themeConfig then
 			return defaultThemeName
 		end
 
-		return theme.name
+		return themeConfig.name
+	end
+
+	if keyValue == "player" then
+		if not IsValid(LIBUtil.GetFailbackPlayer()) then
+			return defaultThemeName
+		end
+
+		local themeConfig = self:SkinGetPlayerColoredThemeConfig(category)
+		if not themeConfig then
+			return defaultThemeName
+		end
+
+		return themeConfig.name
 	end
 
 	local separatorPos = string.find(keyValue, "_")
@@ -150,8 +176,8 @@ function SLIGWOLF_ADDON:GetThemeNameFromKeyValue(category, keyValue)
 		return defaultThemeName
 	end
 
-	local theme = self:SkinGetTheme(category, themeName, true)
-	if not theme then
+	local themeConfig = self:SkinGetThemeConfig(category, themeName, true)
+	if not themeConfig then
 		LIBPrint.Warn(
 			"Theme '%s' was not found in addon '%s', got sligwolf_theme = '%s'. Failing back to default.",
 			themeName,
@@ -162,7 +188,7 @@ function SLIGWOLF_ADDON:GetThemeNameFromKeyValue(category, keyValue)
 		return defaultThemeName
 	end
 
-	return theme.name
+	return themeConfig.name
 end
 
 
@@ -227,17 +253,6 @@ function SLIGWOLF_ADDON:SkinGetMap(name)
 	return map
 end
 
-local g_skinParamKeys = {
-	"skin",
-	"color",
-	"bodygroups",
-}
-
-local g_skinParamVoid = {
-	[""] = true,
-	["void"] = true,
-}
-
 local function resolveSkinItemNames(themeSkinParams)
 	for i = 0, 8 do
 		if i >= 8 then
@@ -252,7 +267,7 @@ local function resolveSkinItemNames(themeSkinParams)
 			for _, skinParamKey in ipairs(g_skinParamKeys) do
 				local skinParam = skinParamsItemUnresolved[skinParamKey]
 
-				if skinParam and isstring(skinParam) and not g_skinParamVoid[skinParam] then
+				if skinParam and isstring(skinParam) and not LIBSkinsystem.HasSkinMetaFunction(skinParamKey, skinParam) then
 					local skinParamsItemResolved = themeSkinParams[skinParam]
 					if skinParamsItemResolved then
 						skinParam = skinParamsItemResolved[skinParamKey]
@@ -275,7 +290,7 @@ local function resolveSkinItemNames(themeSkinParams)
 	end
 end
 
-function SLIGWOLF_ADDON:SkinAddTheme(category, name, themeData)
+function SLIGWOLF_ADDON:SkinAddThemeConfig(category, name, config)
 	category = tostring(category or "")
 	name = tostring(name or "")
 
@@ -287,37 +302,43 @@ function SLIGWOLF_ADDON:SkinAddTheme(category, name, themeData)
 		return
 	end
 
-	local themeCategory = self.g_skinThemes[category] or {}
-	self.g_skinThemes[category] = themeCategory
+	local themeCategory = self.g_skinThemeConfigs[category] or {}
+	self.g_skinThemeConfigs[category] = themeCategory
 
-	local theme = {}
-	themeCategory[name] = theme
+	local themeConfig = {}
+	themeCategory[name] = themeConfig
 
-	theme.name = name
-	theme.category = category
-	theme.order = themeData.order or LIBUtil.Order()
-	theme.isRandom = themeData.isRandom or false
+	themeConfig.name = name
+	themeConfig.category = category
+	themeConfig.order = config.order or LIBUtil.Order()
+	themeConfig.isRandom = config.isRandom or false
 
-	if themeData.isDefault and not self.g_skinThemesDefaults[category] then
-		self.g_skinThemesDefaults[category] = theme
-		theme.isDefault = true
+	if config.isDefault and not self.g_skinThemeConfigsDefaults[category] then
+		self.g_skinThemeConfigsDefaults[category] = themeConfig
+		themeConfig.isDefault = true
 	end
 
-	if themeData.isRandom and not self.g_skinThemesRandomPickers[category] then
-		self.g_skinThemesRandomPickers[category] = theme
-		theme.isRandom = true
+	if config.isRandom and not self.g_skinThemeConfigsRandomPickers[category] then
+		self.g_skinThemeConfigsRandomPickers[category] = themeConfig
+		themeConfig.isRandom = true
 	end
 
-	local buttonParams = themeData.button or {}
-	local themeParams = themeData.theme or {}
+	if config.isPlayerColored and not self.g_skinThemeConfigsPlayerColored[category] then
+		self.g_skinThemeConfigsPlayerColored[category] = themeConfig
+		themeConfig.isPlayerColored = true
+	end
 
-	theme.button = {
+	local buttonParams = config.button or {}
+	local themeParams = config.theme or {}
+
+	themeConfig.button = {
 		title = buttonParams.title,
+		overlayMaterial = buttonParams.overlayMaterial,
 		pieces = buttonParams.pieces,
 	}
 
 	local themeParamsInternal = {}
-	theme.theme = themeParamsInternal
+	themeConfig.theme = themeParamsInternal
 
 	for skinParamsName, skinParamsItem in pairs(themeParams) do
 		themeParamsInternal[skinParamsName] = {
@@ -329,11 +350,11 @@ function SLIGWOLF_ADDON:SkinAddTheme(category, name, themeData)
 
 	resolveSkinItemNames(themeParamsInternal)
 
-	self.g_skinThemesOrdered[category] = {}
-	self.g_skinThemesForRandom[category] = {}
+	self.g_skinThemeConfigsOrdered[category] = {}
+	self.g_skinThemeConfigsForRandom[category] = {}
 end
 
-function SLIGWOLF_ADDON:SkinGetTheme(category, name, resolveRandom)
+function SLIGWOLF_ADDON:SkinGetThemeConfig(category, name, resolveRandom)
 	category = tostring(category or "")
 	name = tostring(name or "")
 
@@ -345,112 +366,128 @@ function SLIGWOLF_ADDON:SkinGetTheme(category, name, resolveRandom)
 		return nil
 	end
 
-	local themeCategory = self.g_skinThemes[category]
+	local themeCategory = self.g_skinThemeConfigs[category]
 	if not themeCategory then
 		return nil
 	end
 
-	local theme = themeCategory[name]
-	if not theme then
+	local themeConfig = themeCategory[name]
+	if not themeConfig then
 		return nil
 	end
 
-	if not resolveRandom or not theme.isRandom then
-		return theme
+	if not resolveRandom or not themeConfig.isRandom then
+		return themeConfig
 	end
 
-	local nonRandomThemes = self.g_skinThemesForRandom[category] or {}
+	local nonRandomThemeConfigs = self.g_skinThemeConfigsForRandom[category] or {}
 
-	if table.IsEmpty(nonRandomThemes) then
-		for _, nonRandomTheme in pairs(themeCategory) do
-			if nonRandomTheme.isRandom then
+	if table.IsEmpty(nonRandomThemeConfigs) then
+		for _, nonRandomThemeConfig in pairs(themeCategory) do
+			if nonRandomThemeConfig.isRandom then
 				continue
 			end
 
-			table.insert(nonRandomThemes, nonRandomTheme)
+			table.insert(nonRandomThemeConfigs, nonRandomThemeConfig)
 		end
 	end
 
-	local randomKey = math.random(#nonRandomThemes)
-	local randomTheme = nonRandomThemes[randomKey]
+	local randomKey = math.random(#nonRandomThemeConfigs)
+	local randomThemeConfig = nonRandomThemeConfigs[randomKey]
 
-	if not randomTheme then
+	if not randomThemeConfig then
 		return nil
 	end
 
-	return randomTheme
+	return randomThemeConfig
 end
 
-function SLIGWOLF_ADDON:SkinGetThemes(category)
+function SLIGWOLF_ADDON:SkinGetThemeConfigs(category)
 	category = tostring(category or "")
 
 	if category == "" then
 		return nil
 	end
 
-	local themesOrdered = self.g_skinThemesOrdered[category] or {}
-	self.g_skinThemesOrdered[category] = themesOrdered
+	local themeConfigsOrdered = self.g_skinThemeConfigsOrdered[category] or {}
+	self.g_skinThemeConfigsOrdered[category] = themeConfigsOrdered
 
-	if not table.IsEmpty(themesOrdered) then
-		return themesOrdered
+	if not table.IsEmpty(themeConfigsOrdered) then
+		return themeConfigsOrdered
 	end
 
-	local themes = self.g_skinThemes[category]
-	if not themes then
+	local themeConfigs = self.g_skinThemeConfigs[category]
+	if not themeConfigs then
 		return nil
 	end
 
-	for i, theme in SortedPairsByMemberValue(themes, "order") do
-		table.insert(themesOrdered, theme)
+	for i, themeConfig in SortedPairsByMemberValue(themeConfigs, "order") do
+		table.insert(themeConfigsOrdered, themeConfig)
 	end
 
-	return themesOrdered
+	return themeConfigsOrdered
 end
 
-function SLIGWOLF_ADDON:SkinGetDefaultTheme(category)
+function SLIGWOLF_ADDON:SkinGetDefaultThemeConfig(category)
 	category = tostring(category or "")
 
 	if category == "" then
 		return nil
 	end
 
-	local defaultTheme = self.g_skinThemesDefaults[category]
-	if defaultTheme then
-		defaultTheme.isDefault = true
-		return defaultTheme
+	local defaultThemeConfig = self.g_skinThemeConfigsDefaults[category]
+	if defaultThemeConfig then
+		defaultThemeConfig.isDefault = true
+		return defaultThemeConfig
 	end
 
-	local themes = self:SkinGetThemes(category)
-	if not themes then
+	local themeConfigs = self:SkinGetThemeConfigs(category)
+	if not themeConfigs then
 		return nil
 	end
 
-	for i, theme in ipairs(themes) do
-		self.g_skinThemesDefaults[category] = theme
-		theme.isDefault = true
-		return theme
+	for i, themeConfig in ipairs(themeConfigs) do
+		self.g_skinThemeConfigsDefaults[category] = themeConfig
+		themeConfig.isDefault = true
+		return themeConfig
 	end
 
 	return nil
 end
 
-function SLIGWOLF_ADDON:SkinGetRandomPickerTheme(category)
+function SLIGWOLF_ADDON:SkinGetRandomPickerThemeConfig(category)
 	category = tostring(category or "")
 
 	if category == "" then
 		return nil
 	end
 
-	local randomPickerTheme = self.g_skinThemesRandomPickers[category]
-	if randomPickerTheme then
-		randomPickerTheme.isRandom = true
-		return randomPickerTheme
+	local randomPickerThemeConfig = self.g_skinThemeConfigsRandomPickers[category]
+	if randomPickerThemeConfig then
+		randomPickerThemeConfig.isRandom = true
+		return randomPickerThemeConfig
 	end
 
 	return nil
 end
 
-function SLIGWOLF_ADDON:SkinApplyTheme(superparent, themeData)
+function SLIGWOLF_ADDON:SkinGetPlayerColoredThemeConfig(category)
+	category = tostring(category or "")
+
+	if category == "" then
+		return nil
+	end
+
+	local playerColoredThemeConfig = self.g_skinThemeConfigsPlayerColored[category]
+	if playerColoredThemeConfig then
+		playerColoredThemeConfig.isPlayerColored = true
+		return playerColoredThemeConfig
+	end
+
+	return nil
+end
+
+function SLIGWOLF_ADDON:SkinApplyThemeData(superparent, themeData)
 	superparent = LIBEntities.GetSuperParent(superparent)
 	if not IsValid(superparent) then
 		return
@@ -543,7 +580,26 @@ function SLIGWOLF_ADDON:SkinApplyTheme(superparent, themeData)
 	end
 end
 
-function SLIGWOLF_ADDON:SkinApplyThemeByName(superparent, themeName)
+function SLIGWOLF_ADDON:SkinApplyThemeByName(superparent, themeConfigName)
+	superparent = LIBEntities.GetSuperParent(superparent)
+	if not IsValid(superparent) then
+		return
+	end
+
+	local categoryName = self:SkinGetCategoryAndMapName(superparent)
+	if not categoryName then
+		return
+	end
+
+	local themeConfig = self:SkinGetThemeConfig(categoryName, themeConfigName, true)
+	if not themeConfig then
+		return
+	end
+
+	self:SkinApplyThemeFromConfig(superparent, themeConfig)
+end
+
+function SLIGWOLF_ADDON:SkinApplyThemeFromConfig(superparent, themeConfig)
 	superparent = LIBEntities.GetSuperParent(superparent)
 	if not IsValid(superparent) then
 		return
@@ -559,13 +615,12 @@ function SLIGWOLF_ADDON:SkinApplyThemeByName(superparent, themeName)
 		return
 	end
 
-	local theme = self:SkinGetTheme(categoryName, themeName, true)
-	if not theme then
+	if not themeConfig then
 		return
 	end
 
 	local parts = map.parts
-	local themeParams = theme.theme
+	local themeParams = themeConfig.theme
 
 	local themeData = {}
 
@@ -577,7 +632,7 @@ function SLIGWOLF_ADDON:SkinApplyThemeByName(superparent, themeName)
 		-- Resolve names to color/skin/bodygroups from theme
 		for _, skinParamKey in ipairs(g_skinParamKeys) do
 			local partProperty = partProperties[skinParamKey]
-			if partProperty and isstring(partProperty) and not g_skinParamVoid[partProperty] then
+			if partProperty and isstring(partProperty) and not LIBSkinsystem.HasSkinMetaFunction(skinParamKey, partProperty) then
 				local skinParam = themeParams[partProperty]
 
 				if skinParam then
@@ -585,14 +640,20 @@ function SLIGWOLF_ADDON:SkinApplyThemeByName(superparent, themeName)
 				end
 			end
 
-			if partProperty and not g_skinParamVoid[partProperty] then
-				appliedThemeEntry[skinParamKey] = partProperty
-				themeData[path] = appliedThemeEntry
+			if partProperty then
+				if LIBSkinsystem.HasSkinMetaFunction(skinParamKey, partProperty) then
+					partProperty = LIBSkinsystem.CallSkinMetaFunction(skinParamKey, partProperty, superparent)
+				end
+
+				if partProperty then
+					appliedThemeEntry[skinParamKey] = partProperty
+					themeData[path] = appliedThemeEntry
+				end
 			end
 		end
 	end
 
-	self:SkinApplyTheme(superparent, themeData)
+	self:SkinApplyThemeData(superparent, themeData)
 end
 
 function SLIGWOLF_ADDON:SkinGetAppliedThemeDataOfPath(superparent, path)

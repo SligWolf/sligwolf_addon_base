@@ -1345,8 +1345,8 @@ local function AddColorSkinPicker(propPanel, addonname, category)
 		return
 	end
 
-	local themes = addon:SkinGetThemes(category)
-	if not themes or #themes <= 1 then
+	local themeConfigs = addon:SkinGetThemeConfigs(category)
+	if not themeConfigs or #themeConfigs <= 1 then
 		return
 	end
 
@@ -1359,25 +1359,21 @@ local function AddColorSkinPicker(propPanel, addonname, category)
 
 	colorSkinPicker:SetConVar(convar)
 
-	for i, theme in ipairs(themes) do
-		local name = theme.name
-		local order = theme.order
-		local buttonParams = theme.button
-		local title = buttonParams.title
-		local pieces = buttonParams.pieces
+	for i, themeConfig in ipairs(themeConfigs) do
+		local name = themeConfig.name
+		local order = themeConfig.order
 
-		colorSkinPicker:AddOption(name, {
-			title = title,
-			order = order,
-			pieces = pieces,
-		})
+		local buttonParams = table.Copy(themeConfig.button)
+		buttonParams.order = order
+
+		colorSkinPicker:AddOption(name, buttonParams)
 	end
 
 	local selected = colorSkinPicker:GetSelected()
 	if selected == "" then
-		local defaultTheme = addon:SkinGetDefaultTheme(category)
-		if defaultTheme then
-			colorSkinPicker:SetSelected(defaultTheme.name)
+		local defaultThemeConfig = addon:SkinGetDefaultThemeConfig(category)
+		if defaultThemeConfig then
+			colorSkinPicker:SetSelected(defaultThemeConfig.name)
 		end
 	end
 

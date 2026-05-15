@@ -750,21 +750,13 @@ function LIB.Load()
 	LIBHook.Add("PlayerEnteredVehicle", "Library_Position_UpdatePlayerPos_SkipNextUpdate", UpdatePlayerPos_SkipNextUpdate, 1000)
 
 	local function UpdatePlayerPos()
-		local badState = false
-
-		for i, ply in LIBUtil.GetPlayerIterator() do
+		for i, ply in player.Iterator() do
 			local data = LIB.UpdatePlayerPosData(ply)
 			if not data then
-				badState = true
 				continue
 			end
 
 			data.skipNextUpdate = nil
-		end
-
-		if badState then
-			LIB.InvalidatePlayerIteratorCache()
-			error("Bad state in player iterator detected!")
 		end
 	end
 

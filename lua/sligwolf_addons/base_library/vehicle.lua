@@ -829,16 +829,6 @@ function LIB.Load()
 
 	LIBHook.AddCustom("OnPostEntityCreated", "Library_Vehicle_OnPostEntityCreated", OnPostEntityCreated, 10000)
 
-	local function PlayerSpawnedVehicle(ply, vehicle)
-		if not IsValid(ply) then return end
-		if not IsValid(vehicle) then return end
-
-		local entTable = vehicle:SligWolf_GetTable()
-		entTable.spawnerPlayer = ply
-	end
-
-	LIBHook.Add("PlayerSpawnedVehicle", "Library_Vehicle_PlayerSpawnedVehicle", PlayerSpawnedVehicle, 10000)
-
 	local function HandleVehicleSpawn(vehicle)
 		if not IsValid(vehicle) then return end
 		if not vehicle:IsVehicle() then return end

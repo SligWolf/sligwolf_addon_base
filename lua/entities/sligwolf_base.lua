@@ -397,29 +397,41 @@ function ENT:SetOwningPlayer(plyOwner)
 
 	self:SetNetworkRVar("OwningPlayer", plyOwner)
 
-	if not self.CPPISetOwner then
-		return
+	if self.CPPISetOwner then
+		self:CPPISetOwner(plyOwner)
 	end
 
-	self:CPPISetOwner(plyOwner)
+	local entTable = self:SligWolf_GetTable()
+	entTable.ownerPlayer = plyOwner
 end
 
 function ENT:GetOwningPlayer()
-	local plyOwner = nil
-
 	if self.CPPIGetOwner then
-		plyOwner = self:CPPIGetOwner()
+		local plyOwner = self:CPPIGetOwner()
+
+		if IsValid(plyOwner) then
+			return plyOwner
+		end
 	end
 
-	if not IsValid(plyOwner) then
-		plyOwner = self:GetNetworkRVar("OwningPlayer")
+	local plyOwner = self:GetNetworkRVar("OwningPlayer")
+	if IsValid(plyOwner) then
+		return plyOwner
 	end
 
-	if not IsValid(plyOwner) then
-		return nil
+	local entTable = self:SligWolf_GetTable()
+
+	local ownerPlayer = entTable.ownerPlayer
+	if IsValid(ownerPlayer) then
+		return ownerPlayer
 	end
 
-	return plyOwner
+	local spawnerPlayer = entTable.spawnerPlayer
+	if IsValid(spawnerPlayer) then
+		return spawnerPlayer
+	end
+
+	return nil
 end
 
 function ENT:EnableMotion(bool)
@@ -578,7 +590,7 @@ function ENT:PostEntityPaste(ply, ent, entities)
 		return
 	end
 
-	local entities = table.Copy(entities)
+	entities = table.Copy(entities)
 	local entityMods = table.Copy(ent.EntityMods or {})
 	local dupedata = entityMods.sligwolf_dupedata or {}
 

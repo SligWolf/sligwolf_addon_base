@@ -14,6 +14,7 @@ local LIBUtil = SligWolf_Addons.Util
 local PANEL = {}
 
 AccessorFunc(PANEL, "m_ColorSkinName", "ColorSkinName")
+AccessorFunc(PANEL, "m_OverlayMaterial", "OverlayMaterial")
 
 local function buildSelectionBoxColors(innerColor, outerColor, steps)
 	local result = {}
@@ -32,40 +33,43 @@ local g_selectionBoxColors = buildSelectionBoxColors(
 	5
 )
 
-function PANEL:Init()
-	self:SetPaintBackground(false)
-	self:SetSize(128, 128)
-	self:SetText("")
-	self:SetCursor("hand")
-	self:SetDoubleClickingEnabled(false)
+local g_metaColors = {
+	playerMainColor = function(this, name)
+		local ply = LocalPlayer()
+		if not IsValid(ply) then
+			return CONSTANTS.colorError1
+		end
 
-	self.m_Title = ""
+		local colorVector = ply:GetPlayerColor()
+		if not colorVector then
+			return CONSTANTS.colorError1
+		end
 
-	self.pieces = {}
-	self.chart = {}
-end
+		return colorVector:ToColor()
+	end,
 
-function PANEL:SetTitle(title)
-	self:SetTooltip(title)
-	self.m_Title = title
-end
+	playerWeaponColor = function(this, name)
+		local ply = LocalPlayer()
+		if not IsValid(ply) then
+			return CONSTANTS.colorError2
+		end
 
-function PANEL:DoClick()
-end
+		local colorVector = ply:GetWeaponColor()
+		if not colorVector then
+			return CONSTANTS.colorError2
+		end
 
-function PANEL:OnDepressionChanged(b)
-end
-
-function PANEL:SetSelected(bool)
-	self.m_Selected = bool
-end
-
-function PANEL:IsSelected()
-	return self.m_Selected
-end
+		return colorVector:ToColor()
+	end,
+}
 
 local function NormalizeMaterial(mat)
 	if not mat then
+		return nil
+	end
+
+	if g_metaColors[mat] then
+		-- don't pass meta colors
 		return nil
 	end
 
@@ -89,6 +93,11 @@ local function NormalizeMaterial(mat)
 end
 
 local function NormalizeColor(color)
+	if g_metaColors[color] then
+		-- pass meta colors along as their names
+		return color
+	end
+
 	if IsColor(color) then
 		return Color(
 			color.r or 0,
@@ -101,12 +110,55 @@ local function NormalizeColor(color)
 	return CONSTANTS.colorNone
 end
 
+function PANEL:Init()
+	self:SetPaintBackground(false)
+	self:SetSize(128, 128)
+	self:SetText("")
+	self:SetCursor("hand")
+	self:SetDoubleClickingEnabled(false)
+
+	self.m_Title = ""
+
+	self.pieces = {}
+	self.chart = {}
+
+	self.metaColorsCache = {}
+	self.metaColorsCacheNextRefresh = 0
+end
+
+function PANEL:SetTitle(title)
+	self:SetTooltip(title)
+	self.m_Title = title
+end
+
+function PANEL:DoClick()
+end
+
+function PANEL:OnDepressionChanged(b)
+end
+
+function PANEL:SetSelected(bool)
+	self.m_Selected = bool
+end
+
+function PANEL:IsSelected()
+	return self.m_Selected
+end
+
+function PANEL:SetOverlayMaterial(overlayMaterial)
+	overlayMaterial = NormalizeMaterial(overlayMaterial)
+	self.m_OverlayMaterial = overlayMaterial
+end
+
 function PANEL:AddPiece(piece)
+	if not piece then
+		piece = CONSTANTS.colorNone
+	end
+
 	local tmp = {}
 
 	if istable(piece) and not IsColor(piece) then
 		tmp.color = NormalizeColor(piece.color)
-		tmp.materialOverlay = NormalizeMaterial(piece.materialOverlay)
 		tmp.material = NormalizeMaterial(piece.material)
 	else
 		tmp.color = NormalizeColor(piece)
@@ -130,6 +182,32 @@ end
 
 function PANEL:PerformLayout(w, h)
 	self.needsRebuildChart = true
+end
+
+function PANEL:GetMetaColor(metaColorName)
+	local metaColorFunc = g_metaColors[metaColorName]
+
+	if not metaColorFunc then
+		return nil
+	end
+
+	local now = RealTime()
+
+	local cachedColor = self.metaColorsCache[metaColorName]
+
+	if cachedColor and cachedColor.nextRefresh and cachedColor.nextRefresh > now then
+		return cachedColor.color
+	end
+
+	local color = metaColorFunc(self, metaColorName)
+
+	cachedColor = cachedColor or {}
+
+	cachedColor.color = color
+	cachedColor.nextRefresh = now + 3
+
+	self.metaColorsCache[metaColorName] = cachedColor
+	return color
 end
 
 local function GetSquareEdgePoint(cx, cy, size, degrees)
@@ -156,7 +234,6 @@ function PANEL:BuildChart(x, y, w, h)
 
 		chartItem.color = piece.color
 		chartItem.material = piece.material
-		chartItem.materialOverlay = piece.materialOverlay
 
 		table.insert(chart, chartItem)
 
@@ -216,7 +293,6 @@ function PANEL:BuildChart(x, y, w, h)
 		chartItem.vertices = vertices
 		chartItem.color = piece.color
 		chartItem.material = piece.material
-		chartItem.materialOverlay = piece.materialOverlay
 
 		table.insert(chart, chartItem)
 	end
@@ -229,6 +305,7 @@ function PANEL:PaintColorChart(x, y, w, h)
 		self:BuildChart(x, y, w, h)
 	end
 
+	local overlayMaterial = self.m_OverlayMaterial
 	local chart = self.chart
 	local count = #chart
 
@@ -242,17 +319,23 @@ function PANEL:PaintColorChart(x, y, w, h)
 		if chartItem.material then
 			surface.SetDrawColor(CONSTANTS.colorNone)
 			surface.SetMaterial(chartItem.material)
-			surface.DrawTexturedRectUV(x, y, w, h, 0, 0, 1, 1)
+			surface.DrawTexturedRect(x, y, w, h)
 		else
+			local color = chartItem.color
+
+			if g_metaColors[color] then
+				color = self:GetMetaColor(color) or CONSTANTS.colorNone
+			end
+
 			draw.NoTexture()
-			surface.SetDrawColor(chartItem.color)
+			surface.SetDrawColor(color)
 			surface.DrawRect(x, y, w, h)
 		end
 
-		if chartItem.materialOverlay then
+		if overlayMaterial then
 			surface.SetDrawColor(CONSTANTS.colorNone)
-			surface.SetMaterial(chartItem.materialOverlay)
-			surface.DrawTexturedRectUV(x, y, w, h, 0, 0, 1, 1)
+			surface.SetMaterial(overlayMaterial)
+			surface.DrawTexturedRect(x, y, w, h)
 		end
 
 		return
@@ -265,16 +348,22 @@ function PANEL:PaintColorChart(x, y, w, h)
 			surface.SetDrawColor(CONSTANTS.colorNone)
 			surface.DrawPoly(chartItem.vertices)
 		else
-			draw.NoTexture()
-			surface.SetDrawColor(chartItem.color)
-			surface.DrawPoly(chartItem.vertices)
-		end
+			local color = chartItem.color
 
-		if chartItem.materialOverlay then
-			surface.SetMaterial(chartItem.materialOverlay)
-			surface.SetDrawColor(CONSTANTS.colorNone)
+			if g_metaColors[color] then
+				color = self:GetMetaColor(color) or CONSTANTS.colorNone
+			end
+
+			draw.NoTexture()
+			surface.SetDrawColor(color)
 			surface.DrawPoly(chartItem.vertices)
 		end
+	end
+
+	if overlayMaterial then
+		surface.SetDrawColor(CONSTANTS.colorNone)
+		surface.SetMaterial(overlayMaterial)
+		surface.DrawTexturedRect(x, y, w, h)
 	end
 end
 

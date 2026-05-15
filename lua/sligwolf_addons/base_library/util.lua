@@ -8,6 +8,7 @@ local LIB = SligWolf_Addons:NewLib("Util")
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBTimer = nil
+local LIBHook = nil
 
 local g_uid = 0
 function LIB.Uid()
@@ -350,37 +351,60 @@ function LIB.IsEarly()
 	return false
 end
 
-local g_inext = ipairs({})
-local g_PlayerCache = nil
+local g_failbackPlayer = nil
 
-function LIB.GetPlayerIterator()
-	if not g_PlayerCache then
-		g_PlayerCache = player.GetAll()
+function LIB.GetFailbackPlayer()
+	if IsValid(g_failbackPlayer) then
+		return g_failbackPlayer
 	end
 
-	return g_inext, g_PlayerCache, 0
-end
+	g_failbackPlayer = nil
 
-function LIB.InvalidatePlayerIteratorCache()
-	g_PlayerCache = nil
-end
+	for _, ply in player.Iterator() do
+		if not IsValid(ply) then
+			continue
+		end
 
-function LIB.Load()
-	local LIBHook = SligWolf_Addons.Hook
-	LIBTimer = SligWolf_Addons.Timer
-
-	local function PlayerIterator_InvalidatePlayerCache(ply)
-		if not ply or ply:IsPlayer() then
-			LIB.InvalidatePlayerIteratorCache()
+		if ply:IsListenServerHost() then
+			g_failbackPlayer = ply
+			return g_failbackPlayer
 		end
 	end
 
-	LIBHook.Add("OnEntityCreated", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
-	LIBHook.Add("EntityRemoved", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
-	LIBHook.Add("PlayerDisconnected", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
-	LIBHook.Add("PlayerInitialSpawn", "Library_Util_PlayerIterator_InvalidatePlayerCache", PlayerIterator_InvalidatePlayerCache, -1000000)
+	for _, ply in player.Iterator() do
+		if not IsValid(ply) then
+			continue
+		end
+
+		if ply:IsSuperAdmin() or ply:IsAdmin() then
+			g_failbackPlayer = ply
+			return g_failbackPlayer
+		end
+	end
+
+	for _, ply in player.Iterator() do
+		if not IsValid(ply) then
+			continue
+		end
+
+		g_failbackPlayer = ply
+		return g_failbackPlayer
+	end
+
+	return nil
 end
 
+function LIB.InvalidateFailbackPlayer()
+	g_failbackPlayer = nil
+end
+
+function LIB.Load()
+	LIBTimer = SligWolf_Addons.Timer
+	LIBHook = SligWolf_Addons.Hook
+
+	LIBHook.Add("PlayerDisconnected", "Library_Util_PlayerIterator_InvalidateFailbackPlayer", LIB.InvalidateFailbackPlayer, -1000000)
+	LIBHook.Add("PlayerInitialSpawn", "Library_Util_PlayerIterator_InvalidateFailbackPlayer", LIB.InvalidateFailbackPlayer, -1000000)
+end
 
 return true
 

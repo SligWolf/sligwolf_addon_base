@@ -291,6 +291,7 @@ function PANEL:AddOption(name, params)
 
 	itemButton:SetTitle(title)
 	itemButton:SetColorSkinName(name)
+	itemButton:SetOverlayMaterial(params.overlayMaterial)
 	itemButton:SetVisible(false)
 
 	self.needsRebuildButtonList = true

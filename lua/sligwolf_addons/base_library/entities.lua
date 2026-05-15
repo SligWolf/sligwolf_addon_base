@@ -293,30 +293,57 @@ end
 function LIB.SetOwner(ent, plyOwner)
 	if not IsValid(ent) then return end
 
+	if not IsValid(plyOwner) then
+		plyOwner = NULL
+	end
+
 	if ent.sligwolf_baseEntity then
 		ent:SetOwningPlayer(plyOwner)
 		return
 	end
 
-	if not ent.CPPISetOwner then
-		return
+	if ent.CPPISetOwner then
+		ent:CPPISetOwner(plyOwner)
 	end
 
-	ent:CPPISetOwner(plyOwner)
+	local entTable = ent:SligWolf_GetTable()
+	entTable.ownerPlayer = plyOwner
 end
 
 function LIB.GetOwner(ent)
 	if not IsValid(ent) then return end
 
 	if ent.sligwolf_baseEntity then
-		return ent:GetOwningPlayer()
+		local plyOwner = ent:GetOwningPlayer()
+
+		if IsValid(plyOwner) then
+			return plyOwner
+		end
+
+		return nil
 	end
 
-	if not ent.CPPIGetOwner then
-		return
+	if ent.CPPIGetOwner then
+		local plyOwner = ent:CPPIGetOwner()
+
+		if IsValid(plyOwner) then
+			return plyOwner
+		end
 	end
 
-	return ent:CPPIGetOwner()
+	local entTable = ent:SligWolf_GetTable()
+
+	local ownerPlayer = entTable.ownerPlayer
+	if IsValid(ownerPlayer) then
+		return ownerPlayer
+	end
+
+	local spawnerPlayer = entTable.spawnerPlayer
+	if IsValid(spawnerPlayer) then
+		return spawnerPlayer
+	end
+
+	return nil
 end
 
 function LIB.ConstraintIsAllowed(ent, ply, mode)
