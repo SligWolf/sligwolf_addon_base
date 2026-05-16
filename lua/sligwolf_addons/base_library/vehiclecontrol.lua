@@ -21,7 +21,7 @@ function LIB.GetControlledVehicle(ply)
 		vehicle = remoteVehicle
 	end
 
-	if not IsValid(vehicle) then
+	if not LIBEntities.IsSpawnSystemFinished(vehicle) then
 		return nil, remoteState
 	end
 

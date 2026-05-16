@@ -109,6 +109,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 
 	vehicle.sligwolf_entity = true
 	vehicle.sligwolf_vehicle = true
+	vehicle.sligwolf_train = vehicleTable.SLIGWOLF_IsTrain
 	vehicle.sligwolf_headVehicle = true
 
 	self:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)

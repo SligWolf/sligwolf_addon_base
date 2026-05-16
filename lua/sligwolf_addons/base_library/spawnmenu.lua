@@ -1248,6 +1248,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.SLIGWOLF_Addonname = addonname
 	vehicleListItem.SLIGWOLF_Hidden = hidden
 	vehicleListItem.SLIGWOLF_SpawnFrozen = spawnFrozen
+	vehicleListItem.SLIGWOLF_IsTrain = isTrain
 
 	vehicleListItem.SLIGWOLF_FGD = {}
 	local fgd = vehicleListItem.SLIGWOLF_FGD
@@ -1272,63 +1273,63 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	list.Set("Vehicles", spawnname, vehicleListItem)
 end
 
-if CLIENT then
-	spawnmenu.AddContentType("sligwolf_train", function(container, obj)
-		if not obj.material then return end
-		if not obj.nicename then return end
-		if not obj.spawnname then return end
+-- if CLIENT then
+-- 	spawnmenu.AddContentType("sligwolf_train", function(container, obj)
+-- 		if not obj.material then return end
+-- 		if not obj.nicename then return end
+-- 		if not obj.spawnname then return end
 
-		local icon = vgui.Create("ContentIcon", container)
+-- 		local icon = vgui.Create("ContentIcon", container)
 
-		icon:SetContentType("vehicle")
-		icon:SetSpawnName(obj.spawnname)
-		icon:SetName(obj.nicename)
-		icon:SetMaterial(obj.material)
-		icon:SetAdminOnly(obj.admin)
-		icon:SetColor(Color(0, 0, 0, 255))
+-- 		icon:SetContentType("vehicle")
+-- 		icon:SetSpawnName(obj.spawnname)
+-- 		icon:SetName(obj.nicename)
+-- 		icon:SetMaterial(obj.material)
+-- 		icon:SetAdminOnly(obj.admin)
+-- 		icon:SetColor(Color(0, 0, 0, 255))
 
-		local toolTip = language.GetPhrase(obj.nicename)
+-- 		local toolTip = language.GetPhrase(obj.nicename)
 
-		local trainOptions = trainOptions or {}
+-- 		local trainOptions = trainOptions or {}
 
-		-- Generate a nice tooltip with extra info
-		local VehInfo = list.GetEntry("Vehicles", obj.spawnname)
-		if VehInfo then
-			local extraInfo = ""
-			if VehInfo.Information and VehInfo.Information ~= "" then extraInfo = extraInfo .. "\n" .. VehInfo.Information end
-			if VehInfo.Author and VehInfo.Author ~= "" then extraInfo = extraInfo .. "\n" .. language.GetPhrase("entityinfo.author") .. " " .. VehInfo.Author end
-			if #extraInfo > 0 then toolTip = toolTip .. "\n" .. extraInfo end
-		end
+-- 		-- Generate a nice tooltip with extra info
+-- 		local VehInfo = list.GetEntry("Vehicles", obj.spawnname)
+-- 		if VehInfo then
+-- 			local extraInfo = ""
+-- 			if VehInfo.Information and VehInfo.Information ~= "" then extraInfo = extraInfo .. "\n" .. VehInfo.Information end
+-- 			if VehInfo.Author and VehInfo.Author ~= "" then extraInfo = extraInfo .. "\n" .. language.GetPhrase("entityinfo.author") .. " " .. VehInfo.Author end
+-- 			if #extraInfo > 0 then toolTip = toolTip .. "\n" .. extraInfo end
+-- 		end
 
-		icon:SetTooltip(toolTip)
-		icon.DoClick = function()
-			-- @TODO: Add auto gauge detection from trainOptions
+-- 		icon:SetTooltip(toolTip)
+-- 		icon.DoClick = function()
+-- 			-- @TODO: Add auto gauge detection from trainOptions
 
-			print("this is a train", obj.spawnname)
+-- 			print("this is a train", obj.spawnname)
 
-			RunConsoleCommand("gm_spawnvehicle", obj.spawnname)
-			surface.PlaySound("ui/buttonclickrelease.wav")
-		end
+-- 			RunConsoleCommand("gm_spawnvehicle", obj.spawnname)
+-- 			surface.PlaySound("ui/buttonclickrelease.wav")
+-- 		end
 
-		icon.OpenMenuExtra = function(self, menu)
-			-- @TODO: Add gauge options from trainOptions
+-- 		icon.OpenMenuExtra = function(self, menu)
+-- 			-- @TODO: Add gauge options from trainOptions
 
-			menu:AddOption("#spawnmenu.menu.spawn_with_toolgun", function()
-				RunConsoleCommand("gmod_tool", "creator")
-				RunConsoleCommand("creator_type", "1")
-				RunConsoleCommand("creator_name", obj.spawnname)
-			end):SetIcon("icon16/brick_add.png")
-		end
+-- 			menu:AddOption("#spawnmenu.menu.spawn_with_toolgun", function()
+-- 				RunConsoleCommand("gmod_tool", "creator")
+-- 				RunConsoleCommand("creator_type", "1")
+-- 				RunConsoleCommand("creator_name", obj.spawnname)
+-- 			end):SetIcon("icon16/brick_add.png")
+-- 		end
 
-		icon.OpenMenu = icon.OpenGenericSpawnmenuRightClickMenu
+-- 		icon.OpenMenu = icon.OpenGenericSpawnmenuRightClickMenu
 
-		if IsValid(container) then
-			container:Add(icon)
-		end
+-- 		if IsValid(container) then
+-- 			container:Add(icon)
+-- 		end
 
-		return icon
-	end)
-end
+-- 		return icon
+-- 	end)
+-- end
 
 local function AddColorSkinPicker(propPanel, addonname, category)
 	if not IsValid(propPanel) then
@@ -1608,24 +1609,24 @@ function LIB.Load()
 			"vehicle",
 			"icon16/car.png",
 			function(node, propPanel, item)
-				local trainOptions = item.trainOptions
+				-- local trainOptions = item.trainOptions
 
-				if trainOptions then
-					spawnmenu.CreateContentIcon("sligwolf_train", propPanel, {
-						nicename = item.title,
-						spawnname = item.spawnName,
-						material = item.icon or "entities/" .. item.spawnName .. ".png",
-						admin = item.adminOnly,
-						trainOptions = trainOptions,
-					})
-				else
+				-- if trainOptions then
+					-- spawnmenu.CreateContentIcon("sligwolf_train", propPanel, {
+					-- 	nicename = item.title,
+					-- 	spawnname = item.spawnName,
+					-- 	material = item.icon or "entities/" .. item.spawnName .. ".png",
+					-- 	admin = item.adminOnly,
+					-- 	trainOptions = trainOptions,
+					-- })
+				-- else
 					spawnmenu.CreateContentIcon("vehicle", propPanel, {
 						nicename = item.title,
 						spawnname = item.spawnName,
 						material = item.icon or "entities/" .. item.spawnName .. ".png",
 						admin = item.adminOnly,
 					})
-				end
+				-- end
 
 				RequestAddColorSkinPicker(propPanel, item.addonName, "vehicle")
 			end

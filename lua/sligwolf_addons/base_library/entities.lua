@@ -664,6 +664,24 @@ function LIB.SetName(ent, name)
 	LIB.ClearChildrenCache(ent)
 end
 
+function LIB.IsSpawnSystemFinished(ent)
+	if LIB.IsMarkedForDeletion(ent) then
+		return false
+	end
+
+	local root = LIB.GetSuperParent(ent)
+	if LIB.IsMarkedForDeletion(root) then
+		return false
+	end
+
+	local rootEntTable = root:SligWolf_GetTable()
+	if not rootEntTable.isDoneSpawningParts then
+		return false
+	end
+
+	return true
+end
+
 function LIB.GetParent(ent)
 	if not IsValid(ent) then return end
 

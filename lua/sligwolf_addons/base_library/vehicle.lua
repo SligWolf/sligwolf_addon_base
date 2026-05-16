@@ -700,6 +700,72 @@ function LIB.NpcExitVehicle(npcOrVehicle, npc, immediately, callback)
 	end, 0, g_passengerHandlingTimeout)
 end
 
+function LIB.VehicleSetEngineState(vehicle, engineState)
+	local superparent = LIBEntities.GetSuperParent(vehicle)
+	if not IsValid(superparent) then
+		return
+	end
+
+	local addonname = superparent.sligwolf_addonname
+	if not addonname then return end
+
+	local addon = SligWolf_Addons.GetAddon(addonname)
+	if not addon then
+		return
+	end
+
+	engineState = tobool(engineState)
+
+	local engineStateFunction = addon.EngineState
+	if not engineStateFunction then
+		if not superparent.IsValidVehicle then
+			return
+		end
+
+		if not superparent:IsValidVehicle() then
+			return
+		end
+
+		if not superparent:IsEngineEnabled() then
+			return
+		end
+
+		superparent:StartEngine(engineState)
+		return
+	end
+
+	local vat = superparent:SligWolf_GetAddonTable(addonname)
+	vat.engine = engineState
+
+	engineStateFunction(addon, superparent, vat, engineState)
+end
+
+function LIB.VehicleSetLightState(vehicle, lightState)
+	local superparent = LIBEntities.GetSuperParent(vehicle)
+	if not IsValid(superparent) then
+		return
+	end
+
+	local addonname = superparent.sligwolf_addonname
+	if not addonname then return end
+
+	local addon = SligWolf_Addons.GetAddon(addonname)
+	if not addon then
+		return
+	end
+
+	lightState = tobool(lightState)
+
+	local lightsUpdateGlowsFunction = addon.LightsUpdateGlows
+	if not lightsUpdateGlowsFunction then
+		return
+	end
+
+	local trailerData = LIBCoupling.GetTrailerData(superparent)
+	trailerData.lightState = lightState
+
+	lightsUpdateGlowsFunction(addon, superparent)
+end
 
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
@@ -757,14 +823,8 @@ function LIB.Load()
 
 			local isSpawnedByEngine = LIB.IsSpawnedByEngine(vehicle)
 			if isSpawnedByEngine then
-				local trailerData = LIBCoupling.GetTrailerData(vehicle)
-				trailerData.lightState = tobool(keyValues.sligwolf_light)
-
-				SligWolf_Addons.CallFunctionOnAddon(addonname, "LightsUpdateGlows", vehicle)
-
-				-- @TODO: Code a proper EngineState library/logic?
-				local engineState = tobool(keyValues.sligwolf_engine)
-				SligWolf_Addons.CallFunctionOnAddon(addonname, "EngineState", vehicle, vat, engineState)
+				LIB.VehicleSetLightState(vehicle, keyValues.sligwolf_light)
+				LIB.VehicleSetEngineState(vehicle, keyValues.sligwolf_engine)
 			end
 		end
 	end

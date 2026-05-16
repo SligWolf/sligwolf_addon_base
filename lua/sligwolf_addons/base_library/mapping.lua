@@ -74,6 +74,10 @@ local function getVehicleThemesByAddon()
 				continue
 			end
 
+			if theme.isPlayerColored then
+				continue
+			end
+
 			local name = theme.name
 			local title = theme.button.title or name
 			local key = string.format("%s_%s", addonname, name)
@@ -101,6 +105,7 @@ local function getVehicleThemesOptionsList(options)
 	table.insert(lines, [[\t\t"" : "Auto"]])
 	table.insert(lines, [[\t\t"default" : "Default"]])
 	table.insert(lines, [[\t\t"random" : "Random"]])
+	table.insert(lines, [[\t\t"player" : "Player Colored"]])
 
 	table.sort(options, vehicleThemesOptionsListSorter)
 

@@ -47,7 +47,8 @@
 	sligwolf_theme(choices) : "[SW-ADDONS] Theme" : "" : "\nSligWolf's Addon: Spawn with given theme. \n" +
 		"Auto: Selects the default theme of the addon, but can be overridden by skin keyvalue. \n" +
 		"Default: Same as 'Auto', but can not be overridden. \n" +
-		"Random: Selects a random theme of the addon. \n" +
+		"Random: Selects the random theme of the addon if available. Failsback to 'Default'. \n" +
+		"Player Colored: Selects the player colored theme of the addon if possible. Takes colors of the first player, host/admins prioritized. Failsback to 'Default'. \n" +
 		"Anything else: Selects the actuall theme from all addons. Make sure the addon prefix matches to the addon of the selected spawnname." =
 	[
 //      {{SW_VEHICLE_THEMES_OPTIONS}}

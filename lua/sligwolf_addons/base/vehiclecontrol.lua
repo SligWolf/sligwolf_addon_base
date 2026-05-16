@@ -40,7 +40,7 @@ function SLIGWOLF_ADDON:VehicleOrderThink()
 	end
 
 	for vehicle, players in pairs(self.PressedKeyMap or {}) do
-		if not IsValid(vehicle) then continue end
+		if not LIBEntities.IsSpawnSystemFinished(vehicle) then continue end
 
 		for ply, keys in pairs(players or {}) do
 			if not IsValid(ply) then continue end
@@ -57,6 +57,8 @@ end
 
 function SLIGWOLF_ADDON:VehicleOrderLeave(ply, vehicle)
 	if not self.HasVehicleOrders then return end
+	if not LIBEntities.IsSpawnSystemFinished(vehicle) then return end
+
 	if CLIENT then return end
 
 	local holdedkeys = self.PressedKeyMap or {}
@@ -299,6 +301,7 @@ function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 	if not IsValid(button) then return end
 
 	local superparent = LIBEntities.GetSuperParent(button)
+	if not LIBEntities.IsSpawnSystemFinished(superparent) then return end
 
 	if not IsValid(superparent) then
 		superparent = button

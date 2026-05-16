@@ -388,6 +388,10 @@ function SLIGWOLF_ADDON:SkinGetThemeConfig(category, name, resolveRandom)
 				continue
 			end
 
+			if nonRandomThemeConfig.isPlayerColored then
+				continue
+			end
+
 			table.insert(nonRandomThemeConfigs, nonRandomThemeConfig)
 		end
 	end

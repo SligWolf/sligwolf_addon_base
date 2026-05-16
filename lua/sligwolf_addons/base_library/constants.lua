@@ -110,6 +110,7 @@ CONSTANTS.numBlinkInterval2 = 0.8
 
 -- materials
 CONSTANTS.matPngError = "materials/vgui/sligwolf/base/error.png"
+CONSTANTS.matPngPlayerBlack = "materials/vgui/sligwolf/base/spawnmenu/skin/player_black.png"
 CONSTANTS.matPngRandomBlack = "materials/vgui/sligwolf/base/spawnmenu/skin/random_black.png"
 CONSTANTS.matPngRandomBlackTransparent = "materials/vgui/sligwolf/base/spawnmenu/skin/random_black_transparent.png"
 CONSTANTS.matPngRandomWhite = "materials/vgui/sligwolf/base/spawnmenu/skin/random_white.png"

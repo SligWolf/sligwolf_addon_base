@@ -901,7 +901,7 @@ function LIB.IsDebugKeyDown(ply, inKey)
 		return false
 	end
 
-	-- Debug control modifier, hold ALT, SHIFT (default)
+	-- Debug control modifier, hold ALT + SHIFT (default)
 	if not ply:KeyDown(IN_WALK) then
 		return false
 	end
