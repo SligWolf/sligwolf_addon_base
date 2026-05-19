@@ -3,16 +3,17 @@ local SligWolf_Addons = SligWolf_Addons
 
 DEFINE_BASECLASS("base_anim")
 
-ENT.Spawnable				= false
-ENT.AdminOnly				= false
-ENT.RenderGroup 			= RENDERGROUP_BOTH
-ENT.AutomaticFrameAdvance 	= false
-ENT.PhysicsSounds			= false
-ENT.DoNotDuplicate 			= true
+ENT.Spawnable				  = false
+ENT.AdminOnly				  = false
+ENT.RenderGroup 			  = RENDERGROUP_BOTH
+ENT.AutomaticFrameAdvance 	  = false
+ENT.PhysicsSounds			  = false
+ENT.DoNotDuplicate 			  = true
 
-ENT.sligwolf_entity			= true
-ENT.sligwolf_baseEntity		= true
-ENT.sligwolf_allowAnimation	= false
+ENT.sligwolf_entity			  = true
+ENT.sligwolf_baseEntity		  = true
+ENT.sligwolf_allowAnimation	  = false
+ENT.sligwolf_spawnnameByModel = false
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
@@ -27,8 +28,10 @@ end
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBPhysics = SligWolf_Addons.Physics
 local LIBBones = SligWolf_Addons.Bones
 local LIBModel = SligWolf_Addons.Model
@@ -109,17 +112,15 @@ function ENT:InitializeModel()
 	end
 end
 
-function ENT:GetSpawnData()
-	local spawnname = self:GetSpawnName()
-	if not spawnname then return end
+function ENT:OnKeyValueSet(key, value)
+	-- override me
+end
 
-	local tab = LIBUtil.GetList("SpawnableEntities")
-	local data = tab[spawnname]
+function ENT:KeyValue(key, value)
+	key = string.lower(tostring(key or ""))
+	value = tostring(value or "")
 
-	if not data then return end
-	if not data.Is_SLIGWOLF then return end
-
-	return data
+	self:OnKeyValueSet(key, value)
 end
 
 function ENT:GuessAddonIDByModelName()
@@ -506,22 +507,56 @@ function ENT:GetSpawnName()
 		return spawnname
 	end
 
-	local entTable = self:SligWolf_GetTable()
+	spawnname = LIBSourceIO.GetKeyValue(self, "sligwolf_spawnname") or ""
 
-	local class = self:GetClass()
-	self.spawnname = class
-
-	local keyValues = entTable.keyValues
-	if not keyValues then
-		return class
+	if spawnname == "" and self.sligwolf_spawnnameByModel then
+		spawnname = self:GetSpawnNameByModel() or ""
 	end
 
-	spawnname = keyValues.sligwolf_spawnname
-	if not spawnname then
-		return class
+	if spawnname == "" then
+		spawnname = self:GetClass()
 	end
 
 	self.spawnname = spawnname
+	return spawnname
+end
+
+function ENT:GetSpawnData()
+	local spawnname = self:GetSpawnName() or ""
+	if spawnname == "" then
+		return
+	end
+
+	local tab = LIBUtil.GetList("SpawnableEntities")
+	local data = tab[spawnname]
+
+	if not data then return end
+	if not data.Is_SLIGWOLF then return end
+
+	if data.ClassName ~= self:GetClass() then
+		return
+	end
+
+	return data
+end
+
+function ENT:GetSpawnNameByModel()
+	local byModel = LIBSpawnmenu.g_RegisterdSpawnnamesByModel["entity"]
+	if not byModel then
+		return nil
+	end
+
+	local model = self:GetModel()
+	if not model then
+		return nil
+	end
+
+	local spawnname = byModel[model] or ""
+
+	if spawnname == "" then
+		return nil
+	end
+
 	return spawnname
 end
 

@@ -241,7 +241,7 @@ function LIB.Load()
 			addon:SkinApplyThemeByName(ent, themeName)
 		end
 
-		LIBHook.AddCustom("OnPostEntityCreated", "Library_Skinsystem_ApplySkinThemeFromKeyValue", ApplySkinThemeFromKeyValue, 11000)
+		LIBHook.AddCustom("OnPostEntityCreated", "Library_Skinsystem_ApplySkinThemeFromKeyValue", ApplySkinThemeFromKeyValue, 12000)
 	end
 end
 

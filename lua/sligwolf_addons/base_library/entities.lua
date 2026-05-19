@@ -6,6 +6,7 @@ end
 local LIB = SligWolf_Addons:NewLib("Entities")
 
 local LIBConstraints = nil
+local LIBProtection = nil
 local LIBPosition = nil
 local LIBVehicle = nil
 local LIBPhysics = nil
@@ -17,6 +18,7 @@ local g_emptyFunction = function() end
 
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
+	LIBProtection = SligWolf_Addons.Protection
 	LIBPosition = SligWolf_Addons.Position
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBPhysics = SligWolf_Addons.Physics
@@ -141,19 +143,13 @@ function LIB.GetPrintName(ent)
 	return ent:GetClass()
 end
 
-function LIB.GetSentTableFromSpawnname(sentSpawnname)
-	if not sentSpawnname then return nil end
-
-	local sentList = LIBUtil.GetList("SpawnableEntities")
-	local sentTable = sentList[sentSpawnname]
-
-	if not sentTable then return nil end
-	return sentTable
-end
-
 function LIB.GetSpawnname(ent)
 	if not IsValid(ent) then
 		return nil
+	end
+
+	if ent.sligwolf_baseEntity or ent.sligwolf_proxyEntity then
+		return ent:GetSpawnName()
 	end
 
 	local name = nil
@@ -164,8 +160,6 @@ function LIB.GetSpawnname(ent)
 		name = ent.NPCName
 	elseif ent:IsWeapon() then
 		name = ent.ClassName
-	elseif ent.GetSpawnName then
-		name = ent:GetSpawnName()
 	elseif ent.EntityName then
 		name = ent.EntityName
 	elseif ent.ClassName then
@@ -184,6 +178,10 @@ function LIB.GetSpawntable(ent)
 		return nil
 	end
 
+	if ent.sligwolf_baseEntity or ent.sligwolf_proxyEntity then
+		return ent:GetSpawnData()
+	end
+
 	local name = nil
 	local listName = nil
 
@@ -196,9 +194,6 @@ function LIB.GetSpawntable(ent)
 	elseif ent:IsWeapon() then
 		name = ent.ClassName
 		listName = "Weapon"
-	elseif ent.GetSpawnName then
-		name = ent:GetSpawnName()
-		listName = "SpawnableEntities"
 	elseif ent.EntityName then
 		name = ent.EntityName
 		listName = "SpawnableEntities"
@@ -232,8 +227,11 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 		return nil
 	end
 
+	local static = false
+
 	if IsValid(parent) then
 		addonname = addonname or parent.sligwolf_addonname
+		static = LIBProtection.IsStatic(parent)
 	end
 
 	if name ~= nil then
@@ -255,6 +253,10 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 
 	if IsValid(plyOwner) then
 		LIB.SetOwner(ent, plyOwner)
+	end
+
+	if static and ent.sligwolf_physBaseEntity then
+		ent:ApplyStatic()
 	end
 
 	LIB.InheritSpawnEffectFromParent(ent)
@@ -1566,7 +1568,27 @@ function LIB.IsMotionEnabled(...)
 	return LIBPhysics.IsMotionEnabled(...)
 end
 
-function LIB.ApplySpawnState(srcEnt)
+function LIB.DisablePhysicsDuringSpawn(ent, freeze, solid)
+	if not IsValid(ent) then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	if entTable.spawnState then
+		return
+	end
+
+	local spawnState = {}
+	entTable.spawnState = spawnState
+
+	spawnState.solid = solid or false
+	spawnState.freeze = freeze or false
+
+	LIB.EnableMotion(ent, false)
+	ent:SetNotSolid(true)
+end
+
+function LIB.EnablePhysicsAfterSpawn(srcEnt)
 	local root = LIB.GetSuperParent(srcEnt)
 	if not IsValid(root) then
 		return

@@ -24,14 +24,77 @@ function ENT:Initialize()
 	LIBPhysics.InitializeAsPhysEntity(self)
 end
 
+function ENT:InitializePhysicsInternal()
+	BaseClass.InitializePhysicsInternal(self)
+
+	self:EnforceStatic()
+	self._physicsInitialized = true
+end
+
 function ENT:InitializePhysics()
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 end
 
+function ENT:SetupDataTables()
+	BaseClass.SetupDataTables(self)
+	self:AddNetworkRVar("Bool", "staticPhysics")
+end
+
+function ENT:OnKeyValueSet(key, value)
+	key = string.lower(tostring(key or ""))
+	if key ~= "sligwolf_static" then
+		return
+	end
+
+	if tobool(value) then
+		self:ApplyStatic()
+	end
+end
+
 function ENT:PhysicsCollide(colData, collider)
 	-- override me
+end
+
+function ENT:ApplyStatic()
+	if CLIENT then
+		return
+	end
+
+	if self._physicsInitialized then
+		-- This property has to be set before Spawn()/Activate() is called.
+		return
+	end
+
+	self:SetNetworkRVar("staticPhysics", true)
+end
+
+function ENT:GetStatic()
+	local entTable = self:SligWolf_GetTable()
+
+	local spawnerPlayer = entTable.spawnerPlayer
+	if IsValid(spawnerPlayer) then
+		-- Never allow players to create static entities
+		return false
+	end
+
+	return self:GetNetworkRVar("staticPhysics", false)
+end
+
+function ENT:EnforceStatic()
+	if CLIENT then
+		return
+	end
+
+	local static = self:GetStatic()
+	if not static then
+		return
+	end
+
+	self.sligwolf_noBodySystemApplyMotion = true
+
+	LIBEntities.EnableMotion(self, false)
 end
 
 function ENT:DeleteSpawnSolidState()
@@ -45,13 +108,13 @@ function ENT:DeleteSpawnSolidState()
 	spawnState.solid = nil
 end
 
-function ENT:CopySpawnPhysState(otherEnd)
-	if not IsValid(otherEnd) then
+function ENT:CopySpawnPhysState(otherEnt)
+	if not IsValid(otherEnt) then
 		return
 	end
 
 	local entTableA = self:SligWolf_GetTable()
-	local entTableB = otherEnd:SligWolf_GetTable()
+	local entTableB = otherEnt:SligWolf_GetTable()
 
 	local spawnStateA = entTableA.spawnState
 	if not spawnStateA then
@@ -82,10 +145,10 @@ function ENT:GetPhysgunCarriedEntities()
 	return LIBPhysgun.GetPhysgunCarriedEntities(self)
 end
 
-function ENT:OnPhysgunPickup(directlyCarried, ply)
+function ENT:OnPhysgunPickup(ent, ply)
 	-- override me
 end
 
-function ENT:OnPhysgunDrop(directlyDropped, ply)
+function ENT:OnPhysgunDrop(ent, ply)
 	-- override me
 end

@@ -126,9 +126,9 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(ent, callNow)
 			return
 		end
 
-		if thisEnt == superparent then
-			return
-		end
+		local spawnTable = LIBEntities.GetSpawntable(superparent)
+		if not spawnTable then return end
+		if not spawnTable.Is_SLIGWOLF then return end
 
 		self:HandleSpawnFinishedEventInternal(superparent)
 	end
@@ -159,6 +159,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 	local timernameEventTimeout = "HandleSpawnFinishedEventInternalTimeout"
 
 	LIBSpamprotection.DelayNextSpawnForOwner(superparent)
+
 
 	self:EntityTimerOnce(superparent, timernameEvent, 0.26, function()
 		if LIBEntities.IsMarkedForDeletion(superparent) then

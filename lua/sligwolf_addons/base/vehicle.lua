@@ -16,7 +16,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBThirdperson = SligWolf_Addons.Thirdperson
 local LIBPosition = SligWolf_Addons.Position
-local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
 
@@ -98,7 +98,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawn
 end
 
 function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTable)
-	local isSpawnedByEngine = LIBVehicle.IsSpawnedByEngine(vehicle)
+	local isSpawnedByEngine = LIBSourceIO.IsSpawnedByEngine(vehicle)
 
 	local keyValues = table.Copy(vehicleTable.KeyValues or {})
 	local class = vehicleTable.Class
@@ -157,10 +157,6 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 			duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
 		end
 	end
-
-	LIBEntities.EnableMotion(vehicle, false)
-
-	self:HandleSpawnFinishedEvent(vehicle)
 
 	local callSpawnVehicle = function(thisVehicle)
 		local vat = self:GetEntityTable(thisVehicle)

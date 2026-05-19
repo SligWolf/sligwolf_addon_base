@@ -32,28 +32,16 @@ function LIB.CheckAllowUse(ent, ply)
 	return allowuse
 end
 
-function LIB.ApplyStaticEntityTrait(SENT)
-	SENT.sligwolf_blockAllTools  = true
-	SENT.sligwolf_blockedprop    = true
-	SENT.sligwolf_noPickup       = true
-	SENT.sligwolf_noUnfreeze     = true
-	SENT.sligwolf_noFreeze       = true
-
-	function SENT:InitializePhysics()
-		self:PhysicsInit(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
-		self:SetCollisionGroup(COLLISION_GROUP_NONE)
-
-		LIBEntities.EnableMotion(self, false)
+function LIB.IsStatic(ent)
+	if not IsValid(ent) then
+		return false
 	end
 
-	function SENT:OnPhysgunPickup()
-		LIBEntities.EnableMotion(self, false)
+	if not ent.sligwolf_physBaseEntity then
+		return false
 	end
 
-	function SENT:OnPhysgunDrop()
-		LIBEntities.EnableMotion(self, false)
-	end
+	return ent:GetStatic()
 end
 
 function LIB.Load()
@@ -83,6 +71,10 @@ function LIB.Load()
 			return
 		end
 
+		if LIB.IsStatic(ent) then
+			return false
+		end
+
 		if ent.sligwolf_blockAllTools then
 			return false
 		end
@@ -101,6 +93,10 @@ function LIB.Load()
 			return
 		end
 
+		if LIB.IsStatic(ent) then
+			return false
+		end
+
 		if ent.sligwolf_blockAllTools then
 			return false
 		end
@@ -116,6 +112,10 @@ function LIB.Load()
 	local function CantTouch(ply, ent)
 		if not IsValid(ent) then return end
 
+		if LIB.IsStatic(ent) then
+			return false
+		end
+
 		if ent.sligwolf_blockedprop then
 			return false
 		end
@@ -129,6 +129,10 @@ function LIB.Load()
 
 	local function CantPickUp(ply, ent)
 		if not IsValid(ent) then return end
+
+		if LIB.IsStatic(ent) then
+			return false
+		end
 
 		if ent.sligwolf_noPickup then
 			return false
@@ -145,6 +149,10 @@ function LIB.Load()
 		local function CantUnfreeze(ply, ent, phys)
 			if not IsValid(ent) then return end
 
+			if LIB.IsStatic(ent) then
+				return false
+			end
+
 			if ent.sligwolf_blockedprop then
 				return false
 			end
@@ -158,6 +166,10 @@ function LIB.Load()
 
 		local function CantFreeze(weapon, phys, ent, ply)
 			if not IsValid(ent) then return end
+
+			if LIB.IsStatic(ent) then
+				return false
+			end
 
 			if ent.sligwolf_blockedprop then
 				return false
@@ -176,6 +188,10 @@ function LIB.Load()
 
 		local ent = trace.Entity
 		if not IsValid(ent) then return end
+
+		if LIB.IsStatic(ent) then
+			return false
+		end
 
 		if ent.sligwolf_blockAllTools then
 			return false

@@ -298,11 +298,22 @@ function LIB.MarkPhysgunCarried(ent, ply)
 	local systemEntities = LIBEntities.GetSystemEntities(root)
 
 	for _, thisEnt in ipairs(systemEntities) do
-		if not isfunction(thisEnt.OnPhysgunPickup) then
-			continue
+		local enforceStatic = thisEnt.EnforceStatic
+		local onPhysgunPickup = thisEnt.OnPhysgunPickup
+
+		local static = thisEnt.sligwolf_physBaseEntity and thisEnt:GetStatic()
+
+		if static then
+			if enforceStatic then
+				enforceStatic(thisEnt)
+			end
+
+			return
 		end
 
-		thisEnt:OnPhysgunPickup(ent, ply)
+		if onPhysgunPickup then
+			onPhysgunPickup(thisEnt, ent, ply)
+		end
 	end
 end
 
@@ -329,11 +340,22 @@ function LIB.UnmarkPhysgunCarried(ent, ply)
 	local systemEntities = LIBEntities.GetSystemEntities(root)
 
 	for _, thisEnt in ipairs(systemEntities) do
-		if not isfunction(thisEnt.OnPhysgunDrop) then
-			continue
+		local enforceStatic = thisEnt.EnforceStatic
+		local onPhysgunDrop = thisEnt.OnPhysgunDrop
+
+		local static = thisEnt.sligwolf_physBaseEntity and thisEnt:GetStatic()
+
+		if static then
+			if enforceStatic then
+				enforceStatic(thisEnt)
+			end
+
+			return
 		end
 
-		thisEnt:OnPhysgunDrop(ent, ply)
+		if onPhysgunDrop then
+			onPhysgunDrop(thisEnt, ent, ply)
+		end
 	end
 end
 

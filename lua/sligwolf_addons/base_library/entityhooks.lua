@@ -8,6 +8,8 @@ local LIB = SligWolf_Addons:NewLib("Entityhooks")
 local LIBDuplicator = nil
 local LIBEntities = nil
 local LIBSourceIO = nil
+local LIBPhysics = nil
+local LIBVehicle = nil
 local LIBTimer = nil
 local LIBHook = nil
 
@@ -86,7 +88,9 @@ end
 function LIB.Load()
 	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
+	LIBPhysics = SligWolf_Addons.Physics
 	LIBSourceIO = SligWolf_Addons.SourceIO
+	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 
@@ -144,32 +148,124 @@ function LIB.Load()
 		if not ent.sligwolf_entity then return end
 
 		local systemEntities = LIBEntities.GetSystemEntities(ent)
-		if not systemEntities then return end
+		if systemEntities then
+			for _, thisent in ipairs(systemEntities) do
+				if not thisent.SpawnSystemFinished then
+					continue
+				end
 
-		for _, thisent in ipairs(systemEntities) do
-			if not isfunction(thisent.SpawnSystemFinished) then
-				continue
+				thisent:SpawnSystemFinished(ply)
+			end
+		end
+
+		local addonname = nil
+
+		if ent.sligwolf_baseEntity then
+			addonname = ent:GetAddonID()
+		end
+
+		if not addonname or addonname == "" then
+			addonname = ent.sligwolf_addonname
+		end
+
+		local addon = SligWolf_Addons.GetAddon(addonname)
+		if addon then
+			if addon.SpawnSystemFinished then
+				addon:SpawnSystemFinished(ent, ply)
 			end
 
-			thisent:SpawnSystemFinished(ply)
+			if ent:IsVehicle() and ent:IsValidVehicle() then
+				local vat = ent:SligWolf_GetAddonTable(addonname)
+
+				if addon.SpawnVehicleFinished then
+					addon:SpawnVehicleFinished(ent, vat, ply)
+				end
+			end
 		end
 	end
 
-	LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemEntitiesFinished", SpawnSystemEntitiesFinished, 19000)
+	LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemEntitiesFinished", SpawnSystemEntitiesFinished, 10000)
 
+	if SERVER then
+		local function SpawnSystemFinishedApplyKeyValues(ent, ply)
+			if not IsValid(ent) then return end
+			if not ent.sligwolf_entity then return end
 
-	local function SpawnSystemFinished(ent, ply)
-		if not IsValid(ent) then return end
-		if not ent.sligwolf_entity then return end
-		if not ent.sligwolf_baseEntity then return end
+			local spawnTable = LIBEntities.GetSpawntable(ent) or {}
+			local keyValues = LIBSourceIO.GetKeyValues(ent)
 
-		local addonname = ent:GetAddonID()
-		if not addonname then return end
+			local static = ent.sligwolf_physBaseEntity and ent:GetStatic()
 
-		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnSystemFinished", ent, ply)
+			local spawnFrozen = spawnTable.SLIGWOLF_SpawnFrozen or false
+			local overrideSystemMotion = false
+
+			if not static then
+				local frozenKeyValue = tonumber(keyValues.sligwolf_frozen or 0) or 0
+				if frozenKeyValue == 1 then
+					spawnFrozen = false
+					overrideSystemMotion = true
+				elseif frozenKeyValue == 2 then
+					spawnFrozen = true
+					overrideSystemMotion = true
+				end
+			else
+				-- Static entities are always frozen
+				spawnFrozen = true
+				overrideSystemMotion = true
+			end
+
+			LIBEntities.EnablePhysicsAfterSpawn(ent)
+			LIBEntities.EnableMotion(ent, not spawnFrozen)
+
+			if overrideSystemMotion then
+				LIBEntities.EnableSystemMotion(ent, not spawnFrozen)
+			end
+
+			local isSpawnedByEngine = LIBSourceIO.IsSpawnedByEngine(ent)
+			if isSpawnedByEngine then
+				LIBVehicle.VehicleSetLightState(ent, keyValues.sligwolf_light)
+				LIBVehicle.VehicleSetEngineState(ent, keyValues.sligwolf_engine)
+			end
+		end
+
+		LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinishedApplyKeyValues", SpawnSystemFinishedApplyKeyValues, 11000)
+
+		local function DisablePhysicsDuringSpawn(ent)
+			if not IsValid(ent) then return end
+			if not ent.sligwolf_entity then return end
+
+			local spawnTable = LIBEntities.GetSpawntable(ent)
+			if not spawnTable then return end
+			if not spawnTable.Is_SLIGWOLF then return end
+
+			local addonname = spawnTable.SLIGWOLF_Addonname
+			if not addonname then return end
+
+			local keyValues = LIBSourceIO.GetKeyValues(ent)
+
+			local static = ent.sligwolf_physBaseEntity and ent:GetStatic()
+
+			local spawnFrozen = spawnTable.SLIGWOLF_SpawnFrozen or false
+
+			if not static then
+				local frozenKeyValue = tonumber(keyValues.sligwolf_frozen or 0) or 0
+				if frozenKeyValue == 1 then
+					spawnFrozen = false
+				elseif frozenKeyValue == 2 then
+					spawnFrozen = true
+				end
+			else
+				-- Static entities are always frozen
+				spawnFrozen = true
+			end
+
+			LIBEntities.DisablePhysicsDuringSpawn(ent, spawnFrozen, ent:IsSolid())
+
+			SligWolf_Addons.CallFunctionOnAddon(addonname, "HandleSpawnFinishedEvent", ent)
+		end
+
+		LIBHook.AddCustom("OnPostEntityCreated", "Library_EntityHooks_DisablePhysicsDuringSpawn", DisablePhysicsDuringSpawn, 11000)
 	end
-
-	LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinished", SpawnSystemFinished, 19100)
 
 	local function RunCallOnRemoveEffect(ent)
 		if not IsValid(ent) then return end

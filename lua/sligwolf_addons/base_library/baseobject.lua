@@ -33,17 +33,6 @@ function SLIGWOLF_BASE_OBJ:DelayNextSpawnForOwner()
 	LIBSpamprotection.DelayNextSpawnForOwner(self)
 end
 
-function SLIGWOLF_BASE_OBJ:KeyValue(key, value)
-	if not string.StartsWith(key, "sligwolf_") then return end
-
-	local entTable = self:SligWolf_GetTable()
-
-	local keyValues = entTable.keyValues or {}
-	entTable.keyValues = keyValues
-
-	keyValues[key] = value
-end
-
 local function extendErrorFormat(format, obj)
 	format = tostring(format or "")
 	format = string.format("[%s] %s", LIBPrint.FormatSafe(obj), format)
@@ -294,6 +283,8 @@ function SLIGWOLF_BASE_OBJ:SetAddonID(addonid)
 		return false
 	end
 
+	self.sligwolf_addonname = addonid
+
 	self:SetNetworkRVar("AddonID", addonid)
 	self:ClearAddonCache()
 
@@ -329,6 +320,8 @@ function SLIGWOLF_BASE_OBJ:GetAddonID()
 		self:ErrorAddonInstall(addonid)
 		return nil
 	end
+
+	self.sligwolf_addonname = addonid
 
 	self.addonIdCache = addonid
 	return self.addonIdCache

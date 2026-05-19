@@ -5,6 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Spawnmenu")
 
+local LIBEntities = nil
 local LIBTimer = nil
 local LIBHook = nil
 local LIBUtil = nil
@@ -24,10 +25,11 @@ LIB.g_lastSpawnMenuState = g_lastSpawnMenuState
 local g_tabPanelIndex = g_lastSpawnMenuState.tabPanelIndex or {}
 g_lastSpawnMenuState.tabPanelIndex = g_tabPanelIndex
 
+local g_RegisterdSpawnnamesByModel = LIB.g_RegisterdSpawnnamesByModel or {}
+LIB.g_RegisterdSpawnnamesByModel = g_RegisterdSpawnnamesByModel
+
 local g_spawnmenuLoaded = SligWolf_Addons.WasReloaded
 local g_waitInitSpawnmenuContent = false
-
-LIB.g_RegisterdVehicleSpawnnamesByModel = {}
 
 local g_AddonContentContainers = {}
 
@@ -830,20 +832,17 @@ local function g_SENTSetup(ply, sent)
 	if not IsValid(sent) then return end
 	if not sent.sligwolf_baseEntity then return end
 
-	local spawnname = sent:GetSpawnName()
-	if not spawnname then return end
-
-	local tab = LIBUtil.GetList("SpawnableEntities")
-	local data = tab[spawnname]
-
+	local data = LIBEntities.GetSpawntable(ent)
 	if not data then return end
 	if not data.Is_SLIGWOLF then return end
 
 	local addonname = data.SLIGWOLF_Addonname or ""
+	local spawnname = data.SLIGWOLF_Spawnname or ""
+
 	sent:SetAddonID(addonname)
 
-	local data_custom = data.SLIGWOLF_Custom or {}
-	sent:SetSpawnProperties(data_custom)
+	local dataCustom = data.SLIGWOLF_Custom or {}
+	sent:SetSpawnProperties(dataCustom)
 
 	local dupedata = {}
 	dupedata.spawnname = spawnname
@@ -856,9 +855,12 @@ local function g_SENTDupe(ply, sent, data)
 	if not sent.sligwolf_baseEntity then return end
 
 	if not data then return end
-	if not data.spawnname then return end
 
-	sent.spawnname = data.spawnname
+	local spawnname = data.spawnname or ""
+	if spawnname == "" then return end
+
+	sent.spawnname = spawnname
+
 	g_SENTSetup(ply, sent)
 end
 
@@ -937,15 +939,31 @@ function LIB.AddEntity(addonname, spawnname, obj)
 		return
 	end
 
+	local model = tostring(obj.model or "")
+	if model == "" then
+		model = nil
+	end
+
 	obj = obj or {}
 
+	local category = "entity"
+
 	g_EntityOrder = (g_EntityOrder % 1000000) + 1
+
+	if model then
+		local byModel = g_RegisterdSpawnnamesByModel[category] or {}
+		g_RegisterdSpawnnamesByModel[category] = byModel
+
+		if not byModel[model] then
+			byModel[model] = spawnname
+		end
+	end
 
 	local hidden = obj.hidden or false
 	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
-			"entity",
+			category,
 			{
 				id = spawnname,
 				order = obj.order or g_EntityOrder * 100,
@@ -962,6 +980,8 @@ function LIB.AddEntity(addonname, spawnname, obj)
 		LIB.RequestReloadSpawnmenu()
 	end
 
+	local spawnFrozen = obj.spawnFrozen or false
+
 	local SpawnableEntities = LIBUtil.GetList("SpawnableEntities")
 	if not SpawnableEntities then return end
 
@@ -969,15 +989,17 @@ function LIB.AddEntity(addonname, spawnname, obj)
 
 	entityItem.PrintName = entityItem.PrintName or tostring(obj.title or spawnname)
 	entityItem.ClassName = entityItem.ClassName or obj.class or spawnname
-	entityItem.Model = entityItem.Model or tostring(obj.model or "")
+	entityItem.Model = entityItem.Model or tostring(model or "")
 	entityItem.Category = g_defaultNodeNameToBeRemoved
 
 	entityItem.Is_SLIGWOLF = true
 	entityItem.SLIGWOLF_Addonname = addonname
+	entityItem.SLIGWOLF_Spawnname = spawnname
 	entityItem.SLIGWOLF_Hidden = hidden
+	entityItem.SLIGWOLF_SpawnFrozen = spawnFrozen
 	entityItem.SLIGWOLF_FGD = {}
 
-	entityItem.SLIGWOLF_SkinCategory = "entity"
+	entityItem.SLIGWOLF_SkinCategory = category
 	entityItem.SLIGWOLF_SkinMapName = obj.skinMapName
 
 	local keyValues = table.Copy(obj.keyValues or {})
@@ -1011,15 +1033,33 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 		return
 	end
 
+	local model = tostring(obj.model or "")
+	if model == "" then
+		model = nil
+	end
+
 	obj = obj or {}
 
+	local category = "weapon"
+
 	g_WeaponOrder = (g_WeaponOrder % 1000000) + 1
+
+	if model then
+		local byModel = g_RegisterdSpawnnamesByModel[category] or {}
+		g_RegisterdSpawnnamesByModel[category] = byModel
+
+		if not byModel[model] then
+			byModel[model] = spawnname
+		end
+	end
+
+	obj = obj or {}
 
 	local hidden = obj.hidden or false
 	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
-			"weapon",
+			category,
 			{
 				id = spawnname,
 				order = obj.order or g_WeaponOrder * 100,
@@ -1043,14 +1083,16 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 
 	weaponItem.PrintName = weaponItem.PrintName or tostring(obj.title or spawnname)
 	weaponItem.ClassName = weaponItem.ClassName or obj.class or spawnname
+	weaponItem.Model = weaponItem.Model or tostring(model or "")
 	weaponItem.Category = g_defaultNodeNameToBeRemoved
 
 	weaponItem.Is_SLIGWOLF = true
 	weaponItem.SLIGWOLF_Addonname = addonname
+	weaponItem.SLIGWOLF_Spawnname = spawnname
 	weaponItem.SLIGWOLF_Hidden = hidden
 	weaponItem.SLIGWOLF_FGD = {}
 
-	weaponItem.SLIGWOLF_SkinCategory = "weapon"
+	weaponItem.SLIGWOLF_SkinCategory = category
 	weaponItem.SLIGWOLF_SkinMapName = obj.skinMapName
 
 	local keyValues = table.Copy(obj.keyValues or {})
@@ -1112,7 +1154,23 @@ function LIB.AddNPC(addonname, spawnname, obj)
 		return
 	end
 
+	local model = tostring(obj.model or "")
+	if model == "" then
+		model = nil
+	end
+
+	local category = "npc"
+
 	g_NpcOrder = (g_NpcOrder % 1000000) + 1
+
+	if model then
+		local byModel = g_RegisterdSpawnnamesByModel[category] or {}
+		g_RegisterdSpawnnamesByModel[category] = byModel
+
+		if not byModel[model] then
+			byModel[model] = spawnname
+		end
+	end
 
 	obj = obj or {}
 
@@ -1120,7 +1178,7 @@ function LIB.AddNPC(addonname, spawnname, obj)
 	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
-			"npc",
+			category,
 			{
 				id = spawnname,
 				order = obj.order or g_NpcOrder * 100,
@@ -1142,7 +1200,7 @@ function LIB.AddNPC(addonname, spawnname, obj)
 
 	npcListItem.Name = tostring(obj.title or spawnname)
 	npcListItem.Class = obj.class or "npc_citizen"
-	npcListItem.Model = obj.model
+	npcListItem.Model = model
 	npcListItem.Skin = obj.skin
 	npcListItem.Category = g_defaultNodeNameToBeRemoved
 	npcListItem.Weapons = obj.weapons
@@ -1151,10 +1209,11 @@ function LIB.AddNPC(addonname, spawnname, obj)
 
 	npcListItem.Is_SLIGWOLF = true
 	npcListItem.SLIGWOLF_Addonname = addonname
+	npcListItem.SLIGWOLF_Spawnname = spawnname
 	npcListItem.SLIGWOLF_Hidden = hidden
 	npcListItem.SLIGWOLF_FGD = {}
 
-	npcListItem.SLIGWOLF_SkinCategory = "npc"
+	npcListItem.SLIGWOLF_SkinCategory = category
 	npcListItem.SLIGWOLF_SkinMapName = obj.skinMapName
 
 	npcListItem.SpawnFlags = obj.spawnFlags
@@ -1202,10 +1261,15 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 		return
 	end
 
+	local category = "vehicle"
+
 	g_VehicleOrder = (g_VehicleOrder % 1000000) + 1
 
-	if not LIB.g_RegisterdVehicleSpawnnamesByModel[model] then
-		LIB.g_RegisterdVehicleSpawnnamesByModel[model] = spawnname
+	local byModel = g_RegisterdSpawnnamesByModel[category] or {}
+	g_RegisterdSpawnnamesByModel[category] = byModel
+
+	if not byModel[model] then
+		byModel[model] = spawnname
 	end
 
 	local hidden = obj.hidden or false
@@ -1214,7 +1278,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	if not hidden then
 		AddSpawnMenuItem(
 			addonname,
-			"vehicle",
+			category,
 			{
 				id = spawnname,
 				order = obj.order or g_VehicleOrder * 100,
@@ -1246,6 +1310,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 
 	vehicleListItem.Is_SLIGWOLF = true
 	vehicleListItem.SLIGWOLF_Addonname = addonname
+	vehicleListItem.SLIGWOLF_Spawnname = spawnname
 	vehicleListItem.SLIGWOLF_Hidden = hidden
 	vehicleListItem.SLIGWOLF_SpawnFrozen = spawnFrozen
 	vehicleListItem.SLIGWOLF_IsTrain = isTrain
@@ -1259,7 +1324,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 		fgd.class = "prop_vehicle_sligwolf_train"
 	end
 
-	vehicleListItem.SLIGWOLF_SkinCategory = "vehicle"
+	vehicleListItem.SLIGWOLF_SkinCategory = category
 	vehicleListItem.SLIGWOLF_SkinMapName = obj.skinMapName
 
 	vehicleListItem.Members = members
@@ -1503,6 +1568,7 @@ function LIB.InitSpawnmenuContent()
 end
 
 function LIB.Load()
+	LIBEntities = SligWolf_Addons.Entities
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util

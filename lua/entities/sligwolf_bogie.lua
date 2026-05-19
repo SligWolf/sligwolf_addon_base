@@ -93,7 +93,7 @@ function ENT:IsWagonBodyPhysgunCarried()
 	return false
 end
 
-function ENT:OnPhysgunPickup(directlyCarried, ply)
+function ENT:OnPhysgunPickup(ent, ply)
 	self:UpdateCheckForRealign()
 
 	if self.shouldAttemptToRealign then
@@ -101,7 +101,7 @@ function ENT:OnPhysgunPickup(directlyCarried, ply)
 	end
 end
 
-function ENT:OnPhysgunDrop(directlyDropped, ply)
+function ENT:OnPhysgunDrop(ent, ply)
 	self:UpdateCheckForRealign()
 
 	if self.shouldAttemptToRealign then

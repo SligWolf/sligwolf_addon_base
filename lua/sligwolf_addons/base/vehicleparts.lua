@@ -526,24 +526,6 @@ function SLIGWOLF_ADDON:CheckToProceedToCreateEnt(ent, tb)
 	return parentAttId
 end
 
-local function disableEntPhysicsTemporarily(ent, freeze, solid)
-	if not IsValid(ent) then return end
-
-	local entTable = ent:SligWolf_GetTable()
-	if entTable.spawnState then
-		return
-	end
-
-	local spawnState = {}
-	entTable.spawnState = spawnState
-
-	spawnState.solid = solid or false
-	spawnState.freeze = freeze or false
-
-	LIBEntities.EnableMotion(ent, false)
-	ent:SetNotSolid(true)
-end
-
 function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superparent, callback)
 	if not IsValid(ent) then return end
 
@@ -651,11 +633,11 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		ent:SetNWBool("sligwolf_isBody", true)
 	end
 
-	disableEntPhysicsTemporarily(superparent, false, true)
-	disableEntPhysicsTemporarily(
+	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
+	LIBEntities.DisablePhysicsDuringSpawn(
 		ent,
-		freeze,
-		ent:IsSolid() and LIBPhysics.IsTraceableCollision(solid, collision)
+		freeze or false,
+		ent:IsSolid() and LIBPhysics.IsTraceableCollision(solid, collision) or false
 	)
 
 	local phys = ent:GetPhysicsObject()
@@ -1311,7 +1293,7 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent, 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
-	disableEntPhysicsTemporarily(superparent, false, true)
+	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
 
 	return ent
 end
@@ -1383,7 +1365,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
-	disableEntPhysicsTemporarily(superparent, false, true)
+	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
 
 	return ent
 end
@@ -1445,7 +1427,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
-	disableEntPhysicsTemporarily(superparent, false, true)
+	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
 
 	return ent
 end
@@ -1510,7 +1492,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
-	disableEntPhysicsTemporarily(superparent, false, true)
+	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
 
 	return ent
 end

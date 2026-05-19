@@ -55,10 +55,13 @@ local function getVehicleTablesByClass()
 	return result, count
 end
 
-local function getVehicleThemesByAddon()
+local function getThemesByAddon(category)
 	local items = {}
 
-	local vehicleThemes = LIBSkinsystem.GetAllThemes("vehicle")
+	local vehicleThemes = LIBSkinsystem.GetAllThemes(category)
+	if not vehicleThemes then
+		return items
+	end
 
 	for _, themesInAddon in pairs(vehicleThemes) do
 		local themes = themesInAddon.themes
@@ -274,7 +277,11 @@ function LIB.BuildCache(rebuildCache)
 	LIB.SetFGDCacheValue("SW_ADDON_COUNT", SligWolf_Addons.GetLoadedAddonsCount())
 	LIB.SetFGDCacheValue("SW_VEHICLE_COUNT", vehicleTablesCount)
 	LIB.SetFGDCacheValue("SW_VEHICLE_TABLES", vehicleTables)
-	LIB.SetFGDCacheValue("SW_VEHICLE_THEMES", getVehicleThemesByAddon())
+
+	LIB.SetFGDCacheValue("SW_ENTITY_THEMES", getThemesByAddon("entity"))
+	LIB.SetFGDCacheValue("SW_WEAPON_THEMES", getThemesByAddon("weapon"))
+	LIB.SetFGDCacheValue("SW_NPC_THEMES", getThemesByAddon("npc"))
+	LIB.SetFGDCacheValue("SW_VEHICLE_THEMES", getThemesByAddon("vehicle"))
 
 	LIB.WriteFGDCache()
 
@@ -338,6 +345,24 @@ function LIB.GenerateFGD(rebuildCache)
 	fgdContent = insertValueFromCache(fgdContent, "SW_GENERATED_AT", "SW_CACHE_GENERATED_AT")
 	fgdContent = insertValueFromCache(fgdContent, "SW_ADDON_COUNT", "SW_CACHE_ADDON_COUNT")
 	fgdContent = insertValueFromCache(fgdContent, "SW_VEHICLE_COUNT", "SW_CACHE_VEHICLE_COUNT")
+
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_ENTITY_THEMES_OPTIONS",
+		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_ENTITY_THEMES"))
+	)
+
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_WEAPON_THEMES_OPTIONS",
+		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_WEAPON_THEMES"))
+	)
+
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_NPC_THEMES_OPTIONS",
+		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_NPC_THEMES"))
+	)
 
 	fgdContent = replacePlaceholder(
 		fgdContent,

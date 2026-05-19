@@ -261,6 +261,31 @@ function LIB.IsCreatedByMap(ent, alsoCheckHammerId)
 	return false
 end
 
+function LIB.IsSpawnedByEngine(ent)
+	if not IsValid(ent) then return false end
+
+	local entTable = ent:SligWolf_GetTable()
+	if entTable.isSpawnedByEngine ~= nil then
+		return entTable.isSpawnedByEngine
+	end
+
+	entTable.isSpawnedByEngine = true
+
+	if LIB.IsCreatedByMap(ent, true) then
+		return true
+	end
+
+	if ent:IsVehicle() then
+		local vehicleSpawnname = tostring(ent.VehicleName or "")
+		if vehicleSpawnname == "" then
+			return true
+		end
+	end
+
+	entTable.isSpawnedByEngine = false
+	return false
+end
+
 function LIB.Load()
 	LIBEntityhooks = SligWolf_Addons.Entityhooks
 end

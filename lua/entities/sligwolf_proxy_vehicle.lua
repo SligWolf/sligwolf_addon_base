@@ -75,13 +75,13 @@ function ENT:Think()
 end
 
 function ENT:SpawnVehicle()
-	local spawnname = self:GetSpawnName()
-	if spawnname == "" then
+	local spawndata = self:GetSpawnData()
+	if not spawndata then
 		return
 	end
 
-	local spawndata = self:GetSpawnData()
-	if not spawndata then
+	local spawnname = self:GetSpawnName()
+	if spawnname == "" then
 		return
 	end
 
@@ -130,8 +130,6 @@ function ENT:SpawnVehicle()
 
 	vehicle:Spawn()
 	vehicle:Activate()
-
-	addon:HandleSpawnFinishedEvent(vehicle)
 end
 
 function ENT:GetSpawnData()

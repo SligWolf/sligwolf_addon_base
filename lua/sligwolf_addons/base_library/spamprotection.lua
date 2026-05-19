@@ -11,7 +11,6 @@ local g_stableAfterTime = 10
 local LIBEntities = nil
 local LIBSourceIO = nil
 local LIBPhysics = nil
-local LIBVehicle = nil
 local LIBTimer = nil
 local LIBPrint = nil
 local LIBUtil = nil
@@ -229,8 +228,8 @@ function LIB.Load()
 		LIBHook.AddCustom("DuplicatorPrePaste", "Library_SpamProtection_MarkAsDupe", MarkAsDupe, 1000)
 		LIBHook.AddCustom("DuplicatorPostPaste", "Library_SpamProtection_UnmarkAsDupe", UnmarkAsDupe, 1000)
 
-		local function AntiVehicleSpam(ply, model, spawnname)
-			local spawnTable = LIBVehicle.GetVehicleTableFromSpawnname(spawnname)
+		local function AntiSpam(ply, spawnname)
+			local spawnTable = LIBEntities.GetSpawntable(spawnname)
 			if not spawnTable then
 				return
 			end
@@ -242,22 +241,8 @@ function LIB.Load()
 			return false
 		end
 
-		LIBHook.Add("PlayerSpawnVehicle", "Library_SpamProtection_AntiVehicleSpam", AntiVehicleSpam, 1000)
-
-		local function AntiSentSpam(ply, spawnname)
-			local spawnTable = LIBEntities.GetSentTableFromSpawnname(spawnname)
-			if not spawnTable then
-				return
-			end
-
-			if LIB.CanSpawn(ply, spawnTable) then
-				return
-			end
-
-			return false
-		end
-
-		LIBHook.Add("PlayerSpawnSENT", "Library_SpamProtection_AntiSentSpam", AntiSentSpam, 1000)
+		LIBHook.Add("PlayerSpawnVehicle", "Library_SpamProtection_AntiSpam", AntiSpam, 1000)
+		LIBHook.Add("PlayerSpawnSENT", "Library_SpamProtection_AntiSpam", AntiSpam, 1000)
 
 		if g_maxCollisionSpamCount > 0 then
 			local function RemoveSpamCollisions()

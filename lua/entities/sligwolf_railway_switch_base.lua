@@ -3,12 +3,12 @@ local SligWolf_Addons = SligWolf_Addons
 
 DEFINE_BASECLASS("sligwolf_phys")
 
-ENT.Spawnable				= false
-ENT.AdminOnly				= false
-ENT.RenderGroup 			= RENDERGROUP_BOTH
-ENT.DoNotDuplicate 			= true
+ENT.Spawnable				  = false
+ENT.AdminOnly				  = false
+ENT.RenderGroup 			  = RENDERGROUP_BOTH
+ENT.DoNotDuplicate 			  = true
 
-ENT.sligwolf_allowAnimation	= true
+ENT.sligwolf_allowAnimation	  = true
 
 if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
@@ -155,11 +155,8 @@ function ENT:Use(activator, caller, useType, value)
 	self._lastCaller = nil
 end
 
-function ENT:KeyValue(key, value)
-	BaseClass.Initialize(self, key, value)
-
-	key = string.lower(tostring(key or ""))
-	value = tostring(value or "")
+function ENT:OnKeyValueSet(key, value)
+	BaseClass.OnKeyValueSet(self, key, value)
 
 	if key == "onswitch" then
 		self:StoreOutput(key, value)

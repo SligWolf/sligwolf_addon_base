@@ -43,7 +43,7 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 		return
 	end
 
-	local mdl = vehicleTable.Model
+	local model = vehicleTable.Model
 	local keyValues = vehicleTable.KeyValues
 	local class = vehicleTable.Class
 	local members = vehicleTable.Members
@@ -51,7 +51,7 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	local vehicle = LIBEntities.MakeEnt(class, plyOwner, parent, name, addonname)
 	if not IsValid(vehicle) then return end
 
-	LIBModel.SetModel(vehicle, mdl)
+	LIBModel.SetModel(vehicle, model)
 
 	LIB.SetupVehicleKeyValues(vehicle, keyValues)
 
@@ -163,30 +163,6 @@ function LIB.GetVehicleSpawnnameFromVehicle(vehicle)
 	end
 
 	return nil
-end
-
-function LIB.IsSpawnedByEngine(vehicle)
-	if not IsValid(vehicle) then return false end
-	if not vehicle:IsVehicle() then return false end
-
-	local entTable = vehicle:SligWolf_GetTable()
-	if entTable.isSpawnedByEngine ~= nil then
-		return entTable.isSpawnedByEngine
-	end
-
-	entTable.isSpawnedByEngine = true
-
-	if LIBSourceIO.IsCreatedByMap(vehicle, true) then
-		return true
-	end
-
-	local vehicleSpawnname = tostring(vehicle.VehicleName or "")
-	if vehicleSpawnname == "" then
-		return true
-	end
-
-	entTable.isSpawnedByEngine = false
-	return false
 end
 
 function LIB.EnableWheels(vehicle, enable)
@@ -718,7 +694,7 @@ function LIB.VehicleSetEngineState(vehicle, engineState)
 
 	local engineStateFunction = addon.EngineState
 	if not engineStateFunction then
-		if not superparent.IsValidVehicle then
+		if not superparent:IsVehicle() then
 			return
 		end
 
@@ -780,56 +756,6 @@ function LIB.Load()
 	LIBModel = SligWolf_Addons.Model
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util
-
-	local function SpawnVehicleFinished(vehicle, ply)
-		if not IsValid(vehicle) then return end
-
-		if not vehicle:IsVehicle() then return end
-		if not vehicle:IsValidVehicle() then return end
-
-		if not vehicle.sligwolf_vehicle then return end
-
-		local addonname = vehicle.sligwolf_addonname
-		if not addonname then return end
-
-		local vat = vehicle:SligWolf_GetAddonTable(addonname)
-		SligWolf_Addons.CallFunctionOnAddon(addonname, "SpawnVehicleFinished", vehicle, vat, ply)
-
-		if SERVER then
-			local vehicleTable = LIBEntities.GetSpawntable(vehicle) or {}
-			local keyValues = LIBSourceIO.GetKeyValues(vehicle)
-
-			local spawnFrozen = false
-			local overrideBodyStates = false
-
-			local spawnFrozenKV = tonumber(keyValues.sligwolf_frozen or 0) or 0
-			if spawnFrozenKV == 0 then
-				spawnFrozen = vehicleTable.SLIGWOLF_SpawnFrozen or false
-				overrideBodyStates = false
-			elseif spawnFrozenKV == 1 then
-				spawnFrozen = false
-				overrideBodyStates = true
-			elseif spawnFrozenKV == 2 then
-				spawnFrozen = true
-				overrideBodyStates = true
-			end
-
-			LIBEntities.ApplySpawnState(vehicle)
-			LIBEntities.EnableMotion(vehicle, not spawnFrozen)
-
-			if overrideBodyStates then
-				LIBEntities.EnableBodySystemMotion(vehicle, not spawnFrozen)
-			end
-
-			local isSpawnedByEngine = LIB.IsSpawnedByEngine(vehicle)
-			if isSpawnedByEngine then
-				LIB.VehicleSetLightState(vehicle, keyValues.sligwolf_light)
-				LIB.VehicleSetEngineState(vehicle, keyValues.sligwolf_engine)
-			end
-		end
-	end
-
-	LIBHook.AddCustom("SpawnSystemFinished", "Library_Vehicle_SpawnVehicleFinished", SpawnVehicleFinished, 20000)
 
 	local function PlayerEnteredVehicle(ply, vehicle)
 		if not IsValid(vehicle) then return end
