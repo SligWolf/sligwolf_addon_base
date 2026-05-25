@@ -82,13 +82,13 @@ function ENT:GetStatic()
 	local spawnerPlayer = entTable.spawnerPlayer
 	if IsValid(spawnerPlayer) then
 		-- Lose static property: Never allow players to create static entities.
-		self:SetNetworkRVar("staticPhysics", false)
+		self:RemoveStatic()
 		return false
 	end
 
 	if self._staticEnforced and self:IsMotionEnabled() then
 		-- Lose static property: Motion has been enabled by external means, e.g. by nukes or admin mods.
-		self:SetNetworkRVar("staticPhysics", false)
+		self:RemoveStatic()
 		return false
 	end
 
@@ -109,6 +109,18 @@ function ENT:EnforceStatic()
 
 	self.sligwolf_noBodySystemApplyMotion = true
 	self._staticEnforced = true
+end
+
+function ENT:RemoveStatic()
+	if not self._staticEnforced then
+		return false
+	end
+
+	self._staticEnforced = nil
+
+	self:EnableMotion(true)
+	self.sligwolf_noBodySystemApplyMotion = false
+	self:SetNetworkRVar("staticPhysics", false)
 end
 
 function ENT:DeleteSpawnSolidState()

@@ -6,6 +6,8 @@ end
 local LIB = SligWolf_Addons:NewLib("SourceIO")
 
 local LIBEntityhooks = nil
+local LIBDuplicator = nil
+local LIBUtil = nil
 
 function LIB.GetKeyValue(ent, key)
 	key = string.lower(tostring(key or ""))
@@ -240,6 +242,57 @@ function LIB.SetMapOutputs(ent, ioList)
 	end
 end
 
+function LIB.GetHammerId(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	local hammerid = tonumber(LIB.GetKeyValue(ent, "hammerid") or 0) or 0
+	if hammerid ~= 0 then
+		return hammerid
+	end
+
+	return nil
+end
+
+function LIB.GetMapCreationID(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	if not ent:CreatedByMap() then
+		return nil
+	end
+
+	return ent:MapCreationID()
+end
+
+local g_hashTmp = {}
+
+function LIB.GetMapCreationHash(ent)
+	if CLIENT then
+		return nil
+	end
+
+	local id = LIB.GetMapCreationID(ent)
+	if not id then
+		return nil
+	end
+
+	table.Empty(g_hashTmp)
+
+	table.insert(g_hashTmp, game.GetMap())
+	table.insert(g_hashTmp, ent:GetClass())
+	table.insert(g_hashTmp, ent:GetName())
+
+	table.insert(g_hashTmp, id)
+
+	local hash = table.concat(g_hashTmp, "_")
+	hash = util.SHA1(hash)
+
+	return hash
+end
+
 function LIB.IsCreatedByMap(ent, alsoCheckHammerId)
 	if not IsValid(ent) then
 		return false
@@ -253,8 +306,8 @@ function LIB.IsCreatedByMap(ent, alsoCheckHammerId)
 		return false
 	end
 
-	local hammerid = tonumber(LIB.GetKeyValue(ent, "hammerid") or 0) or 0
-	if hammerid ~= 0 then
+	local hammerid = LIB.GetHammerId(ent)
+	if hammerid then
 		return true
 	end
 
@@ -286,8 +339,50 @@ function LIB.IsSpawnedByEngine(ent)
 	return false
 end
 
+function LIB.GetProxySpawnID(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	local proxySpawnId = entTable.proxySpawnId
+
+	if not proxySpawnId then
+		return nil
+	end
+
+	return proxySpawnId
+end
+
+function LIB.SetProxySpawnID(ent, proxySpawnId)
+	if not IsValid(ent) then
+		return
+	end
+
+	if not proxySpawnId then
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.proxySpawnId = proxySpawnId
+
+	LIBDuplicator.StoreEntityProxyModifier(ent, proxySpawnId)
+end
+
+function LIB.GetProxyEntitiesRegister()
+	if not LIB.g_proxyEntities then
+		LIB.g_proxyEntities = LIBUtil.CreateEntityLookup("ProxyEntitiesRegister", function(thisent)
+			return LIB.GetProxySpawnID(thisent)
+		end)
+	end
+
+	return LIB.g_proxyEntities
+end
+
 function LIB.Load()
 	LIBEntityhooks = SligWolf_Addons.Entityhooks
+	LIBDuplicator = SligWolf_Addons.Duplicator
+	LIBUtil = SligWolf_Addons.Util
 end
 
 return true

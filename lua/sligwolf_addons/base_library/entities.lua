@@ -531,6 +531,24 @@ function LIB.CallOnRemove(ent, name, func)
 	entTable.callOnRemove[name] = func
 end
 
+function LIB.RemovCallOnRemove(ent, name)
+	if not IsValid(ent) then
+		return
+	end
+
+	name = tostring(name or "")
+	if name == "" then
+		error("name is missing")
+		return
+	end
+
+	local entTable = ent:SligWolf_GetTable()
+
+	entTable.callOnRemove = entTable.callOnRemove or {}
+	entTable.callOnRemove[name] = nil
+end
+
+
 local function runCallOnRemoveList(ent, entTable, withEffect)
 	local callOnRemove = entTable.callOnRemove
 

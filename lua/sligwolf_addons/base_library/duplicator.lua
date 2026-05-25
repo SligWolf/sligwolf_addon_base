@@ -7,11 +7,13 @@ local LIB = SligWolf_Addons:NewLib("Duplicator")
 
 local LIBPosition = nil
 local LIBEntities = nil
+local LIBSourceIO = nil
 local LIBTimer = nil
 local LIBMeta = nil
 
 local g_mainEntityModifierName = "SLIGWOLF_Library_Duplicator_MainEntityModifier"
 local g_isDupedEntityModifierName = "SLIGWOLF_Library_Duplicator_IsDupedEntityModifier"
+local g_entityProxyModifierName = "SLIGWOLF_Library_Duplicator_EntityProxyModifierName"
 
 local g_emptyFunction = function() end
 
@@ -69,6 +71,16 @@ function LIB.WasDuped(ent)
 	return entTable.isDuped
 end
 
+function LIB.SetAsDuped(ent)
+	if not IsValid(ent) then
+		return
+	end
+
+	-- Make sure we mark this entity as duplicated, so we can apply different logic and restrictions
+	local entTable = ent:SligWolf_GetTable()
+	entTable.isDuped = true
+end
+
 function LIB.StoreIsDupedEntityModifier(ent)
 	if not IsValid(ent) then
 		return
@@ -77,30 +89,40 @@ function LIB.StoreIsDupedEntityModifier(ent)
 	duplicator.StoreEntityModifier(ent, g_isDupedEntityModifierName, {_ = true})
 end
 
-local function isDupedEntityModifier(ply, ent, data)
+duplicator.RegisterEntityModifier(g_isDupedEntityModifierName, LIB.SetAsDuped)
+
+function LIB.StoreEntityProxyModifier(ent, proxySpawnId)
 	if not IsValid(ent) then
 		return
 	end
 
-	local entTable = ent:SligWolf_GetTable()
-
-	-- Make sure we mark this entity as duplicated, so we can apply different logic and restrictions
-	entTable.isDuped = true
+	duplicator.StoreEntityModifier(ent, g_entityProxyModifierName, {proxySpawnId = proxySpawnId})
 end
 
-duplicator.RegisterEntityModifier(g_isDupedEntityModifierName, isDupedEntityModifier)
+local function entityProxyModifier(ply, ent, data)
+	if not IsValid(ent) then
+		return
+	end
+
+	LIB.SetAsDuped(ent)
+	LIBSourceIO.SetProxySpawnID(ent, data.proxySpawnId)
+
+	local proxyEntities = LIBSourceIO.GetProxyEntitiesRegister()
+	proxyEntities:Add(ent)
+end
+
+duplicator.RegisterEntityModifier(g_entityProxyModifierName, entityProxyModifier)
 
 local function mainPostCopyCallback(ply, ent, data)
 	if not IsValid(ent) then
 		return
 	end
 
+	LIB.SetAsDuped(ent)
+
 	data = table.Copy(data or {})
 
 	local entTable = ent:SligWolf_GetTable()
-
-	-- Make sure we mark this entity as duplicated, so we can apply different logic and restrictions
-	entTable.isDuped = true
 
 	local dupeRegister = entTable.dupeRegister
 	if not dupeRegister then
@@ -274,6 +296,7 @@ end
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
+	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBTimer = SligWolf_Addons.Timer
 	LIBMeta = SligWolf_Addons.Meta
 end

@@ -8,13 +8,12 @@ local LIB = SligWolf_Addons:NewLib("Entityhooks")
 local LIBDuplicator = nil
 local LIBEntities = nil
 local LIBSourceIO = nil
-local LIBPhysics = nil
 local LIBVehicle = nil
 local LIBTimer = nil
 local LIBHook = nil
 
-local g_keyValueClassWhiteList = LIB._KeyValueClassWhiteList or {}
-LIB._KeyValueClassWhiteList = g_keyValueClassWhiteList
+local g_keyValueClassWhiteList = LIB.g_keyValueClassWhiteList or {}
+LIB.g_keyValueClassWhiteList = g_keyValueClassWhiteList
 
 function LIB.ListenToKeyValueForClasses(classes)
 	if not classes then
@@ -93,6 +92,7 @@ function LIB.Load()
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
+	LIBUtil = SligWolf_Addons.Util
 
 	LIB.ListenToKeyValueForClasses({
 		"prop_vehicle_airboat",

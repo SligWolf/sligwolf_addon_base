@@ -544,7 +544,7 @@ function ENT:GetSpawnData()
 end
 
 function ENT:GetSpawnNameByModel()
-	local byModel = LIBSpawnmenu.g_RegisterdSpawnnamesByModel["entity"]
+	local byModel = LIBSpawnmenu.g_registerdSpawnnamesByModel["entity"]
 	if not byModel then
 		return nil
 	end

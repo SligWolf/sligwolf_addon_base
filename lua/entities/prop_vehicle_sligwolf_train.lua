@@ -5,3 +5,5 @@ ENT.AdminOnly = true
 
 ENT.DisableDuplicator = true
 ENT.DoNotDuplicate = true
+
+ENT.sligwolf_trainProxyEntity = true

@@ -25,8 +25,8 @@ LIB.g_lastSpawnMenuState = g_lastSpawnMenuState
 local g_tabPanelIndex = g_lastSpawnMenuState.tabPanelIndex or {}
 g_lastSpawnMenuState.tabPanelIndex = g_tabPanelIndex
 
-local g_RegisterdSpawnnamesByModel = LIB.g_RegisterdSpawnnamesByModel or {}
-LIB.g_RegisterdSpawnnamesByModel = g_RegisterdSpawnnamesByModel
+local g_registerdSpawnnamesByModel = LIB.g_registerdSpawnnamesByModel or {}
+LIB.g_registerdSpawnnamesByModel = g_registerdSpawnnamesByModel
 
 local g_spawnmenuLoaded = SligWolf_Addons.WasReloaded
 local g_waitInitSpawnmenuContent = false
@@ -951,8 +951,8 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	g_EntityOrder = (g_EntityOrder % 1000000) + 1
 
 	if model then
-		local byModel = g_RegisterdSpawnnamesByModel[category] or {}
-		g_RegisterdSpawnnamesByModel[category] = byModel
+		local byModel = g_registerdSpawnnamesByModel[category] or {}
+		g_registerdSpawnnamesByModel[category] = byModel
 
 		if not byModel[model] then
 			byModel[model] = spawnname
@@ -1045,8 +1045,8 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 	g_WeaponOrder = (g_WeaponOrder % 1000000) + 1
 
 	if model then
-		local byModel = g_RegisterdSpawnnamesByModel[category] or {}
-		g_RegisterdSpawnnamesByModel[category] = byModel
+		local byModel = g_registerdSpawnnamesByModel[category] or {}
+		g_registerdSpawnnamesByModel[category] = byModel
 
 		if not byModel[model] then
 			byModel[model] = spawnname
@@ -1164,8 +1164,8 @@ function LIB.AddNPC(addonname, spawnname, obj)
 	g_NpcOrder = (g_NpcOrder % 1000000) + 1
 
 	if model then
-		local byModel = g_RegisterdSpawnnamesByModel[category] or {}
-		g_RegisterdSpawnnamesByModel[category] = byModel
+		local byModel = g_registerdSpawnnamesByModel[category] or {}
+		g_registerdSpawnnamesByModel[category] = byModel
 
 		if not byModel[model] then
 			byModel[model] = spawnname
@@ -1265,8 +1265,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 
 	g_VehicleOrder = (g_VehicleOrder % 1000000) + 1
 
-	local byModel = g_RegisterdSpawnnamesByModel[category] or {}
-	g_RegisterdSpawnnamesByModel[category] = byModel
+	local byModel = g_registerdSpawnnamesByModel[category] or {}
+	g_registerdSpawnnamesByModel[category] = byModel
 
 	if not byModel[model] then
 		byModel[model] = spawnname

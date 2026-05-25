@@ -78,6 +78,14 @@ function ENT:Think()
 end
 
 function ENT:SpawnVehicle()
+	local proxyEntities = LIBSourceIO.GetProxyEntitiesRegister()
+
+	local spawnid = LIBSourceIO.GetMapCreationHash(self)
+	if proxyEntities:Has(spawnid) then
+		-- Vehicle already exists so don't spawn a 2nd one, e.g. when it was duped.
+		return
+	end
+
 	local spawndata = self:GetSpawnData()
 	if not spawndata then
 		return
@@ -129,7 +137,8 @@ function ENT:SpawnVehicle()
 		child:SetParent(vehicle)
 	end
 
-	-- @TODO: gauges
+	LIBSourceIO.SetProxySpawnID(vehicle, spawnid)
+	proxyEntities:Add(vehicle)
 
 	vehicle:Spawn()
 	vehicle:Activate()
@@ -166,5 +175,15 @@ function ENT:GetSpawnData()
 end
 
 function ENT:GetSpawnName()
-	return LIBSourceIO.GetKeyValue(self, "sligwolf_spawnname") or ""
+	local spawnname = LIBSourceIO.GetKeyValue(self, "sligwolf_spawnname") or ""
+
+	if spawnname == "" then
+		return ""
+	end
+
+	-- if self.sligwolf_trainProxyEntity then
+	-- 	-- @TODO: gauges
+	-- end
+
+	return spawnname
 end

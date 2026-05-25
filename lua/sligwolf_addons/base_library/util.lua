@@ -7,6 +7,7 @@ local LIB = SligWolf_Addons:NewLib("Util")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local LIBEntities = nil
 local LIBTimer = nil
 local LIBHook = nil
 
@@ -35,6 +36,14 @@ function LIB.Order()
 
 	local order = -100000000 + g_order
 	return order
+end
+
+function LIB.EmptyTableSafe(tab)
+	if not tab then
+		return
+	end
+
+	table.Empty(tab)
 end
 
 function LIB.ValidateName(name)
@@ -351,6 +360,258 @@ function LIB.IsEarly()
 	return false
 end
 
+local g_createCacheArrayMeta = LIB.g_createCacheArrayMeta or {}
+LIB.g_createCacheArrayMeta = g_createCacheArrayMeta
+
+do
+	function g_createCacheArrayMeta:Set(cacheid, data, expires)
+		if cacheid == nil then
+			return
+		end
+
+		if data == nil then
+			self:Remove(cacheid)
+			return
+		end
+
+		if self.limit > 0 and self.count > self.limit then
+			self:Empty()
+		end
+
+		local cache = self.cache
+		local cacheItem = cache[cacheid]
+
+		if not cacheItem then
+			cacheItem = {}
+			cache[cacheid] = cacheItem
+
+			self.count = self.count + 1
+		end
+
+		cacheItem.data = data
+		cacheItem.expires = expires
+	end
+
+	function g_createCacheArrayMeta:Get(cacheid, now)
+		if cacheid == nil then
+			return nil
+		end
+
+		local cache = self.cache
+		local cacheItem = cache[cacheid]
+
+		if not cacheItem then
+			return nil
+		end
+
+		local data = cacheItem.data
+		if data == nil then
+			self:Remove(cacheid)
+			return nil
+		end
+
+		now = now or 0
+		local expires = cacheItem.expires or 0
+
+		if now > 0 and expires > 0 and expires < now then
+			self:Remove(cacheid)
+			return nil
+		end
+
+		return data
+	end
+
+	function g_createCacheArrayMeta:Remove(cacheid)
+		if cacheid == nil then
+			return
+		end
+
+		local cache = self.cache
+		if cache[cacheid] == nil then
+			return
+		end
+
+		cache[cacheid] = nil
+		self.count = math.max(self.count - 1, 0)
+	end
+
+	function g_createCacheArrayMeta:Has(cacheid, now)
+		return self:Get(cacheid, now) ~= nil
+	end
+
+	function g_createCacheArrayMeta:Empty()
+		LIB.EmptyTableSafe(self.cache)
+		self.count = 0
+	end
+
+	function g_createCacheArrayMeta:Count()
+		return self.count
+	end
+
+	g_createCacheArrayMeta.__index = g_createCacheArrayMeta
+end
+
+function LIB.CreateCacheArray(limit)
+	local cache = {}
+
+	cache.cache = {}
+	cache.limit = math.max(limit or 0, 0)
+	cache.count = 0
+
+	setmetatable(cache, g_createCacheArrayMeta)
+
+	return cache
+end
+
+local g_createEntityLookupMeta = LIB.g_createEntityLookupMeta or {}
+LIB.g_createEntityLookupMeta = g_createEntityLookupMeta
+
+do
+	local function _GetID(this, entOrId)
+		if not entOrId then
+			return nil
+		end
+
+		local id = nil
+
+		if isnumber(entOrId) or isstring(entOrId) then
+			id = entOrId
+		else
+			if not IsValid(entOrId) then
+				return nil
+			end
+
+			id = this.idGetterFunc(entOrId)
+		end
+
+		if not id then
+			return nil
+		end
+
+		return id
+	end
+
+	function g_createEntityLookupMeta:Add(ent)
+		if not IsValid(ent) then
+			return
+		end
+
+		local id = _GetID(self, ent)
+		if not id then
+			return
+		end
+
+		local lookup = self.lookup
+		local lookupReverse = self.lookupReverse
+
+		if lookup[id] then
+			return
+		end
+
+		lookup[id] = ent
+		lookupReverse[ent] = id
+
+		self.count = self.count + 1
+
+		LIBEntities.CallOnRemove(ent, "EntityLookup_" .. self.name, function(thisent, withEffect)
+			if withEffect then
+				return
+			end
+
+			self:Remove(thisent)
+		end)
+	end
+
+	function g_createEntityLookupMeta:Remove(entOrId)
+		local id = _GetID(self, entOrId)
+		if not id then
+			return
+		end
+
+		local lookup = self.lookup
+		local lookupReverse = self.lookupReverse
+
+		local ent = lookup[id]
+		lookup[id] = nil
+
+		if ent then
+			lookupReverse[ent] = nil
+			self.count = math.max(self.count - 1, 0)
+		end
+
+		if IsValid(ent) then
+			LIBEntities.RemovCallOnRemove(ent, "EntityLookup_" .. self.name)
+		end
+	end
+
+	function g_createEntityLookupMeta:Get(entOrId)
+		local id = _GetID(self, entOrId)
+		if not id then
+			return nil
+		end
+
+		local ent = self.lookup[id]
+		if not IsValid(ent) then
+			self:Remove(id)
+			return nil
+		end
+
+		return ent
+	end
+
+	function g_createEntityLookupMeta:Has(entOrId)
+		return self:Get(entOrId) ~= nil
+	end
+
+	function g_createEntityLookupMeta:Empty(self)
+		local lookup = self.lookup
+		local lookupReverse = self.lookupReverse
+
+		for id, _ in pairs(lookup) do
+			self:Remove(id)
+		end
+
+		for _, id in pairs(lookupReverse) do
+			self:Remove(id)
+		end
+
+		LIB.EmptyTableSafe(lookup)
+		LIB.EmptyTableSafe(lookupReverse)
+
+		self.count = 0
+	end
+
+	function g_createEntityLookupMeta:Count(self)
+		return self.count
+	end
+
+	g_createEntityLookupMeta.__index = g_createEntityLookupMeta
+end
+
+function LIB.CreateEntityLookup(name, idGetterFunc)
+	if not name then
+		error("name is missing")
+		return nil
+	end
+
+	if not idGetterFunc then
+		error("idGetterFunc is missing")
+		return nil
+	end
+
+	local lookup = {}
+
+	lookup.lookup = {}
+	lookup.lookupReverse = {}
+	lookup.count = 0
+	lookup.name = name
+	lookup.idGetterFunc = idGetterFunc
+
+	setmetatable(lookup, g_createEntityLookupMeta)
+
+	return lookup
+end
+
 local g_failbackPlayer = nil
 
 function LIB.GetFailbackPlayer()
@@ -398,13 +659,16 @@ function LIB.InvalidateFailbackPlayer()
 	g_failbackPlayer = nil
 end
 
+
 function LIB.Load()
+	LIBEntities = SligWolf_Addons.Entities
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 
 	LIBHook.Add("PlayerDisconnected", "Library_Util_PlayerIterator_InvalidateFailbackPlayer", LIB.InvalidateFailbackPlayer, -1000000)
 	LIBHook.Add("PlayerInitialSpawn", "Library_Util_PlayerIterator_InvalidateFailbackPlayer", LIB.InvalidateFailbackPlayer, -1000000)
 end
+
 
 return true
 
