@@ -187,7 +187,7 @@
 //      {{SW_SPAWNNAME_TRAIN_OPTIONS}}
 	]
 
-	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
+	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as an in-editor preview. It has no in-game effect."
 ]
 
 

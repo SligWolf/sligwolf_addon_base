@@ -8,6 +8,9 @@ ENT.AdminOnly = true
 ENT.DisableDuplicator = true
 ENT.DoNotDuplicate = true
 
+-- Make sure there is no way to mess around with tools, especially dublicator tools.
+ENT.m_tblToolsAllowed = {}
+
 ENT.sligwolf_entity			= true
 ENT.sligwolf_proxyEntity    = true
 

@@ -43,7 +43,8 @@ function ENT:SetupDataTables()
 end
 
 function ENT:OnKeyValueSet(key, value)
-	key = string.lower(tostring(key or ""))
+	BaseClass.OnKeyValueSet(self, key, value)
+
 	if key ~= "sligwolf_static" then
 		return
 	end
@@ -71,15 +72,27 @@ function ENT:ApplyStatic()
 end
 
 function ENT:GetStatic()
+	local isStatic = self:GetNetworkRVar("staticPhysics", false)
+	if not isStatic then
+		return false
+	end
+
 	local entTable = self:SligWolf_GetTable()
 
 	local spawnerPlayer = entTable.spawnerPlayer
 	if IsValid(spawnerPlayer) then
-		-- Never allow players to create static entities
+		-- Lose static property: Never allow players to create static entities.
+		self:SetNetworkRVar("staticPhysics", false)
 		return false
 	end
 
-	return self:GetNetworkRVar("staticPhysics", false)
+	if self._staticEnforced and self:IsMotionEnabled() then
+		-- Lose static property: Motion has been enabled by external means, e.g. by nukes or admin mods.
+		self:SetNetworkRVar("staticPhysics", false)
+		return false
+	end
+
+	return true
 end
 
 function ENT:EnforceStatic()
@@ -87,14 +100,15 @@ function ENT:EnforceStatic()
 		return
 	end
 
-	local static = self:GetStatic()
-	if not static then
+	local isStatic = self:GetStatic()
+	if not isStatic then
 		return
 	end
 
-	self.sligwolf_noBodySystemApplyMotion = true
+	self:EnableMotion(false)
 
-	LIBEntities.EnableMotion(self, false)
+	self.sligwolf_noBodySystemApplyMotion = true
+	self._staticEnforced = true
 end
 
 function ENT:DeleteSpawnSolidState()

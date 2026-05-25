@@ -32,16 +32,28 @@ function LIB.CheckAllowUse(ent, ply)
 	return allowuse
 end
 
-function LIB.IsStatic(ent)
+function LIB.IsStatic(ent, alsoCheckParents)
 	if not IsValid(ent) then
 		return false
 	end
 
-	if not ent.sligwolf_physBaseEntity then
+	if ent.sligwolf_physBaseEntity and ent:GetStatic() then
+		return true
+	end
+
+	if not alsoCheckParents then
 		return false
 	end
 
-	return ent:GetStatic()
+	if LIB.IsStatic(LIBEntities.GetParent(ent), false) then
+		return true
+	end
+
+	if LIB.IsStatic(LIBEntities.GetSuperParent(ent), false) then
+		return true
+	end
+
+	return false
 end
 
 function LIB.Load()
@@ -64,6 +76,7 @@ function LIB.Load()
 
 	LIBHook.Add("CanDrive", "Library_Protection_CantCantPropDrive", CantCantPropDrive, 10000)
 
+
 	local function CantCanPropertyCollision(ply, property, ent)
 		if not IsValid(ent) then return end
 
@@ -71,7 +84,7 @@ function LIB.Load()
 			return
 		end
 
-		if LIB.IsStatic(ent) then
+		if LIB.IsStatic(ent, true) then
 			return false
 		end
 
@@ -86,6 +99,7 @@ function LIB.Load()
 
 	LIBHook.Add("CanProperty", "Library_Protection_CantCanPropertyCollision", CantCanPropertyCollision, 10000)
 
+
 	local function CantCanPropertyRemover(ply, property, ent)
 		if not IsValid(ent) then return end
 
@@ -93,7 +107,7 @@ function LIB.Load()
 			return
 		end
 
-		if LIB.IsStatic(ent) then
+		if LIB.IsStatic(ent, true) then
 			return false
 		end
 
@@ -112,7 +126,7 @@ function LIB.Load()
 	local function CantTouch(ply, ent)
 		if not IsValid(ent) then return end
 
-		if LIB.IsStatic(ent) then
+		if LIB.IsStatic(ent, false) then
 			return false
 		end
 
@@ -127,10 +141,11 @@ function LIB.Load()
 
 	LIBHook.Add("PhysgunPickup", "Library_Protection_CantTouch", CantTouch, 10000)
 
+
 	local function CantPickUp(ply, ent)
 		if not IsValid(ent) then return end
 
-		if LIB.IsStatic(ent) then
+		if LIB.IsStatic(ent, false) then
 			return false
 		end
 
@@ -145,11 +160,12 @@ function LIB.Load()
 
 	LIBHook.Add("AllowPlayerPickup", "Library_Protection_CantPickUp", CantPickUp, 10000)
 
+
 	if SERVER then
 		local function CantUnfreeze(ply, ent, phys)
 			if not IsValid(ent) then return end
 
-			if LIB.IsStatic(ent) then
+			if LIB.IsStatic(ent, false) then
 				return false
 			end
 
@@ -167,7 +183,7 @@ function LIB.Load()
 		local function CantFreeze(weapon, phys, ent, ply)
 			if not IsValid(ent) then return end
 
-			if LIB.IsStatic(ent) then
+			if LIB.IsStatic(ent, false) then
 				return false
 			end
 
@@ -183,13 +199,14 @@ function LIB.Load()
 		LIBHook.Add("OnPhysgunFreeze", "Library_Protection_CantFreeze", CantFreeze, 10000)
 	end
 
+
 	local function CanTool(ply, trace, mode, tool, button)
 		if LIB.IsTrustedTool(mode) then return end
 
 		local ent = trace.Entity
 		if not IsValid(ent) then return end
 
-		if LIB.IsStatic(ent) then
+		if LIB.IsStatic(ent, true) then
 			return false
 		end
 
@@ -209,6 +226,7 @@ function LIB.Load()
 	end
 
 	LIBHook.Add("CanTool", "Library_Protection_CanTool", CanTool, 10000)
+
 
 	local function CanToolReload(ply, trace, mode, tool, button)
 		if LIB.IsTrustedTool(mode) then return end
