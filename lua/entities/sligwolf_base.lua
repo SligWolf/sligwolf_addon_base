@@ -524,17 +524,20 @@ end
 function ENT:GetSpawnData()
 	local spawnname = self:GetSpawnName() or ""
 	if spawnname == "" then
-		return
+		return nil
 	end
 
 	local tab = LIBUtil.GetList("SpawnableEntities")
 	local data = tab[spawnname]
 
-	if not data then return end
-	if not data.Is_SLIGWOLF then return end
+	if not data then return nil end
+	if not data.Is_SLIGWOLF then return nil end
 
-	if data.ClassName ~= self:GetClass() then
-		return
+	local entClassname = self:GetClass()
+	local dataClassname = data.ClassName
+
+	if entClassname ~= dataClassname and entClassname ~= spawnname then
+		return nil
 	end
 
 	return data

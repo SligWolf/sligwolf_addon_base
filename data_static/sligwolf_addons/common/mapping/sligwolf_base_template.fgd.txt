@@ -234,7 +234,7 @@
 	output OnWagonUnload(string) : ""
 ]
 
-@PointClass base(SLIGWOLF_BASECLASS_minitrains_building_base) color(85 190 255) studioprop() = sligwolf_minitrain_building :
+@PointClass base(SLIGWOLF_BASECLASS_minitrains_building_base) color(85 190 255) studioprop() = sligwolf_minitrains_building :
 	"SligWolf's Addon, Minitrains: Generic building"
 [
 ]

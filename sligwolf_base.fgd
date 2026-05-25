@@ -1,6 +1,6 @@
-//=============================================================================
-//======================= Game data for SW Base Addons ========================
-//============================= Made by SligWolf ==============================
+//===================================================================================
+//========================== Game data for SW Base Addons ===========================
+//================================ Made by SligWolf =================================
 
 // Please also include garrysmod.fgd or halflife2.fgd in Hammer for optimal results.
 // It is not recommended to edit this file as it is automaticly generated.
@@ -8,43 +8,155 @@
 
 // Generated:
 //   API Version:   2.0.0
-//   Generated at:  2026-05-16 15:19:48
+//   Generated at:  2026-05-25 14:21:53
 //   Template:      data_static/sligwolf_addons/common/mapping/sligwolf_base_template.fgd.txt
 //
 // Cache:
 //   API Version:   2.0.0
-//   Generated at:  2026-05-16 15:19:48
+//   Generated at:  2026-05-25 14:21:53
 //   Addons count:  68
 //   Vehicle count: 257
- 
-@BaseClass base(Targetname, Global, Origin, Angles) = SLIGWOLF_BASE_vehicle
+
+
+// ------------------------------
+//   Lowlevel base classes
+// ------------------------------
+
+@BaseClass = SLIGWOLF_BASECLASS_motion
 [
-	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. \n" +
-		"Used for model, logic and other spawn parameters." =
-	[
-		"" : "Nothing (No SW-ADDON Vehicle)"
-	]
-
-	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon: Vehicle lights state on spawn." =
-	[
-		"0" : "Lights off"
-		"1" : "Lights on"
-	]
-
-	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon: Vehicle engine state on spawn." =
-	[
-		"0" : "Don't start engine"
-		"1" : "Start engine"
-	]
-
 	sligwolf_frozen(choices) : "[SW-ADDONS] Spawn frozen" : "0" : "\nSligWolf's Addon: Spawn frozen motion." =
 	[
 		"0" : "Auto (Use parameter from spawnname)"
 		"1" : "Unfrozen"
 		"2" : "Frozen"
 	]
+]
 
-	sligwolf_theme(choices) : "[SW-ADDONS] Theme" : "" : "\nSligWolf's Addon: Spawn with given theme. \n" +
+@BaseClass = SLIGWOLF_BASECLASS_engine
+[
+	sligwolf_engine(choices) : "[SW-ADDONS] Engine" : "0" : "\nSligWolf's Addon: Entity engine state on spawn." =
+	[
+		"0" : "Don't start engine"
+		"1" : "Start engine"
+	]
+]
+
+@BaseClass = SLIGWOLF_BASECLASS_light
+[
+	sligwolf_light(choices) : "[SW-ADDONS] Lights" : "0" : "\nSligWolf's Addon: Entity lights state on spawn." =
+	[
+		"0" : "Lights off"
+		"1" : "Lights on"
+	]
+]
+
+
+@BaseClass base(SLIGWOLF_BASECLASS_motion) = SLIGWOLF_BASECLASS_phys
+[
+]
+
+@BaseClass base(SLIGWOLF_BASECLASS_phys) = SLIGWOLF_BASECLASS_phys_static
+[
+	sligwolf_static(choices) : "[SW-ADDONS] Static" : "1" : "\nSligWolf's Addon: Spawn this entity as static. \n" +
+		"Static entities are always immovable. \n" +
+		"They are protected from physgun and tools. \n" +
+		"This is useful for entities being an integral part of the map." =
+	[
+		"0" : "No"
+		"1" : "Yes"
+	]
+]
+
+@BaseClass = SLIGWOLF_BASECLASS_theme_entity
+[
+	sligwolf_theme(choices) : "[SW-ADDONS] Theme" : "" : "\nSligWolf's Addon: Spawn this entity with given theme. \n" +
+		"Auto: Selects the default theme of the addon, but can be overridden by skin keyvalue. \n" +
+		"Default: Same as 'Auto', but can not be overridden. \n" +
+		"Random: Selects the random theme of the addon if available. Failsback to 'Default'. \n" +
+		"Player Colored: Selects the player colored theme of the addon if possible. Takes colors of the first player, host/admins prioritized. Failsback to 'Default'. \n" +
+		"Anything else: Selects the actuall theme from all addons. Make sure the addon prefix matches to the addon of the selected spawnname." =
+	[
+		"" : "Auto"
+		"default" : "Default"
+		"random" : "Random"
+		"player" : "Player Colored"
+		"wpsuspensiontrain_darkblue" : "wpsuspensiontrain_darkblue (Darkblue | Suspension Train)"
+		"wpsuspensiontrain_green" : "wpsuspensiontrain_green (Green | Suspension Train)"
+		"wpsuspensiontrain_skyblue" : "wpsuspensiontrain_skyblue (Skyblue | Suspension Train)"
+		"wpsuspensiontrain_yellow" : "wpsuspensiontrain_yellow (Yellow | Suspension Train)"
+	]
+]
+
+@BaseClass = SLIGWOLF_BASECLASS_theme_weapon
+[
+	sligwolf_theme(choices) : "[SW-ADDONS] Theme" : "" : "\nSligWolf's Addon: Spawn this entity with given theme. \n" +
+		"Auto: Selects the default theme of the addon, but can be overridden by skin keyvalue. \n" +
+		"Default: Same as 'Auto', but can not be overridden. \n" +
+		"Random: Selects the random theme of the addon if available. Failsback to 'Default'. \n" +
+		"Player Colored: Selects the player colored theme of the addon if possible. Takes colors of the first player, host/admins prioritized. Failsback to 'Default'. \n" +
+		"Anything else: Selects the actuall theme from all addons. Make sure the addon prefix matches to the addon of the selected spawnname." =
+	[
+		"" : "Auto"
+		"default" : "Default"
+		"random" : "Random"
+		"player" : "Player Colored"
+	]
+]
+
+@BaseClass = SLIGWOLF_BASECLASS_theme_npc
+[
+	sligwolf_theme(choices) : "[SW-ADDONS] Theme" : "" : "\nSligWolf's Addon: Spawn this entity with given theme. \n" +
+		"Auto: Selects the default theme of the addon, but can be overridden by skin keyvalue. \n" +
+		"Default: Same as 'Auto', but can not be overridden. \n" +
+		"Random: Selects the random theme of the addon if available. Failsback to 'Default'. \n" +
+		"Player Colored: Selects the player colored theme of the addon if possible. Takes colors of the first player, host/admins prioritized. Failsback to 'Default'. \n" +
+		"Anything else: Selects the actuall theme from all addons. Make sure the addon prefix matches to the addon of the selected spawnname." =
+	[
+		"" : "Auto"
+		"default" : "Default"
+		"random" : "Random"
+		"player" : "Player Colored"
+		"aliencutbug_azur" : "aliencutbug_azur (Azur | Alien Cutbug)"
+		"aliencutbug_desert" : "aliencutbug_desert (Desert | Alien Cutbug)"
+		"aliencutbug_jungle" : "aliencutbug_jungle (Jungle | Alien Cutbug)"
+		"robotgen1_black" : "robotgen1_black (Black | Robot GEN1 PM/NPC)"
+		"robotgen1_classic" : "robotgen1_classic (Classic | Robot GEN1 PM/NPC)"
+		"robotgen1_green" : "robotgen1_green (Green | Robot GEN1 PM/NPC)"
+		"robotgen1_marineblue" : "robotgen1_marineblue (Marine Blue | Robot GEN1 PM/NPC)"
+		"robotgen1_white" : "robotgen1_white (White | Robot GEN1 PM/NPC)"
+		"robotgen1_winered" : "robotgen1_winered (Winered | Robot GEN1 PM/NPC)"
+		"robotgen1_yellow" : "robotgen1_yellow (Yellow | Robot GEN1 PM/NPC)"
+		"robotgen2_black" : "robotgen2_black (Black | Robot GEN2 PM)"
+		"robotgen2_green" : "robotgen2_green (Green | Robot GEN2 PM)"
+		"robotgen2_marineblue" : "robotgen2_marineblue (Marine Blue | Robot GEN2 PM)"
+		"robotgen2_white" : "robotgen2_white (White | Robot GEN2 PM)"
+		"robotgen2_winered" : "robotgen2_winered (Winered | Robot GEN2 PM)"
+		"robotgen2_yellow" : "robotgen2_yellow (Yellow | Robot GEN2 PM)"
+		"robotgen3_combineelite" : "robotgen3_combineelite (Crimson Elite | Robot GEN3 PM)"
+		"robotgen3_combinesoldier" : "robotgen3_combinesoldier (Combine Soldier | Robot GEN3 PM)"
+		"robotgen3_medic" : "robotgen3_medic (Medic | Robot GEN3 PM)"
+		"robotgen3_police" : "robotgen3_police (Police | Robot GEN3 PM)"
+		"robotgen3_rebel" : "robotgen3_rebel (Rebel | Robot GEN3 PM)"
+		"slig_ashgrey" : "slig_ashgrey (Ash Grey | Slig PM)"
+		"slig_classic" : "slig_classic (Classic | Slig PM)"
+		"slig_crimsonred" : "slig_crimsonred (Crimson Red | Slig PM)"
+		"slig_darkturquoise" : "slig_darkturquoise (Dark Turquoise | Slig PM)"
+		"slig_junglegreen" : "slig_junglegreen (Jungle Green | Slig PM)"
+		"slig_lightbrown" : "slig_lightbrown (Light Brown | Slig PM)"
+		"slig_mildbrown" : "slig_mildbrown (Mild Brown | Slig PM)"
+		"slignpc_ashgrey" : "slignpc_ashgrey (Ash Grey | Slig NPC)"
+		"slignpc_classic" : "slignpc_classic (Classic | Slig NPC)"
+		"slignpc_crimsonred" : "slignpc_crimsonred (Crimson Red | Slig NPC)"
+		"slignpc_darkturquoise" : "slignpc_darkturquoise (Dark Turquoise | Slig NPC)"
+		"slignpc_junglegreen" : "slignpc_junglegreen (Jungle Green | Slig NPC)"
+		"slignpc_lightbrown" : "slignpc_lightbrown (Light Brown | Slig NPC)"
+		"slignpc_mildbrown" : "slignpc_mildbrown (Mild Brown | Slig NPC)"
+	]
+]
+
+@BaseClass = SLIGWOLF_BASECLASS_theme_vehicle
+[
+	sligwolf_theme(choices) : "[SW-ADDONS] Theme" : "" : "\nSligWolf's Addon: Spawn this entity with given theme. \n" +
 		"Auto: Selects the default theme of the addon, but can be overridden by skin keyvalue. \n" +
 		"Default: Same as 'Auto', but can not be overridden. \n" +
 		"Random: Selects the random theme of the addon if available. Failsback to 'Default'. \n" +
@@ -215,12 +327,12 @@
 		"motorbike_red" : "motorbike_red (Red | Motorbike)"
 		"motorbike_white" : "motorbike_white (White | Motorbike)"
 		"motorbike_yellow" : "motorbike_yellow (Yellow | Motorbike)"
-		"powerboat_black" : "powerboat_black (Black | Speedboat)"
-		"powerboat_green" : "powerboat_green (Green | Speedboat)"
-		"powerboat_lightblue" : "powerboat_lightblue (Skyblue | Speedboat)"
-		"powerboat_red" : "powerboat_red (Red | Speedboat)"
-		"powerboat_white" : "powerboat_white (White | Speedboat)"
-		"powerboat_yellow" : "powerboat_yellow (Yellow | Speedboat)"
+		"powerboat_black" : "powerboat_black (Black | Powerboat)"
+		"powerboat_green" : "powerboat_green (Green | Powerboat)"
+		"powerboat_lightblue" : "powerboat_lightblue (Skyblue | Powerboat)"
+		"powerboat_red" : "powerboat_red (Red | Powerboat)"
+		"powerboat_white" : "powerboat_white (White | Powerboat)"
+		"powerboat_yellow" : "powerboat_yellow (Yellow | Powerboat)"
 		"racecar_no01" : "racecar_no01 (No. 1 | Racecar)"
 		"racecar_no02" : "racecar_no02 (No. 2 | Racecar)"
 		"racecar_no03" : "racecar_no03 (No. 3 | Racecar)"
@@ -237,6 +349,9 @@
 		"racecar_no14" : "racecar_no14 (No. 14 | Racecar)"
 		"racecar_no15" : "racecar_no15 (No. 15 | Racecar)"
 		"racecar_no16" : "racecar_no16 (No. 16 | Racecar)"
+		"seats_blue" : "seats_blue (Blue | Seats)"
+		"seats_brown" : "seats_brown (Brown | Seats)"
+		"seats_yellow" : "seats_yellow (Yellow | Seats)"
 		"snowmobile_black" : "snowmobile_black (Black | Snowmobile)"
 		"snowmobile_forrest_camo" : "snowmobile_forrest_camo (Forrest Camo | Snowmobile)"
 		"snowmobile_red" : "snowmobile_red (Red | Snowmobile)"
@@ -294,38 +409,54 @@
 	]
 ]
 
-@BaseClass = SLIGWOLF_BASE_vehicle_disabled_kv
-[
-	vehiclescript(string) : "[Unused] Vehicle Script File" : "" : "This is unused."
-	model(studio) : "Studio model" : "" : "This is the studio model used as in-editor preview. It has no in-game effect."
-]
-
-@BaseClass base(SLIGWOLF_BASE_vehicle) = SLIGWOLF_BASE_train
-[
-	sligwolf_rail_gauge(choices) : "[SW-ADDONS] Rail Gauge (Trains Only)" : "0" : "\nSligWolf's Addon: Train track gauge." =
-	[
-		"0" : "TODO"
-	]
-]
-
-
-@PointClass base(SLIGWOLF_BASE_vehicle, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_airboat, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_airboat :
-	"SligWolf Vehicle. It spawns a prop_vehicle_airboat based vehicle by the given spawnname and passes every parameter to the spawned entity."
+@BaseClass base(Targetname, Global, Origin, Angles, SLIGWOLF_BASECLASS_motion, SLIGWOLF_BASECLASS_engine, SLIGWOLF_BASECLASS_light, SLIGWOLF_BASECLASS_theme_vehicle) = SLIGWOLF_BASECLASS_vehicle
 [
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
 	[
 		"" : "Nothing (No SW-ADDON Vehicle)"
 		"sligwolf_hl2coopvehicles_airboat" : "sligwolf_hl2coopvehicles_airboat (Coop Airboat | HL2 Coop Vehicles)"
 		"sligwolf_hovercraft" : "sligwolf_hovercraft (Hovercraft)"
-		"sligwolf_powerboat_powerboat" : "sligwolf_powerboat_powerboat (Powerboat | Speedboat)"
-		"sligwolf_powerboat_speedboat" : "sligwolf_powerboat_speedboat (Speedboat)"
+		"sligwolf_powerboat_powerboat" : "sligwolf_powerboat_powerboat (Powerboat)"
+		"sligwolf_powerboat_speedboat" : "sligwolf_powerboat_speedboat (Speedboat | Powerboat)"
+	]
+]
+
+@BaseClass = SLIGWOLF_BASECLASS_vehicle_disabled_kv
+[
+	vehiclescript(string) : "[Unused] Vehicle Script File" : "" : "This is unused."
+	model(studio) : "Studio model" : "" : "This is the studio model used as in-editor preview. It has no in-game effect."
+]
+
+@BaseClass base(SLIGWOLF_BASECLASS_vehicle) = SLIGWOLF_BASECLASS_train
+[
+	sligwolf_rail_gauge(choices) : "[SW-ADDONS] Rail Gauge" : "0" : "\nSligWolf's Addon: Train track gauge." =
+	[
+		"0" : "TODO"
+	]
+]
+
+
+// ------------------------------
+//   Base addon: Vehicle classes
+// ------------------------------
+
+@PointClass base(SLIGWOLF_BASECLASS_vehicle, SLIGWOLF_BASECLASS_theme_vehicle, SLIGWOLF_BASECLASS_vehicle_disabled_kv, prop_vehicle_airboat, SLIGWOLF_BASECLASS_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_airboat :
+	"SligWolf's Addon: It spawns a prop_vehicle_airboat based vehicle by the given spawnname and passes every parameter to the spawned entity."
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	[
+		"" : "Nothing (No SW-ADDON Vehicle)"
+		"sligwolf_hl2coopvehicles_airboat" : "sligwolf_hl2coopvehicles_airboat (Coop Airboat | HL2 Coop Vehicles)"
+		"sligwolf_hovercraft" : "sligwolf_hovercraft (Hovercraft)"
+		"sligwolf_powerboat_powerboat" : "sligwolf_powerboat_powerboat (Powerboat)"
+		"sligwolf_powerboat_speedboat" : "sligwolf_powerboat_speedboat (Speedboat | Powerboat)"
 	]
 
 	model(studio) : "Studio model" : "models/airboat.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
 ]
 
-@PointClass base(SLIGWOLF_BASE_vehicle, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_jeep, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_jeep :
-	"SligWolf Vehicle. It spawns a prop_vehicle_jeep based vehicle by the given spawnname and passes every parameter to the spawned entity."
+@PointClass base(SLIGWOLF_BASECLASS_vehicle, SLIGWOLF_BASECLASS_theme_vehicle, SLIGWOLF_BASECLASS_vehicle_disabled_kv, prop_vehicle_jeep, SLIGWOLF_BASECLASS_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_jeep :
+	"SligWolf's Addon: It spawns a prop_vehicle_jeep based vehicle by the given spawnname and passes every parameter to the spawned entity."
 [
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
 	[
@@ -396,30 +527,72 @@
 		"sligwolf_truck_actros_heavy_semi" : "sligwolf_truck_actros_heavy_semi (Heavy Actros | Trucks)"
 		"sligwolf_truck_actros_semi" : "sligwolf_truck_actros_semi (Actros | Trucks)"
 		"sligwolf_truck_actros_tandem_box" : "sligwolf_truck_actros_tandem_box (Actros Box | Trucks)"
-		"sligwolf_truck_actros_tandem_bunk" : "sligwolf_truck_actros_tandem_bunk (Actros Bunk | Trucks)"
 		"sligwolf_truck_actros_tandem_empty" : "sligwolf_truck_actros_tandem_empty (Actros Empty | Trucks)"
+		"sligwolf_truck_actros_tandem_flatbed" : "sligwolf_truck_actros_tandem_flatbed (Actros Flatbed | Trucks)"
 		"sligwolf_truck_actros_tandem_tanker" : "sligwolf_truck_actros_tandem_tanker (Actros Tanker | Trucks)"
 		"sligwolf_truck_peterbilt_heavy_semi" : "sligwolf_truck_peterbilt_heavy_semi (Heavy Peterbilt | Trucks)"
 		"sligwolf_truck_peterbilt_semi" : "sligwolf_truck_peterbilt_semi (Peterbilt | Trucks)"
 		"sligwolf_truck_trailer_dolly" : "sligwolf_truck_trailer_dolly (Dolly Trailer | Trucks)"
 		"sligwolf_truck_trailer_semi_box" : "sligwolf_truck_trailer_semi_box (Semi Box Trailer | Trucks)"
-		"sligwolf_truck_trailer_semi_bunk" : "sligwolf_truck_trailer_semi_bunk (Semi Bunk Trailer | Trucks)"
 		"sligwolf_truck_trailer_semi_cartransporter" : "sligwolf_truck_trailer_semi_cartransporter (Semi Car Trailer | Trucks)"
+		"sligwolf_truck_trailer_semi_flatbed" : "sligwolf_truck_trailer_semi_flatbed (Semi Flatbed Trailer | Trucks)"
 		"sligwolf_truck_trailer_semi_heavy_cartransporter" : "sligwolf_truck_trailer_semi_heavy_cartransporter (Heavy Car Trailer | Trucks)"
 		"sligwolf_truck_trailer_semi_heavy_container" : "sligwolf_truck_trailer_semi_heavy_container (Heavy Container Trailer | Trucks)"
 		"sligwolf_truck_trailer_semi_heavy_train" : "sligwolf_truck_trailer_semi_heavy_train (Heavy Train Trailer | Trucks)"
 		"sligwolf_truck_trailer_semi_tanker" : "sligwolf_truck_trailer_semi_tanker (Semi Tanker Trailer | Trucks)"
 		"sligwolf_truck_trailer_tandem_box" : "sligwolf_truck_trailer_tandem_box (Tandem Box Trailer | Trucks)"
-		"sligwolf_truck_trailer_tandem_bunk" : "sligwolf_truck_trailer_tandem_bunk (Tandem Bunk Trailer | Trucks)"
 		"sligwolf_truck_trailer_tandem_empty" : "sligwolf_truck_trailer_tandem_empty (Tandem Empty Trailer | Trucks)"
+		"sligwolf_truck_trailer_tandem_flatbed" : "sligwolf_truck_trailer_tandem_flatbed (Tandem Flatbed Trailer | Trucks)"
 		"sligwolf_truck_trailer_tandem_tanker" : "sligwolf_truck_trailer_tandem_tanker (Tandem Tanker Trailer | Trucks)"
 	]
 
 	model(studio) : "Studio model" : "models/buggy.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
 ]
 
-@PointClass base(SLIGWOLF_BASE_vehicle, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_prisoner_pod, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_pod :
-	"SligWolf Vehicle. It spawns a prop_vehicle_prisoner_pod based vehicle by the given spawnname and passes every parameter to the spawned entity."
+@PointClass base(SLIGWOLF_BASECLASS_vehicle, SLIGWOLF_BASECLASS_theme_vehicle, SLIGWOLF_BASECLASS_vehicle_disabled_kv, prop_vehicle_prisoner_pod, SLIGWOLF_BASECLASS_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_pod :
+	"SligWolf's Addon: It spawns a prop_vehicle_prisoner_pod based vehicle by the given spawnname and passes every parameter to the spawned entity."
+[
+	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
+	[
+		"" : "Nothing (No SW-ADDON Vehicle)"
+		"sligwolf_bus_b13_busstop" : "sligwolf_bus_b13_busstop (B-13 Bus Stop | Bus and Bendy Bus)"
+		"sligwolf_bus_b25_busstop" : "sligwolf_bus_b25_busstop (B-25 Bus Stop | Bus and Bendy Bus)"
+		"sligwolf_bus_b25_busstop_big" : "sligwolf_bus_b25_busstop_big (B-25 Big Bus Stop | Bus and Bendy Bus)"
+		"sligwolf_crane_hook" : "sligwolf_crane_hook (Crane - Hook | Crane)"
+		"sligwolf_crane_magnet" : "sligwolf_crane_magnet (Crane - Magnet | Crane)"
+		"sligwolf_cranetrain_crane_hook" : "sligwolf_cranetrain_crane_hook (Crane - Hook | Cranetrain)"
+		"sligwolf_cranetrain_crane_magnet" : "sligwolf_cranetrain_crane_magnet (Crane - Magnet | Cranetrain)"
+		"sligwolf_cranetruck_crane_hook" : "sligwolf_cranetruck_crane_hook (Crane - Hook | Cranetruck)"
+		"sligwolf_cranetruck_crane_magnet" : "sligwolf_cranetruck_crane_magnet (Crane - Magnet | Cranetruck)"
+		"sligwolf_ferry" : "sligwolf_ferry (Ferry)"
+		"sligwolf_forklift_highlift" : "sligwolf_forklift_highlift (High Lift Pallet Jack | Forklift Truck)"
+		"sligwolf_leotank_gunner" : "sligwolf_leotank_gunner (Leopard 2 Gunner | Leopard 2 Tank)"
+		"sligwolf_leotank_passenger" : "sligwolf_leotank_passenger (Leopard 2 Seat | Leopard 2 Tank)"
+		"sligwolf_mannedturret" : "sligwolf_mannedturret (Rocket Turret | Manned Turret)"
+		"sligwolf_seats_normal" : "sligwolf_seats_normal (Seat - Normal | Seats)"
+		"sligwolf_seats_normal_race" : "sligwolf_seats_normal_race (Seat - Normal | Seats)"
+		"sligwolf_seats_normal_race_weaponized" : "sligwolf_seats_normal_race_weaponized (Seat - Weapon | Seats)"
+		"sligwolf_seats_normal_weaponized" : "sligwolf_seats_normal_weaponized (Seat - Weapon | Seats)"
+		"sligwolf_siren_blue_s" : "sligwolf_siren_blue_s (Siren - Blue S | Siren)"
+		"sligwolf_siren_fr" : "sligwolf_siren_fr (Siren - French | Siren)"
+		"sligwolf_siren_ger" : "sligwolf_siren_ger (Siren - German | Siren)"
+		"sligwolf_siren_haz_d" : "sligwolf_siren_haz_d (Siren - Hazard | Siren)"
+		"sligwolf_siren_haz_s" : "sligwolf_siren_haz_s (Siren - Hazard S | Siren)"
+		"sligwolf_siren_jp" : "sligwolf_siren_jp (Siren - Japan | Siren)"
+		"sligwolf_siren_red_s" : "sligwolf_siren_red_s (Siren - Red S | Siren)"
+		"sligwolf_siren_uk" : "sligwolf_siren_uk (Siren - British | Siren)"
+		"sligwolf_siren_usa" : "sligwolf_siren_usa (Siren - American | Siren)"
+		"sligwolf_tinyhoverracer_manta" : "sligwolf_tinyhoverracer_manta (THR - Manta | Tiny Hover Racer)"
+		"sligwolf_tinyhoverracer_proto" : "sligwolf_tinyhoverracer_proto (THR - Proto | Tiny Hover Racer)"
+		"sligwolf_tinyhoverracer_tarno" : "sligwolf_tinyhoverracer_tarno (THR - Tarno | Tiny Hover Racer)"
+		"sligwolf_truck_campermodule" : "sligwolf_truck_campermodule (Camper Module | Trucks)"
+	]
+
+	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_train, SLIGWOLF_BASECLASS_theme_vehicle, SLIGWOLF_BASECLASS_vehicle_disabled_kv, prop_vehicle_prisoner_pod, SLIGWOLF_BASECLASS_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_train :
+	"SligWolf's Addon: It spawns a prop_vehicle_prisoner_pod based train by the given spawnname and passes every parameter to the spawned entity."
 [
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
 	[
@@ -428,19 +601,10 @@
 		"sligwolf_automatictrain_sanfran" : "sligwolf_automatictrain_sanfran (AMT300 - San Francisco | Automatic Train)"
 		"sligwolf_automatictrain_station_double" : "sligwolf_automatictrain_station_double (Station Double Bench | Automatic Train)"
 		"sligwolf_automatictrain_station_single" : "sligwolf_automatictrain_station_single (Station Single Bench | Automatic Train)"
-		"sligwolf_bluex12_bogie" : "sligwolf_bluex12_bogie (Blue-X12 Bogie | Blue-X12)"
-		"sligwolf_bluex12_long" : "sligwolf_bluex12_long (Blue-X12 Long | Blue-X12)"
-		"sligwolf_bluex12_short" : "sligwolf_bluex12_short (Blue-X12 Short | Blue-X12)"
-		"sligwolf_bus_b13_busstop" : "sligwolf_bus_b13_busstop (B-13 Bus Stop | Bus and Bendy Bus)"
-		"sligwolf_bus_b25_busstop" : "sligwolf_bus_b25_busstop (B-25 Bus Stop | Bus and Bendy Bus)"
-		"sligwolf_bus_b25_busstop_big" : "sligwolf_bus_b25_busstop_big (B-25 Big Bus Stop | Bus and Bendy Bus)"
-		"sligwolf_crane_hook" : "sligwolf_crane_hook (Crane - Hook | Crane)"
-		"sligwolf_crane_magnet" : "sligwolf_crane_magnet (Crane - Magnet | Crane)"
-		"sligwolf_cranetrain_crane_hook" : "sligwolf_cranetrain_crane_hook (Crane - Hook | Cranetrain)"
-		"sligwolf_cranetrain_crane_magnet" : "sligwolf_cranetrain_crane_magnet (Crane - Magnet | Cranetrain)"
+		"sligwolf_bluex12_bogie" : "sligwolf_bluex12_bogie (Blue-X12 Bogie GEN1 | Blue-X12)"
+		"sligwolf_bluex12_long" : "sligwolf_bluex12_long (Blue-X12 GEN1 | Blue-X12)"
+		"sligwolf_bluex12_short" : "sligwolf_bluex12_short (Blue-X12 GEN2 | Blue-X12)"
 		"sligwolf_cranetrain_train" : "sligwolf_cranetrain_train (Cranetrain)"
-		"sligwolf_cranetruck_crane_hook" : "sligwolf_cranetruck_crane_hook (Crane - Hook | Cranetruck)"
-		"sligwolf_cranetruck_crane_magnet" : "sligwolf_cranetruck_crane_magnet (Crane - Magnet | Cranetruck)"
 		"sligwolf_dieselemd" : "sligwolf_dieselemd (Diesel EMD)"
 		"sligwolf_dieselemd_bogie_01" : "sligwolf_dieselemd_bogie_01 (Diesel EMD Bogie | Diesel EMD)"
 		"sligwolf_dieselemd_bogie_02" : "sligwolf_dieselemd_bogie_02 (Diesel EMD Bogie | Diesel EMD)"
@@ -451,8 +615,6 @@
 		"sligwolf_dieselludmilla_ludmilla" : "sligwolf_dieselludmilla_ludmilla (Diesel Ludmilla)"
 		"sligwolf_dieselludmilla_ludmilla_bogie" : "sligwolf_dieselludmilla_ludmilla_bogie (Diesel Ludmilla Bogie | Diesel Ludmilla)"
 		"sligwolf_dieselludmilla_taurus" : "sligwolf_dieselludmilla_taurus (Taurus (Scorpanelo) | Diesel Ludmilla)"
-		"sligwolf_ferry" : "sligwolf_ferry (Ferry)"
-		"sligwolf_forklift_highlift" : "sligwolf_forklift_highlift (High Lift Pallet Jack | Forklift Truck)"
 		"sligwolf_greent7_train_long" : "sligwolf_greent7_train_long (Green-T7L | Green-T7)"
 		"sligwolf_greent7_train_long_wc" : "sligwolf_greent7_train_long_wc (Green-T7L (Front Coupler) | Green-T7)"
 		"sligwolf_greent7_train_short" : "sligwolf_greent7_train_short (Green-T7S | Green-T7)"
@@ -460,9 +622,6 @@
 		"sligwolf_greent7_wagon_bogie" : "sligwolf_greent7_wagon_bogie (Train Wagon Bogie | Green-T7)"
 		"sligwolf_greent7_wagon_long" : "sligwolf_greent7_wagon_long (Train Wagon Long | Green-T7)"
 		"sligwolf_greent7_wagon_short" : "sligwolf_greent7_wagon_short (Train Wagon Short | Green-T7)"
-		"sligwolf_leotank_gunner" : "sligwolf_leotank_gunner (Leopard 2 Gunner | Leopard 2 Tank)"
-		"sligwolf_leotank_passenger" : "sligwolf_leotank_passenger (Leopard 2 Seat | Leopard 2 Tank)"
-		"sligwolf_mannedturret" : "sligwolf_mannedturret (Rocket Turret | Manned Turret)"
 		"sligwolf_metrobr483_bogie" : "sligwolf_metrobr483_bogie (BR 483-C Bogie | Metro Train)"
 		"sligwolf_metrobr483_custom_back_default" : "sligwolf_metrobr483_custom_back_default (BR 483-C - Rear | Metro Train)"
 		"sligwolf_metrobr483_custom_front_default" : "sligwolf_metrobr483_custom_front_default (BR 483-C - Front | Metro Train)"
@@ -503,26 +662,9 @@
 		"sligwolf_minitrains_wagon_tanker_black" : "sligwolf_minitrains_wagon_tanker_black (Miniwagon 18 | Mini Trains)"
 		"sligwolf_minitrains_wagon_tanker_brown" : "sligwolf_minitrains_wagon_tanker_brown (Miniwagon 19 | Mini Trains)"
 		"sligwolf_minitrains_wagon_tanker_white" : "sligwolf_minitrains_wagon_tanker_white (Miniwagon 17 | Mini Trains)"
-		"sligwolf_seats_normal" : "sligwolf_seats_normal (Seat - Normal | Seats)"
-		"sligwolf_seats_normal_race" : "sligwolf_seats_normal_race (Seat - Normal | Seats)"
-		"sligwolf_seats_normal_race_weaponized" : "sligwolf_seats_normal_race_weaponized (Seat - Weapon | Seats)"
-		"sligwolf_seats_normal_weaponized" : "sligwolf_seats_normal_weaponized (Seat - Weapon | Seats)"
-		"sligwolf_siren_blue_s" : "sligwolf_siren_blue_s (Siren - Blue S | Siren)"
-		"sligwolf_siren_fr" : "sligwolf_siren_fr (Siren - French | Siren)"
-		"sligwolf_siren_ger" : "sligwolf_siren_ger (Siren - German | Siren)"
-		"sligwolf_siren_haz_d" : "sligwolf_siren_haz_d (Siren - Hazard | Siren)"
-		"sligwolf_siren_haz_s" : "sligwolf_siren_haz_s (Siren - Hazard S | Siren)"
-		"sligwolf_siren_jp" : "sligwolf_siren_jp (Siren - Japan | Siren)"
-		"sligwolf_siren_red_s" : "sligwolf_siren_red_s (Siren - Red S | Siren)"
-		"sligwolf_siren_uk" : "sligwolf_siren_uk (Siren - British | Siren)"
-		"sligwolf_siren_usa" : "sligwolf_siren_usa (Siren - American | Siren)"
 		"sligwolf_st3tram" : "sligwolf_st3tram (ST3 Tram | ST-3 Tram)"
-		"sligwolf_tinyhoverracer_manta" : "sligwolf_tinyhoverracer_manta (THR - Manta | Tiny Hover Racer)"
-		"sligwolf_tinyhoverracer_proto" : "sligwolf_tinyhoverracer_proto (THR - Proto | Tiny Hover Racer)"
-		"sligwolf_tinyhoverracer_tarno" : "sligwolf_tinyhoverracer_tarno (THR - Tarno | Tiny Hover Racer)"
 		"sligwolf_tram_bendy" : "sligwolf_tram_bendy (Bendy Tram | Tram)"
 		"sligwolf_tram_single" : "sligwolf_tram_single (Tram)"
-		"sligwolf_truck_campermodule" : "sligwolf_truck_campermodule (Camper Module | Trucks)"
 		"sligwolf_wagons_tc15_bogie" : "sligwolf_wagons_tc15_bogie (TC-15 Bogie | Train Cars)"
 		"sligwolf_wagons_tc15_box_long" : "sligwolf_wagons_tc15_box_long (TC-15 Box - L | Train Cars)"
 		"sligwolf_wagons_tc15_box_short" : "sligwolf_wagons_tc15_box_short (TC-15 Box - M | Train Cars)"
@@ -577,21 +719,21 @@
 		"sligwolf_wagons_tc25_tipper_medium" : "sligwolf_wagons_tc25_tipper_medium (TC-25 Tipper - M | Train Cars)"
 		"sligwolf_wagons_tc25_tipper_small" : "sligwolf_wagons_tc25_tipper_small (TC-25 Tipper - S | Train Cars)"
 		"sligwolf_westernloco_wl13_brake" : "sligwolf_westernloco_wl13_brake (WL-13 Caboose | Western Loco)"
-		"sligwolf_westernloco_wl13_cargo" : "sligwolf_westernloco_wl13_cargo (WL-13 Gondola | Western Loco)"
 		"sligwolf_westernloco_wl13_flat" : "sligwolf_westernloco_wl13_flat (WL-13 Flatbed | Western Loco)"
+		"sligwolf_westernloco_wl13_gondola" : "sligwolf_westernloco_wl13_gondola (WL-13 Gondola | Western Loco)"
 		"sligwolf_westernloco_wl13_loco" : "sligwolf_westernloco_wl13_loco (WL-13 Loco | Western Loco)"
 		"sligwolf_westernloco_wl13_loco_wc" : "sligwolf_westernloco_wl13_loco_wc (WL-13 Loco (Front coupler) | Western Loco)"
 		"sligwolf_westernloco_wl13_passenger" : "sligwolf_westernloco_wl13_passenger (WL-13 Passenger | Western Loco)"
 		"sligwolf_westernloco_wl13_tender" : "sligwolf_westernloco_wl13_tender (WL-13 Tender | Western Loco)"
-		"sligwolf_westernloco_wl1855_bogie" : "sligwolf_westernloco_wl1855_bogie (WL-1855 Bogie | Western Loco)"
-		"sligwolf_westernloco_wl1855_bogie_wc" : "sligwolf_westernloco_wl1855_bogie_wc (WL-1855 Bogie (Front coupler) | Western Loco)"
-		"sligwolf_westernloco_wl1855_loco" : "sligwolf_westernloco_wl1855_loco (WL-1855 Loco | Western Loco)"
-		"sligwolf_westernloco_wl1855_loco_wc" : "sligwolf_westernloco_wl1855_loco_wc (WL-1855 Loco (Front coupler) | Western Loco)"
-		"sligwolf_westernloco_wl1890_bogie" : "sligwolf_westernloco_wl1890_bogie (WL-1890 Bogie | Western Loco)"
-		"sligwolf_westernloco_wl1890_caboose" : "sligwolf_westernloco_wl1890_caboose (WL-1890 Caboose | Western Loco)"
-		"sligwolf_westernloco_wl1890_combined" : "sligwolf_westernloco_wl1890_combined (WL-1890 Combined | Western Loco)"
-		"sligwolf_westernloco_wl1890_luggage" : "sligwolf_westernloco_wl1890_luggage (WL-1890 Luggage | Western Loco)"
-		"sligwolf_westernloco_wl1890_passenger" : "sligwolf_westernloco_wl1890_passenger (WL-1890 Passenger | Western Loco)"
+		"sligwolf_westernloco_wl1855_bogie" : "sligwolf_westernloco_wl1855_bogie (WL-26 Bogie | Western Loco)"
+		"sligwolf_westernloco_wl1855_bogie_wc" : "sligwolf_westernloco_wl1855_bogie_wc (WL-26 Bogie (Front coupler) | Western Loco)"
+		"sligwolf_westernloco_wl1855_loco" : "sligwolf_westernloco_wl1855_loco (WL-26 Loco | Western Loco)"
+		"sligwolf_westernloco_wl1855_loco_wc" : "sligwolf_westernloco_wl1855_loco_wc (WL-26 Loco (Front coupler) | Western Loco)"
+		"sligwolf_westernloco_wl1890_bogie" : "sligwolf_westernloco_wl1890_bogie (WL-26 Bogie | Western Loco)"
+		"sligwolf_westernloco_wl1890_caboose" : "sligwolf_westernloco_wl1890_caboose (WL-26 Caboose | Western Loco)"
+		"sligwolf_westernloco_wl1890_combined" : "sligwolf_westernloco_wl1890_combined (WL-26 Combined | Western Loco)"
+		"sligwolf_westernloco_wl1890_luggage" : "sligwolf_westernloco_wl1890_luggage (WL-26 Luggage | Western Loco)"
+		"sligwolf_westernloco_wl1890_passenger" : "sligwolf_westernloco_wl1890_passenger (WL-26 Passenger | Western Loco)"
 		"sligwolf_wpsuspensiontrain_g15" : "sligwolf_wpsuspensiontrain_g15 (Train G15 | Suspension Train)"
 		"sligwolf_wpsuspensiontrain_g15_bogie" : "sligwolf_wpsuspensiontrain_g15_bogie (Bogie G15 | Suspension Train)"
 	]
@@ -599,19 +741,12 @@
 	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
 ]
 
-@PointClass base(SLIGWOLF_BASE_train, SLIGWOLF_BASE_vehicle_disabled_kv, prop_vehicle_prisoner_pod, SLIGWOLF_BASE_vehicle_disabled_kv) size(32 32 32) color(85 190 255) studioprop() = prop_vehicle_sligwolf_train :
-	"SligWolf Train. It spawns a prop_vehicle_prisoner_pod based train by the given spawnname and passes every parameter to the spawned entity."
-[
-	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
-	[
-		"" : "Nothing (No SW-ADDON Vehicle)"
-	]
 
-	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
-]
+// ------------------------------
+//   Base addon: Railway switches
+// ------------------------------
 
-
-@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = SLIGWOLF_BASE_railway_switch_base
+@BaseClass base(Targetname, Global, Angles, Studiomodel, SLIGWOLF_BASECLASS_phys_static) = SLIGWOLF_BASECLASS_railway_switch_base
 [
 	SetBodyGroup(integer) : "Body Group" : 0
 
@@ -627,17 +762,17 @@
 	output OnSwitchByName(string) : ""
 ]
 
-@PointClass base(SLIGWOLF_BASE_railway_switch_base) studioprop() = sligwolf_railway_switch_static :
-	""
+@PointClass base(SLIGWOLF_BASECLASS_railway_switch_base) color(85 190 255) studioprop() = sligwolf_railway_switch :
+	"SligWolf's Addon: Generic railway switch"
 [
 ]
 
-@PointClass base(SLIGWOLF_BASE_railway_switch_base) studioprop() = sligwolf_railway_switch_phys :
-	""
-[
-]
 
-@BaseClass base(Targetname, Global, Angles, Studiomodel) studioprop() = Sligwolf_minitrains_building_base
+// ------------------------------
+//   Addon: minitrains
+// ------------------------------
+
+@BaseClass base(Targetname, Global, Angles, Studiomodel, SLIGWOLF_BASECLASS_phys_static) = SLIGWOLF_BASECLASS_minitrains_building_base
 [
 	SetBodyGroup(integer) : "Body Group" : 0
 
@@ -650,13 +785,31 @@
 	output OnWagonUnload(string) : ""
 ]
 
-@PointClass base(Sligwolf_minitrains_building_base) studioprop() = sligwolf_minitrain_building_static :
-	""
+@PointClass base(SLIGWOLF_BASECLASS_minitrains_building_base) color(85 190 255) studioprop() = sligwolf_minitrains_building :
+	"SligWolf's Addon, Minitrains: Generic building"
 [
 ]
 
-@PointClass base(Sligwolf_minitrains_building_base) studioprop() = sligwolf_minitrain_building_phys :
-	""
+
+// ------------------------------
+//   Addon: wpsuspensiontrain
+// ------------------------------
+
+@BaseClass base(Targetname, Global, Angles, SLIGWOLF_BASECLASS_theme_entity, SLIGWOLF_BASECLASS_phys_static) = SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base
 [
 ]
 
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_2way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_2way :
+	"SligWolf's Addon, Suspension Train: 2-way Turntable"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_4way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_4way :
+	"SligWolf's Addon, Suspension Train: 4-way Turntable"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_8way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_8way :
+	"SligWolf's Addon, Suspension Train: 8-way Turntable"
+[
+]

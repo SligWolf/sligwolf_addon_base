@@ -832,7 +832,7 @@ local function g_SENTSetup(ply, sent)
 	if not IsValid(sent) then return end
 	if not sent.sligwolf_baseEntity then return end
 
-	local data = LIBEntities.GetSpawntable(ent)
+	local data = LIBEntities.GetSpawntable(sent)
 	if not data then return end
 	if not data.Is_SLIGWOLF then return end
 
