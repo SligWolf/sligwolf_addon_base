@@ -9,11 +9,13 @@ local LIBDuplicator = nil
 local LIBEntities = nil
 local LIBSourceIO = nil
 local LIBVehicle = nil
-local LIBTimer = nil
 local LIBHook = nil
 
 local g_keyValueClassWhiteList = LIB.g_keyValueClassWhiteList or {}
 LIB.g_keyValueClassWhiteList = g_keyValueClassWhiteList
+
+local g_entityCreatedQueue = LIB.g_entityCreatedQueue or {}
+LIB.g_entityCreatedQueue = g_entityCreatedQueue
 
 function LIB.ListenToKeyValueForClasses(classes)
 	if not classes then
@@ -84,13 +86,50 @@ local function IsAllowed(ent, key, value)
 	return false
 end
 
+local function ApplyEntityCreatedQueue()
+	-- Call hooks as listed in g_entityCreatedQueue for their entities
+
+	for _, item in ipairs(g_entityCreatedQueue) do
+		local ent1 = item.ent1
+		local ent2 = item.ent2
+		local hookName = item.hookName
+
+		if LIBEntities.IsMarkedForDeletion(ent1) then
+			continue
+		end
+
+		if ent2 ~= nil and LIBEntities.IsMarkedForDeletion(ent2) then
+			continue
+		end
+
+		LIBHook.RunCustom(hookName, ent1, ent2)
+	end
+
+	table.Empty(g_entityCreatedQueue)
+
+	-- Remove temporary hook, so it doesn't idle if no entities are being created
+	LIBHook.Remove("Tick", "Library_EntityHooks_ApplyEntityCreatedQueue")
+end
+
+function LIB.AddToEntityCreatedQueue(hookName, ent1, ent2)
+	table.insert(g_entityCreatedQueue, {
+		hookName = hookName,
+		ent1 = ent1,
+		ent2 = ent2,
+	})
+
+	if #g_entityCreatedQueue == 1 then
+		-- Start temporary hook as soon as the first queue entry is made
+		LIBHook.Add("Tick", "Library_EntityHooks_ApplyEntityCreatedQueue", ApplyEntityCreatedQueue, -100000)
+	end
+end
+
 function LIB.Load()
 	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPhysics = SligWolf_Addons.Physics
 	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBVehicle = SligWolf_Addons.Vehicle
-	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util
 
@@ -293,11 +332,7 @@ function LIB.Load()
 			LIBDuplicator.StoreIsDupedEntityModifier(ent)
 		end
 
-		LIBTimer.SimpleNextFrame(function()
-			if not IsValid(ent) then return end
-
-			LIBHook.RunCustom("OnPostEntityCreated", ent)
-		end)
+		LIB.AddToEntityCreatedQueue("OnPostEntityCreated", ent)
 	end
 
 	LIBHook.Add("OnEntityCreated", "Library_EntityHooks_OnEntityCreated", OnEntityCreated, 1000)
@@ -310,12 +345,7 @@ function LIB.Load()
 		entTable.ownerPlayer = ply
 		entTable.spawnerPlayer = ply
 
-		LIBTimer.SimpleNextFrame(function()
-			if not IsValid(ply) then return end
-			if not IsValid(ent) then return end
-
-			LIBHook.RunCustom("PostPlayerSpawnedEntity", ply, ent)
-		end)
+		LIB.AddToEntityCreatedQueue("PostPlayerSpawnedEntity", ply, ent)
 	end
 
 	LIBHook.Add("PlayerSpawnedVehicle", "Library_EntityHooks_PlayerSpawnedEntity", PlayerSpawnedEntity, 1000)
