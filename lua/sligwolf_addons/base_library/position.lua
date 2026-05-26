@@ -10,7 +10,6 @@ local CONSTANTS = SligWolf_Addons.Constants
 local LIBPrint = nil
 local LIBModel = nil
 local LIBTimer = nil
-local LIBUtil = nil
 
 local g_asyncPositioningTimerName = "asyncPositioning"
 local g_asyncPositioningPollTime = 0.033
@@ -332,8 +331,8 @@ function LIB.GetAttachmentCache(ent, forceRebuild)
 				continue
 			end
 
-			local id = item.id
-			local name = item.name
+			local id = tonumber(item.id or 0) or 0
+			local name = tostring(item.name or "")
 
 			if id <= 0 then
 				continue
@@ -343,11 +342,15 @@ function LIB.GetAttachmentCache(ent, forceRebuild)
 				continue
 			end
 
+			local idString = tostring(id)
+
 			attachmentIdCache[id] = id
 			attachmentIdCache[name] = id
+			attachmentIdCache[idString] = id
 
 			attachmentNameCache[id] = name
 			attachmentNameCache[name] = name
+			attachmentNameCache[idString] = name
 		end
 	end
 
@@ -732,7 +735,6 @@ function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 	LIBModel = SligWolf_Addons.Model
 	LIBTimer = SligWolf_Addons.Timer
-	LIBUtil = SligWolf_Addons.Util
 
 	local LIBHook = SligWolf_Addons.Hook
 

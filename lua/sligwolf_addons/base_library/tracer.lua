@@ -162,8 +162,11 @@ function LIB.TracerAttachmentToAttachment(ent, attachmentA, attachmentB, filterf
 	local isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
 
 	if isDebug then
-		LIBDebug.EntityTextAtPosition(posA, attachmentA, 1)
-		LIBDebug.EntityTextAtPosition(posB, attachmentB, 1)
+		local attachmentNameA = LIBPosition.GetAttachmentName(ent, attachmentA)
+		local attachmentNameB = LIBPosition.GetAttachmentName(ent, attachmentB)
+
+		LIBDebug.EntityTextAtPosition(posA, attachmentNameA, 1)
+		LIBDebug.EntityTextAtPosition(posB, attachmentNameB, 1)
 	end
 
 	return LIB.Tracer(ent, posA, posB, filterfunc, result)
@@ -183,7 +186,8 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc, result)
 		table.insert(TRACER_ATTACHMENT_CHAIN_BUFFER, pos)
 
 		if isDebug then
-			LIBDebug.EntityTextAtPosition(pos, attachmentChainItem, 1)
+			local attachmentName = LIBPosition.GetAttachmentName(ent, attachmentChainItem)
+			LIBDebug.EntityTextAtPosition(pos, attachmentName, 1)
 		end
 	end
 
