@@ -800,8 +800,7 @@ function LIB.Load()
 
 	LIBHook.Add("PlayerLeaveVehicle", "Library_Vehicle_PlayerLeaveVehicle", PlayerLeaveVehicle, 20000)
 
-	local function OnPostEntityCreated(ent)
-		if not IsValid(ent) then return end
+	local function CallOnPostAddonVehicleCreated(ent, spawnname, spawntable, addonname)
 		if not ent:IsVehicle() then return end
 
 		LIBTimer.SimpleNextFrame(function()
@@ -809,36 +808,17 @@ function LIB.Load()
 			if not ent:IsVehicle() then return end
 			if not ent:IsValidVehicle() then return end
 
-			LIBHook.RunCustom("OnPostVehicleCreated", ent)
+			LIBHook.RunCustom("OnPostAddonVehicleCreated", ent, spawnname, spawntable, addonname)
 		end)
 	end
 
-	LIBHook.AddCustom("OnPostEntityCreated", "Library_Vehicle_OnPostEntityCreated", OnPostEntityCreated, 10000)
+	LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_Vehicle_CallOnPostAddonVehicleCreated", CallOnPostAddonVehicleCreated, 10000)
 
-	local function HandleVehicleSpawn(vehicle)
-		if not IsValid(vehicle) then return end
-		if not vehicle:IsVehicle() then return end
-		if not vehicle:IsValidVehicle() then return end
-
-		local vehicleSpawnname = LIBEntities.GetSpawnname(vehicle)
-		if not vehicleSpawnname then
-			return
-		end
-
-		local vehicleTable = LIBEntities.GetSpawntable(vehicle)
-		if not vehicleTable then
-			return
-		end
-
-		local addonname = vehicleTable.SLIGWOLF_Addonname
-		if not addonname then
-			return
-		end
-
-		SligWolf_Addons.CallFunctionOnAddon(addonname, "HandleVehicleSpawn", vehicle, vehicleSpawnname, vehicleTable)
+	local function HandleVehicleSpawn(vehicle, spawnname, spawntable, addonname)
+		SligWolf_Addons.CallFunctionOnAddon(addonname, "HandleVehicleSpawn", vehicle, spawnname, spawntable)
 	end
 
-	LIBHook.AddCustom("OnPostVehicleCreated", "Library_Vehicle_HandleVehicleSpawn", HandleVehicleSpawn, 10000)
+	LIBHook.AddCustom("OnPostAddonVehicleCreated", "Library_Vehicle_HandleVehicleSpawn", HandleVehicleSpawn, 10000)
 end
 
 return true

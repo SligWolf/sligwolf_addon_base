@@ -156,15 +156,7 @@ function LIB.Load()
 	end)
 
 	if SERVER then
-		local function ApplySkinThemeFromPlayer(ply, ent)
-			local spawntable = LIBEntities.GetSpawntable(ent)
-
-			if not spawntable then return end
-			if not spawntable.Is_SLIGWOLF then return end
-
-			local addonname = spawntable.SLIGWOLF_Addonname
-			if not addonname then return end
-
+		local function ApplySkinThemeFromPlayer(ply, ent, spawnname, spawntable, addonname)
 			local addon = SligWolf_Addons.GetAddon(addonname)
 			if not addon then
 				return
@@ -195,17 +187,9 @@ function LIB.Load()
 			addon:SkinApplyThemeByName(ent, themeName)
 		end
 
-		LIBHook.AddCustom("PostPlayerSpawnedEntity", "Library_Skinsystem_ApplySkinThemeFromPlayer", ApplySkinThemeFromPlayer, 11000)
+		LIBHook.AddCustom("PostPlayerSpawnedAddonEntity", "Library_Skinsystem_ApplySkinThemeFromPlayer", ApplySkinThemeFromPlayer, 11000)
 
-		local function ApplySkinThemeFromKeyValue(ent)
-			local spawntable = LIBEntities.GetSpawntable(ent)
-
-			if not spawntable then return end
-			if not spawntable.Is_SLIGWOLF then return end
-
-			local addonname = spawntable.SLIGWOLF_Addonname
-			if not addonname then return end
-
+		local function ApplySkinThemeFromKeyValue(ent, spawnname, spawntable, addonname)
 			local addon = SligWolf_Addons.GetAddon(addonname)
 			if not addon then
 				return
@@ -221,7 +205,7 @@ function LIB.Load()
 			end
 
 			local keyValues = LIBSourceIO.GetKeyValues(ent)
-			local themeKeyValue = string.lower(keyValues.sligwolf_theme or "")
+			local themeKeyValue = keyValues.sligwolf_theme or ""
 
 			if themeKeyValue == "" and ent:GetSkin() ~= 0 then
 				-- Don't override source engine skin if we are on default theme.
@@ -241,7 +225,7 @@ function LIB.Load()
 			addon:SkinApplyThemeByName(ent, themeName)
 		end
 
-		LIBHook.AddCustom("OnPostEntityCreated", "Library_Skinsystem_ApplySkinThemeFromKeyValue", ApplySkinThemeFromKeyValue, 12000)
+		LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_Skinsystem_ApplySkinThemeFromKeyValue", ApplySkinThemeFromKeyValue, 12000)
 	end
 end
 

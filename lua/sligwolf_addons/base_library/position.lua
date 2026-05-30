@@ -12,27 +12,27 @@ local LIBModel = nil
 local LIBTimer = nil
 
 local g_asyncPositioningTimerName = "asyncPositioning"
-local g_asyncPositioningPollTime = 0.033
-local g_asyncPositioningAttachment = 1
+local g_asyncPositioningPollTime = 0
+local g_asyncPositioningAttachmentId = 1
 local g_asyncPositioningDistanceToleranceSqr = 0.01 ^ 2
 local g_asyncPositioningDistanceAngle = 0.01
 local g_asyncPositioningLifetime = 50
 
-local function isSimilarPosAng(posA, posB, angA, angB, debug_ent)
+local function isSimilarPosAng(posA, posB, angA, angB, debugEnt)
 	local isSimilarPos = not posA or not posB or posA:DistToSqr(posB) < g_asyncPositioningDistanceToleranceSqr
 	local isSimilasAng = not angA or not angB or LIB.GetAnglesDifference(angA, angB) < g_asyncPositioningDistanceAngle
 
 	if not isSimilarPos then
-		-- if debug_ent then
-		--     LIBPrint.Print("Pos, %s: %s | %s | %s > %s", debug_ent, posA, posB, posA:DistToSqr(posB) ^ 0.5, g_asyncPositioningDistanceToleranceSqr ^ 0.5)
+		-- if debugEnt then
+		-- 	LIBPrint.Print("Pos, %s: %s | %s | %s > %s", debugEnt, posA, posB, posA:DistToSqr(posB) ^ 0.5, g_asyncPositioningDistanceToleranceSqr ^ 0.5)
 		-- end
 
 		return false
 	end
 
 	if not isSimilasAng then
-		-- if debug_ent then
-		--     LIBPrint.Print("Ang, %s: %s | %s | %s > %s", debug_ent, angA, angB, LIB.GetAnglesDifference(angA, angB), g_asyncPositioningDistanceAngle)
+		-- if debugEnt then
+		--     LIBPrint.Print("Ang, %s: %s | %s | %s > %s", debugEnt, angA, angB, LIB.GetAnglesDifference(angA, angB), g_asyncPositioningDistanceAngle)
 		-- end
 
 		return false
@@ -108,7 +108,8 @@ local function pollAsyncPositioning(ent, entTable)
 		hasPos and pos,
 		targetData.pos,
 		hasAng and ang,
-		targetData.ang
+		targetData.ang,
+		ent
 	)
 
 	if not isTargetSimilar and wasActive then
@@ -120,7 +121,7 @@ local function pollAsyncPositioning(ent, entTable)
 	end
 
 	local attTargetData = asyncPositioning.attTargetData
-	local curAttPos, curAttAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachment)
+	local curAttPos, curAttAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachmentId)
 
 	-- Check if the attachment has moved to its SetPos()-target yet.
 	-- If it hasn't, we assume the position might not have been properly set yet
@@ -130,7 +131,8 @@ local function pollAsyncPositioning(ent, entTable)
 		hasPos and curAttPos,
 		attTargetData.pos,
 		hasAng and curAttAng,
-		attTargetData.ang
+		attTargetData.ang,
+		ent
 	)
 
 	if not isAttachmentSimilar then
@@ -144,22 +146,22 @@ end
 
 function LIB.SetPosAng(ent, pos, ang, callback)
 	if not IsValid(ent) then
-		return false
+		return
 	end
 
 	local timerName = LIBTimer.GetEntityTimerName(ent, g_asyncPositioningTimerName)
 	if not timerName then
-		return false
+		return
 	end
 
 	LIBTimer.Remove(timerName)
 
 	if not pos and not ang then
-		return false
+		return
 	end
 
 	local entTable = ent:SligWolf_GetTable()
-	local attPos, attAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachment)
+	local attPos, attAng = LIB.GetAttachmentPosAng(ent, g_asyncPositioningAttachmentId)
 
 	attPos = ent:WorldToLocal(attPos)
 	attAng = ent:WorldToLocalAngles(attAng)
@@ -206,22 +208,20 @@ function LIB.SetPosAng(ent, pos, ang, callback)
 	-- This function calls the given callback when the attachments are ready to be used.
 
 	if pollAsyncPositioning(ent, entTable) then
-		return true
+		return
 	end
 
 	LIBTimer.Until(timerName, g_asyncPositioningPollTime, function()
 		return pollAsyncPositioning(ent, entTable)
 	end)
-
-	return true
 end
 
 function LIB.SetPos(ent, pos, callback)
-	return LIB.SetPosAng(ent, pos, nil, callback)
+	LIB.SetPosAng(ent, pos, nil, callback)
 end
 
 function LIB.SetAng(ent, ang, callback)
-	return LIB.SetPosAng(ent, nil, ang, callback)
+	LIB.SetPosAng(ent, nil, ang, callback)
 end
 
 function LIB.IsAsyncPositioning(ent)
@@ -735,6 +735,8 @@ function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 	LIBModel = SligWolf_Addons.Model
 	LIBTimer = SligWolf_Addons.Timer
+
+	g_asyncPositioningPollTime = LIBTimer.TickTime(2)
 
 	local LIBHook = SligWolf_Addons.Hook
 

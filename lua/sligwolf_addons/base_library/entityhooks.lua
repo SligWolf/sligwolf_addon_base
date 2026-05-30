@@ -225,11 +225,49 @@ function LIB.Load()
 
 	LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemEntitiesFinished", SpawnSystemEntitiesFinished, 10000)
 
+	local function CallOnPostAddonEntityCreated(ent)
+		local spawnname = LIBEntities.GetSpawnname(ent)
+		if not spawnname then return end
+
+		local spawntable = LIBEntities.GetSpawntable(ent)
+		if not spawntable then return end
+		if not spawntable.Is_SLIGWOLF then return end
+
+		local addonname = spawntable.SLIGWOLF_Addonname
+		if not addonname then return end
+
+		ent.sligwolf_entity = true
+		ent.sligwolf_addonname = addonname
+
+		if ent.sligwolf_baseEntity then
+			ent:SetAddonID(addonname)
+		end
+
+		ent["sligwolf_is_" .. addonname] = true
+
+		LIBHook.RunCustom("OnPostAddonEntityCreated", ent, spawnname, spawntable, addonname)
+	end
+
+	LIBHook.AddCustom("OnPostEntityCreated", "Library_EntityHooks_CallOnPostAddonEntityCreated", CallOnPostAddonEntityCreated, -100000)
+
+	local function CallPostPlayerSpawnedAddonEntity(ply, ent)
+		local spawnname = LIBEntities.GetSpawnname(ent)
+		if not spawnname then return end
+
+		local spawntable = LIBEntities.GetSpawntable(ent)
+		if not spawntable then return end
+		if not spawntable.Is_SLIGWOLF then return end
+
+		local addonname = spawntable.SLIGWOLF_Addonname
+		if not addonname then return end
+
+		LIBHook.RunCustom("PostPlayerSpawnedAddonEntity", ply, ent, spawnname, spawntable, addonname)
+	end
+
+	LIBHook.AddCustom("PostPlayerSpawnedEntity", "Library_EntityHooks_CallPostPlayerSpawnedAddonEntity", CallPostPlayerSpawnedAddonEntity, -100000)
+
 	if SERVER then
 		local function SpawnSystemFinishedApplyKeyValues(ent, ply)
-			if not IsValid(ent) then return end
-			if not ent.sligwolf_entity then return end
-
 			local spawnTable = LIBEntities.GetSpawntable(ent) or {}
 			local keyValues = LIBSourceIO.GetKeyValues(ent)
 
@@ -269,22 +307,12 @@ function LIB.Load()
 
 		LIBHook.AddCustom("SpawnSystemFinished", "Library_EntityHooks_SpawnSystemFinishedApplyKeyValues", SpawnSystemFinishedApplyKeyValues, 11000)
 
-		local function DisablePhysicsDuringSpawn(ent)
-			if not IsValid(ent) then return end
-			if not ent.sligwolf_entity then return end
-
-			local spawnTable = LIBEntities.GetSpawntable(ent)
-			if not spawnTable then return end
-			if not spawnTable.Is_SLIGWOLF then return end
-
-			local addonname = spawnTable.SLIGWOLF_Addonname
-			if not addonname then return end
-
+		local function DisablePhysicsDuringSpawn(ent, spawnname, spawntable, addonname)
 			local keyValues = LIBSourceIO.GetKeyValues(ent)
 
 			local static = ent.sligwolf_physBaseEntity and ent:GetStatic()
 
-			local spawnFrozen = spawnTable.SLIGWOLF_SpawnFrozen or false
+			local spawnFrozen = spawntable.SLIGWOLF_SpawnFrozen or false
 
 			if not static then
 				local frozenKeyValue = tonumber(keyValues.sligwolf_frozen or 0) or 0
@@ -303,7 +331,7 @@ function LIB.Load()
 			SligWolf_Addons.CallFunctionOnAddon(addonname, "HandleSpawnFinishedEvent", ent)
 		end
 
-		LIBHook.AddCustom("OnPostEntityCreated", "Library_EntityHooks_DisablePhysicsDuringSpawn", DisablePhysicsDuringSpawn, 11000)
+		LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_EntityHooks_DisablePhysicsDuringSpawn", DisablePhysicsDuringSpawn, 11000)
 	end
 
 	local function RunCallOnRemoveEffect(ent)

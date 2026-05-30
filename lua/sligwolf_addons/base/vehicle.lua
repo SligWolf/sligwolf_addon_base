@@ -48,9 +48,6 @@ end
 
 function SLIGWOLF_ADDON:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)
 	local addonname = self.Addonname
-	vehicle.sligwolf_addonname = addonname
-
-	vehicle["sligwolf_is_" .. addonname] = true
 
 	local vehicleType = tostring(customSpawnProperties.vehicleType or "")
 	vehicleType = string.lower(vehicleType)
@@ -186,7 +183,8 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 		end
 
 		if newpos and newang then
-			callsback = LIBPosition.SetPosAng(vehicle, newpos, newang, callSpawnVehicle)
+			LIBPosition.SetPosAng(vehicle, newpos, newang, callSpawnVehicle)
+			callsback = true
 		end
 	end
 

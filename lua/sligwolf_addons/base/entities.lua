@@ -160,7 +160,6 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 
 	LIBSpamprotection.DelayNextSpawnForOwner(superparent)
 
-
 	self:EntityTimerOnce(superparent, timernameEvent, 0.26, function()
 		if LIBEntities.IsMarkedForDeletion(superparent) then
 			return

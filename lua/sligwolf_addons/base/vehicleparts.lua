@@ -633,7 +633,6 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 		ent:SetNWBool("sligwolf_isBody", true)
 	end
 
-	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
 	LIBEntities.DisablePhysicsDuringSpawn(
 		ent,
 		freeze or false,
@@ -1293,8 +1292,6 @@ function SLIGWOLF_ADDON:SetUpVehicleCamera(parent, component, ply, superparent, 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
-	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
-
 	return ent
 end
 
@@ -1365,8 +1362,6 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
 
-	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
-
 	return ent
 end
 
@@ -1426,8 +1421,6 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
-
-	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
 
 	return ent
 end
@@ -1491,8 +1484,6 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 
 	ent.sligwolf_blockedprop = true
 	ent:SetNWBool("sligwolf_blockedprop", true)
-
-	LIBEntities.DisablePhysicsDuringSpawn(superparent, false, true)
 
 	return ent
 end
@@ -1598,6 +1589,9 @@ function SLIGWOLF_ADDON:SetUpVehicleBendi(parent, component, ply, superparent, c
 	if not IsValid(ent) then return end
 
 	self:SetPartValues(ent, parent, component, attachment, superparent, callback)
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.noAsycPositioning = true
 
 	LIBEntities.RemoveEntitiesOnDelete(parentFront, {parentRear, ent})
 	LIBEntities.RemoveEntitiesOnDelete(parentRear, {parentFront, ent})
