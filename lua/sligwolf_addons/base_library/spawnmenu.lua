@@ -1304,8 +1304,6 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	local spawnOffsets = table.Copy(obj.spawnOffsets or {})
 	local spawnFrozen = obj.spawnFrozen or false
 
-	spawnOffsets.dupe = spawnOffsets.dupe or spawnOffsets.main or {}
-
 	local thirdperson = table.Copy(obj.thirdperson or {})
 
 	local vehicleListItem = {}
@@ -1358,6 +1356,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 				gauge = gauge,
 				spawnnameFull = spawnnameFull,
 				spawnnameNoGauge = spawnnameNoGauge,
+				trainSizeMin = trainOptions.trainSizeMin,
+				trainSizeMax = trainOptions.trainSizeMax,
 			}
 		end
 	end

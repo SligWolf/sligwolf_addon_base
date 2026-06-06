@@ -12,7 +12,7 @@ local LIBModel = SligWolf_Addons.Model
 local LIBTimer = SligWolf_Addons.Timer
 
 local g_asyncPositioningTimerName = "asyncPositioning"
-local g_asyncPositioningPollTime = LIBTimer.TickTime(5)
+local g_asyncPositioningPollTime = LIBTimer.TickTime(2)
 local g_asyncPositioningAttachmentId = 1
 local g_asyncPositioningDistanceToleranceSqr = 0.01 ^ 2
 local g_asyncPositioningDistanceAngle = 0.01

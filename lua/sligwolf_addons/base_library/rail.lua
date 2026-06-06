@@ -434,7 +434,7 @@ function LIB.AddGauge(gaugename, params)
 	params = table.Copy(params or {})
 
 	if gaugename == "" then
-		error("bad name was given")
+		error("no name was given")
 		return
 	end
 
@@ -637,8 +637,8 @@ do
 	}
 
 	local traimParamsLarge = {
-		trainSizeMin = -512,
-		trainSizeMax = 512,
+		trainSizeMin = -256,
+		trainSizeMax = 256,
 	}
 
 	-- Small rails, such as: Minitrains (mt12)
@@ -657,8 +657,8 @@ do
 	}
 
 	local traimParamsSmall = {
-		trainSizeMin = -32,
-		trainSizeMax = 32,
+		trainSizeMin = -24,
+		trainSizeMax = 24,
 	}
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_DEFAULT, {
@@ -678,7 +678,7 @@ do
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_RSG, {
 		title = "RSG",
-		width = 58,
+		width = 56,
 		scanParams = scanParamsLarge,
 		defaultTrainParams = traimParamsLarge,
 	})

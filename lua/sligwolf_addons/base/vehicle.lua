@@ -167,7 +167,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawnPos(vehicle, ply, title, spawnOffsets,
 		end
 
 		-- auto on-railing spawn behaviour
-		thisSpawnOffset = spawnOffsets.special
+		thisSpawnOffset = spawnOffsets.rail
 
 		g_spawnOffsetMx:SetTranslation(railScanResult.pos)
 		g_spawnOffsetMx:SetAngles(railScanResult.ang)
