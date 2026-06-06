@@ -330,7 +330,7 @@ function ENT:MakeEnt(classname, name, parent)
 
 	local addon = self:GetAddon()
 	if not addon then
-		return
+		return nil
 	end
 
 	if not parent then
@@ -339,7 +339,12 @@ function ENT:MakeEnt(classname, name, parent)
 
 	local plyOwner = self:GetOwningPlayer()
 
-	return addon:MakeEnt(classname, plyOwner, parent, name)
+	local ent = addon:MakeEnt(classname, plyOwner, parent, name)
+	if not ent then
+		return nil
+	end
+
+	return ent
 end
 
 function ENT:MakeVehicle(spawnname, name, parent)
@@ -347,7 +352,7 @@ function ENT:MakeVehicle(spawnname, name, parent)
 
 	local addon = self:GetAddon()
 	if not addon then
-		return
+		return nil
 	end
 
 	if not parent then
@@ -356,7 +361,12 @@ function ENT:MakeVehicle(spawnname, name, parent)
 
 	local plyOwner = self:GetOwningPlayer()
 
-	return addon:MakeVehicle(spawnname, plyOwner, parent, name)
+	local vehicle = addon:MakeVehicle(spawnname, plyOwner, parent, name)
+	if not vehicle then
+		return nil
+	end
+
+	return vehicle
 end
 
 function ENT:GetParentEntity()

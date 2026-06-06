@@ -7,8 +7,8 @@ local LIB = SligWolf_Addons:NewLib("Convar")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBDebug = nil
-local LIBUtil = nil
+local LIBDebug = SligWolf_Addons.Debug
+local LIBUtil = SligWolf_Addons.Util
 
 LIB.g_callbacks = LIB.g_callbacks or {}
 local g_callbacks = LIB.g_callbacks

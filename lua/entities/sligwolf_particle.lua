@@ -165,8 +165,8 @@ function ENT:ThinkInternal()
 	return true
 end
 
-function ENT:Draw()
-	return false
+function ENT:Draw(flags)
+	-- invisible
 end
 
 local mats = {}

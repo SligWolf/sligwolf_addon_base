@@ -12,13 +12,20 @@ end
 
 local SligWolf_Addons = SligWolf_Addons
 
-local CONSTANTS = SligWolf_Addons.Constants
-
 local LIBThirdperson = SligWolf_Addons.Thirdperson
+local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBEntities = SligWolf_Addons.Entities
 local LIBPosition = SligWolf_Addons.Position
+local LIBRailscan = SligWolf_Addons.Railscan
 local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
+local LIBTracer = SligWolf_Addons.Tracer
+local LIBDebug = SligWolf_Addons.Debug
+local LIBPrint = SligWolf_Addons.Print
+local LIBRail = SligWolf_Addons.Rail
+
+local g_spawnOffsetMx = Matrix()
 
 function SLIGWOLF_ADDON:MakeVehicle(spawnname, plyOwner, parent, name)
 	local ent = LIBVehicle.MakeVehicle(spawnname, plyOwner, parent, name, self.Addonname)
@@ -94,28 +101,135 @@ function SLIGWOLF_ADDON:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawn
 	customSpawnProperties.denyToolReload = denyToolReloadIndexed
 end
 
+function SLIGWOLF_ADDON:HandleVehicleSpawnPos(vehicle, ply, title, spawnOffsets, trainOptions, trainGauge)
+	local parent = LIBEntities.GetParent(vehicle)
+	if IsValid(parent) then
+		-- In case it has been attached to a parent, don't apply spawn pos logic.
+		return
+	end
+
+	local thisSpawnOffset = nil
+
+	local railScanResult = nil
+	local railScanResultGauge = nil
+
+	local isDupe = LIBDuplicator.WasDuped(vehicle)
+
+	if not isDupe and trainGauge and IsValid(ply) then
+		local aimTrace = LIBTracer.PlayerAimTrace(ply, 5000)
+
+		if aimTrace and aimTrace.Hit then
+			LIBDebug.SetLifetime(30)
+
+			railScanResult = LIBRailscan.ScanRailWithGauge(
+				vehicle,
+				aimTrace,
+				trainGauge,
+				{
+					trainSizeMin = trainOptions.trainSizeMin,
+					trainSizeMax = trainOptions.trainSizeMax,
+				}
+			)
+
+			LIBDebug.ResetLifetime()
+
+			if railScanResult then
+				railScanResultGauge = railScanResult.gauge
+			end
+		end
+
+		if trainGauge == LIBRail.ENUM_GAUGE_AUTO or trainGauge == LIBRail.ENUM_GAUGE_DEFAULT then
+			local gaugeSpawnnameInfo = LIBRail.GetSpawnnameInfo(
+				trainOptions.spawnnameNoGauge,
+				railScanResultGauge and railScanResultGauge.name or LIBRail.ENUM_GAUGE_DEFAULT
+			)
+
+			if gaugeSpawnnameInfo then
+				-- Respawn the train using the gauge as found by Railscan.ScanRailWithGauge().
+				vehicle:Remove()
+				ply:ConCommand("gm_spawnvehicle " .. gaugeSpawnnameInfo.spawnnameFull)
+
+				return
+			end
+
+			-- no auto on-railing for unsupported gauge
+			railScanResultGauge = nil
+			railScanResult = nil
+		end
+	end
+
+	g_spawnOffsetMx:Identity()
+
+	if railScanResult then
+		if railScanResultGauge then
+			local message = string.format("Fitting %s into %s rail!", title, railScanResultGauge.title)
+			LIBPrint.Notify(LIBPrint.NOTIFY_GENERIC, message, 3, ply)
+		end
+
+		-- auto on-railing spawn behaviour
+		thisSpawnOffset = spawnOffsets.special
+
+		g_spawnOffsetMx:SetTranslation(railScanResult.pos)
+		g_spawnOffsetMx:SetAngles(railScanResult.ang)
+
+		g_spawnOffsetMx:Rotate(Angle(0, -90, 0))
+	else
+		-- default spawn behaviour
+		thisSpawnOffset = isDupe and spawnOffsets.dupe or spawnOffsets.main
+
+		g_spawnOffsetMx:SetTranslation(vehicle:GetPos())
+		g_spawnOffsetMx:SetAngles(vehicle:GetAngles())
+	end
+
+	if thisSpawnOffset then
+		if thisSpawnOffset.pos then
+			g_spawnOffsetMx:Translate(thisSpawnOffset.pos)
+		end
+
+		if thisSpawnOffset.ang then
+			g_spawnOffsetMx:Rotate(thisSpawnOffset.ang)
+		end
+	end
+
+	local newpos = g_spawnOffsetMx:GetTranslation()
+	local newang = g_spawnOffsetMx:GetAngles()
+
+	LIBPosition.SetPosAng(vehicle, newpos, newang)
+end
+
 function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTable)
 	local isSpawnedByEngine = LIBSourceIO.IsSpawnedByEngine(vehicle)
 
-	local keyValues = table.Copy(vehicleTable.KeyValues or {})
+	local title = vehicleTable.Name
 	local class = vehicleTable.Class
 	local members = vehicleTable.Members
-	local customSpawnProperties = vehicleTable.SLIGWOLF_Custom or {}
+	local thirdperson = vehicleTable.SLIGWOLF_Thirdperson
+	local isTrain = vehicleTable.SLIGWOLF_IsTrain
+
+	local keyValues = table.Copy(vehicleTable.KeyValues or {})
+	local customSpawnProperties = table.Copy(vehicleTable.SLIGWOLF_Custom or {})
+	local spawnOffsets = table.Copy(vehicleTable.SLIGWOLF_SpawnOffsets or {})
+	local trainOptions = table.Copy(vehicleTable.SLIGWOLF_TrainOptions or {})
+
+	local trainGauge = nil
+	local trainGaugeTable = nil
+
+	if isTrain then
+		trainGauge = trainOptions.gauge
+		trainGaugeTable = LIBRail.GetGaugeByName(trainOptions.gauge)
+	end
 
 	local entTable = vehicle:SligWolf_GetTable()
 
 	vehicle.sligwolf_entity = true
 	vehicle.sligwolf_vehicle = true
-	vehicle.sligwolf_train = vehicleTable.SLIGWOLF_IsTrain
+	vehicle.sligwolf_train = isTrain
 	vehicle.sligwolf_headVehicle = true
 
 	self:HandleVehicleSpawnAddVehicleType(vehicle, customSpawnProperties)
 	self:HandleVehicleSpawnAddDenyToolReload(vehicle, customSpawnProperties)
 
-	LIBThirdperson.SetThirdpersonParameters(vehicle, customSpawnProperties.thirdperson)
-
-	local spawnOffset = customSpawnProperties.spawnOffset
-	local spawnOffsetDupe = customSpawnProperties.spawnOffsetDupe or customSpawnProperties.spawnOffset
+	LIBThirdperson.SetThirdpersonParameters(vehicle, thirdperson)
 
 	LIBPhysics.InitializeAsPhysEntity(vehicle)
 
@@ -140,7 +254,6 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 	entTable.customSpawnProperties = customSpawnProperties
 
 	local ply = entTable.spawnerPlayer
-	local isDupe = entTable.isDuped
 
 	if SERVER and isSpawnedByEngine then
 		if vehicle.SetVehicleClass and vehicle.SetDTString then
@@ -155,7 +268,25 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 		end
 	end
 
-	local callSpawnVehicle = function(thisVehicle)
+	local callSpawnVehicle = function(thisVehicle, success)
+		if LIBEntities.IsMarkedForDeletion(thisVehicle) then
+			return true
+		end
+
+		if not success then
+			self:ErrorNoHalt("WaitForAsyncPositioningCallback timed out after 10 seconds\n")
+			return true
+		end
+
+		if CLIENT and trainGaugeTable and not trainGaugeTable.isReal then
+		 	return true
+		end
+
+		-- try again if the position is not final yet
+		if LIBPosition.IsAsyncPositioning(thisVehicle) then
+			return false
+		end
+
 		local vat = self:GetEntityTable(thisVehicle)
 
 		self:CallAddonFunctionWithErrorNoHalt(
@@ -165,32 +296,22 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 			vat,
 			customSpawnProperties
 		)
-	end
 
-	local callsback = false
+		return true
+	end
 
 	if SERVER and not isSpawnedByEngine then
-		local pos = vehicle:GetPos()
-		local ang = vehicle:GetAngles()
-
-		local newpos = nil
-		local newang = nil
-
-		if not isDupe and spawnOffset then
-			newpos, newang = LocalToWorld(spawnOffset.pos or CONSTANTS.vecZero, spawnOffset.ang or CONSTANTS.angZero, pos, ang)
-		elseif isDupe and spawnOffsetDupe then
-			newpos, newang = LocalToWorld(spawnOffsetDupe.pos or CONSTANTS.vecZero, spawnOffsetDupe.ang or CONSTANTS.angZero, pos, ang)
-		end
-
-		if newpos and newang then
-			LIBPosition.SetPosAng(vehicle, newpos, newang, callSpawnVehicle)
-			callsback = true
-		end
+		self:HandleVehicleSpawnPos(vehicle, ply, title, spawnOffsets, trainOptions, trainGauge)
 	end
 
-	if not callsback then
-		callSpawnVehicle(vehicle)
+	if LIBEntities.IsMarkedForDeletion(vehicle) then
+		return
 	end
+
+	local delay = LIBTimer.TickTime(2)
+
+	self:EntityTimerRemove(vehicle, "HandleVehicleSpawn_WaitForAsyncPositioning")
+	self:EntityTimerUntil(vehicle, "HandleVehicleSpawn_WaitForAsyncPositioning", delay, callSpawnVehicle, 0, 10)
 end
 
 return true

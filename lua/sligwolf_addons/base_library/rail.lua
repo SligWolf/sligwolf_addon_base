@@ -7,16 +7,42 @@ local LIB = SligWolf_Addons:NewLib("Rail")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBPosition = nil
-local LIBEntities = nil
-local LIBDebug = nil
-local LIBTracer = nil
+local LIBPosition = SligWolf_Addons.Position
+local LIBEntities = SligWolf_Addons.Entities
+local LIBTracer = SligWolf_Addons.Tracer
 
 local g_maxRailCheckTraceAttachmentPairs = 4
 
 LIB.ENUM_RAIL_CHECK_MODE_ALL = 0
 LIB.ENUM_RAIL_CHECK_MODE_NONE = 1
 LIB.ENUM_RAIL_CHECK_MODE_ANY = 2
+
+LIB.ENUM_GAUGE_DEFAULT = "default"
+LIB.ENUM_GAUGE_AUTO = "auto"
+
+LIB.ENUM_GAUGE_PHX = "phx"
+LIB.ENUM_GAUGE_RSG = "rsg"
+LIB.ENUM_GAUGE_RSG3FT = "rsg3ft"
+LIB.ENUM_GAUGE_RON2FT = "ron2ft"
+LIB.ENUM_GAUGE_MT12 = "mt12"
+
+local g_spawnnamePartToGaugeRegister = LIB.g_spawnnamePartToGaugeRegister or {}
+LIB.g_spawnnamePartToGaugeRegister = g_spawnnamePartToGaugeRegister
+
+local g_spawnnameFullToGaugeRegister = LIB.g_spawnnameFullToGaugeRegister or {}
+LIB.g_spawnnameFullToGaugeRegister = g_spawnnameFullToGaugeRegister
+
+local g_gaugesByName = LIB.g_gaugesByName or {}
+LIB.g_gaugesByName = g_gaugesByName
+
+local g_gaugesByWidth = LIB.g_gaugesByWidth or {}
+LIB.g_gaugesByWidth = g_gaug_gaugesByWidthges
+
+local g_gaugenameBlacklist = {
+	[""] = true,
+	[LIB.ENUM_GAUGE_DEFAULT] = true,
+	[LIB.ENUM_GAUGE_AUTO] = true,
+}
 
 function LIB.GetRailCheckAttachments(ent)
 	if not IsValid(ent) then
@@ -401,472 +427,288 @@ function LIB.GetSwitchModelStates(mainModel)
 	return statesOfModel
 end
 
-local g_groundThreshold = math.cos(math.rad(64))
-local g_railParallelThreshold = math.cos(math.rad(1))
-local g_railTopThreshold = math.cos(math.rad(1))
+function LIB.AddGauge(gaugename, params)
+	gaugename = tostring(gaugename or "")
+	gaugename = string.lower(gaugename)
 
-local g_layerVec = Vector()
-local g_spaceCheckVec = Vector()
+	params = table.Copy(params or {})
 
-local g_dirAng = Angle()
-local g_yawOffsetAng = Angle()
+	if gaugename == "" then
+		error("bad name was given")
+		return
+	end
 
-local g_baseMx = Matrix()
-local g_layerMx = Matrix()
-local g_worldMx = Matrix()
-local g_trackMx = Matrix()
-local g_offsetMx = Matrix()
+	if not params then
+		error("params was not given")
+		return
+	end
 
-local g_traceResultBufferA = {}
-local g_traceResultBufferB = {}
+	local isReal = g_gaugenameBlacklist[gaugename] ~= true
+	local width = 0
 
-local g_layers = {
-	0, -4, 4
-}
+	if isReal then
+		width = tonumber(params.width or 0) or 0
+		width = math.Round(width)
 
-local g_dirs = {
-	0, 90
-}
+		if width < 4 then
+			error("params.width is too small")
+			return
+		end
 
-local function setupRailRotationMatrix(mx, railSideNormal, railTopNormal)
-	local forward = railSideNormal:Cross(railTopNormal)
-	forward:Normalize()
+		if width > 128 then
+			error("params.width is too large")
+			return
+		end
+	end
 
-	local right = forward:Cross(railTopNormal)
-	right:Normalize()
+	local title = tostring(params.title or "")
+	local titleShort = string.upper(gaugename)
 
-	local up = railTopNormal
+	if title == "" then
+		title = titleShort
+	end
 
-	mx:SetForward(forward)
-	mx:SetRight(right)
-	mx:SetUp(up)
+	local scanParams = params.scanParams or {}
+	local defaultTrainParams = params.defaultTrainParams or {}
+
+	local gauge = {}
+	g_gaugesByName[gaugename] = gauge
+	g_gaugesByWidth[width] = gauge
+
+	gauge.name = gaugename
+	gauge.title = title
+	gauge.titleShort = titleShort
+	gauge.isReal = isReal
+
+	gauge.width = width
+
+	local gaugeScanParams = {}
+	gauge.scanParams = gaugeScanParams
+
+	local gaugeDefaultTrainParams = {}
+	gauge.defaultTrainParams = gaugeDefaultTrainParams
+
+	if isReal then
+		gaugeScanParams.offsetPos = scanParams.offsetPos or CONSTANTS.vecZero
+		gaugeScanParams.offsetAng = scanParams.offsetAng or CONSTANTS.angZero
+		gaugeScanParams.maxRailTopTraceZ = scanParams.maxRailTopTraceZ
+		gaugeScanParams.minRailTopTraceZ = scanParams.minRailTopTraceZ
+		gaugeScanParams.marginRailTopTrace = scanParams.marginRailTopTrace
+		gaugeScanParams.marginRailEdgeBelow = scanParams.marginRailEdgeBelow
+		gaugeScanParams.marginRailEdgeAbove = scanParams.marginRailEdgeAbove
+		gaugeScanParams.marginStraight = scanParams.marginStraight
+		gaugeScanParams.layers = scanParams.layers
+
+		gaugeDefaultTrainParams.trainSizeMin = defaultTrainParams.trainSizeMin or 0
+		gaugeDefaultTrainParams.trainSizeMax = defaultTrainParams.trainSizeMax or 0
+	end
 end
 
-local function finalizeRailTopNormal(ply, mx, railSidePos, railSideNormal, estimatedRailTopNormal, railOffsetTop, railOffsetBottom)
-	mx:Identity()
-	mx:SetTranslation(railSidePos)
-	setupRailRotationMatrix(mx, railSideNormal, estimatedRailTopNormal)
+function LIB.GetGaugeByName(gaugename)
+	gaugename = tostring(gaugename or "")
+	gaugename = string.lower(gaugename)
 
-	local traceTopStartPos = mx * railOffsetTop
-	local traceTopEndPos = mx * railOffsetBottom
-
-	-- Tracer for finding the top sides of rail tracks
-	local traceTop = LIBTracer.Tracer(ply, traceTopStartPos, traceTopEndPos, nil, g_traceResultBufferA)
-
-	if not traceTop or not traceTop.Hit or traceTop.StartSolid or traceTop.AllSolid then
+	local gauge = g_gaugesByName[gaugename]
+	if not gauge then
 		return nil
 	end
 
-	return traceTop.HitNormal, traceTop.HitPos
+	return gauge
 end
 
-local function estimateRailTopNormal(ply, mx, railSidePos, railSideNormal, upNormal, railOffsetTop, railOffsetBottom)
-	local railTopNormal = finalizeRailTopNormal(ply, mx, railSidePos, railSideNormal, upNormal, railOffsetTop, railOffsetBottom)
-	return railTopNormal
-end
+function LIB.GetGaugeByWidth(gaugewidth)
+	gaugewidth = tonumber(gaugewidth or 0) or 0
+	gaugewidth = math.Round(gaugewidth)
 
-local function validateTopNormals(railTopNormalA, railTopNormalB)
-	if not railTopNormalA then
-		return false
-	end
-
-	if not railTopNormalB then
-		return false
-	end
-
-	-- Ensure both hit surfaces are pointing in the same direction (usually upwarts)
-	if railTopNormalA:Dot(railTopNormalB) < g_railTopThreshold then
-		return false
-	end
-
-	-- Ensure the track is not too steep
-	if math.abs(railTopNormalA.z) < g_groundThreshold or math.abs(railTopNormalB.z) < g_groundThreshold then
-		return false
-	end
-
-	return true
-end
-
-local function getPlayerSidedNormals(eyeNormal, railSideNormalA, railSideNormalB, railTopNormalA, railTopNormalB)
-	local traceEyeDotA = railSideNormalA:Dot(eyeNormal)
-	local traceEyeDotB = railSideNormalB:Dot(eyeNormal)
-
-	if traceEyeDotA > 0 then
-		return railSideNormalA, railTopNormalA
-	elseif traceEyeDotB > 0 then
-		return railSideNormalB, railTopNormalB
-	end
-
-	return nil
-end
-
-local function checkRailStraightSpace(ply, mx, trainLength, trackGauge, marginStraight, heightOffset)
-	if trainLength <= 0 then
-		return true
-	end
-
-	local gaugeEdgeDistanceA = trackGauge / 2 - marginStraight
-	local gaugeEdgeDistanceB = trackGauge / 2 - marginStraight * 2
-	local trainLengthEdgeDistance = trainLength / 2
-
-	g_spaceCheckVec.z = heightOffset
-
-	g_spaceCheckVec.y = -gaugeEdgeDistanceA
-	g_spaceCheckVec.x = trainLengthEdgeDistance
-	local straightTraceStartA = mx * g_spaceCheckVec
-
-	g_spaceCheckVec.y = -gaugeEdgeDistanceB
-	g_spaceCheckVec.x = -trainLengthEdgeDistance
-	local straightTraceEndA = mx * g_spaceCheckVec
-
-	g_spaceCheckVec.y = gaugeEdgeDistanceA
-	g_spaceCheckVec.x = trainLengthEdgeDistance
-	local straightTraceStartB = mx * g_spaceCheckVec
-
-	g_spaceCheckVec.y = gaugeEdgeDistanceB
-	g_spaceCheckVec.x = -trainLengthEdgeDistance
-	local straightTraceEndB = mx * g_spaceCheckVec
-
-	local straightTraceA = LIBTracer.Tracer(ply, straightTraceStartA, straightTraceEndA, nil, g_traceResultBufferA)
-	local straightTraceB = LIBTracer.Tracer(ply, straightTraceStartB, straightTraceEndB, nil, g_traceResultBufferB)
-
-	if not straightTraceA or straightTraceA.Hit or straightTraceA.StartSolid or straightTraceA.AllSolid then
-		return false
-	end
-
-	if not straightTraceB or straightTraceB.Hit or straightTraceB.StartSolid or straightTraceB.AllSolid then
-		return false
-	end
-
-	return true
-end
-
-local function checkRailCrossSpace(ply, mx, width, heightOffset)
-	g_spaceCheckVec.z = heightOffset
-	g_spaceCheckVec.x = 0
-
-	g_spaceCheckVec.y = width / 2
-	local crossTraceStart = mx * g_spaceCheckVec
-
-	g_spaceCheckVec.y = -width / 2
-	local crossTraceEnd = mx * g_spaceCheckVec
-
-	local crossTrace = LIBTracer.Tracer(ply, crossTraceStart, crossTraceEnd, nil, g_traceResultBufferA)
-
-	if crossTrace and crossTrace.Hit and crossTrace.StartSolid and crossTrace.AllSolid then
-		return false
-	end
-
-	return true
-end
-
-function LIB.ScanRail(ply, tr, parameters)
-	parameters = parameters or {}
-
-	local layers = parameters.layers or g_layers
-	if not layers or table.IsEmpty(layers) then
+	if gaugewidth <= 0 then
 		return nil
 	end
 
-	local trainLength = parameters.trainLength or 0
-
-	local maxGauge = parameters.maxGauge or 84
-	local minGauge = parameters.minGauge or 16
-
-	local maxGaugeDiagonal = maxGauge * 1.5
-
-	local maxRailGaugeDiagonalVecStart = Vector(maxGaugeDiagonal, 0, 0)
-	local maxRailGaugeDiagonalVecEnd = Vector(-maxGaugeDiagonal, 0, 0)
-
-	local maxRailTopTraceZ = parameters.maxRailTopTraceZ or 32
-	local minRailTopTraceZ = parameters.minRailTopTraceZ or 0
-	local marginRailTopTrace = parameters.marginRailTopTrace or 3
-
-	local marginRailEdgeBelow = parameters.marginRailEdgeBelow or 4
-	local marginRailEdgeAbove = parameters.marginRailEdgeAbove or 2
-	local marginStraight = parameters.marginStraight or 2
-
-	local railTopTraceOffsetTop = Vector(0, -marginRailTopTrace, maxRailTopTraceZ)
-	local railTopTraceOffsetBottom = Vector(0, -marginRailTopTrace, minRailTopTraceZ)
-
-	local pos = tr.HitPos
-
-	local eyeNormal = tr.Normal
-
-	local normal = tr.HitNormal
-	local normalZAbs = math.abs(normal.z)
-	local normalZSign = normal.z > 0 and 1 or -1
-
-	local ang = normal:Angle()
-
-	g_yawOffsetAng.y = 0
-
-	if normalZAbs >= g_groundThreshold then
-		-- ground surface math
-		local eyeAngles = eyeNormal:Angle()
-
-		ang:RotateAroundAxis(ang:Right(), -90)
-
-	 	g_yawOffsetAng.y = math.NormalizeAngle(eyeAngles.y - ang.y) * normalZSign
-	end
-
-	g_yawOffsetAng:Normalize()
-
-	g_worldMx:Identity()
-	g_layerMx:Identity()
-	g_trackMx:Identity()
-
-	g_offsetMx:Identity()
-	g_offsetMx:SetTranslation(parameters.offsetPos or CONSTANTS.vecZero)
-	g_offsetMx:SetAngles(parameters.offsetAng or CONSTANTS.angZero)
-
-	g_baseMx:Identity()
-	g_baseMx:SetTranslation(pos)
-	g_baseMx:SetAngles(ang)
-	g_baseMx:Rotate(g_yawOffsetAng)
-
-	local foundTrackGauge = nil
-
-	-- Scan in a flat cross pattern so we find tracks in every rotation.
-	for _, dir in ipairs(g_dirs) do
-		g_dirAng.y = dir
-		g_dirAng:Normalize()
-
-		local traceSideHitPosA = nil
-		local traceSideHitPosB = nil
-
-		local railSideNormalA = nil
-		local railSideNormalB = nil
-
-		local distance = nil
-
-		-- Use multiple layers to be more robust against uneven or patchy surfaces.
-		for _, layer in ipairs(layers) do
-			g_layerVec.z = layer
-
-			g_layerMx:Identity()
-			g_layerMx:SetTranslation(g_layerVec)
-			g_layerMx:SetAngles(g_dirAng)
-
-			g_worldMx:Identity()
-			g_worldMx:Mul(g_baseMx)
-			g_worldMx:Mul(g_layerMx)
-
-			traceSideHitPosA = nil
-			traceSideHitPosB = nil
-
-			railSideNormalA = nil
-			railSideNormalB = nil
-
-			distance = nil
-
-			local layerCenterPos = g_worldMx:GetTranslation()
-			local layerStartPos = g_worldMx * maxRailGaugeDiagonalVecStart
-			local layerEndPos = g_worldMx * maxRailGaugeDiagonalVecEnd
-
-			-- Tracer for finding the inner sides of rail tracks
-			local traceSideA = LIBTracer.Tracer(ply, layerCenterPos, layerStartPos, nil, g_traceResultBufferA)
-			local traceSideB = LIBTracer.Tracer(ply, layerCenterPos, layerEndPos, nil, g_traceResultBufferB)
-
-			if not traceSideA or not traceSideA.Hit or traceSideA.AllSolid then
-				continue
-			end
-
-			if not traceSideB or not traceSideB.Hit or traceSideB.AllSolid then
-				continue
-			end
-
-			traceSideHitPosA = traceSideA.HitPos
-			traceSideHitPosB = traceSideB.HitPos
-
-			if traceSideHitPosA == traceSideHitPosB then
-				continue
-			end
-
-			distance = traceSideHitPosA:Distance(traceSideHitPosB)
-			if distance < minGauge then
-				-- Likely not a valid rail gauge
-				continue
-			end
-
-			railSideNormalA = traceSideA.HitNormal
-			railSideNormalB = traceSideB.HitNormal
-
-			-- Ensure both hit surfaces are parallel and are facing each other
-			if railSideNormalA:Dot(railSideNormalB) > -g_railParallelThreshold then
-				continue
-			end
-
-			break
-		end
-
-		if not traceSideHitPosA or not traceSideHitPosB then
-			continue
-		end
-
-		if not railSideNormalA or not railSideNormalB then
-			continue
-		end
-
-		local upNormal = g_worldMx:GetUp()
-
-		-- Top tracers for first estimation
-		local railTopNormalA = estimateRailTopNormal(ply, g_trackMx, traceSideHitPosA, railSideNormalA, upNormal, railTopTraceOffsetTop, railTopTraceOffsetBottom)
-		local railTopNormalB = estimateRailTopNormal(ply, g_trackMx, traceSideHitPosB, railSideNormalB, upNormal, railTopTraceOffsetTop, railTopTraceOffsetBottom)
-
-		if not railTopNormalA then
-			continue
-		end
-
-		if not railTopNormalB then
-			continue
-		end
-
-		-- Final top tracers for most precise top surface normals
-		local railTopA = nil
-		local railTopB = nil
-
-		railTopNormalA, railTopA = finalizeRailTopNormal(ply, g_trackMx, traceSideHitPosA, railSideNormalA, railTopNormalA, railTopTraceOffsetTop, railTopTraceOffsetBottom)
-		railTopNormalB, railTopB = finalizeRailTopNormal(ply, g_trackMx, traceSideHitPosB, railSideNormalB, railTopNormalB, railTopTraceOffsetTop, railTopTraceOffsetBottom)
-
-		if not validateTopNormals(railTopNormalA, railTopNormalB) then
-			continue
-		end
-
-		local playerSidedRailSideNormal, playerSidedRailTopNormal = getPlayerSidedNormals(
-			eyeNormal,
-			railSideNormalA,
-			railSideNormalB,
-			railTopNormalA,
-			railTopNormalB
-		)
-
-		if not playerSidedRailSideNormal then
-			continue
-		end
-
-		if not playerSidedRailTopNormal then
-			continue
-		end
-
-		-- Found center and direction of the track
-		g_trackMx:Identity()
-		g_trackMx:SetTranslation((railTopA + railTopB) / 2)
-		setupRailRotationMatrix(g_trackMx, playerSidedRailSideNormal, playerSidedRailTopNormal)
-
-		-- Find track gauge
-		local toCenterDir = traceSideHitPosA - (traceSideHitPosA + traceSideHitPosB) / 2
-		toCenterDir:Normalize()
-
-		local toCenterDot = toCenterDir:Dot(g_trackMx:GetRight())
-
-		local trackGauge = math.Round(distance * math.abs(toCenterDot))
-		if trackGauge < minGauge or trackGauge > maxGauge then
-			-- Likely not a valid rail gauge
-			continue
-		end
-
-		-- Check if the track is straight for at least the given trainLength
-		if not checkRailStraightSpace(ply, g_trackMx, trainLength, trackGauge, marginStraight, -marginRailEdgeBelow) then
-			continue
-		end
-
-		-- Check if the area above the track is not blocked along its width
-		-- This ensures were are indeed on a train track and not just in a narrow corridor
-		if not checkRailCrossSpace(ply, g_trackMx, trackGauge * 1.5, marginRailEdgeAbove) then
-			continue
-		end
-
-		foundTrackGauge = trackGauge
-		break
-	end
-
-	if not foundTrackGauge then
+	local gauge = g_gaugesByWidth[gaugewidth]
+	if not gauge then
 		return nil
 	end
 
-	g_trackMx:Mul(g_offsetMx)
-
-	local trackCenter = g_trackMx:GetTranslation()
-	local trackAng = g_trackMx:GetAngles()
-
-	local isDebug = LIBDebug.IsDeveloper()
-
-	if isDebug then
-		local gaugeString = string.format("Gauge: %i", foundTrackGauge)
-
-		LIBDebug.EntityTextAtPosition(trackCenter, gaugeString, 1)
-		LIBDebug.Axis(trackCenter, trackAng, foundTrackGauge / 4)
+	if not gauge.isReal then
+		return nil
 	end
 
-	return {
-		center = trackCenter,
-		ang = trackAng,
-		gauge = foundTrackGauge,
+	return gauge
+end
+
+function LIB.HasGaugeByName(gaugename)
+	return LIB.GetGaugeByName(gaugename) ~= nil
+end
+
+function LIB.HasGaugeByWidth(gaugename)
+	return LIB.GetGaugeByWidth(gaugename) ~= nil
+end
+
+function LIB.GetGauges()
+	return g_gaugesByName
+end
+
+function LIB.RegisterSpawnnameToGauge(spawnnameNoGauge, gaugename, spawnnameFull)
+	gaugename = tostring(gaugename or "")
+	gaugename = string.lower(gaugename)
+
+	if g_gaugenameBlacklist[gaugename] then
+		return
+	end
+
+	spawnnameNoGauge = tostring(spawnnameNoGauge or "")
+	if spawnnameNoGauge == "" then
+		return
+	end
+
+	spawnnameFull = tostring(spawnnameFull or "")
+	if spawnnameFull == "" then
+		return
+	end
+
+	local gauges = g_spawnnamePartToGaugeRegister[spawnnameNoGauge] or {}
+	g_spawnnamePartToGaugeRegister[spawnnameNoGauge] = gauges
+
+	local entry = {}
+	gauges[gaugename] = entry
+
+	if not gauges[LIB.ENUM_GAUGE_DEFAULT] then
+		g_spawnnameFullToGaugeRegister[spawnnameFull] = entry
+		gauges[LIB.ENUM_GAUGE_DEFAULT] = entry
+		gauges[LIB.ENUM_GAUGE_AUTO] = entry
+	end
+
+	entry.spawnnameFull = spawnnameFull
+	entry.spawnnameNoGauge = spawnnameNoGauge
+	entry.gaugename = gaugename
+end
+
+function LIB.GetSpawnnameInfo(spawnnameNoGaugeOrFull, gaugename)
+	spawnnameNoGaugeOrFull = tostring(spawnnameNoGaugeOrFull or "")
+	if spawnnameNoGaugeOrFull == "" then
+		return nil
+	end
+
+	gaugename = tostring(gaugename or "")
+	gaugename = string.lower(gaugename)
+
+	if g_gaugenameBlacklist[gaugename] then
+		gaugename = LIB.ENUM_GAUGE_DEFAULT
+	end
+
+	if gaugename == LIB.ENUM_GAUGE_DEFAULT then
+		local entry = g_spawnnameFullToGaugeRegister[spawnnameNoGaugeOrFull]
+		if entry and not g_gaugenameBlacklist[entry.gaugename] then
+			return entry
+		end
+	end
+
+	local gauges = g_spawnnamePartToGaugeRegister[spawnnameNoGaugeOrFull]
+	if not gauges then
+		return nil
+	end
+
+	entry = gauges[gaugename]
+	if not entry then
+		return nil
+	end
+
+	if g_gaugenameBlacklist[entry.gaugename] then
+		return nil
+	end
+
+	return entry
+end
+
+do
+	-- Large rails, such as: PHX, rsg, rsg3ft, ron2ft
+	local scanParamsLarge = {
+		offsetPos = Vector(0, 0, -5),
+		offsetAng = Angle(0, 0, 0),
+		maxRailTopTraceZ = 32,
+		minRailTopTraceZ = 0,
+		marginRailTopTrace = 3,
+		marginRailEdgeBelow = 4,
+		marginRailEdgeAbove = 2,
+		marginStraight = 2,
+		layers = {
+			0, -4, 4
+		},
 	}
+
+	local traimParamsLarge = {
+		trainSizeMin = -512,
+		trainSizeMax = 512,
+	}
+
+	-- Small rails, such as: Minitrains (mt12)
+	local scanParamsSmall = {
+		offsetPos = Vector(0, 0, -1),
+		offsetAng = Angle(0, 0, 0),
+		maxRailTopTraceZ = 8,
+		minRailTopTraceZ = 0,
+		marginRailTopTrace = 0.5,
+		marginRailEdgeBelow = 1,
+		marginRailEdgeAbove = 2,
+		marginStraight = 1,
+		layers = {
+			0, 1, -1
+		},
+	}
+
+	local traimParamsSmall = {
+		trainSizeMin = -32,
+		trainSizeMax = 32,
+	}
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_DEFAULT, {
+		title = "Default",
+	})
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_AUTO, {
+		title = "Auto",
+	})
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_PHX, {
+		title = "PHX",
+		width = 80,
+		scanParams = scanParamsLarge,
+		defaultTrainParams = traimParamsLarge,
+	})
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_RSG, {
+		title = "RSG",
+		width = 58,
+		scanParams = scanParamsLarge,
+		defaultTrainParams = traimParamsLarge,
+	})
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_RSG3FT, {
+		title = "RSG 3ft",
+		width = 36,
+		scanParams = scanParamsLarge,
+		defaultTrainParams = traimParamsLarge,
+	})
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_RON2FT, {
+		title = "Ron 2ft",
+		width = 32,
+		scanParams = scanParamsLarge,
+		defaultTrainParams = traimParamsLarge,
+	})
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_MT12, {
+		title = "Minitrains",
+		width = 12,
+		scanParams = scanParamsSmall,
+		defaultTrainParams = traimParamsSmall,
+	})
 end
 
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 	LIBTracer = SligWolf_Addons.Tracer
-	LIBDebug = SligWolf_Addons.Debug
-
-	-- Test code
-	-- local LIBHook = SligWolf_Addons.Hook
-	-- LIBHook.Add("Think", "Rail.ScanRail", function()
-	-- 	local ply = LIBDebug.GetDebugPlayer()
-	-- 	if not IsValid(ply) then
-	-- 		return
-	-- 	end
-
-	-- 	local tr = LIBTracer.DoTrace(ply, 5000)
-	-- 	if not tr or not tr.Hit then
-	-- 		return
-	-- 	end
-
-	-- 	LIBDebug.SetLifetime(CLIENT and LIBDebug.DEBUG_LIFETIME_FRAME or LIBDebug.DEBUG_LIFETIME_DEFAULT)
-
-	-- 	if ply:KeyDown( IN_USE ) then
-	-- 		-- Minitrains
-	-- 		LIB.ScanRail(ply, tr, {
-	-- 			offsetPos = Vector(0, 0, -1),
-	-- 			offsetAng = Angle(0, 0, 0),
-	-- 			trainLength = 50,
-	-- 			maxGauge = 14,
-	-- 			minGauge = 10,
-	-- 			maxRailTopTraceZ = 8,
-	-- 			minRailTopTraceZ = 0,
-	-- 			marginRailTopTrace = 0.5,
-	-- 			marginRailEdgeBelow = 1,
-	-- 			marginRailEdgeAbove = 2,
-	-- 			marginStraight = 1,
-	-- 			layers = {
-	-- 				0, 1, -1
-	-- 			}
-	-- 		})
-	-- 	else
-	-- 		-- PHX, 2feet, 3feet, rsg
-	-- 		LIB.ScanRail(ply, tr, {
-	-- 			offsetPos = Vector(0, 0, -5),
-	-- 			offsetAng = Angle(0, 0, 0),
-	-- 			trainLength = 1000,
-	-- 			maxGauge = 84,
-	-- 			minGauge = 28,
-	-- 			maxRailTopTraceZ = 32,
-	-- 			minRailTopTraceZ = 0,
-	-- 			marginRailTopTrace = 3,
-	-- 			marginRailEdgeBelow = 4,
-	-- 			marginRailEdgeAbove = 2,
-	-- 			marginStraight = 2,
-	-- 			layers = {
-	-- 				0, -4, 4
-	-- 			}
-	-- 		})
-	-- 	end
-
-	-- 	LIBDebug.ResetLifetime()
-	-- end)
 end
 
 return true

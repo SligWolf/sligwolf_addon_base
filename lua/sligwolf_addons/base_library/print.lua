@@ -5,9 +5,9 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Print")
 
-local LIBEntities = nil
-local LIBDebug = nil
-local LIBNet = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBDebug = SligWolf_Addons.Debug
+local LIBNet = SligWolf_Addons.Net
 
 LIB.NOTIFY_GENERIC = 0
 LIB.NOTIFY_ERROR = 1
@@ -18,7 +18,6 @@ LIB.NOTIFY_CLEANUP = 4
 LIB.COLOR_WARN = Color(255, 90, 90)
 
 function LIB.Load()
-	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBEntities = SligWolf_Addons.Entities
 	LIBDebug = SligWolf_Addons.Debug
 	LIBNet = SligWolf_Addons.Net

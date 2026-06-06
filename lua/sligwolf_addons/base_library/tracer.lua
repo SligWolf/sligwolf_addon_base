@@ -7,10 +7,10 @@ local LIB = SligWolf_Addons:NewLib("Tracer")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBPosition = nil
-local LIBEntities = nil
-local LIBCamera = nil
-local LIBDebug = nil
+local LIBPosition = SligWolf_Addons.Position
+local LIBEntities = SligWolf_Addons.Entities
+local LIBCamera = SligWolf_Addons.Camera
+local LIBDebug = SligWolf_Addons.Debug
 
 local TRACE_RESULT_BUFFER = {}
 local TRACE_RESULT_PARAMS = {}
@@ -194,7 +194,7 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, filterfunc, result)
 	return LIB.TracerChain(ent, TRACER_ATTACHMENT_CHAIN_BUFFER, filterfunc, result)
 end
 
-function LIB.DoTrace(ply, maxdist, filter)
+function LIB.PlayerAimTrace(ply, maxdist, filter)
 	local camera = LIBCamera.GetCameraEnt(ply)
 
 	if not IsValid(ply) then return nil end

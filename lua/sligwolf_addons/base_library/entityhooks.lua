@@ -5,11 +5,11 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Entityhooks")
 
-local LIBDuplicator = nil
-local LIBEntities = nil
-local LIBSourceIO = nil
-local LIBVehicle = nil
-local LIBHook = nil
+local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBVehicle = SligWolf_Addons.Vehicle
+local LIBHook = SligWolf_Addons.Hook
 
 local g_keyValueClassWhiteList = LIB.g_keyValueClassWhiteList or {}
 LIB.g_keyValueClassWhiteList = g_keyValueClassWhiteList
@@ -87,7 +87,12 @@ local function IsAllowed(ent, key, value)
 end
 
 local function ApplyEntityCreatedQueue()
-	-- Call hooks as listed in g_entityCreatedQueue for their entities
+	-- Call hooks as listed in g_entityCreatedQueue for their entities.
+
+	if not SligWolf_Addons.FirstFrameRendered then
+		-- Make sure we do not process queue too early to prevent race condition on cold starts.
+		return
+	end
 
 	for _, item in ipairs(g_entityCreatedQueue) do
 		local ent1 = item.ent1
@@ -107,7 +112,7 @@ local function ApplyEntityCreatedQueue()
 
 	table.Empty(g_entityCreatedQueue)
 
-	-- Remove temporary hook, so it doesn't idle if no entities are being created
+	-- Remove temporary hook, so it doesn't idle if no entities are being created.
 	LIBHook.Remove("Tick", "Library_EntityHooks_ApplyEntityCreatedQueue")
 end
 
@@ -119,8 +124,28 @@ function LIB.AddToEntityCreatedQueue(hookName, ent1, ent2)
 	})
 
 	if #g_entityCreatedQueue == 1 then
-		-- Start temporary hook as soon as the first queue entry is made
+		-- Start temporary hook as soon as the first queue entry is made.
 		LIBHook.Add("Tick", "Library_EntityHooks_ApplyEntityCreatedQueue", ApplyEntityCreatedQueue, -100000)
+	end
+end
+
+function LIB.CallSpawnVehicleFinished(addon, ent, ply)
+	if not IsValid(ent) then
+		return
+	end
+
+	if not ent:IsVehicle() then
+		return
+	end
+
+	if not ent:IsValidVehicle() then
+		return
+	end
+
+	local vat = ent:SligWolf_GetAddonTable(addon.Addonname)
+
+	if addon.SpawnVehicleFinished then
+		addon:SpawnVehicleFinished(ent, vat, ply)
 	end
 end
 
@@ -213,12 +238,13 @@ function LIB.Load()
 				addon:SpawnSystemFinished(ent, ply)
 			end
 
-			if ent:IsVehicle() and ent:IsValidVehicle() then
-				local vat = ent:SligWolf_GetAddonTable(addonname)
+			LIB.CallSpawnVehicleFinished(addon, ent, ply)
 
-				if addon.SpawnVehicleFinished then
-					addon:SpawnVehicleFinished(ent, vat, ply)
-				end
+			local entTable = ent:SligWolf_GetTable()
+			local spawnVehicleFinishedList = entTable.spawnVehicleFinishedList or {}
+
+			for _, thisEnt in ipairs(spawnVehicleFinishedList) do
+				LIB.CallSpawnVehicleFinished(addon, thisEnt, ply)
 			end
 		end
 	end
@@ -245,7 +271,9 @@ function LIB.Load()
 
 		ent["sligwolf_is_" .. addonname] = true
 
-		LIBHook.RunCustom("OnPostAddonEntityCreated", ent, spawnname, spawntable, addonname)
+		ProtectedCall(function()
+			LIBHook.RunCustom("OnPostAddonEntityCreated", ent, spawnname, spawntable, addonname)
+		end)
 	end
 
 	LIBHook.AddCustom("OnPostEntityCreated", "Library_EntityHooks_CallOnPostAddonEntityCreated", CallOnPostAddonEntityCreated, -100000)
@@ -261,7 +289,9 @@ function LIB.Load()
 		local addonname = spawntable.SLIGWOLF_Addonname
 		if not addonname then return end
 
-		LIBHook.RunCustom("PostPlayerSpawnedAddonEntity", ply, ent, spawnname, spawntable, addonname)
+		ProtectedCall(function()
+			LIBHook.RunCustom("PostPlayerSpawnedAddonEntity", ply, ent, spawnname, spawntable, addonname)
+		end)
 	end
 
 	LIBHook.AddCustom("PostPlayerSpawnedEntity", "Library_EntityHooks_CallPostPlayerSpawnedAddonEntity", CallPostPlayerSpawnedAddonEntity, -100000)

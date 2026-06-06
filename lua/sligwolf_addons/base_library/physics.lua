@@ -5,8 +5,8 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Physics")
 
-local LIBEntities = nil
-local LIBSpamprotection = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 
 local g_CollidingSystems = {}
 

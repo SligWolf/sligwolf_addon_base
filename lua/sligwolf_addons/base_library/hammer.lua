@@ -3,12 +3,13 @@ if not SligWolf_Addons then
 	return
 end
 
-local LIB = SligWolf_Addons:NewLib("Mapping")
+local LIB = SligWolf_Addons:NewLib("Hammer")
 
-local LIBSkinsystem = nil
-local LIBPrint = nil
-local LIBUtil = nil
-local LIBFile = nil
+local LIBSkinsystem = SligWolf_Addons.Skinsystem
+local LIBPrint = SligWolf_Addons.Print
+local LIBUtil = SligWolf_Addons.Util
+local LIBFile = SligWolf_Addons.File
+local LIBRail = SligWolf_Addons.Rail
 
 local function getVehicleTablesByClass()
 	local result = {}
@@ -17,7 +18,7 @@ local function getVehicleTablesByClass()
 
 	local count = 0
 
-	for spawnname, vehicleTable in pairs(vehicleTables) do
+	for _, vehicleTable in pairs(vehicleTables) do
 		if not istable(vehicleTable) then
 			continue
 		end
@@ -36,6 +37,11 @@ local function getVehicleTablesByClass()
 		end
 
 		local class = tostring(fgd.class or "")
+		if class == "" then
+			continue
+		end
+
+		local spawnname = tostring(fgd.spawnname or "")
 		if class == "" then
 			continue
 		end
@@ -96,8 +102,31 @@ local function getThemesByAddon(category)
 	return items
 end
 
-local function vehicleThemesOptionsListSorter(a, b)
-	return a.key < b.key
+local function getTrainGauges()
+	local items = {}
+
+	local gauges = LIBRail.GetGauges()
+	if not gauges then
+		return items
+	end
+
+	for _, gauge in pairs(gauges) do
+		local key = gauge.name
+		local titleShort = gauge.titleShort
+		local width = gauge.width
+
+		if not gauge.isReal then
+			continue
+		end
+
+		table.insert(items, {
+			key = key,
+			titleShort = titleShort,
+			width = width,
+		})
+	end
+
+	return items
 end
 
 local function getVehicleThemesOptionsList(options)
@@ -110,7 +139,9 @@ local function getVehicleThemesOptionsList(options)
 	table.insert(lines, [[\t\t"random" : "Random"]])
 	table.insert(lines, [[\t\t"player" : "Player Colored"]])
 
-	table.sort(options, vehicleThemesOptionsListSorter)
+	table.sort(options, function(a, b)
+		return a.key < b.key
+	end)
 
 	for _, item in ipairs(options) do
 		local key = item.key
@@ -132,8 +163,34 @@ local function getVehicleThemesOptionsList(options)
 	return lines
 end
 
-local function spawnnameOptionsListSorter(a, b)
-	return a.spawnname < b.spawnname
+local function getTrainGaugesOptionsList(options)
+	options = options or {}
+
+	local lines = {}
+
+	table.insert(lines, [[\t\t"" : "Default"]])
+
+	table.sort(options, function(a, b)
+		return a.width > b.width
+	end)
+
+	for _, item in ipairs(options) do
+		local key = item.key
+		local titleShort = item.titleShort
+		local width = item.width
+
+		local line = string.format(
+			[[\t\t"%s" : "%s (%i units)"]],
+			key,
+			titleShort,
+			width
+		)
+
+		table.insert(lines, line)
+	end
+
+	lines = table.concat(lines, "\n")
+	return lines
 end
 
 local function getSpawnnameOptionsList(options)
@@ -142,7 +199,9 @@ local function getSpawnnameOptionsList(options)
 	local lines = {}
 	table.insert(lines, [[\t\t"" : "Nothing (No SW-ADDON Vehicle)"]])
 
-	table.sort(options, spawnnameOptionsListSorter)
+	table.sort(options, function(a, b)
+		return a.spawnname < b.spawnname
+	end)
 
 	for _, item in ipairs(options) do
 		local title = item.title
@@ -186,7 +245,7 @@ local function replacePlaceholder(data, name, value)
 end
 
 local g_fgd_cache = nil
-local g_fgd_cache_filename = "mapping/cache/sligwolf_base_template.fgd.json"
+local g_fgd_cache_filename = "hammer/cache/sligwolf_base_template.fgd.json"
 
 function LIB.WriteFGDCache()
 	local data = util.TableToJSON(g_fgd_cache or {}, true)
@@ -195,7 +254,7 @@ function LIB.WriteFGDCache()
 	local path = LIBFile.GetAbsolutePath(g_fgd_cache_filename)
 
 	if not success then
-		LIBPrint.Print("Mapping.WriteFGDCache: Could not Write to 'data/%s'", path)
+		LIBPrint.Print("Hammer.WriteFGDCache: Could not Write to 'data/%s'", path)
 		return
 	end
 
@@ -263,7 +322,7 @@ function LIB.BuildCache(rebuildCache)
 	local validCache = LIB.IsValidFGDCache()
 
 	if not rebuildCache and validCache then
-		LIBPrint.Print("Mapping.BuildCache: Reading from FGD cache.")
+		LIBPrint.Print("Hammer.BuildCache: Reading from FGD cache.")
 		return validCache
 	end
 
@@ -278,21 +337,25 @@ function LIB.BuildCache(rebuildCache)
 	LIB.SetFGDCacheValue("SW_VEHICLE_COUNT", vehicleTablesCount)
 	LIB.SetFGDCacheValue("SW_VEHICLE_TABLES", vehicleTables)
 
-	LIB.SetFGDCacheValue("SW_ENTITY_THEMES", getThemesByAddon("entity"))
-	LIB.SetFGDCacheValue("SW_WEAPON_THEMES", getThemesByAddon("weapon"))
-	LIB.SetFGDCacheValue("SW_NPC_THEMES", getThemesByAddon("npc"))
-	LIB.SetFGDCacheValue("SW_VEHICLE_THEMES", getThemesByAddon("vehicle"))
+	LIB.SetFGDCacheValue("SW_THEMES", {
+		entity = getThemesByAddon("entity"),
+		weapon = getThemesByAddon("weapon"),
+		npc = getThemesByAddon("npc"),
+		vehicle = getThemesByAddon("vehicle"),
+	})
+
+	LIB.SetFGDCacheValue("SW_GAUGES", getTrainGauges())
 
 	LIB.WriteFGDCache()
 
 	validCache = LIB.IsValidFGDCache()
 
 	if not validCache then
-		LIBPrint.Print("Mapping.BuildCache: Could not build FGD cache.")
+		LIBPrint.Print("Hammer.BuildCache: Could not build FGD cache.")
 		return false
 	end
 
-	LIBPrint.Print("Mapping.BuildCache: FGD cache refreshed.")
+	LIBPrint.Print("Hammer.BuildCache: FGD cache refreshed.")
 	return true
 end
 
@@ -314,16 +377,16 @@ end
 
 
 function LIB.GenerateFGD(rebuildCache)
-	local fileNameGenerated = "mapping/sligwolf_base.fgd.txt"
+	local fileNameGenerated = "hammer/sligwolf_base.fgd.txt"
 	local fileNameGeneratedAbsolute = LIBFile.GetAbsolutePath(fileNameGenerated)
 
-	local fileNameTempate = "mapping/sligwolf_base_template.fgd.txt"
+	local fileNameTempate = "hammer/sligwolf_base_template.fgd.txt"
 	local fileNameTempateAbsolute = LIBFile.GetAbsolutePath(fileNameTempate, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC)
 
 	local fgdContent = LIBFile.Read(fileNameTempate, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC) or ""
 	if fgdContent == "" then
 		LIBPrint.Print(
-			"Mapping.GenerateFGD: FGD template '%s' not found or empty",
+			"Hammer.GenerateFGD: FGD template '%s' not found or empty",
 			fileNameTempateAbsolute
 		)
 
@@ -336,6 +399,8 @@ function LIB.GenerateFGD(rebuildCache)
 	end
 
 	local vehicleTables = LIB.GetFGDCacheValue("SW_VEHICLE_TABLES")
+	local themes = LIB.GetFGDCacheValue("SW_THEMES")
+	local gauges = LIB.GetFGDCacheValue("SW_GAUGES")
 
 	fgdContent = replacePlaceholder(fgdContent, "SW_VERSION", SligWolf_Addons.BaseApiVersion)
 	fgdContent = replacePlaceholder(fgdContent, "SW_GENERATED_AT", os.date("%Y-%m-%d %H:%M:%S"))
@@ -349,25 +414,31 @@ function LIB.GenerateFGD(rebuildCache)
 	fgdContent = replacePlaceholder(
 		fgdContent,
 		"SW_ENTITY_THEMES_OPTIONS",
-		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_ENTITY_THEMES"))
+		getVehicleThemesOptionsList(themes["entity"])
 	)
 
 	fgdContent = replacePlaceholder(
 		fgdContent,
 		"SW_WEAPON_THEMES_OPTIONS",
-		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_WEAPON_THEMES"))
+		getVehicleThemesOptionsList(themes["weapon"])
 	)
 
 	fgdContent = replacePlaceholder(
 		fgdContent,
 		"SW_NPC_THEMES_OPTIONS",
-		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_NPC_THEMES"))
+		getVehicleThemesOptionsList(themes["npc"])
 	)
 
 	fgdContent = replacePlaceholder(
 		fgdContent,
 		"SW_VEHICLE_THEMES_OPTIONS",
-		getVehicleThemesOptionsList(LIB.GetFGDCacheValue("SW_VEHICLE_THEMES"))
+		getVehicleThemesOptionsList(themes["vehicle"])
+	)
+
+	fgdContent = replacePlaceholder(
+		fgdContent,
+		"SW_TRAIN_GAUGES_OPTIONS",
+		getTrainGaugesOptionsList(gauges)
 	)
 
 	fgdContent = replacePlaceholder(
@@ -400,14 +471,14 @@ function LIB.GenerateFGD(rebuildCache)
 	local success = LIBFile.Write(fileNameGenerated, fgdContent)
 
 	if success then
-		LIBPrint.Print("Mapping.GenerateFGD: Written to 'data/%s'. Ready for copy and paste.", fileNameGeneratedAbsolute)
+		LIBPrint.Print("Hammer.GenerateFGD: Written to 'data/%s'. Ready for copy and paste.", fileNameGeneratedAbsolute)
 	else
-		LIBPrint.Print("Mapping.GenerateFGD: Could not Write to 'data/%s'", fileNameGeneratedAbsolute)
+		LIBPrint.Print("Hammer.GenerateFGD: Could not Write to 'data/%s'", fileNameGeneratedAbsolute)
 	end
 end
 
 if SERVER then
-	concommand.Add("sv_sligwolf_mapping_generate_fgd", function(ply, cmd, args)
+	concommand.Add("sv_sligwolf_hammer_generate_fgd", function(ply, cmd, args)
 		if not LIBUtil.IsAdminForCMD(ply) then
 			return
 		end
@@ -423,6 +494,7 @@ function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 	LIBUtil = SligWolf_Addons.Util
 	LIBFile = SligWolf_Addons.File
+	LIBRail = SligWolf_Addons.Rail
 end
 
 return true

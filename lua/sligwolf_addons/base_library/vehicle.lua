@@ -5,17 +5,17 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Vehicle")
 
-local LIBConstraints = nil
-local LIBCoupling = nil
-local LIBEntities = nil
-local LIBSourceIO = nil
-local LIBPosition = nil
-local LIBPhysics = nil
-local LIBCamera = nil
-local LIBTimer = nil
-local LIBModel = nil
-local LIBHook = nil
-local LIBUtil = nil
+local LIBConstraints = SligWolf_Addons.Constraints
+local LIBCoupling = SligWolf_Addons.Coupling
+local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBPosition = SligWolf_Addons.Position
+local LIBPhysics = SligWolf_Addons.Physics
+local LIBCamera = SligWolf_Addons.Camera
+local LIBTimer = SligWolf_Addons.Timer
+local LIBModel = SligWolf_Addons.Model
+local LIBHook = SligWolf_Addons.Hook
+local LIBUtil = SligWolf_Addons.Util
 
 function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	if not SERVER then return end
@@ -28,7 +28,7 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 			)
 		)
 
-		return
+		return nil
 	end
 
 	local vehicleTable = LIB.GetVehicleTableFromSpawnname(spawnname)
@@ -40,7 +40,7 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 			)
 		)
 
-		return
+		return nil
 	end
 
 	local model = vehicleTable.Model
@@ -49,7 +49,9 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	local members = vehicleTable.Members
 
 	local vehicle = LIBEntities.MakeEnt(class, plyOwner, parent, name, addonname)
-	if not IsValid(vehicle) then return end
+	if not IsValid(vehicle) then
+		return nil
+	end
 
 	LIBModel.SetModel(vehicle, model)
 
@@ -67,6 +69,18 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 	if members then
 		table.Merge(vehicle, members)
 		duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
+	end
+
+	if IsValid(parent) then
+		local root = LIBEntities.GetSuperParent(parent)
+		if IsValid(root) then
+			local rootTable = root:SligWolf_GetTable()
+
+			local spawnVehicleFinishedList = rootTable.spawnVehicleFinishedList or {}
+			rootTable.spawnVehicleFinishedList = spawnVehicleFinishedList
+
+			table.insert(spawnVehicleFinishedList, vehicle)
+		end
 	end
 
 	return vehicle
@@ -808,7 +822,9 @@ function LIB.Load()
 			if not ent:IsVehicle() then return end
 			if not ent:IsValidVehicle() then return end
 
-			LIBHook.RunCustom("OnPostAddonVehicleCreated", ent, spawnname, spawntable, addonname)
+			ProtectedCall(function()
+				LIBHook.RunCustom("OnPostAddonVehicleCreated", ent, spawnname, spawntable, addonname)
+			end)
 		end)
 	end
 

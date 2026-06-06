@@ -7,8 +7,8 @@ local LIB = SligWolf_Addons:NewLib("Coupling")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBEntities = nil
-local LIBUtil = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBUtil = SligWolf_Addons.Util
 
 LIB.GENDER_MALE = "M"
 LIB.GENDER_FEMALE = "F"

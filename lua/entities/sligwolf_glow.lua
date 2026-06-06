@@ -227,8 +227,8 @@ function ENT:DrawGlow(pixVis, pos, ang, size, enlarge, count, col, AlphaReduce, 
 	col.a = alpha
 end
 
-function ENT:DrawTranslucent(...)
-	BaseClass.DrawTranslucent(self, ...)
+function ENT:DrawTranslucent(flags)
+	BaseClass.DrawTranslucent(self, flags)
 
 	if not self:IsOn() then
 		return

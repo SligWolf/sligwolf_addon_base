@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("VR")
 
-local LIBHook = nil
+local LIBHook = SligWolf_Addons.Hook
 
 local g_vrmod = nil
 local g_version = nil

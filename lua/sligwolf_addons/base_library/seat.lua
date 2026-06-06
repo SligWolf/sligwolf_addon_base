@@ -5,13 +5,13 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Seat")
 
-local LIBPosition = nil
-local LIBEntities = nil
-local LIBSourceIO = nil
-local LIBDebug = nil
-local LIBTimer = nil
-local LIBModel = nil
-local LIBHook = nil
+local LIBPosition = SligWolf_Addons.Position
+local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBDebug = SligWolf_Addons.Debug
+local LIBTimer = SligWolf_Addons.Timer
+local LIBModel = SligWolf_Addons.Model
+local LIBHook = SligWolf_Addons.Hook
 
 local g_maxAttachmentTraceDistance = 96
 local g_maxAttachmentDistanceSqr = 40 * 40

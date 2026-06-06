@@ -40,6 +40,13 @@ end
 
 function ENT:KeyValue(key, value)
 	self._readyForSpawn = CurTime() + g_tickTime
+
+	key = string.lower(key)
+
+	if key == "sligwolf_spawnname" or key == "sligwolf_railgauge" then
+		self._spawnData = nil
+		self._spawnName = nil
+	end
 end
 
 function ENT:AcceptInput(name, activator, caller, param)
@@ -92,10 +99,6 @@ function ENT:SpawnVehicle()
 	end
 
 	local spawnname = self:GetSpawnName()
-	if spawnname == "" then
-		return
-	end
-
 	local addon = SligWolf_Addons.GetAddon(spawndata.SLIGWOLF_Addonname)
 
 	local vehicle = addon:MakeVehicle(spawnname)
@@ -145,14 +148,28 @@ function ENT:SpawnVehicle()
 end
 
 function ENT:GetSpawnData()
-	local spawnname = self:GetSpawnName()
+	if self._spawnData and self._spawnName then
+		return self._spawnData
+	end
+
+	self._spawnData = nil
+	self._spawnName = nil
+
+	local spawnname = self:GetSpawnNameInternal()
 	if spawnname == "" then
-		LIBPrint.Warn("Missing spawnname. (Entity: %s)", self)
 		return nil
 	end
 
-	local tab = LIBUtil.GetList("Vehicles")
-	spawndata = tab[spawnname]
+	if self.sligwolf_trainProxyEntity then
+		spawnname = self:GetFullSpawnnameFromGauge(spawnname)
+
+		if not spawnname then
+			return nil
+		end
+	end
+
+	local spawnlist = LIBUtil.GetList("Vehicles")
+	local spawndata = spawnlist[spawnname]
 
 	if not spawndata or not spawndata.Is_SLIGWOLF then
 		LIBPrint.Warn("The spawnname '%s' is not registered. SligWolf addon not installed? (Entity: %s)", spawnname, self)
@@ -171,19 +188,20 @@ function ENT:GetSpawnData()
 		return nil
 	end
 
+	self._spawnData = spawndata
+	self._spawnName = spawnname
+
 	return spawndata
 end
 
-function ENT:GetSpawnName()
-	local spawnname = LIBSourceIO.GetKeyValue(self, "sligwolf_spawnname") or ""
+function ENT:GetSpawnNameInternal()
+	return LIBSourceIO.GetKeyValue(self, "sligwolf_spawnname") or ""
+end
 
-	if spawnname == "" then
-		return ""
+function ENT:GetSpawnName()
+	if not self._spawnName then
+	 	return self:GetSpawnNameInternal()
 	end
 
-	-- if self.sligwolf_trainProxyEntity then
-	-- 	-- @TODO: gauges
-	-- end
-
-	return spawnname
+	return self._spawnName
 end

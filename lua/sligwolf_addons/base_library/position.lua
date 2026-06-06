@@ -7,12 +7,12 @@ local LIB = SligWolf_Addons:NewLib("Position")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBPrint = nil
-local LIBModel = nil
-local LIBTimer = nil
+local LIBPrint = SligWolf_Addons.Print
+local LIBModel = SligWolf_Addons.Model
+local LIBTimer = SligWolf_Addons.Timer
 
 local g_asyncPositioningTimerName = "asyncPositioning"
-local g_asyncPositioningPollTime = 0
+local g_asyncPositioningPollTime = LIBTimer.TickTime(5)
 local g_asyncPositioningAttachmentId = 1
 local g_asyncPositioningDistanceToleranceSqr = 0.01 ^ 2
 local g_asyncPositioningDistanceAngle = 0.01
@@ -76,7 +76,6 @@ local function pollAsyncPositioning(ent, entTable)
 
 	if entTable.noAsycPositioning then
 		closeAsyncPositioning(ent, entTable, true)
-
 		return true
 	end
 
@@ -140,7 +139,6 @@ local function pollAsyncPositioning(ent, entTable)
 	end
 
 	closeAsyncPositioning(ent, entTable, true)
-
 	return true
 end
 
@@ -735,8 +733,6 @@ function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 	LIBModel = SligWolf_Addons.Model
 	LIBTimer = SligWolf_Addons.Timer
-
-	g_asyncPositioningPollTime = LIBTimer.TickTime(2)
 
 	local LIBHook = SligWolf_Addons.Hook
 

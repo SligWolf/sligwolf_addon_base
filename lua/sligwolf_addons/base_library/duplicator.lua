@@ -5,11 +5,11 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Duplicator")
 
-local LIBPosition = nil
-local LIBEntities = nil
-local LIBSourceIO = nil
-local LIBTimer = nil
-local LIBMeta = nil
+local LIBPosition = SligWolf_Addons.Position
+local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBTimer = SligWolf_Addons.Timer
+local LIBMeta = SligWolf_Addons.Meta
 
 local g_mainEntityModifierName = "SLIGWOLF_Library_Duplicator_MainEntityModifier"
 local g_isDupedEntityModifierName = "SLIGWOLF_Library_Duplicator_IsDupedEntityModifier"

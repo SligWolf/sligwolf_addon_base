@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("VehicleControl")
 
-local LIBEntities = nil
+local LIBEntities = SligWolf_Addons.Entities
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities

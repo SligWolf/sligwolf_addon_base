@@ -8,12 +8,12 @@ local LIB = SligWolf_Addons:NewLib("Spamprotection")
 local g_maxCollisionSpamCount = 30
 local g_stableAfterTime = 10
 
-local LIBEntities = nil
-local LIBSourceIO = nil
-local LIBPhysics = nil
-local LIBTimer = nil
-local LIBPrint = nil
-local LIBUtil = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBPhysics = SligWolf_Addons.Physics
+local LIBTimer = SligWolf_Addons.Timer
+local LIBPrint = SligWolf_Addons.Print
+local LIBUtil = SligWolf_Addons.Util
 
 function LIB.SetNextAllowedSpawnTime(ply, time)
 	if not IsValid(ply) then

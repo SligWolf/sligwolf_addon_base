@@ -135,9 +135,9 @@
 
 @BaseClass base(SLIGWOLF_BASECLASS_vehicle) = SLIGWOLF_BASECLASS_train
 [
-	sligwolf_rail_gauge(choices) : "[SW-ADDONS] Rail Gauge" : "0" : "\nSligWolf's Addon: Train track gauge." =
+	sligwolf_railgauge(choices) : "[SW-ADDONS] Rail Gauge" : "" : "\nSligWolf's Addon: Train track gauge. Not every train supports every gauge" =
 	[
-		"0" : "TODO"
+//      {{SW_TRAIN_GAUGES_OPTIONS}}
 	]
 ]
 

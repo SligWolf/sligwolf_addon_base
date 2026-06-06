@@ -66,5 +66,9 @@ function LIB.IsMoving(ent, velocityThreshold)
 	return true
 end
 
+function LIB.Load()
+	LIBPhysics = SligWolf_Addons.Physics
+end
+
 return true
 

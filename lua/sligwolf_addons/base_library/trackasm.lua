@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Trackasm")
 
-local LIBPrint = nil
+local LIBPrint = SligWolf_Addons.Print
 
 local g_trackasmlib = nil
 local g_version = nil

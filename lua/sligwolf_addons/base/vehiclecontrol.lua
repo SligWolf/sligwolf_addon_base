@@ -294,7 +294,7 @@ end
 function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 	if not IsValid(ply) then return end
 
-	local tr = LIBTracer.DoTrace(ply, 100)
+	local tr = LIBTracer.PlayerAimTrace(ply, 100)
 	if not tr then return end
 
 	local button = tr.Entity

@@ -7,11 +7,11 @@ local LIB = SligWolf_Addons:NewLib("Skinsystem")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBDuplicator = nil
-local LIBSourceIO = nil
-local LIBEntities = nil
-local LIBUtil = nil
-local LIBHook = nil
+local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBEntities = SligWolf_Addons.Entities
+local LIBUtil = SligWolf_Addons.Util
+local LIBHook = SligWolf_Addons.Hook
 
 LIB.g_skinParamKeys = {
 	"skin",

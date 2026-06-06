@@ -5,10 +5,12 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Spawnmenu")
 
-local LIBEntities = nil
-local LIBTimer = nil
-local LIBHook = nil
-local LIBUtil = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBPrint = SligWolf_Addons.Print
+local LIBTimer = SligWolf_Addons.Timer
+local LIBHook = SligWolf_Addons.Hook
+local LIBUtil = SligWolf_Addons.Util
+local LIBRail = SligWolf_Addons.Rail
 
 -- Tell the user something is wrong ("Broken") with the addons in case they see the usually hidden placeholder node.
 local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Broken)"
@@ -766,19 +768,19 @@ end
 function LIB.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
 	name = tostring(name or "")
 	if name == "" then
-		error("no name")
+		LIBPrint.Error("no name")
 		return
 	end
 
 	playerModel = tostring(playerModel or "")
 	if playerModel == "" then
-		error("no valid playerModel")
+		LIBPrint.Error("no valid playerModel")
 		return
 	end
 
 	vHandsModel = tostring(vHandsModel or "")
 	if vHandsModel == "" then
-		error("no valid vHandsModel")
+		LIBPrint.Error("no valid vHandsModel")
 		return
 	end
 
@@ -794,13 +796,13 @@ local g_PropOrder = 0
 function LIB.AddProp(addonname, model, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then
-		error("no addonname")
+		LIBPrint.Error("no addonname")
 		return
 	end
 
 	model = tostring(model or "")
 	if model == "" then
-		error("no valid model")
+		LIBPrint.Error("no valid model")
 		return
 	end
 
@@ -869,13 +871,13 @@ local g_entityAliases = {}
 function LIB.AddEntityAlias(alias, class)
 	alias = tostring(alias or "")
 	if alias == "" then
-		error("no alias")
+		LIBPrint.Error("no alias")
 		return
 	end
 
 	class = tostring(class or "")
 	if class == "" then
-		error("no class")
+		LIBPrint.Error("no class")
 		return
 	end
 
@@ -929,13 +931,13 @@ local g_EntityOrder = 0
 function LIB.AddEntity(addonname, spawnname, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then
-		error("no addonname")
+		LIBPrint.Error("no addonname")
 		return
 	end
 
 	spawnname = tostring(spawnname or "")
 	if spawnname == "" then
-		error("no spawnname")
+		LIBPrint.Error("no spawnname")
 		return
 	end
 
@@ -1023,13 +1025,13 @@ local g_WeaponOrder = 0
 function LIB.AddWeapon(addonname, spawnname, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then
-		error("no addonname")
+		LIBPrint.Error("no addonname")
 		return
 	end
 
 	spawnname = tostring(spawnname or "")
 	if spawnname == "" then
-		error("no spawnname")
+		LIBPrint.Error("no spawnname")
 		return
 	end
 
@@ -1144,13 +1146,13 @@ local g_NpcOrder = 0
 function LIB.AddNPC(addonname, spawnname, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then
-		error("no addonname")
+		LIBPrint.Error("no addonname")
 		return
 	end
 
 	spawnname = tostring(spawnname or "")
 	if spawnname == "" then
-		error("no spawnname")
+		LIBPrint.Error("no spawnname")
 		return
 	end
 
@@ -1237,19 +1239,19 @@ local g_classToFGDClass = {
 function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then
-		error("no addonname")
+		LIBPrint.Error("no addonname")
 		return
 	end
 
 	spawnname = tostring(spawnname or "")
 	if spawnname == "" then
-		error("no spawnname")
+		LIBPrint.Error("no spawnname")
 		return
 	end
 
 	vehiclescript = tostring(vehiclescript or "")
 	if vehiclescript == "" then
-		error("no vehiclescript")
+		LIBPrint.Error("no vehiclescript")
 		return
 	end
 
@@ -1257,7 +1259,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 
 	local model = tostring(obj.model or "")
 	if model == "" then
-		error("no model")
+		LIBPrint.Error("no model")
 		return
 	end
 
@@ -1273,7 +1275,11 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	end
 
 	local hidden = obj.hidden or false
-	local isTrain = obj.trainOptions ~= nil
+
+	local trainOptions = obj.trainOptions
+	local isTrain = trainOptions ~= nil
+
+	trainOptions = trainOptions or {}
 
 	if not hidden then
 		AddSpawnMenuItem(
@@ -1288,7 +1294,6 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 					spawnName = spawnname,
 					adminOnly = obj.adminOnly or false,
 					icon = obj.icon,
-					trainOptions = obj.trainOptions,
 				}
 			}
 		)
@@ -1296,7 +1301,12 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 		LIB.RequestReloadSpawnmenu()
 	end
 
+	local spawnOffsets = table.Copy(obj.spawnOffsets or {})
 	local spawnFrozen = obj.spawnFrozen or false
+
+	spawnOffsets.dupe = spawnOffsets.dupe or spawnOffsets.main or {}
+
+	local thirdperson = table.Copy(obj.thirdperson or {})
 
 	local vehicleListItem = {}
 
@@ -1314,14 +1324,42 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.SLIGWOLF_Hidden = hidden
 	vehicleListItem.SLIGWOLF_SpawnFrozen = spawnFrozen
 	vehicleListItem.SLIGWOLF_IsTrain = isTrain
+	vehicleListItem.SLIGWOLF_SpawnOffsets = spawnOffsets
+	vehicleListItem.SLIGWOLF_Thirdperson = thirdperson
 
 	vehicleListItem.SLIGWOLF_FGD = {}
 	local fgd = vehicleListItem.SLIGWOLF_FGD
+
+	fgd.spawnname = spawnname
 
 	if not isTrain then
 		fgd.class = g_classToFGDClass[vehicleListItem.Class]
 	else
 		fgd.class = "prop_vehicle_sligwolf_train"
+
+		local gauge = trainOptions.gauge or ""
+		if not LIBRail.HasGaugeByName(gauge) then
+			if gauge ~= "" then
+				LIBPrint.ErrorNoHaltWithStack("Train entry with invalid gauge. (spawnname = '%s', gauge = '%s')", spawnname, gauge)
+			end
+		else
+			local spawnnameFull = spawnname
+			local spawnnameNoGauge = trainOptions.spawnnameNoGauge or ""
+
+			if spawnnameNoGauge == "" then
+				spawnnameNoGauge = spawnname
+			end
+
+			fgd.spawnname = spawnnameNoGauge
+
+			LIBRail.RegisterSpawnnameToGauge(spawnnameNoGauge, gauge, spawnnameFull)
+
+			vehicleListItem.SLIGWOLF_TrainOptions = {
+				gauge = gauge,
+				spawnnameFull = spawnnameFull,
+				spawnnameNoGauge = spawnnameNoGauge,
+			}
+		end
 	end
 
 	vehicleListItem.SLIGWOLF_SkinCategory = category
@@ -1337,64 +1375,6 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 
 	list.Set("Vehicles", spawnname, vehicleListItem)
 end
-
--- if CLIENT then
--- 	spawnmenu.AddContentType("sligwolf_train", function(container, obj)
--- 		if not obj.material then return end
--- 		if not obj.nicename then return end
--- 		if not obj.spawnname then return end
-
--- 		local icon = vgui.Create("ContentIcon", container)
-
--- 		icon:SetContentType("vehicle")
--- 		icon:SetSpawnName(obj.spawnname)
--- 		icon:SetName(obj.nicename)
--- 		icon:SetMaterial(obj.material)
--- 		icon:SetAdminOnly(obj.admin)
--- 		icon:SetColor(Color(0, 0, 0, 255))
-
--- 		local toolTip = language.GetPhrase(obj.nicename)
-
--- 		local trainOptions = trainOptions or {}
-
--- 		-- Generate a nice tooltip with extra info
--- 		local VehInfo = list.GetEntry("Vehicles", obj.spawnname)
--- 		if VehInfo then
--- 			local extraInfo = ""
--- 			if VehInfo.Information and VehInfo.Information ~= "" then extraInfo = extraInfo .. "\n" .. VehInfo.Information end
--- 			if VehInfo.Author and VehInfo.Author ~= "" then extraInfo = extraInfo .. "\n" .. language.GetPhrase("entityinfo.author") .. " " .. VehInfo.Author end
--- 			if #extraInfo > 0 then toolTip = toolTip .. "\n" .. extraInfo end
--- 		end
-
--- 		icon:SetTooltip(toolTip)
--- 		icon.DoClick = function()
--- 			-- @TODO: Add auto gauge detection from trainOptions
-
--- 			print("this is a train", obj.spawnname)
-
--- 			RunConsoleCommand("gm_spawnvehicle", obj.spawnname)
--- 			surface.PlaySound("ui/buttonclickrelease.wav")
--- 		end
-
--- 		icon.OpenMenuExtra = function(self, menu)
--- 			-- @TODO: Add gauge options from trainOptions
-
--- 			menu:AddOption("#spawnmenu.menu.spawn_with_toolgun", function()
--- 				RunConsoleCommand("gmod_tool", "creator")
--- 				RunConsoleCommand("creator_type", "1")
--- 				RunConsoleCommand("creator_name", obj.spawnname)
--- 			end):SetIcon("icon16/brick_add.png")
--- 		end
-
--- 		icon.OpenMenu = icon.OpenGenericSpawnmenuRightClickMenu
-
--- 		if IsValid(container) then
--- 			container:Add(icon)
--- 		end
-
--- 		return icon
--- 	end)
--- end
 
 local function AddColorSkinPicker(propPanel, addonname, category)
 	if not IsValid(propPanel) then
@@ -1557,7 +1537,10 @@ function LIB.InitSpawnmenuContent()
 	end
 
 	g_waitInitSpawnmenuContent = true
-	xpcall(LIBHook.RunCustom, ErrorNoHaltWithStack, "InitSpawnmenuContent")
+
+	ProtectedCall(function()
+		LIBHook.RunCustom("InitSpawnmenuContent")
+	end)
 
 	local timerName = "Library_Spawnmenu_InitSpawnmenuContent_ReverseDebounce"
 	LIBTimer.Once(timerName, 0.1, function()
@@ -1569,9 +1552,11 @@ end
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
+	LIBPrint = SligWolf_Addons.Print
 	LIBTimer = SligWolf_Addons.Timer
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util
+	LIBRail = SligWolf_Addons.Rail
 
 	local function PopulatePropListContent(pnlContent, tree)
 		g_spawnmenuLoaded = true

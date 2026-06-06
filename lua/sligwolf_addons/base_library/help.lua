@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Help")
 
-local LIBNet = nil
+local LIBNet = SligWolf_Addons.Net
 
 local g_helpFunction = {}
 local g_emptyFunction = function() end

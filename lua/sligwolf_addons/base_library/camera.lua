@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Camera")
 
-local LIBPosition = nil
+local LIBPosition = SligWolf_Addons.Position
 
 local g_CamPos = nil
 local g_InRenderScene = false

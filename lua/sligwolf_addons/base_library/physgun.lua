@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Physgun")
 
-local LIBEntities = nil
+local LIBEntities = SligWolf_Addons.Entities
 
 LIB.ENUM_PHYSGUN_CARRIED_MODE_SYSTEM = 0
 LIB.ENUM_PHYSGUN_CARRIED_MODE_DIRECT = 1

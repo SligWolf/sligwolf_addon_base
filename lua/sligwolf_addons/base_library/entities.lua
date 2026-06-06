@@ -5,14 +5,14 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Entities")
 
-local LIBConstraints = nil
-local LIBProtection = nil
-local LIBPosition = nil
-local LIBVehicle = nil
-local LIBPhysics = nil
-local LIBTimer = nil
-local LIBPrint = nil
-local LIBUtil = nil
+local LIBConstraints = SligWolf_Addons.Constraints
+local LIBProtection = SligWolf_Addons.Protection
+local LIBPosition = SligWolf_Addons.Position
+local LIBVehicle = SligWolf_Addons.Vehicle
+local LIBPhysics = SligWolf_Addons.Physics
+local LIBTimer = SligWolf_Addons.Timer
+local LIBPrint = SligWolf_Addons.Print
+local LIBUtil = SligWolf_Addons.Util
 
 local g_emptyFunction = function() end
 
@@ -91,7 +91,20 @@ function LIB.ToString(ent)
 		return entStr
 	end
 
-	local spawnname = LIB.GetSpawnname(ent) or ""
+	if ent:IsPlayer() then
+		return entStr
+	end
+
+	local spawnname = ""
+
+	local entTable = ent:SligWolf_GetTable()
+
+	if not entTable.isInToString then
+		entTable.isInToString = true
+		spawnname = LIB.GetSpawnname(ent) or ""
+		entTable.isInToString = false
+	end
+
 	local targetname = ent:GetName() or ""
 	local name = LIB.GetName(ent) or ""
 	local addonname = ent.sligwolf_addonname or ""
@@ -557,9 +570,7 @@ local function runCallOnRemoveList(ent, entTable, withEffect)
 	end
 
 	for key, thisFunction in pairs(callOnRemove) do
-		ProtectedCall(function()
-			thisFunction(ent, withEffect)
-		end)
+		ProtectedCall(thisFunction, ent, withEffect)
 
 		if not withEffect then
 			callOnRemove[key] = nil

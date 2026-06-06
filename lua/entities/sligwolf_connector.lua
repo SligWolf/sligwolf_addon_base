@@ -65,11 +65,11 @@ function ENT:PostInitialize()
 	self:EnableMotion(true)
 end
 
-function ENT:Draw()
+function ENT:Draw(flags)
 	-- invisible
 end
 
-function ENT:DrawTranslucent()
+function ENT:DrawTranslucent(flags)
 	-- invisible
 end
 

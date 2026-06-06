@@ -7,10 +7,10 @@ local LIB = SligWolf_Addons:NewLib("Thirdperson")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBEntities = nil
-local LIBCamera = nil
-local LIBDebug = nil
-local LIBHook = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBCamera = SligWolf_Addons.Camera
+local LIBDebug = SligWolf_Addons.Debug
+local LIBHook = SligWolf_Addons.Hook
 
 local g_trace = {}
 local g_traceResult = {}

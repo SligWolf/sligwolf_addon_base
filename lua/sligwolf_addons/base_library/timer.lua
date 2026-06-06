@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Timer")
 
-local LIBUtil = nil
+local LIBUtil = SligWolf_Addons.Util
 
 function LIB.TickTime(tickCount)
 	tickCount = math.max(tickCount or 1, 1)

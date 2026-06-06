@@ -7,11 +7,11 @@ local LIB = SligWolf_Addons:NewLib("Debug")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBEntities = nil
-local LIBTracer = nil
-local LIBConvar = nil
-local LIBPrint = nil
-local LIBTimer = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBTracer = SligWolf_Addons.Tracer
+local LIBConvar = SligWolf_Addons.Convar
+local LIBPrint = SligWolf_Addons.Print
+local LIBTimer = SligWolf_Addons.Timer
 
 local g_nextThink = 0
 local g_settingsLockMode = nil
@@ -963,7 +963,7 @@ do
 			if all then
 				entities = ents.GetAll()
 			else
-				local tr = LIBTracer.DoTrace(ply, 5000)
+				local tr = LIBTracer.PlayerAimTrace(ply, 5000)
 				if tr and IsValid(tr.Entity) then
 					entities = LIBEntities.GetSystemEntities(tr.Entity)
 				end

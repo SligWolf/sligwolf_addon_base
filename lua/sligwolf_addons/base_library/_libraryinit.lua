@@ -33,11 +33,13 @@ local function callLoaderFunc(name)
 			continue
 		end
 
-		func()
+		ProtectedCall(func)
 
 		sublib[name] = nil
 	end
 end
+
+SligWolf_Addons.FirstFrameRendered = false
 
 SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base_library/baseobject.lua")
 
@@ -75,11 +77,12 @@ loadLib("velocity")
 loadLib("physgun")
 loadLib("seat")
 loadLib("rail")
+loadLib("railscan")
 loadLib("trackasm")
 loadLib("vr")
 loadLib("wire")
 loadLib("convar")
-loadLib("mapping")
+loadLib("hammer")
 loadLib("model")
 loadLib("thirdperson")
 loadLib("vgui")
@@ -92,9 +95,11 @@ SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded"
 
 	SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", function()
 		callLoaderFunc("FirstFrame")
-
 		SligWolf_Addons.Hook.RunCustom("FirstFrame")
+
 		SligWolf_Addons.Util.FlashWindow()
+
+		SligWolf_Addons.FirstFrameRendered = true
 	end)
 end, 1000)
 

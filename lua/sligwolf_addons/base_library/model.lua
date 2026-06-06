@@ -7,7 +7,7 @@ local LIB = SligWolf_Addons:NewLib("Model")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBPrint = nil
+local LIBPrint = SligWolf_Addons.Print
 
 local g_IsValidModelCache = {}
 local g_IsValidModelFileCache = {}

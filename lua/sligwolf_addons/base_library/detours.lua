@@ -5,8 +5,8 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Detours")
 
-local LIBSpawnmenu = nil
-local LIBHook = nil
+local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
+local LIBHook = SligWolf_Addons.Hook
 
 local g_detourBackups = LIB._detourBackups or {}
 LIB._detourBackups = g_detourBackups

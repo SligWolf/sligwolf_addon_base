@@ -7,9 +7,9 @@ local LIB = SligWolf_Addons:NewLib("Util")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBEntities = nil
-local LIBTimer = nil
-local LIBHook = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBTimer = SligWolf_Addons.Timer
+local LIBHook = SligWolf_Addons.Hook
 
 local g_uid = 0
 function LIB.Uid()

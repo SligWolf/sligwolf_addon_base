@@ -5,9 +5,9 @@ end
 
 local LIB = SligWolf_Addons:NewLib("SourceIO")
 
-local LIBEntityhooks = nil
-local LIBDuplicator = nil
-local LIBUtil = nil
+local LIBEntityhooks = SligWolf_Addons.Entityhooks
+local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBUtil = SligWolf_Addons.Util
 
 function LIB.GetKeyValue(ent, key)
 	key = string.lower(tostring(key or ""))

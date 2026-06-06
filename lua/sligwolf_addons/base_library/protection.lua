@@ -7,8 +7,8 @@ local LIB = SligWolf_Addons:NewLib("Protection")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBEntities = nil
-local LIBWire = nil
+local LIBEntities = SligWolf_Addons.Entities
+local LIBWire = SligWolf_Addons.Wire
 
 function LIB.IsTrustedTool(toolname)
 	if not toolname then return false end

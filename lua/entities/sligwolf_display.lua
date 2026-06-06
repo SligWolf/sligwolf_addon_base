@@ -123,9 +123,9 @@ function ENT:ThinkInternal()
 	self:Debug(10)
 end
 
-function ENT:DrawTranslucent(...)
+function ENT:DrawTranslucent(flags)
 	if not CLIENT then return end
-	self.BaseClass.DrawTranslucent(self, ...)
+	BaseClass.DrawTranslucent(self, flags)
 
 	local isON = self:IsOn()
 	if not isON then return end
