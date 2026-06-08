@@ -10,6 +10,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBTracer = SligWolf_Addons.Tracer
+local LIBRailscan = SligWolf_Addons.Railscan
 
 local g_maxRailCheckTraceAttachmentPairs = 4
 
@@ -26,6 +27,11 @@ LIB.ENUM_GAUGE_RSG3FT = "rsg3ft"
 LIB.ENUM_GAUGE_RON2FT = "ron2ft"
 LIB.ENUM_GAUGE_MT12 = "mt12"
 
+LIB.ENUM_GAUGE_WP = "wp"
+
+LIB.MIN_GAUGE_WIDTH = 3
+LIB.MAX_GAUGE_WIDTH = 96
+
 local g_spawnnamePartToGaugeRegister = LIB.g_spawnnamePartToGaugeRegister or {}
 LIB.g_spawnnamePartToGaugeRegister = g_spawnnamePartToGaugeRegister
 
@@ -35,8 +41,8 @@ LIB.g_spawnnameFullToGaugeRegister = g_spawnnameFullToGaugeRegister
 local g_gaugesByName = LIB.g_gaugesByName or {}
 LIB.g_gaugesByName = g_gaugesByName
 
-local g_gaugesByWidth = LIB.g_gaugesByWidth or {}
-LIB.g_gaugesByWidth = g_gaug_gaugesByWidthges
+local g_gaugesByWidth = {}
+local g_gaugesOrdered = {}
 
 local g_gaugenameBlacklist = {
 	[""] = true,
@@ -445,20 +451,25 @@ function LIB.AddGauge(gaugename, params)
 
 	local isReal = g_gaugenameBlacklist[gaugename] ~= true
 	local width = 0
+	local tolerance = 0
 
 	if isReal then
 		width = tonumber(params.width or 0) or 0
 		width = math.Round(width)
 
-		if width < 4 then
+		if width < LIB.MIN_GAUGE_WIDTH then
 			error("params.width is too small")
 			return
 		end
 
-		if width > 128 then
+		if width > LIB.MAX_GAUGE_WIDTH then
 			error("params.width is too large")
 			return
 		end
+
+		tolerance = tonumber(params.tolerance or 0) or 0
+		tolerance = math.Round(tolerance)
+		tolerance = math.max(tolerance, 0)
 	end
 
 	local title = tostring(params.title or "")
@@ -468,12 +479,14 @@ function LIB.AddGauge(gaugename, params)
 		title = titleShort
 	end
 
-	local scanParams = params.scanParams or {}
 	local defaultTrainParams = params.defaultTrainParams or {}
 
 	local gauge = {}
 	g_gaugesByName[gaugename] = gauge
-	g_gaugesByWidth[width] = gauge
+
+	-- clear gauges caches
+	table.Empty(g_gaugesByWidth)
+	table.Empty(g_gaugesOrdered)
 
 	gauge.name = gaugename
 	gauge.title = title
@@ -481,27 +494,15 @@ function LIB.AddGauge(gaugename, params)
 	gauge.isReal = isReal
 
 	gauge.width = width
+	gauge.tolerance = tolerance
 
-	local gaugeScanParams = {}
-	gauge.scanParams = gaugeScanParams
+	gauge.scanFunction = params.scanFunction
 
 	local gaugeDefaultTrainParams = {}
 	gauge.defaultTrainParams = gaugeDefaultTrainParams
 
-	if isReal then
-		gaugeScanParams.offsetPos = scanParams.offsetPos or CONSTANTS.vecZero
-		gaugeScanParams.offsetAng = scanParams.offsetAng or CONSTANTS.angZero
-		gaugeScanParams.maxRailTopTraceZ = scanParams.maxRailTopTraceZ
-		gaugeScanParams.minRailTopTraceZ = scanParams.minRailTopTraceZ
-		gaugeScanParams.marginRailTopTrace = scanParams.marginRailTopTrace
-		gaugeScanParams.marginRailEdgeBelow = scanParams.marginRailEdgeBelow
-		gaugeScanParams.marginRailEdgeAbove = scanParams.marginRailEdgeAbove
-		gaugeScanParams.marginStraight = scanParams.marginStraight
-		gaugeScanParams.layers = scanParams.layers
-
-		gaugeDefaultTrainParams.trainSizeMin = defaultTrainParams.trainSizeMin or 0
-		gaugeDefaultTrainParams.trainSizeMax = defaultTrainParams.trainSizeMax or 0
-	end
+	gaugeDefaultTrainParams.trainSizeMin = defaultTrainParams.trainSizeMin or 0
+	gaugeDefaultTrainParams.trainSizeMax = defaultTrainParams.trainSizeMax or 0
 end
 
 function LIB.GetGaugeByName(gaugename)
@@ -516,24 +517,64 @@ function LIB.GetGaugeByName(gaugename)
 	return gauge
 end
 
-function LIB.GetGaugeByWidth(gaugewidth)
-	gaugewidth = tonumber(gaugewidth or 0) or 0
-	gaugewidth = math.Round(gaugewidth)
+function LIB.GetGaugeByWidth(width)
+	width = tonumber(width or 0) or 0
+	width = math.Round(width)
 
-	if gaugewidth <= 0 then
+	if width < LIB.MIN_GAUGE_WIDTH then
 		return nil
 	end
 
-	local gauge = g_gaugesByWidth[gaugewidth]
-	if not gauge then
+	if width > LIB.MAX_GAUGE_WIDTH then
 		return nil
 	end
 
-	if not gauge.isReal then
-		return nil
+	local cachedGauge = g_gaugesByWidth[width]
+	if cachedGauge and cachedGauge.isReal then
+		-- use from cache if available
+		return cachedGauge
 	end
 
-	return gauge
+	g_gaugesByWidth[width] = nil
+
+	local gauges = LIB.GetGauges()
+
+	-- prioritize direct matches
+	for _, gauge in ipairs(gauges) do
+		if not gauge.isReal then
+			continue
+		end
+
+		if gauge.width ~= width then
+			continue
+		end
+
+		g_gaugesByWidth[width] = gauge
+		return gauge
+	end
+
+	-- search for matches respecting tolerances
+	for _, gauge in ipairs(gauges) do
+		if not gauge.isReal then
+			continue
+		end
+
+		local minGauge = gauge.width
+		local maxGauge = minGauge + gauge.tolerance
+
+		if width < minGauge then
+			continue
+		end
+
+		if width > maxGauge then
+			continue
+		end
+
+		g_gaugesByWidth[width] = gauge
+		return gauge
+	end
+
+	return nil
 end
 
 function LIB.HasGaugeByName(gaugename)
@@ -545,7 +586,15 @@ function LIB.HasGaugeByWidth(gaugename)
 end
 
 function LIB.GetGauges()
-	return g_gaugesByName
+	if g_gaugesOrdered and not table.IsEmpty(g_gaugesOrdered) then
+		return g_gaugesOrdered
+	end
+
+	for _, gauge in SortedPairsByMemberValue(g_gaugesByName, "width", true) do
+		table.insert(g_gaugesOrdered, gauge)
+	end
+
+	return g_gaugesOrdered
 end
 
 function LIB.RegisterSpawnnameToGauge(spawnnameNoGauge, gaugename, spawnnameFull)
@@ -621,39 +670,9 @@ function LIB.GetSpawnnameInfo(spawnnameNoGaugeOrFull, gaugename)
 end
 
 do
-	-- Large rails, such as: PHX, rsg, rsg3ft, ron2ft
-	local scanParamsLarge = {
-		offsetPos = Vector(0, 0, -5),
-		offsetAng = Angle(0, 0, 0),
-		maxRailTopTraceZ = 32,
-		minRailTopTraceZ = 0,
-		marginRailTopTrace = 3,
-		marginRailEdgeBelow = 4,
-		marginRailEdgeAbove = 2,
-		marginStraight = 2,
-		layers = {
-			0, -4, 4
-		},
-	}
-
 	local traimParamsLarge = {
 		trainSizeMin = -256,
 		trainSizeMax = 256,
-	}
-
-	-- Small rails, such as: Minitrains (mt12)
-	local scanParamsSmall = {
-		offsetPos = Vector(0, 0, -1),
-		offsetAng = Angle(0, 0, 0),
-		maxRailTopTraceZ = 8,
-		minRailTopTraceZ = 0,
-		marginRailTopTrace = 0.5,
-		marginRailEdgeBelow = 1,
-		marginRailEdgeAbove = 2,
-		marginStraight = 1,
-		layers = {
-			0, 1, -1
-		},
 	}
 
 	local traimParamsSmall = {
@@ -667,41 +686,65 @@ do
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_AUTO, {
 		title = "Auto",
+		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
+			return LIBRailscan.ScanRailAutoInternal(trainEnt, aimTrace, trainParams)
+		end,
 	})
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_PHX, {
 		title = "PHX",
 		width = 80,
-		scanParams = scanParamsLarge,
 		defaultTrainParams = traimParamsLarge,
+		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
+			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
+		end,
 	})
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_RSG, {
 		title = "RSG",
 		width = 56,
-		scanParams = scanParamsLarge,
+		tolerance = 2,
 		defaultTrainParams = traimParamsLarge,
+		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
+			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
+		end,
 	})
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_RSG3FT, {
 		title = "RSG 3ft",
 		width = 36,
-		scanParams = scanParamsLarge,
+		tolerance = 1,
 		defaultTrainParams = traimParamsLarge,
+		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
+			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
+		end,
 	})
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_RON2FT, {
 		title = "Ron 2ft",
 		width = 32,
-		scanParams = scanParamsLarge,
 		defaultTrainParams = traimParamsLarge,
+		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
+			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
+		end,
 	})
 
 	LIB.AddGauge(LIB.ENUM_GAUGE_MT12, {
 		title = "Minitrains",
 		width = 12,
-		scanParams = scanParamsSmall,
 		defaultTrainParams = traimParamsSmall,
+		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
+			return LIBRailscan.ScanSmallRailInternal(gauge, trainEnt, aimTrace, trainParams)
+		end,
+	})
+
+	LIB.AddGauge(LIB.ENUM_GAUGE_WP, {
+		title = "Wuppertal Suspension Rail",
+		width = 4,
+		defaultTrainParams = traimParamsLarge,
+		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
+			return LIBRailscan.ScanMonoRailInternal(gauge, trainEnt, aimTrace, trainParams)
+		end,
 	})
 end
 
@@ -709,6 +752,7 @@ function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 	LIBTracer = SligWolf_Addons.Tracer
+	LIBRailscan = SligWolf_Addons.Railscan
 end
 
 return true

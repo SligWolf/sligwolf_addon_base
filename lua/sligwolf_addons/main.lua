@@ -500,7 +500,7 @@ local function MsgCUnapprovedAddons(unapprovedWsAddons, name)
 	local errorText = string.format("Addon '%s' could not be loaded at %s!", name, g_realmText)
 	MsgCError(errorText, ENUM_ERROR_CONFLICTING_ADDON)
 
-	local errorText = "  Unapproved or conflicting addon detected. Please uninstall this addon:\n"
+	errorText = "  Unapproved or conflicting addon detected. Please uninstall this addon:\n"
 	MsgC(g_errorColor, errorText)
 
 	for _, unapprovedWsAddon in pairs(unapprovedWsAddons) do
@@ -509,7 +509,7 @@ local function MsgCUnapprovedAddons(unapprovedWsAddons, name)
 		local addonFile = unapprovedWsAddon.file
 		local addonTitle = unapprovedWsAddon.title
 		local wsid = unapprovedWsAddon.wsid
-		local errorText = ""
+		errorText = ""
 
 		if addonFile == "" then
 			errorText = string.format("  - %s (%s)", addonTitle, wsid)
