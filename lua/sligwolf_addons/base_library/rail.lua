@@ -51,8 +51,8 @@ local g_gaugesOrdered = {}
 
 local g_gaugenameBlacklist = {
 	[""] = true,
-	[LIB.ENUM_GAUGE_DEFAULT] = true,
-	[LIB.ENUM_GAUGE_AUTO] = true,
+	[LIB.TRAIN_GAUGE_DEFAULT] = true,
+	[LIB.TRAIN_GAUGE_AUTO] = true,
 }
 
 function LIB.GetRailCheckAttachments(ent)
@@ -626,10 +626,10 @@ function LIB.RegisterSpawnnameToGauge(spawnnameNoGauge, gaugename, spawnnameFull
 	local entry = {}
 	gauges[gaugename] = entry
 
-	if not gauges[LIB.ENUM_GAUGE_DEFAULT] then
+	if not gauges[LIB.TRAIN_GAUGE_DEFAULT] then
 		g_spawnnameFullToGaugeRegister[spawnnameFull] = entry
-		gauges[LIB.ENUM_GAUGE_DEFAULT] = entry
-		gauges[LIB.ENUM_GAUGE_AUTO] = entry
+		gauges[LIB.TRAIN_GAUGE_DEFAULT] = entry
+		gauges[LIB.TRAIN_GAUGE_AUTO] = entry
 	end
 
 	entry.spawnnameFull = spawnnameFull
@@ -647,10 +647,10 @@ function LIB.GetSpawnnameInfo(spawnnameNoGaugeOrFull, gaugename)
 	gaugename = string.lower(gaugename)
 
 	if g_gaugenameBlacklist[gaugename] then
-		gaugename = LIB.ENUM_GAUGE_DEFAULT
+		gaugename = LIB.TRAIN_GAUGE_DEFAULT
 	end
 
-	if gaugename == LIB.ENUM_GAUGE_DEFAULT then
+	if gaugename == LIB.TRAIN_GAUGE_DEFAULT then
 		local entry = g_spawnnameFullToGaugeRegister[spawnnameNoGaugeOrFull]
 		if entry and not g_gaugenameBlacklist[entry.gaugename] then
 			return entry
@@ -685,18 +685,18 @@ do
 		trainSizeMax = 24,
 	}
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_DEFAULT, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_DEFAULT, {
 		title = "Default",
 	})
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_AUTO, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_AUTO, {
 		title = "Auto",
 		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
 			return LIBRailscan.ScanRailAutoInternal(trainEnt, aimTrace, trainParams)
 		end,
 	})
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_PHX, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_PHX, {
 		title = "PHX",
 		width = 80,
 		defaultTrainParams = traimParamsLarge,
@@ -705,7 +705,7 @@ do
 		end,
 	})
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_RSG, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_RSG, {
 		title = "RSG",
 		width = 56,
 		tolerance = 2,
@@ -715,7 +715,7 @@ do
 		end,
 	})
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_RSG3FT, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_RSG3FT, {
 		title = "RSG 3ft",
 		width = 36,
 		tolerance = 1,
@@ -725,7 +725,7 @@ do
 		end,
 	})
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_RON2FT, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_RON2FT, {
 		title = "Ron 2ft",
 		width = 32,
 		defaultTrainParams = traimParamsLarge,
@@ -734,7 +734,7 @@ do
 		end,
 	})
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_MT12, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_MT12, {
 		title = "Minitrains",
 		width = 12,
 		defaultTrainParams = traimParamsSmall,
@@ -743,7 +743,7 @@ do
 		end,
 	})
 
-	LIB.AddGauge(LIB.ENUM_GAUGE_WP, {
+	LIB.AddGauge(LIB.TRAIN_GAUGE_WP, {
 		title = "Wuppertal Suspension Rail",
 		width = 4,
 		defaultTrainParams = traimParamsLarge,
