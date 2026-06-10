@@ -55,7 +55,7 @@ local g_scanParamsMono = {
 	minRailTopTraceZ = -32,
 	maxRailHeight = 20,
 	minRailHeight = 4,
-	marginRailEdgeBelow = 4,
+	marginRailEdgeBelow = 1,
 	marginRailEdgeAbove = 2,
 	marginRailOuterWidth = 8,
 	marginStraight = 2,
@@ -79,6 +79,7 @@ local g_spaceCheckVec = Vector()
 
 local g_dirAng = Angle()
 local g_yawOffsetAng = Angle()
+local g_yaw180Ang = Angle(0, 180, 0)
 
 local g_tmpMx = Matrix()
 local g_baseMx = Matrix()
@@ -257,14 +258,31 @@ local function checkRailCrossSpace(trainEnt, mx, width, heightOffset)
 	g_spaceCheckVec.x = 0
 
 	g_spaceCheckVec.y = width / 2
-	local crossTraceStart = mx * g_spaceCheckVec
+	local traceStart = mx * g_spaceCheckVec
 
 	g_spaceCheckVec.y = -width / 2
-	local crossTraceEnd = mx * g_spaceCheckVec
+	local traceEnd = mx * g_spaceCheckVec
 
-	local crossTrace = LIBTracer.Tracer(trainEnt, crossTraceStart, crossTraceEnd, nil, g_traceResultBufferA)
+	local crossTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, nil, g_traceResultBufferA)
+	if not crossTrace or crossTrace.Hit or crossTrace.StartSolid or crossTrace.AllSolid then
+		return false
+	end
 
-	if crossTrace and crossTrace.Hit and crossTrace.StartSolid and crossTrace.AllSolid then
+	return true
+end
+
+local function checkRailSideSpace(trainEnt, mxTop, mxBottom, heightOffsetTop, heightOffsetBottom, sideOffset)
+	g_spaceCheckVec.y = sideOffset
+	g_spaceCheckVec.x = 0
+
+	g_spaceCheckVec.z = heightOffsetTop
+	local traceStart = mxTop * g_spaceCheckVec
+
+	g_spaceCheckVec.z = heightOffsetBottom
+	local traceEnd = mxBottom * g_spaceCheckVec
+
+	local sideTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, nil, g_traceResultBufferA)
+	if not sideTrace or sideTrace.Hit or sideTrace.StartSolid or sideTrace.AllSolid then
 		return false
 	end
 
@@ -520,7 +538,7 @@ function LIB.ScanRail(trainEnt, aimTrace, parameters)
 		-- Check if the area above the track is not blocked along its width
 		-- This ensures were are indeed on a train track and not just in a narrow corridor
 		if not checkRailCrossSpace(trainEnt, g_trackMxTop, trackWidth * 1.5, marginRailEdgeAbove) then
-			continue
+			return nil
 		end
 
 		foundTrackWidth = trackWidth
@@ -664,6 +682,7 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 	g_baseMx:Rotate(g_yawOffsetAng)
 
 	local foundRailWidth = nil
+	local hasPlayerFacingOpening = true
 
 	-- Scan in a flat cross pattern so we find tracks in every rotation.
 	for _, dir in ipairs(dirs) do
@@ -699,8 +718,8 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 			railWidth = nil
 
 			-- Finding the rail 1st pass
-			local frontPos = g_worldMx * maxRailThicknessVecFront
-			local backPos = g_worldMx * maxRailThicknessVecBack
+			local frontPos = g_worldMx * maxRailThicknessVecFront -- Facing to player
+			local backPos = g_worldMx * maxRailThicknessVecBack -- Facing away player
 
 			railSideHitPosFront, railSideHitPosBack, railSideNormalFront, railSideNormalBack = getMonoRailSides(trainEnt, frontPos, backPos)
 			if not railSideHitPosFront then
@@ -780,47 +799,46 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 			continue
 		end
 
-		local playerSidedRailSideNormal, playerSidedRailTopNormal = getPlayerSidedNormals(
-			aimNormal,
-			railSideNormalFront,
-			railSideNormalBack,
-			railTopNormal,
-			railTopNormal
-		)
-
-		if not playerSidedRailSideNormal then
-			continue
-		end
-
-		if not playerSidedRailTopNormal then
-			continue
-		end
-
 		-- Found center and direction of the track
 		g_trackMxTop:Identity()
 		g_trackMxTop:SetTranslation(railTop)
-		setupRailRotationMatrix(g_trackMxTop, playerSidedRailSideNormal, playerSidedRailTopNormal)
+		setupRailRotationMatrix(g_trackMxTop, railSideNormalFront, railTopNormal)
 
-		g_trackMxBottom:Identity()
+		g_trackMxBottom:Set(g_trackMxTop)
 		g_trackMxBottom:SetTranslation(railBottom)
-		g_trackMxBottom:SetUp(g_trackMxTop:GetUp())
-		g_trackMxBottom:SetRight(g_trackMxTop:GetRight())
-		g_trackMxBottom:SetForward(g_trackMxTop:GetForward())
 
 		-- Check if the rail is straight for at least the given size
 		if not checkRailStraightSpace(trainEnt, g_trackMxTop, trainSizeMin, trainSizeMax, railWidth + marginStraight, 0, -marginRailEdgeBelow) then
 			continue
 		end
 
+		local heightOffsetTop = marginRailEdgeAbove
+		local heightOffsetBottom = -marginRailEdgeAbove
+
 		-- Check if the area above the rail is not blocked along its width
 		-- This ensures were are indeed on a rail and not just in a narrow corridor
-		if not checkRailCrossSpace(trainEnt, g_trackMxTop, marginRailOuterWidth, marginRailEdgeAbove) then
-		 	continue
+		if not checkRailCrossSpace(trainEnt, g_trackMxTop, marginRailOuterWidth, heightOffsetTop) then
+		 	return nil
 		end
 
 		-- Also check if the area below the rail is not blocked along its width
-		if not checkRailCrossSpace(trainEnt, g_trackMxBottom, marginRailOuterWidth, -marginRailEdgeAbove) then
-		 	continue
+		if not checkRailCrossSpace(trainEnt, g_trackMxBottom, marginRailOuterWidth, heightOffsetBottom) then
+		 	return nil
+		end
+
+		-- Find which side is open
+		local openFrontSide = checkRailSideSpace(trainEnt, g_trackMxTop, g_trackMxBottom, heightOffsetTop, heightOffsetBottom, -marginRailOuterWidth / 2)
+		local openBackSide = checkRailSideSpace(trainEnt, g_trackMxTop, g_trackMxBottom, heightOffsetTop, heightOffsetBottom, marginRailOuterWidth / 2)
+
+		if not openFrontSide and not openBackSide then
+			-- No side is open, likely an invalid geometry
+		 	return nil
+		end
+
+		hasPlayerFacingOpening = true
+
+		if not openFrontSide then
+			hasPlayerFacingOpening = false
 		end
 
 		foundRailWidth = railWidth
@@ -829,6 +847,11 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 
 	if not foundRailWidth then
 		return nil
+	end
+
+	if not hasPlayerFacingOpening then
+		-- Turn around the direction 180° if the front (player facing) side is closed
+		g_trackMxTop:Rotate(g_yaw180Ang)
 	end
 
 	g_trackMxTop:Mul(g_offsetMx)
