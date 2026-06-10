@@ -1014,7 +1014,7 @@ function LIB.Load()
 	local lastAimTrace = LIB._lastAimTrace or {}
 	LIB._lastAimTrace = lastAimTrace
 
-	local mode = LIBRail.ENUM_GAUGE_WP
+	local mode = LIBRail.TRAIN_GAUGE_WP
 
 	local LIBHook = SligWolf_Addons.Hook
 	LIBHook.Add("Think", "RailScan_Test", function()
@@ -1030,15 +1030,15 @@ function LIB.Load()
 		end
 
 		if ply:KeyDown(IN_WALK) and ply:KeyDown(IN_JUMP) then
-			mode = LIBRail.ENUM_GAUGE_AUTO
+			mode = LIBRail.TRAIN_GAUGE_AUTO
 		end
 
 		if ply:KeyDown(IN_WALK) and ply:KeyDown(IN_DUCK) then
-			mode = LIBRail.ENUM_GAUGE_PHX
+			mode = LIBRail.TRAIN_GAUGE_PHX
 		end
 
 		if ply:KeyDown(IN_WALK) and ply:KeyDown(IN_SPEED) then
-			mode = LIBRail.ENUM_GAUGE_WP
+			mode = LIBRail.TRAIN_GAUGE_WP
 		end
 
 		if retrace then

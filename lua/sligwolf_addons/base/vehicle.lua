@@ -138,10 +138,10 @@ function SLIGWOLF_ADDON:HandleVehicleSpawnPos(vehicle, ply, title, spawnOffsets,
 			end
 		end
 
-		if trainGauge == LIBRail.ENUM_GAUGE_AUTO or trainGauge == LIBRail.ENUM_GAUGE_DEFAULT then
+		if trainGauge == LIBRail.TRAIN_GAUGE_AUTO or trainGauge == LIBRail.TRAIN_GAUGE_DEFAULT then
 			local gaugeSpawnnameInfo = LIBRail.GetSpawnnameInfo(
 				trainOptions.spawnnameNoGauge,
-				railScanResultGauge and railScanResultGauge.name or LIBRail.ENUM_GAUGE_DEFAULT
+				railScanResultGauge and railScanResultGauge.name or LIBRail.TRAIN_GAUGE_DEFAULT
 			)
 
 			if gaugeSpawnnameInfo then
