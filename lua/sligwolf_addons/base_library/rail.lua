@@ -55,6 +55,9 @@ local g_gaugenameBlacklist = {
 	[LIB.TRAIN_GAUGE_AUTO] = true,
 }
 
+local g_trainClassesByName = LIB.g_trainClassesByName or {}
+LIB.g_trainClassesByName = g_trainClassesByName
+
 function LIB.GetRailCheckAttachments(ent)
 	if not IsValid(ent) then
 		return nil
@@ -438,23 +441,18 @@ function LIB.GetSwitchModelStates(mainModel)
 	return statesOfModel
 end
 
-function LIB.AddGauge(gaugename, params)
-	gaugename = tostring(gaugename or "")
-	gaugename = string.lower(gaugename)
+function LIB.AddGauge(gaugeName, params)
+	gaugeName = tostring(gaugeName or "")
+	gaugeName = string.lower(gaugeName)
 
 	params = table.Copy(params or {})
 
-	if gaugename == "" then
-		error("no name was given")
+	if gaugeName == "" then
+		error("no gaugeName was given")
 		return
 	end
 
-	if not params then
-		error("params was not given")
-		return
-	end
-
-	local isReal = g_gaugenameBlacklist[gaugename] ~= true
+	local isReal = g_gaugenameBlacklist[gaugeName] ~= true
 	local width = 0
 	local tolerance = 0
 
@@ -478,43 +476,42 @@ function LIB.AddGauge(gaugename, params)
 	end
 
 	local title = tostring(params.title or "")
-	local titleShort = string.upper(gaugename)
+	local titleShort = string.upper(gaugeName)
 
 	if title == "" then
 		title = titleShort
 	end
 
-	local defaultTrainParams = params.defaultTrainParams or {}
-
 	local gauge = {}
-	g_gaugesByName[gaugename] = gauge
+	g_gaugesByName[gaugeName] = gauge
 
 	-- clear gauges caches
 	table.Empty(g_gaugesByWidth)
 	table.Empty(g_gaugesOrdered)
 
-	gauge.name = gaugename
+	gauge.name = gaugeName
 	gauge.title = title
 	gauge.titleShort = titleShort
 	gauge.isReal = isReal
 
+	gauge.modelDirectoryName = string.format("gauge_%s", trainClassName)
+
 	gauge.width = width
 	gauge.tolerance = tolerance
 
+	gauge.trainClass = params.trainClass
+
 	gauge.scanFunction = params.scanFunction
+	gauge.scanParams = params.scanParams
 
-	local gaugeDefaultTrainParams = {}
-	gauge.defaultTrainParams = gaugeDefaultTrainParams
-
-	gaugeDefaultTrainParams.trainSizeMin = defaultTrainParams.trainSizeMin or 0
-	gaugeDefaultTrainParams.trainSizeMax = defaultTrainParams.trainSizeMax or 0
+	gauge.defaultTrainParams = params.defaultTrainParams
 end
 
-function LIB.GetGaugeByName(gaugename)
-	gaugename = tostring(gaugename or "")
-	gaugename = string.lower(gaugename)
+function LIB.GetGaugeByName(gaugeName)
+	gaugeName = tostring(gaugeName or "")
+	gaugeName = string.lower(gaugeName)
 
-	local gauge = g_gaugesByName[gaugename]
+	local gauge = g_gaugesByName[gaugeName]
 	if not gauge then
 		return nil
 	end
@@ -582,12 +579,12 @@ function LIB.GetGaugeByWidth(width)
 	return nil
 end
 
-function LIB.HasGaugeByName(gaugename)
-	return LIB.GetGaugeByName(gaugename) ~= nil
+function LIB.HasGaugeByName(gaugeName)
+	return LIB.GetGaugeByName(gaugeName) ~= nil
 end
 
-function LIB.HasGaugeByWidth(gaugename)
-	return LIB.GetGaugeByWidth(gaugename) ~= nil
+function LIB.HasGaugeByWidth(gaugeName)
+	return LIB.GetGaugeByWidth(gaugeName) ~= nil
 end
 
 function LIB.GetGauges()
@@ -602,11 +599,56 @@ function LIB.GetGauges()
 	return g_gaugesOrdered
 end
 
-function LIB.RegisterSpawnnameToGauge(spawnnameNoGauge, gaugename, spawnnameFull)
-	gaugename = tostring(gaugename or "")
-	gaugename = string.lower(gaugename)
+function LIB.AddTrainClass(trainClassName, params)
+	trainClassName = tostring(trainClassName or "")
+	trainClassName = string.lower(trainClassName)
 
-	if g_gaugenameBlacklist[gaugename] then
+	params = table.Copy(params or {})
+
+	if trainClassName == "" then
+		error("no trainClassName was given")
+		return
+	end
+
+	local title = tostring(params.title or "")
+	local titleShort = string.upper(trainClassName)
+
+	if title == "" then
+		title = titleShort
+	end
+
+	local trainClass = {}
+	g_trainClassesByName[trainClassName] = trainClass
+
+	trainClass.name = trainClassName
+	trainClass.title = title
+	trainClass.titleShort = titleShort
+
+	trainClass.modelDirectoryName = string.format("class_%s", trainClassName)
+
+	trainClass.scanFunction = params.scanFunction
+	trainClass.scanParams = params.scanParams
+
+	trainClass.defaultTrainParams = params.defaultTrainParams
+end
+
+function LIB.TrainClassByName(trainClassName)
+	trainClassName = tostring(trainClassName or "")
+	trainClassName = string.lower(trainClassName)
+
+	local trainClass = g_trainClassesByName[trainClassName]
+	if not trainClass then
+		return nil
+	end
+
+	return trainClass
+end
+
+function LIB.RegisterSpawnnameToGauge(spawnnameNoGauge, gaugeName, spawnnameFull)
+	gaugeName = tostring(gaugeName or "")
+	gaugeName = string.lower(gaugeName)
+
+	if g_gaugenameBlacklist[gaugeName] then
 		return
 	end
 
@@ -624,7 +666,7 @@ function LIB.RegisterSpawnnameToGauge(spawnnameNoGauge, gaugename, spawnnameFull
 	g_spawnnamePartToGaugeRegister[spawnnameNoGauge] = gauges
 
 	local entry = {}
-	gauges[gaugename] = entry
+	gauges[gaugeName] = entry
 
 	if not gauges[LIB.TRAIN_GAUGE_DEFAULT] then
 		g_spawnnameFullToGaugeRegister[spawnnameFull] = entry
@@ -634,25 +676,25 @@ function LIB.RegisterSpawnnameToGauge(spawnnameNoGauge, gaugename, spawnnameFull
 
 	entry.spawnnameFull = spawnnameFull
 	entry.spawnnameNoGauge = spawnnameNoGauge
-	entry.gaugename = gaugename
+	entry.gaugeName = gaugeName
 end
 
-function LIB.GetSpawnnameInfo(spawnnameNoGaugeOrFull, gaugename)
+function LIB.GetSpawnnameInfo(spawnnameNoGaugeOrFull, gaugeName)
 	spawnnameNoGaugeOrFull = tostring(spawnnameNoGaugeOrFull or "")
 	if spawnnameNoGaugeOrFull == "" then
 		return nil
 	end
 
-	gaugename = tostring(gaugename or "")
-	gaugename = string.lower(gaugename)
+	gaugeName = tostring(gaugeName or "")
+	gaugeName = string.lower(gaugeName)
 
-	if g_gaugenameBlacklist[gaugename] then
-		gaugename = LIB.TRAIN_GAUGE_DEFAULT
+	if g_gaugenameBlacklist[gaugeName] then
+		gaugeName = LIB.TRAIN_GAUGE_DEFAULT
 	end
 
-	if gaugename == LIB.TRAIN_GAUGE_DEFAULT then
+	if gaugeName == LIB.TRAIN_GAUGE_DEFAULT then
 		local entry = g_spawnnameFullToGaugeRegister[spawnnameNoGaugeOrFull]
-		if entry and not g_gaugenameBlacklist[entry.gaugename] then
+		if entry and not g_gaugenameBlacklist[entry.gaugeName] then
 			return entry
 		end
 	end
@@ -662,12 +704,12 @@ function LIB.GetSpawnnameInfo(spawnnameNoGaugeOrFull, gaugename)
 		return nil
 	end
 
-	entry = gauges[gaugename]
+	entry = gauges[gaugeName]
 	if not entry then
 		return nil
 	end
 
-	if g_gaugenameBlacklist[entry.gaugename] then
+	if g_gaugenameBlacklist[entry.gaugeName] then
 		return nil
 	end
 
@@ -675,15 +717,106 @@ function LIB.GetSpawnnameInfo(spawnnameNoGaugeOrFull, gaugename)
 end
 
 do
-	local traimParamsLarge = {
-		trainSizeMin = -256,
-		trainSizeMax = 256,
-	}
+	LIB.AddTrainClass(LIB.TRAIN_CLASS_REGULAR, {
+		title = "Regular Train",
+		defaultTrainParams = {
+			trainSizeMin = -384,
+			trainSizeMax = 384,
+		},
+		scanParams = {
+			offsetPos = Vector(0, 0, -5),
+			offsetAng = Angle(0, 0, 0),
+			maxRailTopTraceZ = 32,
+			minRailTopTraceZ = 0,
+			marginRailTopTrace = 3,
+			marginRailEdgeBelow = 4,
+			marginRailEdgeAbove = 2,
+			marginStraight = 2,
+			layersWall = {
+				0, -4, 4
+			},
+			layersFlat = {
+				0, -4, 4
+			},
+		},
+	})
 
-	local traimParamsSmall = {
-		trainSizeMin = -24,
-		trainSizeMax = 24,
-	}
+	LIB.AddTrainClass(LIB.TRAIN_CLASS_NARROW, {
+		title = "Narrow Train",
+		defaultTrainParams = {
+			trainSizeMin = -256,
+			trainSizeMax = 256,
+		},
+		scanParams = {
+			offsetPos = Vector(0, 0, -5),
+			offsetAng = Angle(0, 0, 0),
+			maxRailTopTraceZ = 32,
+			minRailTopTraceZ = 0,
+			marginRailTopTrace = 2,
+			marginRailEdgeBelow = 4,
+			marginRailEdgeAbove = 2,
+			marginStraight = 2,
+			layersWall = {
+				0, -3, 3
+			},
+			layersFlat = {
+				0, -3, 3
+			},
+		},
+	})
+
+	LIB.AddTrainClass(LIB.TRAIN_CLASS_MINIATURE, {
+		title = "Miniature Train",
+		defaultTrainParams = {
+			trainSizeMin = -24,
+			trainSizeMax = 24,
+		},
+		scanParams = {
+			offsetPos = Vector(0, 0, -1),
+			offsetAng = Angle(0, 0, 0),
+			maxRailTopTraceZ = 8,
+			minRailTopTraceZ = 0,
+			marginRailTopTrace = 0.5,
+			marginRailEdgeBelow = 1,
+			marginRailEdgeAbove = 2,
+			marginStraight = 1,
+			layersWall = {
+				0, 1, -1
+			},
+			layersFlat = {
+				0, 1, -1
+			},
+		},
+	})
+
+	LIB.AddTrainClass(LIB.TRAIN_CLASS_WP, {
+		title = "Wuppertal Suspension Train",
+		defaultTrainParams = {
+			trainSizeMin = -512,
+			trainSizeMax = 512,
+		},
+		scanParams = {
+			offsetPos = Vector(0, 0, -1),
+			offsetAng = Angle(0, 0, 0),
+			maxRailTopTraceZ = 48,
+			minRailTopTraceZ = -48,
+			maxRailHeight = 18,
+			minRailHeight = 6,
+			marginRailEdgeBelow = 1,
+			marginRailEdgeAbove = 2,
+			marginRailOuterWidth = 12,
+			marginStraight = 2,
+			layersWall = {
+				0, -2, 2, 8, 12, 16, -8, -12, -16
+			},
+			layersFlat = {
+				0, -2, 2
+			},
+		},
+		scanFunction = function(...)
+			return LIBRailscan.ScanMonoRailInternal(...)
+		end,
+	})
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_DEFAULT, {
 		title = "Default",
@@ -691,65 +824,66 @@ do
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_AUTO, {
 		title = "Auto",
-		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
-			return LIBRailscan.ScanRailAutoInternal(trainEnt, aimTrace, trainParams)
+		scanParams = {
+			items = {
+				{
+					trainClass = LIB.TRAIN_CLASS_REGULAR,
+					maxGauge = LIB.MAX_GAUGE_WIDTH,
+					minGauge = 50,
+				},
+				{
+					trainClass = LIB.TRAIN_CLASS_NARROW,
+					maxGauge = 40,
+					minGauge = 24,
+				},
+				{
+					trainClass = LIB.TRAIN_CLASS_MINIATURE,
+					maxGauge = 16,
+					minGauge = 8,
+				},
+			}
+		},
+		scanFunction = function(gauge, trainEnt, aimTrace, scanParams, trainParams)
+			return LIBRailscan.ScanRailAutoInternal(trainEnt, aimTrace, scanParams, trainParams)
 		end,
 	})
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_PHX, {
 		title = "PHX",
 		width = 80,
-		defaultTrainParams = traimParamsLarge,
-		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
-			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
-		end,
+		trainClass = LIB.TRAIN_CLASS_REGULAR,
 	})
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_RSG, {
 		title = "RSG",
 		width = 56,
 		tolerance = 2,
-		defaultTrainParams = traimParamsLarge,
-		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
-			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
-		end,
+		trainClass = LIB.TRAIN_CLASS_REGULAR,
 	})
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_RSG3FT, {
 		title = "RSG 3ft",
 		width = 36,
-		tolerance = 1,
-		defaultTrainParams = traimParamsLarge,
-		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
-			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
-		end,
+		tolerance = 2,
+		trainClass = LIB.TRAIN_CLASS_NARROW,
 	})
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_RON2FT, {
 		title = "Ron 2ft",
 		width = 32,
-		defaultTrainParams = traimParamsLarge,
-		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
-			return LIBRailscan.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
-		end,
+		trainClass = LIB.TRAIN_CLASS_NARROW,
 	})
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_MT12, {
 		title = "Minitrains",
 		width = 12,
-		defaultTrainParams = traimParamsSmall,
-		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
-			return LIBRailscan.ScanSmallRailInternal(gauge, trainEnt, aimTrace, trainParams)
-		end,
+		trainClass = LIB.TRAIN_CLASS_MINIATURE,
 	})
 
 	LIB.AddGauge(LIB.TRAIN_GAUGE_WP, {
 		title = "Wuppertal Suspension Rail",
 		width = 4,
-		defaultTrainParams = traimParamsLarge,
-		scanFunction = function(gauge, trainEnt, aimTrace, trainParams)
-			return LIBRailscan.ScanMonoRailInternal(gauge, trainEnt, aimTrace, trainParams)
-		end,
+		trainClass = LIB.TRAIN_CLASS_WP,
 	})
 end
 

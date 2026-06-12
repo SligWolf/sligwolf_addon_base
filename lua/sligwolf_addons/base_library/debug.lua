@@ -48,10 +48,6 @@ else
 	LIB.DEBUG_REALM_MARKER_NC = "● [CL] "
 end
 
-LIB.COLOR_TRACER_LIVE = Color(50, 255, 50)
-LIB.COLOR_TRACER_DEAD = Color(50, 50, 255)
-LIB.COLOR_TRACER_HIT_TEXT = Color(50, 255, 50)
-
 LIB.COLOR_AXIS_X = Color(255, 0, 0)
 LIB.COLOR_AXIS_Y = Color(0, 255, 0)
 LIB.COLOR_AXIS_Z = Color(0, 0, 255)
@@ -63,6 +59,13 @@ LIB.ENUM_DEBUG_MODE_DISABLED = 0
 LIB.ENUM_DEBUG_MODE_SHARED = 1
 LIB.ENUM_DEBUG_MODE_SERVER = 2
 LIB.ENUM_DEBUG_MODE_CLIENT = 3
+
+LIB.TRACE_DEBUG_CONTEXT_DEFAULT = "default"
+
+local g_traceDebugContext = LIB.g_traceDebugContext or {}
+LIB.g_traceDebugContext = g_traceDebugContext
+
+local g_currentTraceDebugContext = nil
 
 function LIB.IsDeveloper()
 	if not g_debugEnabled then
@@ -488,17 +491,59 @@ function LIB.SweptBox(pos1, pos2, min, max, angOrColor, color)
 	debugoverlay.SweptBox(pos1, pos2, min, max, angOrColor, g_lifetime, color)
 end
 
+function LIB.AddTraceDebugContext(name, params)
+	name = tostring(name or "")
+	if name == "" then
+		return
+	end
 
-local function debugText(pos, textTop, textBottom)
-	if textTop ~= "" then
-		LIB.EntityTextAtPosition(pos, textTop)
-		LIB.EntityTextAtPosition(pos, textBottom, 1)
-	else
-		LIB.EntityTextAtPosition(pos, textBottom)
+	if not params then
+		return
+	end
+
+	local title = tostring(params.title or "")
+	local scale = tonumber(params.scale or 0) or 0
+
+	if scale <= 0 then
+		scale = 1
+	end
+
+	local item = {}
+	g_traceDebugContext[name] = item
+
+	item.name = name
+	item.title = title
+	item.scale = scale
+
+	item.colorLive = params.colorLive or CONSTANTS.colorError1
+	item.colorDead = params.colorDead or CONSTANTS.colorError2
+	item.colorUnused = params.colorUnused or item.colorDead
+
+	item.drawDead = item.colorDead.a > 0
+	item.drawUnused = item.colorUnused.a > 0
+end
+
+function LIB.SetCurrentTraceDebugContext(name)
+	g_currentTraceDebugContext = g_traceDebugContext[name]
+
+	if not g_currentTraceDebugContext then
+		g_currentTraceDebugContext = g_traceDebugContext[LIB.TRACE_DEBUG_CONTEXT_DEFAULT]
 	end
 end
 
-function LIB.DrawLineTrace(traceLineParams, traceLineResult, text)
+function LIB.GetCurrentTraceDebugContext()
+	if not g_currentTraceDebugContext then
+		g_currentTraceDebugContext = g_traceDebugContext[LIB.TRACE_DEBUG_CONTEXT_DEFAULT]
+	end
+
+	return g_currentTraceDebugContext
+end
+
+function LIB.ResetTraceDebugContext()
+	g_currentTraceDebugContext = g_traceDebugContext[LIB.TRACE_DEBUG_CONTEXT_DEFAULT]
+end
+
+function LIB.DrawLineTrace(traceLineResult)
 	if not LIB.IsDeveloper() then
 		return
 	end
@@ -507,56 +552,49 @@ function LIB.DrawLineTrace(traceLineParams, traceLineResult, text)
 		return
 	end
 
-	if not traceLineParams then
-		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineParams'")
+	local vecStart = traceLineResult.StartPos
+	if not vecStart then
+		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineResult.StartPos'")
 		return
 	end
 
-	text = tostring(text or "")
-	traceLineParams = traceLineParams or {}
-
-	local trStart = traceLineParams.start
-	local trEnd = traceLineParams.endpos
-
-	if not trStart then
-		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineParams.start'")
+	local vecEnd = traceLineResult.EndPos
+	if not vecEnd then
+		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineResult.EndPos'")
 		return
 	end
 
-	if not trEnd then
-		LIB.Debug("Debug.DrawLineTrace: Missing 'traceLineParams.endpos'")
+	if not LIB.CanDraw(vecStart) and not LIB.CanDraw(vecEnd) then
 		return
 	end
 
-	if not LIB.CanDraw(trStart) and not LIB.CanDraw(trEnd) then
-		return
+	local context = LIB.GetCurrentTraceDebugContext()
+	local scale = context.scale
+
+	local hit = traceLineResult.Hit or false
+	local vecHit = traceLineResult.HitPos or vecEnd
+	local vecHitNormal = traceLineResult.HitNormal or CONSTANTS.vecZero
+	local vecHitNormalEnd = vecHit + vecHitNormal * scale * 0.5
+
+	LIB.Line(vecStart, vecHit, context.colorLive)
+
+	if context.drawDead then
+		LIB.Line(vecHit, vecEnd, context.colorDead)
+		LIB.Cross(vecEnd, scale, context.colorDead)
 	end
 
-	local trHitPos = traceLineResult.HitPos or trEnd
-	local trHit = traceLineResult.Hit or false
-	local trHitNormal = traceLineResult.HitNormal or CONSTANTS.vecZero
-	local trHitNormalEnd = trHitPos + trHitNormal * 8
+	LIB.Cross(vecStart, scale, context.colorLive)
 
-	debugText(trStart, text, "Start")
+	if hit then
+		LIB.Cross(vecHit, scale * 1.5, context.colorLive)
+		LIB.Line(vecHit, vecHitNormalEnd, context.colorLive)
 
-	LIB.Cross(trStart, 1, LIB.COLOR_TRACER_LIVE)
-	LIB.Line(trStart, trHitPos, LIB.COLOR_TRACER_LIVE)
-	LIB.Line(trHitPos, trEnd, LIB.COLOR_TRACER_DEAD)
-	LIB.Cross(trEnd, 1, LIB.COLOR_TRACER_DEAD)
-
-	if trHit then
-		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_LIVE)
-		LIB.Line(trHitPos, trHitNormalEnd, LIB.COLOR_TRACER_LIVE)
-
-		debugText(trHitPos, text, "Hit", LIB.COLOR_TRACER_HIT_TEXT)
-	else
-		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_DEAD)
-
-		debugText(trEnd, text, "End")
+		LIB.EntityTextAtPosition(vecStart, context.title, context.colorLive)
+		LIB.EntityTextAtPosition(vecHit, "Hit", context.colorLive)
 	end
 end
 
-function LIB.DrawHullTrace(traceHullParams, traceHullResult, text)
+function LIB.DrawHullTrace(traceHullResult)
 	if not LIB.IsDeveloper() then
 		return
 	end
@@ -565,60 +603,55 @@ function LIB.DrawHullTrace(traceHullParams, traceHullResult, text)
 		return
 	end
 
-	if not traceHullParams then
-		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullParams'")
-		return
-	end
-
-	text = tostring(text or "")
 	traceHullResult = traceHullResult or {}
 
-	local trStart = traceHullParams.start
-	local trEnd = traceHullParams.endpos
-
-	if not trStart then
-		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullParams.start'")
+	local vecStart = traceHullResult.StartPos
+	if not vecStart then
+		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullResult.StartPos'")
 		return
 	end
 
-	if not trEnd then
-		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullParams.endpos'")
+	local vecEnd = traceHullResult.EndPos
+	if not vecEnd then
+		LIB.Debug("Debug.DrawHullTrace: Missing 'traceHullResult.EndPos'")
 		return
 	end
 
-	if not LIB.CanDraw(trStart) and not LIB.CanDraw(trEnd) then
+	if not LIB.CanDraw(vecStart) and not LIB.CanDraw(vecEnd) then
 		return
 	end
 
-	local trMins = traceHullParams.mins or CONSTANTS.vecZero
-	local trMaxs = traceHullParams.maxs or CONSTANTS.vecZero
+	local context = LIB.GetCurrentTraceDebugContext()
+	local scale = context.scale
 
-	local trHitPos = traceHullResult.HitPos or trEnd
-	local trHit = traceHullResult.Hit or false
-	local trHitNormal = traceHullResult.HitNormal or CONSTANTS.vecZero
-	local trHitNormalEnd = trHitPos + trHitNormal * 8
+	local vecMin = traceHullParams.mins or CONSTANTS.vecZero
+	local vecMax = traceHullParams.maxs or CONSTANTS.vecZero
 
-	local trMinsHit = trMins + Vector(1, 1, 0)
-	local trMaxsHit = trMaxs - Vector(1, 1, 1)
+	local hit = traceHullResult.Hit or false
+	local vecHit = traceHullResult.HitPos or vecEnd
+	local vecHitNormal = traceHullResult.HitNormal or CONSTANTS.vecZero
+	local vecHitNormalEnd = vecHit + vecHitNormal * scale * 0.5
 
-	debugText(trStart, text, "Start")
+	local vecMinHit = vecMin + Vector(1, 1, 0)
+	local vecMaxHit = vecMax - Vector(1, 1, 1)
 
-	LIB.Cross(trStart, 1, LIB.COLOR_TRACER_LIVE)
-	LIB.SweptBox(trStart, trHitPos, trMins, trMaxs, LIB.COLOR_TRACER_LIVE)
-	LIB.Line(trHitPos, trEnd, LIB.COLOR_TRACER_DEAD)
-	LIB.Cross(trEnd, 1, LIB.COLOR_TRACER_DEAD)
+	LIB.Line(vecStart, vecHit, context.colorLive)
 
-	if trHit then
-		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_LIVE)
-		LIB.Line(trHitPos, trHitNormalEnd, LIB.COLOR_TRACER_LIVE)
+	if context.drawDead then
+		LIB.Line(vecHit, vecEnd, context.colorDead)
+		LIB.Cross(vecEnd, scale, context.colorDead)
+	end
 
-		LIB.BoxEx(trHitPos, trMinsHit, trMaxsHit, LIB.COLOR_TRACER_LIVE)
+	LIB.Cross(vecStart, scale, context.colorLive)
 
-		debugText(trHitPos, text, "Hit", LIB.COLOR_TRACER_HIT_TEXT)
-	else
-		LIB.Cross(trHitPos, 1, LIB.COLOR_TRACER_DEAD)
+	if hit then
+		LIB.Cross(vecHit, scale * 1.5, context.colorLive)
+		LIB.Line(vecHit, vecHitNormalEnd, context.colorLive)
 
-		debugText(trEnd, text, "End")
+		LIB.BoxEx(vecHit, vecMinHit, vecMaxHit, context.colorLive)
+
+		LIB.EntityTextAtPosition(vecStart, context.title, context.colorLive)
+		LIB.EntityTextAtPosition(vecHit, "Hit", context.colorLive)
 	end
 end
 
@@ -983,6 +1016,17 @@ do
 			LIBTimer.NextFrame("Debug_ShowEntityNames", nextFrameFunc)
 		end
 	end, nil, helptext, flags)
+end
+
+do
+	LIB.AddTraceDebugContext(LIB.TRACE_DEBUG_CONTEXT_DEFAULT, {
+		title = "",
+		colorLive = Color(50, 255, 50),
+		colorDead = Color(100, 100, 255),
+		colorUnused = Color(150, 50, 150),
+	})
+
+	LIB.ResetTraceDebugContext()
 end
 
 function LIB.Load()

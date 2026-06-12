@@ -29,8 +29,8 @@ function SLIGWOLF_BASE_OBJ:RunPostInitialize()
 	end)
 end
 
-function SLIGWOLF_BASE_OBJ:DelayNextSpawnForOwner()
-	LIBSpamprotection.DelayNextSpawnForOwner(self)
+function SLIGWOLF_BASE_OBJ:DelayNextSpawnForOwner(time)
+	LIBSpamprotection.DelayNextSpawnForOwner(self, time)
 end
 
 local function extendErrorFormat(format, obj)

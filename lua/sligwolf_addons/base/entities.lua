@@ -158,7 +158,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 	local timernameEvent = "HandleSpawnFinishedEventInternal"
 	local timernameEventTimeout = "HandleSpawnFinishedEventInternalTimeout"
 
-	LIBSpamprotection.DelayNextSpawnForOwner(superparent)
+	LIBSpamprotection.DelayNextSpawnForOwner(superparent, 0.26)
 
 	self:EntityTimerOnce(superparent, timernameEvent, 0.26, function()
 		if LIBEntities.IsMarkedForDeletion(superparent) then

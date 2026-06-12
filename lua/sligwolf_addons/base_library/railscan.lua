@@ -11,62 +11,6 @@ local LIBRail = SligWolf_Addons.Rail
 local LIBDebug = SligWolf_Addons.Debug
 local LIBTracer = SligWolf_Addons.Tracer
 
--- Large rails, such as: PHX, rsg, rsg3ft, ron2ft
-local g_scanParamsLarge = {
-	offsetPos = Vector(0, 0, -5),
-	offsetAng = Angle(0, 0, 0),
-	maxRailTopTraceZ = 32,
-	minRailTopTraceZ = 0,
-	marginRailTopTrace = 3,
-	marginRailEdgeBelow = 4,
-	marginRailEdgeAbove = 2,
-	marginStraight = 2,
-	layersWall = {
-		0, -4, 4
-	},
-	layersFlat = {
-		0, -4, 4
-	},
-}
-
--- Small rails, such as: Minitrains (mt12)
-local g_scanParamsSmall = {
-	offsetPos = Vector(0, 0, -1),
-	offsetAng = Angle(0, 0, 0),
-	maxRailTopTraceZ = 8,
-	minRailTopTraceZ = 0,
-	marginRailTopTrace = 0.5,
-	marginRailEdgeBelow = 1,
-	marginRailEdgeAbove = 2,
-	marginStraight = 1,
-	layersWall = {
-		0, 1, -1
-	},
-	layersFlat = {
-		0, 1, -1
-	},
-}
-
--- Monorails, such as: Wuppertal Suspension Rail (wpsr)
-local g_scanParamsMono = {
-	offsetPos = Vector(0, 0, -1),
-	offsetAng = Angle(0, 0, 0),
-	maxRailTopTraceZ = 32,
-	minRailTopTraceZ = -32,
-	maxRailHeight = 20,
-	minRailHeight = 4,
-	marginRailEdgeBelow = 1,
-	marginRailEdgeAbove = 2,
-	marginRailOuterWidth = 8,
-	marginStraight = 2,
-	layersWall = {
-		0, -2, 2, 8, 12, 16, -8, -12, -16
-	},
-	layersFlat = {
-		0, -2, 2
-	},
-}
-
 local g_sqrtTwo = math.sqrt(2)
 local g_tinyMargin = 0.1
 local g_tinyMarginFactor = 0.01
@@ -127,7 +71,7 @@ local function finalizeRailTopNormal(trainEnt, railSidePos, railSideNormal, esti
 	local traceTopEndPos = g_tmpMx * railOffsetBottom
 
 	-- Tracer for finding the top sides of rail tracks
-	local traceTop = LIBTracer.Tracer(trainEnt, traceTopStartPos, traceTopEndPos, nil, g_traceResultBufferA)
+	local traceTop = LIBTracer.Tracer(trainEnt, traceTopStartPos, traceTopEndPos, g_traceResultBufferA)
 
 	if not traceTop or not traceTop.Hit or traceTop.StartSolid or traceTop.AllSolid then
 		return nil
@@ -145,8 +89,8 @@ local function getMonoRailSides(trainEnt, frontPos, backPos)
 	local center = (frontPos + backPos) / 2
 
 	-- Finding the rail 1st pass
-	local traceSideFront = LIBTracer.Tracer(trainEnt, frontPos, center, nil, g_traceResultBufferA)
-	local traceSideBack = LIBTracer.Tracer(trainEnt, backPos, center, nil, g_traceResultBufferB)
+	local traceSideFront = LIBTracer.Tracer(trainEnt, frontPos, center, g_traceResultBufferA)
+	local traceSideBack = LIBTracer.Tracer(trainEnt, backPos, center, g_traceResultBufferB)
 
 	if not traceSideFront or traceSideFront.StartSolid or traceSideFront.AllSolid then
 		return nil
@@ -239,8 +183,8 @@ local function checkRailStraightSpace(trainEnt, mx, trainSizeMin, trainSizeMax, 
 	g_spaceCheckVec.x = trainSizeMax
 	local straightTraceEndB = mx * g_spaceCheckVec
 
-	local straightTraceA = LIBTracer.Tracer(trainEnt, straightTraceStartA, straightTraceEndA, nil, g_traceResultBufferA)
-	local straightTraceB = LIBTracer.Tracer(trainEnt, straightTraceStartB, straightTraceEndB, nil, g_traceResultBufferB)
+	local straightTraceA = LIBTracer.Tracer(trainEnt, straightTraceStartA, straightTraceEndA, g_traceResultBufferA)
+	local straightTraceB = LIBTracer.Tracer(trainEnt, straightTraceStartB, straightTraceEndB, g_traceResultBufferB)
 
 	if not straightTraceA or straightTraceA.Hit or straightTraceA.StartSolid or straightTraceA.AllSolid then
 		return false
@@ -263,7 +207,7 @@ local function checkRailCrossSpace(trainEnt, mx, width, heightOffset)
 	g_spaceCheckVec.y = -width / 2
 	local traceEnd = mx * g_spaceCheckVec
 
-	local crossTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, nil, g_traceResultBufferA)
+	local crossTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, g_traceResultBufferA)
 	if not crossTrace or crossTrace.Hit or crossTrace.StartSolid or crossTrace.AllSolid then
 		return false
 	end
@@ -281,7 +225,7 @@ local function checkRailSideSpace(trainEnt, mxTop, mxBottom, heightOffsetTop, he
 	g_spaceCheckVec.z = heightOffsetBottom
 	local traceEnd = mxBottom * g_spaceCheckVec
 
-	local sideTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, nil, g_traceResultBufferA)
+	local sideTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, g_traceResultBufferA)
 	if not sideTrace or sideTrace.Hit or sideTrace.StartSolid or sideTrace.AllSolid then
 		return false
 	end
@@ -404,6 +348,8 @@ function LIB.ScanRail(trainEnt, aimTrace, parameters)
 
 		local distance = nil
 
+		LIBDebug.SetCurrentTraceDebugContext("Railscan.ScanRail.Layers")
+
 		-- Use multiple layers to be more robust against uneven or patchy surfaces.
 		for _, layer in ipairs(layers) do
 			g_layerVec.z = layer
@@ -429,8 +375,8 @@ function LIB.ScanRail(trainEnt, aimTrace, parameters)
 			local layerEndPos = g_worldMx * maxRailGaugeDiagonalVecEnd
 
 			-- Tracer for finding the inner sides of rail tracks
-			local traceSideA = LIBTracer.Tracer(trainEnt, layerCenterPos, layerStartPos, nil, g_traceResultBufferA)
-			local traceSideB = LIBTracer.Tracer(trainEnt, layerCenterPos, layerEndPos, nil, g_traceResultBufferB)
+			local traceSideA = LIBTracer.Tracer(trainEnt, layerCenterPos, layerStartPos, g_traceResultBufferA)
+			local traceSideB = LIBTracer.Tracer(trainEnt, layerCenterPos, layerEndPos, g_traceResultBufferB)
 
 			if not traceSideA or not traceSideA.Hit or traceSideA.AllSolid then
 				continue
@@ -471,6 +417,8 @@ function LIB.ScanRail(trainEnt, aimTrace, parameters)
 		if not railSideNormalA or not railSideNormalB then
 			continue
 		end
+
+		LIBDebug.SetCurrentTraceDebugContext("Railscan.ScanRail.TopNormals")
 
 		local upNormal = g_worldMx:GetUp()
 
@@ -513,6 +461,8 @@ function LIB.ScanRail(trainEnt, aimTrace, parameters)
 			continue
 		end
 
+		LIBDebug.SetCurrentTraceDebugContext("Railscan.ScanRail.SpaceCheck")
+
 		-- Found center and direction of the track
 		g_trackMxTop:Identity()
 		g_trackMxTop:SetTranslation((railTopA + railTopB) / 2)
@@ -538,12 +488,14 @@ function LIB.ScanRail(trainEnt, aimTrace, parameters)
 		-- Check if the area above the track is not blocked along its width
 		-- This ensures were are indeed on a train track and not just in a narrow corridor
 		if not checkRailCrossSpace(trainEnt, g_trackMxTop, trackWidth * 1.5, marginRailEdgeAbove) then
-			return nil
+			break
 		end
 
 		foundTrackWidth = trackWidth
 		break
 	end
+
+	LIBDebug.ResetTraceDebugContext()
 
 	if not foundTrackWidth then
 		return nil
@@ -603,6 +555,8 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 		return nil
 	end
 
+	local minDistance = minGauge - 1
+
 	local trainSizeMin = parameters.trainSizeMin or 0
 	local trainSizeMax = parameters.trainSizeMax or 0
 
@@ -638,8 +592,6 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 	local maxRailThicknessFront = 1
 	local maxRailThicknessBack = maxGauge + 1
 
-	local needsTwoPassSides = false
-
 	g_yawOffsetAng.y = 0
 
 	if normalZAbs >= g_groundThreshold then
@@ -655,8 +607,6 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 
 		maxRailThicknessFront = maxGauge
 		maxRailThicknessBack = maxRailThicknessFront
-
-		needsTwoPassSides = true
 	end
 
 	maxRailThicknessFront = maxRailThicknessFront + tinyMargin
@@ -695,7 +645,7 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 		local railSideNormalFront = nil
 		local railSideNormalBack = nil
 
-		local railWidth = nil
+		local distance = nil
 
 		-- Use multiple layers to be more robust against uneven or patchy surfaces.
 		for _, layer in ipairs(layers) do
@@ -715,7 +665,9 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 			railSideNormalFront = nil
 			railSideNormalBack = nil
 
-			railWidth = nil
+			distance = nil
+
+			LIBDebug.SetCurrentTraceDebugContext("Railscan.ScanMonoRail.Layers")
 
 			-- Finding the rail 1st pass
 			local frontPos = g_worldMx * maxRailThicknessVecFront -- Facing to player
@@ -726,28 +678,12 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 				continue
 			end
 
-			if needsTwoPassSides then
-				local center = (railSideHitPosFront + railSideHitPosBack) / 2
-
-				-- Finding the rail 2nd pass, corrected for 1st pass hitnormal
-				frontPos = center + railSideNormalFront * minGauge
-				backPos = center + railSideNormalBack * minGauge
-
-				railSideHitPosFront, railSideHitPosBack, railSideNormalFront, railSideNormalBack = getMonoRailSides(trainEnt, frontPos, backPos)
-				if not railSideHitPosFront then
-					continue
-				end
-			end
-
-			local width = railSideHitPosFront:Distance(railSideHitPosBack)
-			width = math.Round(width)
-
-			if width < minGauge or width > maxGauge then
+			distance = railSideHitPosFront:Distance(railSideHitPosBack)
+			if distance < minDistance then
 				-- Likely not a valid rail gauge
 				continue
 			end
 
-			railWidth = width
 			break
 		end
 
@@ -759,9 +695,22 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 			continue
 		end
 
-		if not railWidth then
+		if not distance then
 			continue
 		end
+
+		local toCenterDir = railSideHitPosFront - (railSideHitPosFront + railSideHitPosBack) / 2
+		toCenterDir:Normalize()
+
+		local toCenterDot = toCenterDir:Dot(railSideNormalFront)
+
+		local railWidth = math.Round(distance * math.abs(toCenterDot))
+		if railWidth < minGauge or railWidth > maxGauge then
+			-- Likely not a valid rail gauge
+			continue
+		end
+
+		LIBDebug.SetCurrentTraceDebugContext("Railscan.ScanMonoRail.TopNormals")
 
 		local upNormal = g_worldMx:GetUp()
 		local toCenter = -railWidth / 2
@@ -784,7 +733,7 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 			continue
 		end
 
-		-- Get buttom surface
+		-- Get bottom surface
 		local railBottom = nil
 
 		railBottomNormal, railBottom = finalizeRailTopNormal(trainEnt, railSideHitPosFront, railSideNormalFront, railTopNormal, railTopTraceOffsetBottom, railTopTraceOffsetTop)
@@ -795,9 +744,13 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 
 		-- Make sure the rail is not too high
 		local trackHeight = railTop:Distance(railBottom)
+		trackHeight = math.Round(trackHeight)
+
 		if trackHeight < minRailHeight or trackHeight > maxRailHeight then
 			continue
 		end
+
+		LIBDebug.SetCurrentTraceDebugContext("Railscan.ScanMonoRail.SpaceCheck")
 
 		-- Found center and direction of the track
 		g_trackMxTop:Identity()
@@ -818,12 +771,12 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 		-- Check if the area above the rail is not blocked along its width
 		-- This ensures were are indeed on a rail and not just in a narrow corridor
 		if not checkRailCrossSpace(trainEnt, g_trackMxTop, marginRailOuterWidth, heightOffsetTop) then
-		 	return nil
+		 	break
 		end
 
 		-- Also check if the area below the rail is not blocked along its width
 		if not checkRailCrossSpace(trainEnt, g_trackMxBottom, marginRailOuterWidth, heightOffsetBottom) then
-		 	return nil
+		 	break
 		end
 
 		-- Find which side is open
@@ -832,7 +785,7 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 
 		if not openFrontSide and not openBackSide then
 			-- No side is open, likely an invalid geometry
-		 	return nil
+			break
 		end
 
 		hasPlayerFacingOpening = true
@@ -844,6 +797,8 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 		foundRailWidth = railWidth
 		break
 	end
+
+	LIBDebug.ResetTraceDebugContext()
 
 	if not foundRailWidth then
 		return nil
@@ -879,26 +834,37 @@ function LIB.ScanMonoRail(trainEnt, aimTrace, parameters)
 	}
 end
 
-function LIB.ScanRailWithGauge(trainEnt, aimTrace, gaugename, trainParams)
-	local gauge = LIBRail.GetGaugeByName(gaugename)
+function LIB.ScanRailWithGauge(trainEnt, aimTrace, gaugeName, trainParams)
+	local gauge = LIBRail.GetGaugeByName(gaugeName)
 	if not gauge then
 		return nil
 	end
 
-	local scanFunction = gauge.scanFunction
+	local trainClass = LIBRail.TrainClassByName(gauge.trainClass)
+
+	local scanFunction = nil
+	local scanParams = nil
+	local defaultTrainParams = nil
+
+	if trainClass then
+		scanFunction = trainClass.scanFunction or gauge.scanFunction
+		scanParams = trainClass.scanParams or gauge.scanParams
+		defaultTrainParams = trainClass.defaultTrainParams or gauge.defaultTrainParams
+	else
+		scanFunction = gauge.scanFunction
+		scanParams = gauge.scanParams
+		defaultTrainParams = gauge.defaultTrainParams
+	end
+
 	if not scanFunction then
+		scanFunction = LIB.ScanRailInternal
+	end
+
+	if not scanParams then
 		return nil
 	end
 
-	trainParams = trainParams or {}
-
-	local thisTrainParams = {}
-	local defaultTrainParams = gauge.defaultTrainParams
-
-	thisTrainParams.trainSizeMin = trainParams.trainSizeMin or defaultTrainParams.trainSizeMin or 0
-	thisTrainParams.trainSizeMax = trainParams.trainSizeMax or defaultTrainParams.trainSizeMax or 0
-
-	local result = scanFunction(gauge, trainEnt, aimTrace, thisTrainParams)
+	local result = scanFunction(gauge, trainEnt, aimTrace, scanParams, trainParams or defaultTrainParams)
 	if not result then
 		return nil
 	end
@@ -914,64 +880,62 @@ function LIB.ScanRailWithGauge(trainEnt, aimTrace, gaugename, trainParams)
 
 	result.gauge = gauge
 
+	trainClass = LIBRail.TrainClassByName(gauge.trainClass)
+	result.trainClass = trainClass
+
 	local isDebug = LIBDebug.IsDeveloper()
 
 	if isDebug then
-		local title = gauge.title
+		local pos = result.pos
+
 		local titleShort = gauge.titleShort
-		local gaugeString = nil
+		local debugString = string.format("Gauge: %s", titleShort)
 
-		if title == titleShort then
-			gaugeString = string.format("Gauge: %s", gauge.titleShort)
-		else
-			gaugeString = string.format("Gauge: %s (%s)", gauge.titleShort, gauge.title)
-		end
+		LIBDebug.EntityTextAtPosition(pos, debugString, 2)
 
-		LIBDebug.EntityTextAtPosition(result.pos, gaugeString, 2)
+		titleShort = trainClass and trainClass.titleShort or "UNKNOWN"
+		debugString = string.format("Train Class: %s", titleShort)
+
+		LIBDebug.EntityTextAtPosition(pos, debugString, 3)
 	end
 
 	return result
 end
 
-function LIB.ScanRailAutoInternal(trainEnt, aimTrace, trainParams)
-	local result = nil
-	local scanParams = nil
+function LIB.ScanRailAutoInternal(trainEnt, aimTrace, scanParams, trainParams)
+	local items = scanParams.items
 
-	-- Large rails, such as: PHX, rsg, rsg3ft, ron2ft
-	scanParams = table.Copy(g_scanParamsLarge)
+	for _, item in ipairs(items) do
+		local trainClass = LIBRail.TrainClassByName(item.trainClass)
+		if not trainClass then
+			continue
+		end
 
-	scanParams.trainSizeMin = trainParams.trainSizeMin
-	scanParams.trainSizeMax = trainParams.trainSizeMax
-	scanParams.maxGauge = LIBRail.MAX_GAUGE_WIDTH
-	scanParams.minGauge = 30
+		local trainClassScanParams = trainClass.scanParams
+		if not trainClassScanParams then
+			continue
+		end
 
-	result = LIB.ScanRail(trainEnt, aimTrace, scanParams)
+		local thisTrainParams = trainParams or trainClass.defaultTrainParams
 
-	if not result then
-		-- Small rails, such as: Minitrains (mt12)
-		scanParams = table.Copy(g_scanParamsSmall)
+		trainClassScanParams.trainSizeMin = thisTrainParams.trainSizeMin
+		trainClassScanParams.trainSizeMax = thisTrainParams.trainSizeMax
 
-		scanParams.trainSizeMin = trainParams.trainSizeMin
-		scanParams.trainSizeMax = trainParams.trainSizeMax
-		scanParams.maxGauge = 16
-		scanParams.minGauge = LIBRail.MIN_GAUGE_WIDTH
+		trainClassScanParams.maxGauge = item.maxGauge
+		trainClassScanParams.minGauge = item.minGauge
 
-		result = LIB.ScanRail(trainEnt, aimTrace, scanParams)
-
-		if not result then
-			return nil
+		local result = LIB.ScanRail(trainEnt, aimTrace, trainClassScanParams)
+		if result then
+			return result
 		end
 	end
 
-	return result
+	return nil
 end
 
-function LIB.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
+function LIB.ScanRailInternal(gauge, trainEnt, aimTrace, scanParams, trainParams)
 	local minGauge = gauge.width
 	local maxGauge = minGauge + gauge.tolerance
-
-	-- Large rails, such as: PHX, rsg, rsg3ft, ron2ft
-	local scanParams = table.Copy(g_scanParamsLarge)
 
 	scanParams.trainSizeMin = trainParams.trainSizeMin
 	scanParams.trainSizeMax = trainParams.trainSizeMax
@@ -987,33 +951,9 @@ function LIB.ScanLargeRailInternal(gauge, trainEnt, aimTrace, trainParams)
 	return result
 end
 
-function LIB.ScanSmallRailInternal(gauge, trainEnt, aimTrace, trainParams)
+function LIB.ScanMonoRailInternal(gauge, trainEnt, aimTrace, scanParams, trainParams)
 	local minGauge = gauge.width
 	local maxGauge = minGauge + gauge.tolerance
-
-	-- Small rails, such as: Minitrains (mt12)
-	local scanParams = table.Copy(g_scanParamsSmall)
-
-	scanParams.trainSizeMin = trainParams.trainSizeMin
-	scanParams.trainSizeMax = trainParams.trainSizeMax
-	scanParams.minGauge = minGauge
-	scanParams.maxGauge = maxGauge
-
-	local result = LIB.ScanRail(trainEnt, aimTrace, scanParams)
-
-	if not result then
-		return nil
-	end
-
-	return result
-end
-
-function LIB.ScanMonoRailInternal(gauge, trainEnt, aimTrace, trainParams)
-	local minGauge = gauge.width
-	local maxGauge = minGauge + gauge.tolerance
-
-	-- Monorails, such as: Wuppertal Suspension Rail (wpsr)
-	local scanParams = table.Copy(g_scanParamsMono)
 
 	scanParams.trainSizeMin = trainParams.trainSizeMin
 	scanParams.trainSizeMax = trainParams.trainSizeMax
@@ -1032,6 +972,43 @@ function LIB.Load()
 	LIBTracer = SligWolf_Addons.Tracer
 	LIBDebug = SligWolf_Addons.Debug
 	LIBRail = SligWolf_Addons.Rail
+
+	LIBDebug.AddTraceDebugContext("Railscan.ScanRail.Layers", {
+		title = "Layers",
+		colorLive = Color(140, 220, 140),
+		colorDead = Color(160, 160, 0),
+	})
+
+	LIBDebug.AddTraceDebugContext("Railscan.ScanRail.TopNormals", {
+		title = "Top Normals",
+		colorLive = Color(128, 128, 128),
+		colorDead = Color(48, 48, 48),
+	})
+
+	LIBDebug.AddTraceDebugContext("Railscan.ScanRail.SpaceCheck", {
+		title = "Space Check",
+		colorLive = Color(255, 120, 50),
+		colorDead = Color(150, 0, 0),
+	})
+
+	LIBDebug.AddTraceDebugContext("Railscan.ScanMonoRail.Layers", {
+		title = "Layers",
+		scale = 0.25,
+		colorLive = Color(140, 220, 140),
+		colorDead = Color(160, 160, 0),
+	})
+
+	LIBDebug.AddTraceDebugContext("Railscan.ScanMonoRail.TopNormals", {
+		title = "Top Normals",
+		colorLive = Color(128, 128, 128),
+		colorDead = Color(0, 0, 0, 0),
+	})
+
+	LIBDebug.AddTraceDebugContext("Railscan.ScanMonoRail.SpaceCheck", {
+		title = "Space Check",
+		colorLive = Color(255, 120, 50),
+		colorDead = Color(150, 0, 0),
+	})
 
 	-- Test code
 	local lastAimTrace = LIB._lastAimTrace or {}

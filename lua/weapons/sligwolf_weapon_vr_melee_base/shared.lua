@@ -148,10 +148,10 @@ end
 function SWEP:VRTrace()
 	local ply = self:GetOwner()
 
-	local filterFunc = function(sp, ent)
-		if ent == ply then return false end
-		return true
-	end
+	-- local filterFunc = function(sp, ent)
+	-- 	if ent == ply then return false end
+	-- 	return true
+	-- end
 
 	for _, traceChain in ipairs(self.VrTraceChains) do
 		local tracePoses = {}
@@ -161,10 +161,10 @@ function SWEP:VRTrace()
 			tracePoses[#tracePoses + 1] = tracePos
 		end
 
-		local tr = LIBTracer.TracerChain(self, tracePoses, filterFunc)
+		local tr = LIBTracer.TracerChain(self, tracePoses) -- @TODO extra Tracer for weapons
 
-		if not tr then	continue end
-		if not tr.Hit then	continue end
+		if not tr then continue end
+		if not tr.Hit then continue end
 
 		return tr
 	end
@@ -191,17 +191,10 @@ function SWEP:MeleeTrace()
 	local Start = Owner:GetShootPos()
 	local End = Start + Owner:GetAimVector() * self.MeleeDistance
 
-	local Filter = function(ent, ...)
-		if not IsValid(Owner) then return false end
-		if ent == Owner then return false end
-
-		return true
-	end
-
-	local tr = util.TraceLine({
+	local tr = LIBTracer.RawTraceLine({
 		start = Start,
 		endpos = End,
-		filter = Filter,
+		filter = Owner,
 		mask = MASK_SHOT_HULL
 	})
 

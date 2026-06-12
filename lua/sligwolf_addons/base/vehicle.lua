@@ -12,6 +12,7 @@ end
 
 local SligWolf_Addons = SligWolf_Addons
 
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBThirdperson = SligWolf_Addons.Thirdperson
 local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBEntities = SligWolf_Addons.Entities
@@ -210,6 +211,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 	local customSpawnProperties = table.Copy(vehicleTable.SLIGWOLF_Custom or {})
 	local spawnOffsets = table.Copy(vehicleTable.SLIGWOLF_SpawnOffsets or {})
 	local trainOptions = table.Copy(vehicleTable.SLIGWOLF_TrainOptions or {})
+	local spawnOBB = table.Copy(vehicleTable.SLIGWOLF_SpawnOBB or {})
 
 	local trainGauge = nil
 	local trainGaugeTable = nil
@@ -274,7 +276,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 		end
 
 		if not success then
-			self:ErrorNoHalt("WaitForAsyncPositioningCallback timed out after 10 seconds\n")
+			self:ErrorNoHalt("CallSpawnVehicle timed out after 10 seconds\n")
 			return true
 		end
 
@@ -285,6 +287,11 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 		-- try again if the position is not final yet
 		if LIBPosition.IsAsyncPositioning(thisVehicle) then
 			return false
+		end
+
+		if LIBSpamprotection.DeleteIfInsufficientSpawnSpace(thisVehicle, spawnOBB) then
+			-- Entity has been removed
+			return true
 		end
 
 		local vat = self:GetEntityTable(thisVehicle)

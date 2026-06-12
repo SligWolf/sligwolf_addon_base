@@ -8,6 +8,7 @@ local LIB = SligWolf_Addons:NewLib("Seat")
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBTracer = SligWolf_Addons.Tracer
 local LIBDebug = SligWolf_Addons.Debug
 local LIBTimer = SligWolf_Addons.Timer
 local LIBModel = SligWolf_Addons.Model
@@ -74,7 +75,7 @@ function LIB.TraceSeatAttachment(ply)
 	g_seatSpawnTrace.endpos = g_seatSpawnTrace.start + aimVector * g_maxAttachmentTraceDistance
 	g_seatSpawnTrace.filter = ply
 
-	util.TraceLine(g_seatSpawnTrace)
+	LIBTracer.RawTraceLine(g_seatSpawnTrace)
 
 	if not g_seatSpawnTraceResult.Hit then
 		return nil
@@ -339,7 +340,7 @@ local function traceGround(pos, mins, maxs, dir)
 	g_exitSeatTrace.start = pos
 	g_exitSeatTrace.endpos = g_exitSeatTrace.start + dir * 128 * 2
 
-	util.TraceLine(g_exitSeatTrace)
+	LIBTracer.RawTraceLine(g_exitSeatTrace)
 
 	if not g_exitSeatTraceResult.Hit then
 		return nil
@@ -365,7 +366,7 @@ local function traceGroundHull(pos, mins, maxs, dir)
 	g_exitSeatTraceHull.mins = mins
 	g_exitSeatTraceHull.maxs = maxs
 
-	util.TraceHull(g_exitSeatTraceHull)
+	LIBTracer.RawTraceHull(g_exitSeatTraceHull)
 
 	if not g_exitSeatTraceHullResult.Hit then
 		return nil
@@ -385,7 +386,7 @@ local function tracePlayerPlace(pos, mins, maxs)
 	g_exitSeatTraceHull.mins = mins
 	g_exitSeatTraceHull.maxs = maxs
 
-	util.TraceHull(g_exitSeatTraceHull)
+	LIBTracer.RawTraceHull(g_exitSeatTraceHull)
 
 	if g_exitSeatTraceHullResult.Hit then
 		return nil
@@ -443,7 +444,7 @@ function LIB.ExitSeatTrace(ply)
 	g_exitSeatTrace.start = eyePos
 	g_exitSeatTrace.endpos = eyePos + aimVector * len
 
-	util.TraceLine(g_exitSeatTrace)
+	LIBTracer.RawTraceLine(g_exitSeatTrace)
 
 	local pos = g_exitSeatTraceResult.HitPos
 	if not pos then
@@ -463,7 +464,7 @@ function LIB.ExitSeatTrace(ply)
 
 	LIBDebug.SetLifetime(LIBDebug.DEBUG_LIFETIME_MEDIUM)
 	LIBDebug.SetIgnoreZ(true)
-	LIBDebug.DrawLineTrace(g_exitSeatTrace, tr)
+	LIBDebug.DrawLineTrace(tr)
 	LIBDebug.ResetIgnoreZ()
 	LIBDebug.ResetLifetime()
 
@@ -474,7 +475,7 @@ function LIB.ExitSeatTrace(ply)
 
 	LIBDebug.SetLifetime(LIBDebug.DEBUG_LIFETIME_MEDIUM)
 	LIBDebug.SetIgnoreZ(true)
-	LIBDebug.DrawHullTrace(g_exitSeatTraceHull, tr)
+	LIBDebug.DrawHullTrace(tr)
 	LIBDebug.ResetIgnoreZ()
 	LIBDebug.ResetLifetime()
 
@@ -505,6 +506,7 @@ function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 	LIBSourceIO = SligWolf_Addons.SourceIO
+	LIBTracer = SligWolf_Addons.Tracer
 	LIBDebug = SligWolf_Addons.Debug
 	LIBTimer = SligWolf_Addons.Timer
 	LIBModel = SligWolf_Addons.Model

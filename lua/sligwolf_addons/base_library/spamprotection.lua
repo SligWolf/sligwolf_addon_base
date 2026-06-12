@@ -8,11 +8,15 @@ local LIB = SligWolf_Addons:NewLib("Spamprotection")
 local g_maxCollisionSpamCount = 30
 local g_stableAfterTime = 10
 
+local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO
+local LIBPhysgun = SligWolf_Addons.Physgun
 local LIBPhysics = SligWolf_Addons.Physics
+local LIBTracer = SligWolf_Addons.Tracer
 local LIBTimer = SligWolf_Addons.Timer
 local LIBPrint = SligWolf_Addons.Print
+local LIBDebug = SligWolf_Addons.Debug
 local LIBUtil = SligWolf_Addons.Util
 
 function LIB.SetNextAllowedSpawnTime(ply, time)
@@ -52,22 +56,31 @@ function LIB.IsNextSpawnDelayed(ply)
 	return true
 end
 
-function LIB.DelayNextSpawn(ply)
+function LIB.DelayNextSpawn(ply, time)
 	if not IsValid(ply) then
 		return
 	end
 
+	if not time or time <= 0 then
+		time = 0.05
+	end
+
 	local now = RealTime()
-	LIB.SetNextAllowedSpawnTime(ply, now + 0.05)
+
+	local plyTable = ply:SligWolf_GetTable()
+	local oldtime = plyTable.allowedNextSpawnTime or 0
+
+	local newtime = math.max(oldtime, now + time)
+	plyTable.allowedNextSpawnTime = newtime
 end
 
-function LIB.DelayNextSpawnForOwner(ent)
+function LIB.DelayNextSpawnForOwner(ent, time)
 	if LIBEntities.IsMarkedForDeletion(ent) then
 		return
 	end
 
 	local owner = LIBEntities.GetOwner(ent)
-	LIB.DelayNextSpawn(owner)
+	LIB.DelayNextSpawn(owner, time)
 end
 
 function LIB.IsDuplicatorSpawn(ply)
@@ -172,8 +185,8 @@ function LIB.RemoveSpamCollisionEntities(ent)
 		end
 
 		local printName = LIBEntities.GetPrintName(ent)
-
 		local owner = LIBEntities.GetOwner(ent)
+
 		if IsValid(owner) then
 			LIBPrint.Print("Removed %s, because of stuck or laggy physics!\n  Entity: %s\n  Owner: %s\n", printName, ent, owner)
 		else
@@ -203,14 +216,74 @@ function LIB.RemoveSpamCollisionEntities(ent)
 	end)
 end
 
+function LIB.DeleteIfInsufficientSpawnSpace(ent, obb)
+	if not obb or table.IsEmpty(obb) then
+		return false
+	end
+
+	if LIBEntities.IsMarkedForDeletion(ent) then
+		-- Already deleted
+		return true
+	end
+
+	if LIBSourceIO.IsSpawnedByEngine(ent) then
+		return false
+	end
+
+	if LIBDuplicator.WasDuped(ent) then
+		return false
+	end
+
+	local owner = LIBEntities.GetOwner(ent)
+	if not IsValid(owner) then
+		return false
+	end
+
+	if LIB.IsDuplicatorSpawn(owner) then
+		return false
+	end
+
+	LIBDebug.SetLifetime(30)
+
+	local tr = LIBTracer.TraceOBB(ent, obb)
+
+	LIBDebug.ResetLifetime()
+
+	if not tr then
+		return false
+	end
+
+	if not tr.Hit then
+		return false
+	end
+
+	local printName = LIBEntities.GetPrintName(ent)
+
+	local message = LIBPrint.FormatMessage(
+		"Insufficient space to spawn %s!",
+		printName
+	)
+
+	LIBPrint.Notify(LIBPrint.NOTIFY_ERROR, message, 5, owner)
+
+	LIBEntities.RemoveSystemEntities(ent, true)
+
+	LIB.DelayNextSpawn(owner, 0.25)
+
+	-- Entity deleted
+	return true
+end
+
 function LIB.Load()
+	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
 	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBPhysics = SligWolf_Addons.Physics
 	LIBPhysgun = SligWolf_Addons.Physgun
-	LIBVehicle = SligWolf_Addons.Vehicle
+	LIBTracer = SligWolf_Addons.Tracer
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
+	LIBDebug = SligWolf_Addons.Debug
 	LIBUtil = SligWolf_Addons.Util
 
 	local LIBHook = SligWolf_Addons.Hook
@@ -228,8 +301,18 @@ function LIB.Load()
 		LIBHook.AddCustom("DuplicatorPrePaste", "Library_SpamProtection_MarkAsDupe", MarkAsDupe, 1000)
 		LIBHook.AddCustom("DuplicatorPostPaste", "Library_SpamProtection_UnmarkAsDupe", UnmarkAsDupe, 1000)
 
-		local function AntiSpam(ply, spawnname)
-			local spawnTable = LIBEntities.GetSpawntable(spawnname)
+		local function AntiSpamVehicle(ply, model, spawnname, spawnTable)
+			if LIB.CanSpawn(ply, spawnTable) then
+				return
+			end
+
+			return false
+		end
+
+		LIBHook.Add("PlayerSpawnVehicle", "Library_SpamProtection_AntiSpam", AntiSpamVehicle, 1000)
+
+		local function AntiSpamEntity(ply, spawnname)
+			local spawnTable = LIBEntities.GetSpawntableByName("SpawnableEntities", spawnname)
 			if not spawnTable then
 				return
 			end
@@ -241,8 +324,7 @@ function LIB.Load()
 			return false
 		end
 
-		LIBHook.Add("PlayerSpawnVehicle", "Library_SpamProtection_AntiSpam", AntiSpam, 1000)
-		LIBHook.Add("PlayerSpawnSENT", "Library_SpamProtection_AntiSpam", AntiSpam, 1000)
+		LIBHook.Add("PlayerSpawnSENT", "Library_SpamProtection_AntiSpam", AntiSpamEntity, 1000)
 
 		if g_maxCollisionSpamCount > 0 then
 			local function RemoveSpamCollisions()

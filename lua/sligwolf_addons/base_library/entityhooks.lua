@@ -5,6 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Entityhooks")
 
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO
@@ -150,6 +151,7 @@ function LIB.CallSpawnVehicleFinished(addon, ent, ply)
 end
 
 function LIB.Load()
+	LIBSpamprotection = SligWolf_Addons.Spamprotection
 	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPhysics = SligWolf_Addons.Physics
@@ -288,6 +290,8 @@ function LIB.Load()
 
 		local addonname = spawntable.SLIGWOLF_Addonname
 		if not addonname then return end
+
+		LIBSpamprotection.DelayNextSpawn(ply, 0.20)
 
 		ProtectedCall(function()
 			LIBHook.RunCustom("PostPlayerSpawnedAddonEntity", ply, ent, spawnname, spawntable, addonname)

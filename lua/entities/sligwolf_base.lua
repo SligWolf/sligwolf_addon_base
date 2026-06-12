@@ -27,6 +27,7 @@ end
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 local LIBPosition = SligWolf_Addons.Position
@@ -69,7 +70,7 @@ function ENT:Initialize()
 	if SERVER then
 		if not self.WaitForAsyncPositioning then
 			self._positioningDone = true
-			self:OnPositioningDone()
+			self:OnPositioningDoneInternal()
 		else
 			self._positioningDone = false
 		end
@@ -89,6 +90,21 @@ end
 
 function ENT:PostInitialize()
 	self:HandleSpawnFinishedEvent()
+end
+
+function ENT:OnPositioningDoneInternal()
+	local spawndata = self:GetSpawnData()
+
+	if spawndata then
+		local spawnOBB = spawndata.SLIGWOLF_SpawnOBB
+
+		if LIBSpamprotection.DeleteIfInsufficientSpawnSpace(self, spawnOBB) then
+			-- Entity has been removed
+			return
+		end
+	end
+
+	self:OnPositioningDone()
 end
 
 function ENT:OnPositioningDone()
@@ -288,7 +304,7 @@ function ENT:Think()
 	if SERVER and self._positioningDone == false then
 		if not LIBPosition.IsAsyncPositioning(self) then
 			self._positioningDone = true
-			self:OnPositioningDone()
+			self:OnPositioningDoneInternal()
 		end
 	end
 

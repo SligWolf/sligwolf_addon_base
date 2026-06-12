@@ -982,12 +982,13 @@ function LIB.AddEntity(addonname, spawnname, obj)
 		LIB.RequestReloadSpawnmenu()
 	end
 
-	local spawnFrozen = obj.spawnFrozen or false
-
 	local SpawnableEntities = LIBUtil.GetList("SpawnableEntities")
 	if not SpawnableEntities then return end
 
 	local entityItem = table.Copy(SpawnableEntities[spawnName] or {})
+	
+	local spawnFrozen = obj.spawnFrozen or false
+	local spawnOBB = table.Copy(obj.spawnOBB or {})
 
 	entityItem.PrintName = entityItem.PrintName or tostring(obj.title or spawnname)
 	entityItem.ClassName = entityItem.ClassName or obj.class or spawnname
@@ -999,6 +1000,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	entityItem.SLIGWOLF_Spawnname = spawnname
 	entityItem.SLIGWOLF_Hidden = hidden
 	entityItem.SLIGWOLF_SpawnFrozen = spawnFrozen
+	entityItem.SLIGWOLF_SpawnOBB = spawnOBB
 	entityItem.SLIGWOLF_FGD = {}
 
 	entityItem.SLIGWOLF_SkinCategory = category
@@ -1305,6 +1307,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	local spawnFrozen = obj.spawnFrozen or false
 
 	local thirdperson = table.Copy(obj.thirdperson or {})
+	local spawnOBB = table.Copy(obj.spawnOBB or {})
 
 	local vehicleListItem = {}
 
@@ -1324,6 +1327,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.SLIGWOLF_IsTrain = isTrain
 	vehicleListItem.SLIGWOLF_SpawnOffsets = spawnOffsets
 	vehicleListItem.SLIGWOLF_Thirdperson = thirdperson
+	vehicleListItem.SLIGWOLF_SpawnOBB = spawnOBB
 
 	vehicleListItem.SLIGWOLF_FGD = {}
 	local fgd = vehicleListItem.SLIGWOLF_FGD

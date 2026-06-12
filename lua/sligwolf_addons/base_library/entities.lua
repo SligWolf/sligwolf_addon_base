@@ -195,36 +195,45 @@ function LIB.GetSpawntable(ent)
 		return ent:GetSpawnData()
 	end
 
-	local name = nil
-	local listName = nil
+	local spawnname = nil
+	local listname = nil
 
 	if ent:IsVehicle() then
-		name = LIBVehicle.GetVehicleSpawnnameFromVehicle(ent)
-		listName = "Vehicles"
+		spawnname = LIBVehicle.GetVehicleSpawnnameFromVehicle(ent)
+		listname = "Vehicles"
 	elseif ent:IsNPC() then
-		name = ent.NPCName
-		listName = "NPC"
+		spawnname = ent.NPCName
+		listname = "NPC"
 	elseif ent:IsWeapon() then
-		name = ent.ClassName
-		listName = "Weapon"
+		spawnname = ent.ClassName
+		listname = "Weapon"
 	elseif ent.EntityName then
-		name = ent.EntityName
-		listName = "SpawnableEntities"
+		spawnname = ent.EntityName
+		listname = "SpawnableEntities"
 	elseif ent.ClassName then
-		name = ent.ClassName
-		listName = "SpawnableEntities"
+		spawnname = ent.ClassName
+		listname = "SpawnableEntities"
 	end
 
-	if not listName then
+	local listEntry = LIB.GetSpawntableByName(listname, spawnname)
+	return listEntry
+end
+
+function LIB.GetSpawntableByName(listname, spawnname)
+	if not listname then
 		return nil
 	end
 
-	local sentList = LIBUtil.GetList(listName)
+	if not spawnname then
+		return nil
+	end
+
+	local sentList = LIBUtil.GetList(listname)
 	if not sentList then
 		return nil
 	end
 
-	local listEntry = sentList[name]
+	local listEntry = sentList[spawnname]
 	if not listEntry then
 		return nil
 	end
