@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/sligwolf/base/shared/glass"
+	"$envmap" "env_cubemap"
+	"$surfaceprop" "glass"
+	"$envmapmask" "glass/combineglass001a_mask"
+}

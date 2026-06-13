@@ -9,7 +9,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 local LIBRailscan = SligWolf_Addons.Railscan
 
 local g_maxRailCheckTraceAttachmentPairs = 4
@@ -115,7 +115,7 @@ local function doIsOnRailTrace(ent)
 	end
 
 	for i, attachments in ipairs(attachmentGroups) do
-		local tr = LIBTracer.TracerAttachmentChain(ent, attachments)
+		local tr = LIBTrace.TraceAttachmentChain(ent, attachments)
 		if not tr then
 			continue
 		end
@@ -890,7 +890,7 @@ end
 function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
-	LIBTracer = SligWolf_Addons.Tracer
+	LIBTrace = SligWolf_Addons.Trace
 	LIBRailscan = SligWolf_Addons.Railscan
 end
 

@@ -12,7 +12,7 @@ end
 
 local LIBVehicleControl = SligWolf_Addons.VehicleControl
 local LIBEntities = SligWolf_Addons.Entities
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 
 function SLIGWOLF_ADDON:VehicleOrderThink()
 	if not self.HasVehicleOrders then return end
@@ -294,7 +294,7 @@ end
 function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 	if not IsValid(ply) then return end
 
-	local tr = LIBTracer.PlayerAimTrace(ply, 100)
+	local tr = LIBTrace.PlayerAimTrace(ply, 100)
 	if not tr then return end
 
 	local button = tr.Entity

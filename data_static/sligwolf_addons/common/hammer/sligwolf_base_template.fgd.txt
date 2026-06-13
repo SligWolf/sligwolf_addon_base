@@ -218,6 +218,36 @@
 
 
 // ------------------------------
+//   Addon: bluex14
+// ------------------------------
+
+@BaseClass base(Targetname, Global, Angles) = SLIGWOLF_BASECLASS_bluex14_pickup_base
+[
+	output OnPickup(void) : ""
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/health.mdl") = sligwolf_bluex14_pickup_health :
+	"SligWolf's Addon, Blue-X14: Health"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/ammo.mdl") = sligwolf_bluex14_pickup_ammo_gatling :
+	"SligWolf's Addon, Blue-X14: Gatling"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/rocket.mdl") = sligwolf_bluex14_pickup_ammo_rocket :
+	"SligWolf's Addon, Blue-X14: Rocket"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/mine.mdl") = sligwolf_bluex14_pickup_ammo_mine :
+	"SligWolf's Addon, Blue-X14: Mine"
+[
+]
+
+
+// ------------------------------
 //   Addon: minitrains
 // ------------------------------
 
@@ -248,17 +278,18 @@
 [
 ]
 
-@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_2way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_2way :
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_2way_1536_preview.mdl") = sligwolf_wpsuspensiontrain_turntable_2way :
 	"SligWolf's Addon, Suspension Train: 2-way Turntable"
 [
 ]
 
-@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_4way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_4way :
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_4way_1536_preview.mdl") = sligwolf_wpsuspensiontrain_turntable_4way :
 	"SligWolf's Addon, Suspension Train: 4-way Turntable"
 [
 ]
 
-@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_8way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_8way :
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_8way_1536_preview.mdl") = sligwolf_wpsuspensiontrain_turntable_8way :
 	"SligWolf's Addon, Suspension Train: 8-way Turntable"
 [
 ]
+

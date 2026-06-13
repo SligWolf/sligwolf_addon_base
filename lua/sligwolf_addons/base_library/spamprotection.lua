@@ -13,7 +13,7 @@ local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBPhysgun = SligWolf_Addons.Physgun
 local LIBPhysics = SligWolf_Addons.Physics
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 local LIBTimer = SligWolf_Addons.Timer
 local LIBPrint = SligWolf_Addons.Print
 local LIBDebug = SligWolf_Addons.Debug
@@ -245,7 +245,7 @@ function LIB.DeleteIfInsufficientSpawnSpace(ent, obb)
 
 	LIBDebug.SetLifetime(30)
 
-	local tr = LIBTracer.TraceOBB(ent, obb)
+	local tr = LIBTrace.TraceOBB(ent, obb)
 
 	LIBDebug.ResetLifetime()
 
@@ -280,7 +280,7 @@ function LIB.Load()
 	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBPhysics = SligWolf_Addons.Physics
 	LIBPhysgun = SligWolf_Addons.Physgun
-	LIBTracer = SligWolf_Addons.Tracer
+	LIBTrace = SligWolf_Addons.Trace
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
 	LIBDebug = SligWolf_Addons.Debug

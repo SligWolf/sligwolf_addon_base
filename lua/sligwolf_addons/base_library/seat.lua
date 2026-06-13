@@ -8,7 +8,7 @@ local LIB = SligWolf_Addons:NewLib("Seat")
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 local LIBDebug = SligWolf_Addons.Debug
 local LIBTimer = SligWolf_Addons.Timer
 local LIBModel = SligWolf_Addons.Model
@@ -75,7 +75,7 @@ function LIB.TraceSeatAttachment(ply)
 	g_seatSpawnTrace.endpos = g_seatSpawnTrace.start + aimVector * g_maxAttachmentTraceDistance
 	g_seatSpawnTrace.filter = ply
 
-	LIBTracer.RawTraceLine(g_seatSpawnTrace)
+	LIBTrace.RawTraceLine(g_seatSpawnTrace)
 
 	if not g_seatSpawnTraceResult.Hit then
 		return nil
@@ -340,7 +340,7 @@ local function traceGround(pos, mins, maxs, dir)
 	g_exitSeatTrace.start = pos
 	g_exitSeatTrace.endpos = g_exitSeatTrace.start + dir * 128 * 2
 
-	LIBTracer.RawTraceLine(g_exitSeatTrace)
+	LIBTrace.RawTraceLine(g_exitSeatTrace)
 
 	if not g_exitSeatTraceResult.Hit then
 		return nil
@@ -366,7 +366,7 @@ local function traceGroundHull(pos, mins, maxs, dir)
 	g_exitSeatTraceHull.mins = mins
 	g_exitSeatTraceHull.maxs = maxs
 
-	LIBTracer.RawTraceHull(g_exitSeatTraceHull)
+	LIBTrace.RawTraceHull(g_exitSeatTraceHull)
 
 	if not g_exitSeatTraceHullResult.Hit then
 		return nil
@@ -386,7 +386,7 @@ local function tracePlayerPlace(pos, mins, maxs)
 	g_exitSeatTraceHull.mins = mins
 	g_exitSeatTraceHull.maxs = maxs
 
-	LIBTracer.RawTraceHull(g_exitSeatTraceHull)
+	LIBTrace.RawTraceHull(g_exitSeatTraceHull)
 
 	if g_exitSeatTraceHullResult.Hit then
 		return nil
@@ -444,7 +444,7 @@ function LIB.ExitSeatTrace(ply)
 	g_exitSeatTrace.start = eyePos
 	g_exitSeatTrace.endpos = eyePos + aimVector * len
 
-	LIBTracer.RawTraceLine(g_exitSeatTrace)
+	LIBTrace.RawTraceLine(g_exitSeatTrace)
 
 	local pos = g_exitSeatTraceResult.HitPos
 	if not pos then
@@ -506,7 +506,7 @@ function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBEntities = SligWolf_Addons.Entities
 	LIBSourceIO = SligWolf_Addons.SourceIO
-	LIBTracer = SligWolf_Addons.Tracer
+	LIBTrace = SligWolf_Addons.Trace
 	LIBDebug = SligWolf_Addons.Debug
 	LIBTimer = SligWolf_Addons.Timer
 	LIBModel = SligWolf_Addons.Model

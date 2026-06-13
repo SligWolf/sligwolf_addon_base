@@ -3,7 +3,7 @@ if not SligWolf_Addons then
 	return
 end
 
-local LIB = SligWolf_Addons:NewLib("Tracer")
+local LIB = SligWolf_Addons:NewLib("Trace")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
@@ -12,15 +12,16 @@ local LIBEntities = SligWolf_Addons.Entities
 local LIBCamera = SligWolf_Addons.Camera
 local LIBDebug = SligWolf_Addons.Debug
 
-local g_buffer_tracer_result = {}
-local g_buffer_tracer_params = {}
-local g_buffer_tracer_corners = {}
-local g_buffer_tracer_axles = {}
-local g_buffer_tracer_attachments = {}
+local g_buffer_trace_result = {}
+local g_buffer_trace_params = {}
+local g_buffer_trace_corners = {}
+local g_buffer_trace_axes = {}
+local g_buffer_trace_attachments = {}
 
-g_buffer_tracer_params.output = g_buffer_tracer_result
+g_buffer_trace_params.output = g_buffer_trace_result
 
 local g_isDebug = false
+local g_currentFilter = nil
 
 local g_edgeIndexes = {
 	{1, 2}, {2, 4}, {4, 3}, {3, 1}, -- Bottom face
@@ -58,8 +59,8 @@ table.Add(g_allPointIndexes, g_edgeIndexes)
 table.Add(g_allPointIndexes, g_faceDiagonalIndexes)
 
 local function traceSimple(vecStart, vecEnd)
-	local tr = g_buffer_tracer_result
-	local params = g_buffer_tracer_params
+	local tr = g_buffer_trace_result
+	local params = g_buffer_trace_params
 
 	params.start = vecStart
 	params.endpos = vecEnd
@@ -115,8 +116,8 @@ local function traceChain(vectorChain)
 		return nil
 	end
 
-	local tr = g_buffer_tracer_result
-	local params = g_buffer_tracer_params
+	local tr = g_buffer_trace_result
+	local params = g_buffer_trace_params
 
 	local hasHit = false
 	local context = LIBDebug.GetCurrentTraceDebugContext()
@@ -203,8 +204,8 @@ local function traceOBBPointIndexes(points, pointIndexes)
 		return nil
 	end
 
-	local tr = g_buffer_tracer_result
-	local params = g_buffer_tracer_params
+	local tr = g_buffer_trace_result
+	local params = g_buffer_trace_params
 
 	local hasHit = false
 	local context = LIBDebug.GetCurrentTraceDebugContext()
@@ -284,64 +285,200 @@ local function copyResult(tr, copyToResult)
 	return tr
 end
 
-function LIB.TracerChain(ent, vectorChain, copyToResult)
-	if not IsValid(ent) then return nil end
-
-	vectorChain = vectorChain or {}
-
-	g_isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
-	g_buffer_tracer_params.filter = LIBEntities.GetSystemEntities(ent)
-
-	local tr = traceChain(vectorChain)
-
-	return copyResult(tr, copyToResult)
+function LIB.SetFilter(funcOrTable)
+	g_currentFilter = funcOrTable
 end
 
-function LIB.Tracer(ent, vecStart, vecEnd, copyToResult)
+function LIB.ResetFilter()
+	g_currentFilter = nil
+end
+
+function LIB.GetFilter()
+	return g_currentFilter
+end
+
+function LIB.GetFilterApplied(ent, filter)
+	local funcOrTable = LIB.GetFilter()
+
+	if not funcOrTable then
+		return nil
+	end
+
+	if isfunction(funcOrTable) then
+		if not filter or not istable(filter) then
+			filter = {}
+		end
+
+		filter = funcOrTable(ent, filter)
+
+		if not filter then
+			filter = {}
+		end
+
+		return filter
+	end
+
+	if istable(funcOrTable) then
+		return funcOrTable
+	end
+
+	return nil
+end
+
+function LIB.GetPlayerFilter(ply, filter)
+	ply = ply or false
+
+	local camera = LIBCamera.GetCameraEnt(ply) or false
+
+	local plyVehicle = IsValid(ply) and ply.GetVehicle and ply:GetVehicle() or false
+	local cameraVehicle = IsValid(camera) and camera.GetVehicle and camera:GetVehicle() or false
+
+	local tmp = {}
+
+	tmp[ply] = ply
+	tmp[camera] = camera
+	tmp[plyVehicle] = plyVehicle
+	tmp[cameraVehicle] = cameraVehicle
+
+	if not filter or not istable(filter) then
+		filter = {}
+	else
+		table.Empty(filter)
+	end
+
+	for _, filterEnt in pairs(tmp) do
+		if not IsValid(filterEnt) then
+			continue
+		end
+
+		table.insert(filter, filterEnt)
+	end
+
+	return filter
+end
+
+function LIB.GetSystemEntitiesWithOwnerFilter(ent, filter)
+	if not filter or not istable(filter) then
+		filter = {}
+	else
+		table.Empty(filter)
+	end
+
+	local owner = LIBEntities.GetOwner(ent)
+	filter = LIB.GetPlayerFilter(owner, filter)
+
+	local entResult = LIBEntities.GetSystemEntities(ent)
+
+	table.Add(filter, entResult)
+
+	return filter
+end
+
+function LIB.GetSolidPropFilter(ent, filter)
+	if not IsValid(ent) then return nil end
+
+	local blacklistIndex = {}
+
+	for _, filterEnt in ipairs(LIB.GetSystemEntitiesWithOwnerFilter(ent)) do
+		blacklistIndex[filterEnt] = true
+	end
+
+	local unfilteredCollisionGroups = {
+		[COLLISION_GROUP_NONE] = true,
+		[COLLISION_GROUP_INTERACTIVE_DEBRIS] = true,
+		[COLLISION_GROUP_INTERACTIVE] = true,
+		[COLLISION_GROUP_VEHICLE] = true,
+		[COLLISION_GROUP_WEAPON] = true,
+	}
+
+	filter = function(thisEnt)
+		if not IsValid(thisEnt) then
+			return false
+		end
+
+		if blacklistIndex[thisEnt] then
+			return false
+		end
+
+		if thisEnt:GetSolid() == SOLID_NONE then
+			return false
+		end
+
+		local collisionGroup = thisEnt:GetCollisionGroup()
+		if not unfilteredCollisionGroups[collisionGroup] then
+			return false
+		end
+
+		return true
+	end
+
+	return filter
+end
+
+function LIB.TraceSimple(ent, vecStart, vecEnd, copyToResult)
 	if not IsValid(ent) then return nil end
 
 	vecStart = vecStart or CONSTANTS.vecZero
 	vecEnd = vecEnd or CONSTANTS.vecZero
 
 	g_isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
-	g_buffer_tracer_params.filter = LIBEntities.GetSystemEntities(ent)
+
+	local params = g_buffer_trace_params
+
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	params.filter = filter
 
 	local tr = traceSimple(vecStart, vecEnd)
 
 	return copyResult(tr, copyToResult)
 end
 
-function LIB.TracerAttachment(ent, attachment, len, dir, copyToResult)
+function LIB.TraceChain(ent, vectorChain, copyToResult)
+	if not IsValid(ent) then return nil end
+
+	vectorChain = vectorChain or {}
+
+	g_isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
+
+	local params = g_buffer_trace_params
+
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	params.filter = filter
+
+	local tr = traceChain(vectorChain)
+
+	return copyResult(tr, copyToResult)
+end
+
+function LIB.TraceAttachment(ent, attachment, len, copyToResult)
 	if not IsValid(ent) then return nil end
 
 	len = tonumber(len or 0)
-	dir = tostring(dir or "")
 
 	if len == 0 then
 		len = 1
 	end
 
-	if dir == "" then
-		dir = "Forward"
+	local vecStart, ang = LIBPosition.GetAttachmentPosAng(ent, attachment)
+	if not vecStart then
+		return nil
 	end
 
-	local pos, ang = LIBPosition.GetAttachmentPosAng(ent, attachment)
-	if not pos then return end
-
-	local func = ang[dir]
-	if not isfunction(func) then return end
-
-	local endpos = pos + func(ang) * len
+	local vecEnd = vecStart + ang:Forward() * len
 
 	g_isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
-	g_buffer_tracer_params.filter = LIBEntities.GetSystemEntities(ent)
 
-	local tr = traceSimple(pos, endpos)
+	local params = g_buffer_trace_params
+
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	params.filter = filter
+
+	local tr = traceSimple(vecStart, vecEnd)
 
 	return copyResult(tr, copyToResult)
 end
 
-function LIB.TracerAttachmentToAttachment(ent, attachmentA, attachmentB, copyToResult)
+function LIB.TraceAttachmentToAttachment(ent, attachmentA, attachmentB, copyToResult)
 	if not IsValid(ent) then return nil end
 
 	local posA = LIBPosition.GetAttachmentPosAng(ent, attachmentA)
@@ -360,17 +497,20 @@ function LIB.TracerAttachmentToAttachment(ent, attachmentA, attachmentB, copyToR
 		LIBDebug.EntityTextAtPosition(posB, attachmentNameB, 1)
 	end
 
-	g_buffer_tracer_params.filter = LIBEntities.GetSystemEntities(ent)
+	local params = g_buffer_trace_params
+
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	params.filter = filter
 
 	local tr = traceSimple(posA, posB)
 
 	return copyResult(tr, copyToResult)
 end
 
-function LIB.TracerAttachmentChain(ent, attachmentChain, copyToResult)
+function LIB.TraceAttachmentChain(ent, attachmentChain, copyToResult)
 	if not IsValid(ent) then return nil end
 
-	table.Empty(g_buffer_tracer_attachments)
+	table.Empty(g_buffer_trace_attachments)
 
 	g_isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
 
@@ -378,7 +518,7 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, copyToResult)
 		local pos = LIBPosition.GetAttachmentPosAng(ent, attachmentChainItem)
 		if not pos then return end
 
-		table.insert(g_buffer_tracer_attachments, pos)
+		table.insert(g_buffer_trace_attachments, pos)
 
 		if g_isDebug then
 			local attachmentName = LIBPosition.GetAttachmentName(ent, attachmentChainItem)
@@ -386,9 +526,12 @@ function LIB.TracerAttachmentChain(ent, attachmentChain, copyToResult)
 		end
 	end
 
-	g_buffer_tracer_params.filter = LIBEntities.GetSystemEntities(ent)
+	local params = g_buffer_trace_params
 
-	local tr = traceChain(g_buffer_tracer_attachments)
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	params.filter = filter
+
+	local tr = traceChain(g_buffer_trace_attachments)
 
 	return copyResult(tr, copyToResult)
 end
@@ -400,22 +543,26 @@ function LIB.TraceOBB(ent, obb, copyToResult)
 	local max = obb.max or CONSTANTS.vecZero
 
 	g_isDebug = LIBDebug.IsDeveloper() and LIBDebug.GetDebugTraceEnabled()
-	g_buffer_tracer_params.filter = LIBEntities.GetSystemEntities(ent)
+
+	local params = g_buffer_trace_params
+
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	params.filter = filter
 
 	local mx = ent:GetWorldTransformMatrix()
 
 	local center = (min + max) / 2
 
-	local axles = g_buffer_tracer_axles
-	axles[1] = mx * Vector(   min.x, center.y, center.z)
-	axles[2] = mx * Vector(   max.x, center.y, center.z)
-	axles[3] = mx * Vector(center.x,    min.y, center.z)
-	axles[4] = mx * Vector(center.x,    max.y, center.z)
-	axles[5] = mx * Vector(center.x, center.y,    min.z)
-	axles[6] = mx * Vector(center.x, center.y,    max.z)
+	local axes = g_buffer_trace_axes
+	axes[1] = mx * Vector(   min.x, center.y, center.z)
+	axes[2] = mx * Vector(   max.x, center.y, center.z)
+	axes[3] = mx * Vector(center.x,    min.y, center.z)
+	axes[4] = mx * Vector(center.x,    max.y, center.z)
+	axes[5] = mx * Vector(center.x, center.y,    min.z)
+	axes[6] = mx * Vector(center.x, center.y,    max.z)
 
 	-- Trace along the center on each axis
-	local tr = traceOBBPointIndexes(axles, g_axisIndexes)
+	local tr = traceOBBPointIndexes(axes, g_axisIndexes)
 	if not tr then
 		return nil
 	end
@@ -424,7 +571,7 @@ function LIB.TraceOBB(ent, obb, copyToResult)
 		return copyResult(tr, copyToResult)
 	end
 
-	local corners = g_buffer_tracer_corners
+	local corners = g_buffer_trace_corners
 	corners[1] = mx * Vector(min.x, min.y, min.z)
 	corners[2] = mx * Vector(max.x, min.y, min.z)
 	corners[3] = mx * Vector(min.x, max.y, min.z)
@@ -440,7 +587,7 @@ function LIB.TraceOBB(ent, obb, copyToResult)
 	return copyResult(tr, copyToResult)
 end
 
-function LIB.PlayerAimTrace(ply, maxdist, filter, copyToResult)
+function LIB.PlayerAimTrace(ply, maxdist, copyToResult)
 	local camera = LIBCamera.GetCameraEnt(ply)
 
 	if not IsValid(ply) then return nil end
@@ -458,40 +605,20 @@ function LIB.PlayerAimTrace(ply, maxdist, filter, copyToResult)
 		vecEnd = vecStart + LIBPosition.GetPlayerAimVector(ply) * maxdist
 	end
 
-	local tr = g_buffer_tracer_result
-	local params = g_buffer_tracer_params
+	local params = g_buffer_trace_params
 
-	params.filter = function(ent, ...)
-		if not IsValid(ent) then return false end
-		if not IsValid(ply) then return false end
-		if not IsValid(camera) then return false end
-		if ent == ply then return false end
-		if ent == camera then return false end
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetPlayerFilter(ply, params.filter)
+	params.filter = filter
 
-		if ply.GetVehicle and ent == ply:GetVehicle() then return false end
-		if camera.GetVehicle and ent == camera:GetVehicle() then return false end
+	local context = LIBDebug.GetCurrentTraceDebugContext()
 
-		if filter then
-			if isfunction(filter) and not filter(ent, ply, camera, ...) then
-				return false
-			end
-
-			if istable(filter) and filter[ent] then
-				return false
-			end
-
-			if filter == ent then
-				return false
-			end
-		end
-
-		return true
+	if context.name == LIBDebug.TRACE_DEBUG_CONTEXT_DEFAULT then
+		LIBDebug.SetCurrentTraceDebugContext(LIBDebug.TRACE_DEBUG_CONTEXT_PLAYER)
 	end
 
-	params.start = vecStart
-	params.endpos = vecEnd
+	local tr = traceSimple(vecStart, vecEnd)
 
-	LIB.RawTraceLine(params)
+	LIBDebug.ResetTraceDebugContext()
 
 	return copyResult(tr, copyToResult)
 end

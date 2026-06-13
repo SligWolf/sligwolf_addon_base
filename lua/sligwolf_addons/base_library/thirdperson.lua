@@ -8,7 +8,7 @@ local LIB = SligWolf_Addons:NewLib("Thirdperson")
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 local LIBCamera = SligWolf_Addons.Camera
 local LIBDebug = SligWolf_Addons.Debug
 local LIBHook = SligWolf_Addons.Hook
@@ -106,7 +106,7 @@ local function thirdpersonCalcVehicleView(vehicle, ply, view)
 	g_trace.mins = Vector(-WallOffset, -WallOffset, -WallOffset)
 	g_trace.maxs = Vector(WallOffset, WallOffset, WallOffset)
 
-	LIBTracer.RawTraceHull(g_trace)
+	LIBTrace.RawTraceHull(g_trace)
 
 	view.origin = g_traceResult.HitPos
 	view.angles = angles
@@ -149,7 +149,7 @@ end
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
-	LIBTracer = SligWolf_Addons.Tracer
+	LIBTrace = SligWolf_Addons.Trace
 	LIBCamera = SligWolf_Addons.Camera
 	LIBHook = SligWolf_Addons.Hook
 	LIBDebug = SligWolf_Addons.Debug

@@ -25,7 +25,7 @@ SWEP.VrMinHitVelocityRelativeToTarget    = 200
 SWEP.VrTraceChains = {}
 
 local LIBPhysics = SligWolf_Addons.Physics
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 
 function SWEP:Initialize()
 	BaseClass.Initialize(self)
@@ -147,11 +147,9 @@ end
 
 function SWEP:VRTrace()
 	local ply = self:GetOwner()
+	local result = nil
 
-	-- local filterFunc = function(sp, ent)
-	-- 	if ent == ply then return false end
-	-- 	return true
-	-- end
+	LIBTrace.SetFilter(LIBTrace.GetPlayerFilter)
 
 	for _, traceChain in ipairs(self.VrTraceChains) do
 		local tracePoses = {}
@@ -161,15 +159,18 @@ function SWEP:VRTrace()
 			tracePoses[#tracePoses + 1] = tracePos
 		end
 
-		local tr = LIBTracer.TracerChain(self, tracePoses) -- @TODO extra Tracer for weapons
+		local tr = LIBTrace.TraceChain(ply, tracePoses)
 
 		if not tr then continue end
 		if not tr.Hit then continue end
 
-		return tr
+		result = tr
+		break
 	end
 
-	return nil
+	LIBTrace.ResetFilter()
+
+	return result
 end
 
 function SWEP:CreateHitEffect(tr)
@@ -191,7 +192,7 @@ function SWEP:MeleeTrace()
 	local Start = Owner:GetShootPos()
 	local End = Start + Owner:GetAimVector() * self.MeleeDistance
 
-	local tr = LIBTracer.RawTraceLine({
+	local tr = LIBTrace.RawTraceLine({
 		start = Start,
 		endpos = End,
 		filter = Owner,
@@ -290,6 +291,8 @@ function SWEP:OnVRThink()
 	if velocityRelativeToAttackerAbs < self.VrMinHitVelocityRelativeToAttacker then
 		return
 	end
+
+	local velocityAbs = 0 --@TODO
 
 	self:VRSwingAttack(tr, velocityAbs)
 	self.nextHitTime = now + self.VrMinHitTime

@@ -8,14 +8,14 @@
 
 // Generated:
 //   API Version:   2.0.0
-//   Generated at:  2026-05-25 14:21:53
-//   Template:      data_static/sligwolf_addons/common/mapping/sligwolf_base_template.fgd.txt
+//   Generated at:  2026-06-13 22:55:42
+//   Template:      data_static/sligwolf_addons/common/hammer/sligwolf_base_template.fgd.txt
 //
 // Cache:
 //   API Version:   2.0.0
-//   Generated at:  2026-05-25 14:21:53
-//   Addons count:  68
-//   Vehicle count: 257
+//   Generated at:  2026-06-13 22:55:42
+//   Addons count:  66
+//   Vehicle count: 249
 
 
 // ------------------------------
@@ -119,38 +119,33 @@
 		"aliencutbug_azur" : "aliencutbug_azur (Azur | Alien Cutbug)"
 		"aliencutbug_desert" : "aliencutbug_desert (Desert | Alien Cutbug)"
 		"aliencutbug_jungle" : "aliencutbug_jungle (Jungle | Alien Cutbug)"
-		"robotgen1_black" : "robotgen1_black (Black | Robot GEN1 PM/NPC)"
-		"robotgen1_classic" : "robotgen1_classic (Classic | Robot GEN1 PM/NPC)"
-		"robotgen1_green" : "robotgen1_green (Green | Robot GEN1 PM/NPC)"
-		"robotgen1_marineblue" : "robotgen1_marineblue (Marine Blue | Robot GEN1 PM/NPC)"
-		"robotgen1_white" : "robotgen1_white (White | Robot GEN1 PM/NPC)"
-		"robotgen1_winered" : "robotgen1_winered (Winered | Robot GEN1 PM/NPC)"
-		"robotgen1_yellow" : "robotgen1_yellow (Yellow | Robot GEN1 PM/NPC)"
-		"robotgen2_black" : "robotgen2_black (Black | Robot GEN2 PM)"
-		"robotgen2_green" : "robotgen2_green (Green | Robot GEN2 PM)"
-		"robotgen2_marineblue" : "robotgen2_marineblue (Marine Blue | Robot GEN2 PM)"
-		"robotgen2_white" : "robotgen2_white (White | Robot GEN2 PM)"
-		"robotgen2_winered" : "robotgen2_winered (Winered | Robot GEN2 PM)"
-		"robotgen2_yellow" : "robotgen2_yellow (Yellow | Robot GEN2 PM)"
-		"robotgen3_combineelite" : "robotgen3_combineelite (Crimson Elite | Robot GEN3 PM)"
-		"robotgen3_combinesoldier" : "robotgen3_combinesoldier (Combine Soldier | Robot GEN3 PM)"
-		"robotgen3_medic" : "robotgen3_medic (Medic | Robot GEN3 PM)"
-		"robotgen3_police" : "robotgen3_police (Police | Robot GEN3 PM)"
-		"robotgen3_rebel" : "robotgen3_rebel (Rebel | Robot GEN3 PM)"
-		"slig_ashgrey" : "slig_ashgrey (Ash Grey | Slig PM)"
-		"slig_classic" : "slig_classic (Classic | Slig PM)"
-		"slig_crimsonred" : "slig_crimsonred (Crimson Red | Slig PM)"
-		"slig_darkturquoise" : "slig_darkturquoise (Dark Turquoise | Slig PM)"
-		"slig_junglegreen" : "slig_junglegreen (Jungle Green | Slig PM)"
-		"slig_lightbrown" : "slig_lightbrown (Light Brown | Slig PM)"
-		"slig_mildbrown" : "slig_mildbrown (Mild Brown | Slig PM)"
-		"slignpc_ashgrey" : "slignpc_ashgrey (Ash Grey | Slig NPC)"
-		"slignpc_classic" : "slignpc_classic (Classic | Slig NPC)"
-		"slignpc_crimsonred" : "slignpc_crimsonred (Crimson Red | Slig NPC)"
-		"slignpc_darkturquoise" : "slignpc_darkturquoise (Dark Turquoise | Slig NPC)"
-		"slignpc_junglegreen" : "slignpc_junglegreen (Jungle Green | Slig NPC)"
-		"slignpc_lightbrown" : "slignpc_lightbrown (Light Brown | Slig NPC)"
-		"slignpc_mildbrown" : "slignpc_mildbrown (Mild Brown | Slig NPC)"
+		"robotgen1_black" : "robotgen1_black (Black | Robot GEN1)"
+		"robotgen1_classic_combine" : "robotgen1_classic_combine (Classic Combine | Robot GEN1)"
+		"robotgen1_classic_orange" : "robotgen1_classic_orange (Classic Orange | Robot GEN1)"
+		"robotgen1_classic_rebel" : "robotgen1_classic_rebel (Classic Rebel | Robot GEN1)"
+		"robotgen1_green" : "robotgen1_green (Green | Robot GEN1)"
+		"robotgen1_marineblue" : "robotgen1_marineblue (Marine Blue | Robot GEN1)"
+		"robotgen1_white" : "robotgen1_white (White | Robot GEN1)"
+		"robotgen1_winered" : "robotgen1_winered (Winered | Robot GEN1)"
+		"robotgen1_yellow" : "robotgen1_yellow (Yellow | Robot GEN1)"
+		"robotgen2_black" : "robotgen2_black (Black | Robot GEN2)"
+		"robotgen2_green" : "robotgen2_green (Green | Robot GEN2)"
+		"robotgen2_marineblue" : "robotgen2_marineblue (Marine Blue | Robot GEN2)"
+		"robotgen2_white" : "robotgen2_white (White | Robot GEN2)"
+		"robotgen2_winered" : "robotgen2_winered (Winered | Robot GEN2)"
+		"robotgen2_yellow" : "robotgen2_yellow (Yellow | Robot GEN2)"
+		"robotgen3_combineelite" : "robotgen3_combineelite (Crimson Elite | Robot GEN3)"
+		"robotgen3_combinesoldier" : "robotgen3_combinesoldier (Combine Soldier | Robot GEN3)"
+		"robotgen3_medic" : "robotgen3_medic (Medic | Robot GEN3)"
+		"robotgen3_police" : "robotgen3_police (Police | Robot GEN3)"
+		"robotgen3_rebel" : "robotgen3_rebel (Rebel | Robot GEN3)"
+		"slig_ashgrey" : "slig_ashgrey (Ash Grey | Slig)"
+		"slig_classic" : "slig_classic (Classic | Slig)"
+		"slig_crimsonred" : "slig_crimsonred (Crimson Red | Slig)"
+		"slig_darkturquoise" : "slig_darkturquoise (Dark Turquoise | Slig)"
+		"slig_junglegreen" : "slig_junglegreen (Jungle Green | Slig)"
+		"slig_lightbrown" : "slig_lightbrown (Light Brown | Slig)"
+		"slig_mildbrown" : "slig_mildbrown (Mild Brown | Slig)"
 	]
 ]
 
@@ -318,6 +313,18 @@
 		"metrotrain_classic" : "metrotrain_classic (Classic | Metro Train)"
 		"metrotrain_fresh_blue" : "metrotrain_fresh_blue (Fresh Blue | Metro Train)"
 		"metrotrain_red" : "metrotrain_red (Red | Metro Train)"
+		"minitrains_blueline" : "minitrains_blueline (Blue Line | Mini Trains)"
+		"minitrains_caboose" : "minitrains_caboose (Caboose | Mini Trains)"
+		"minitrains_classic_green" : "minitrains_classic_green (Classic Green | Mini Trains)"
+		"minitrains_ice" : "minitrains_ice (ICE | Mini Trains)"
+		"minitrains_regio_train" : "minitrains_regio_train (Regio Train | Mini Trains)"
+		"minitrains_regio_wagon" : "minitrains_regio_wagon (Regio Wagon | Mini Trains)"
+		"minitrains_shunter_green" : "minitrains_shunter_green (Shunter Green | Mini Trains)"
+		"minitrains_shunter_yellow" : "minitrains_shunter_yellow (Shunter Yellow | Mini Trains)"
+		"minitrains_steam_bg" : "minitrains_steam_bg (Steam BG | Mini Trains)"
+		"minitrains_steam_br" : "minitrains_steam_br (Steam BR | Mini Trains)"
+		"minitrains_steam_go" : "minitrains_steam_go (Steam GO | Mini Trains)"
+		"minitrains_subway" : "minitrains_subway (Subway | Mini Trains)"
 		"motorbike_beige" : "motorbike_beige (Beige | Motorbike)"
 		"motorbike_blue" : "motorbike_blue (Blue | Motorbike)"
 		"motorbike_brown" : "motorbike_brown (Brown | Motorbike)"
@@ -429,9 +436,15 @@
 
 @BaseClass base(SLIGWOLF_BASECLASS_vehicle) = SLIGWOLF_BASECLASS_train
 [
-	sligwolf_rail_gauge(choices) : "[SW-ADDONS] Rail Gauge" : "0" : "\nSligWolf's Addon: Train track gauge." =
+	sligwolf_railgauge(choices) : "[SW-ADDONS] Rail Gauge" : "" : "\nSligWolf's Addon: Train track gauge. Not every train supports every gauge" =
 	[
-		"0" : "TODO"
+		"" : "Default"
+		"phx" : "PHX (80 units)"
+		"rsg" : "RSG (56 units)"
+		"rsg3ft" : "RSG3FT (36 units)"
+		"ron2ft" : "RON2FT (32 units)"
+		"mt12" : "MT12 (12 units)"
+		"wp" : "WP (4 units)"
 	]
 ]
 
@@ -489,7 +502,7 @@
 		"sligwolf_hl2coopvehicles_jalopy" : "sligwolf_hl2coopvehicles_jalopy (Coop Jalopy (Alyx) | HL2 Coop Vehicles)"
 		"sligwolf_hl2coopvehicles_jeep" : "sligwolf_hl2coopvehicles_jeep (Coop Buggy | HL2 Coop Vehicles)"
 		"sligwolf_hl2coopvehicles_jeep_alyx" : "sligwolf_hl2coopvehicles_jeep_alyx (Coop Buggy (Alyx) | HL2 Coop Vehicles)"
-		"sligwolf_hotrod_h12" : "sligwolf_hotrod_h12 (H-12 HotRod | Hotrod)"
+		"sligwolf_hotrod_benjamin" : "sligwolf_hotrod_benjamin (Benjamin HotRod | Hotrod)"
 		"sligwolf_hotrod_lincoln" : "sligwolf_hotrod_lincoln (Lincoln HotRod | Hotrod)"
 		"sligwolf_jeeps_bandito_casual" : "sligwolf_jeeps_bandito_casual (Bandito - Casual | Jeeps)"
 		"sligwolf_jeeps_bandito_noble" : "sligwolf_jeeps_bandito_noble (Bandito - Noble | Jeeps)"
@@ -597,148 +610,140 @@
 	sligwolf_spawnname(choices) : "[SW-ADDONS] Vehicle spawnname" : "" : "\nSligWolf's Addon: Vehicle spawnname. Used for model, logic and other spawn parameters." =
 	[
 		"" : "Nothing (No SW-ADDON Vehicle)"
-		"sligwolf_automatictrain_amt300" : "sligwolf_automatictrain_amt300 (AMT300 - Standard | Automatic Train)"
-		"sligwolf_automatictrain_sanfran" : "sligwolf_automatictrain_sanfran (AMT300 - San Francisco | Automatic Train)"
+		"sligwolf_automatictrain_metropod" : "sligwolf_automatictrain_metropod (Metropod AMT - PHX | Automatic Train)"
+		"sligwolf_automatictrain_sanfran" : "sligwolf_automatictrain_sanfran (San Francisco AMT - PHX | Automatic Train)"
 		"sligwolf_automatictrain_station_double" : "sligwolf_automatictrain_station_double (Station Double Bench | Automatic Train)"
 		"sligwolf_automatictrain_station_single" : "sligwolf_automatictrain_station_single (Station Single Bench | Automatic Train)"
-		"sligwolf_bluex12_bogie" : "sligwolf_bluex12_bogie (Blue-X12 Bogie GEN1 | Blue-X12)"
-		"sligwolf_bluex12_long" : "sligwolf_bluex12_long (Blue-X12 GEN1 | Blue-X12)"
-		"sligwolf_bluex12_short" : "sligwolf_bluex12_short (Blue-X12 GEN2 | Blue-X12)"
-		"sligwolf_cranetrain_train" : "sligwolf_cranetrain_train (Cranetrain)"
-		"sligwolf_dieselemd" : "sligwolf_dieselemd (Diesel EMD)"
-		"sligwolf_dieselemd_bogie_01" : "sligwolf_dieselemd_bogie_01 (Diesel EMD Bogie | Diesel EMD)"
-		"sligwolf_dieselemd_bogie_02" : "sligwolf_dieselemd_bogie_02 (Diesel EMD Bogie | Diesel EMD)"
-		"sligwolf_dieselhenschel_train" : "sligwolf_dieselhenschel_train (Diesel Henschel)"
-		"sligwolf_dieselhenschel_wagon_box_garage" : "sligwolf_dieselhenschel_wagon_box_garage (Diesel Boxcar Garage | Diesel Henschel)"
-		"sligwolf_dieselhenschel_wagon_box_slide" : "sligwolf_dieselhenschel_wagon_box_slide (Diesel Boxcar Slide | Diesel Henschel)"
-		"sligwolf_dieselhenschel_wagon_car" : "sligwolf_dieselhenschel_wagon_car (Diesel Car Transporter | Diesel Henschel)"
-		"sligwolf_dieselludmilla_ludmilla" : "sligwolf_dieselludmilla_ludmilla (Diesel Ludmilla)"
-		"sligwolf_dieselludmilla_ludmilla_bogie" : "sligwolf_dieselludmilla_ludmilla_bogie (Diesel Ludmilla Bogie | Diesel Ludmilla)"
-		"sligwolf_dieselludmilla_taurus" : "sligwolf_dieselludmilla_taurus (Taurus (Scorpanelo) | Diesel Ludmilla)"
-		"sligwolf_greent7_train_long" : "sligwolf_greent7_train_long (Green-T7L | Green-T7)"
-		"sligwolf_greent7_train_long_wc" : "sligwolf_greent7_train_long_wc (Green-T7L (Front Coupler) | Green-T7)"
-		"sligwolf_greent7_train_short" : "sligwolf_greent7_train_short (Green-T7S | Green-T7)"
-		"sligwolf_greent7_train_short_wc" : "sligwolf_greent7_train_short_wc (Green-T7S (Front Coupler) | Green-T7)"
-		"sligwolf_greent7_wagon_bogie" : "sligwolf_greent7_wagon_bogie (Train Wagon Bogie | Green-T7)"
-		"sligwolf_greent7_wagon_long" : "sligwolf_greent7_wagon_long (Train Wagon Long | Green-T7)"
-		"sligwolf_greent7_wagon_short" : "sligwolf_greent7_wagon_short (Train Wagon Short | Green-T7)"
-		"sligwolf_metrobr483_bogie" : "sligwolf_metrobr483_bogie (BR 483-C Bogie | Metro Train)"
-		"sligwolf_metrobr483_custom_back_default" : "sligwolf_metrobr483_custom_back_default (BR 483-C - Rear | Metro Train)"
-		"sligwolf_metrobr483_custom_front_default" : "sligwolf_metrobr483_custom_front_default (BR 483-C - Front | Metro Train)"
-		"sligwolf_metrobr483_custom_middle_default" : "sligwolf_metrobr483_custom_middle_default (BR 483-C - Middle | Metro Train)"
-		"sligwolf_minitrains_loco_blueline" : "sligwolf_minitrains_loco_blueline (Minitrain 01 | Mini Trains)"
-		"sligwolf_minitrains_loco_diesel_blueline" : "sligwolf_minitrains_loco_diesel_blueline (Minitrain 10 | Mini Trains)"
-		"sligwolf_minitrains_loco_diesel_green" : "sligwolf_minitrains_loco_diesel_green (Minitrain 05 | Mini Trains)"
-		"sligwolf_minitrains_loco_diesel_yellow" : "sligwolf_minitrains_loco_diesel_yellow (Minitrain 06 | Mini Trains)"
-		"sligwolf_minitrains_loco_ice" : "sligwolf_minitrains_loco_ice (Minitrain 02 | Mini Trains)"
-		"sligwolf_minitrains_loco_ice_diesel" : "sligwolf_minitrains_loco_ice_diesel (Minitrain 04 | Mini Trains)"
-		"sligwolf_minitrains_loco_ludmilla" : "sligwolf_minitrains_loco_ludmilla (Minitrain 03 | Mini Trains)"
-		"sligwolf_minitrains_loco_steam_black" : "sligwolf_minitrains_loco_steam_black (Minitrain 07 | Mini Trains)"
-		"sligwolf_minitrains_loco_steam_blue" : "sligwolf_minitrains_loco_steam_blue (Minitrain 09 | Mini Trains)"
-		"sligwolf_minitrains_loco_steam_green" : "sligwolf_minitrains_loco_steam_green (Minitrain 08 | Mini Trains)"
-		"sligwolf_minitrains_loco_subway" : "sligwolf_minitrains_loco_subway (Minitrain 11 | Mini Trains)"
-		"sligwolf_minitrains_wagon_blueline" : "sligwolf_minitrains_wagon_blueline (Miniwagon 01 | Mini Trains)"
-		"sligwolf_minitrains_wagon_blueline_end" : "sligwolf_minitrains_wagon_blueline_end (Miniwagon 02 | Mini Trains)"
-		"sligwolf_minitrains_wagon_boxcar_brown" : "sligwolf_minitrains_wagon_boxcar_brown (Miniwagon 07 | Mini Trains)"
-		"sligwolf_minitrains_wagon_boxcar_green" : "sligwolf_minitrains_wagon_boxcar_green (Miniwagon 09 | Mini Trains)"
-		"sligwolf_minitrains_wagon_boxcar_yellow" : "sligwolf_minitrains_wagon_boxcar_yellow (Miniwagon 08 | Mini Trains)"
-		"sligwolf_minitrains_wagon_container_blue" : "sligwolf_minitrains_wagon_container_blue (Miniwagon 21 | Mini Trains)"
-		"sligwolf_minitrains_wagon_container_brown" : "sligwolf_minitrains_wagon_container_brown (Miniwagon 23 | Mini Trains)"
-		"sligwolf_minitrains_wagon_container_green" : "sligwolf_minitrains_wagon_container_green (Miniwagon 22 | Mini Trains)"
-		"sligwolf_minitrains_wagon_container_red" : "sligwolf_minitrains_wagon_container_red (Miniwagon 20 | Mini Trains)"
-		"sligwolf_minitrains_wagon_cooler" : "sligwolf_minitrains_wagon_cooler (Miniwagon 13 | Mini Trains)"
-		"sligwolf_minitrains_wagon_gondola_brown" : "sligwolf_minitrains_wagon_gondola_brown (Miniwagon 15 | Mini Trains)"
-		"sligwolf_minitrains_wagon_gondola_red" : "sligwolf_minitrains_wagon_gondola_red (Miniwagon 14 | Mini Trains)"
-		"sligwolf_minitrains_wagon_gondola_yellow" : "sligwolf_minitrains_wagon_gondola_yellow (Miniwagon 16 | Mini Trains)"
-		"sligwolf_minitrains_wagon_ice" : "sligwolf_minitrains_wagon_ice (Miniwagon 05 | Mini Trains)"
-		"sligwolf_minitrains_wagon_logs" : "sligwolf_minitrains_wagon_logs (Miniwagon 24 | Mini Trains)"
-		"sligwolf_minitrains_wagon_ludmilla" : "sligwolf_minitrains_wagon_ludmilla (Miniwagon 03 | Mini Trains)"
-		"sligwolf_minitrains_wagon_ludmilla_end" : "sligwolf_minitrains_wagon_ludmilla_end (Miniwagon 04 | Mini Trains)"
-		"sligwolf_minitrains_wagon_medicine" : "sligwolf_minitrains_wagon_medicine (Miniwagon 06 | Mini Trains)"
-		"sligwolf_minitrains_wagon_passenger_caboose" : "sligwolf_minitrains_wagon_passenger_caboose (Miniwagon 12 | Mini Trains)"
-		"sligwolf_minitrains_wagon_passenger_green" : "sligwolf_minitrains_wagon_passenger_green (Miniwagon 11 | Mini Trains)"
-		"sligwolf_minitrains_wagon_steel" : "sligwolf_minitrains_wagon_steel (Miniwagon 25 | Mini Trains)"
-		"sligwolf_minitrains_wagon_subway" : "sligwolf_minitrains_wagon_subway (Miniwagon 10 | Mini Trains)"
-		"sligwolf_minitrains_wagon_tanker_black" : "sligwolf_minitrains_wagon_tanker_black (Miniwagon 18 | Mini Trains)"
-		"sligwolf_minitrains_wagon_tanker_brown" : "sligwolf_minitrains_wagon_tanker_brown (Miniwagon 19 | Mini Trains)"
-		"sligwolf_minitrains_wagon_tanker_white" : "sligwolf_minitrains_wagon_tanker_white (Miniwagon 17 | Mini Trains)"
-		"sligwolf_st3tram" : "sligwolf_st3tram (ST3 Tram | ST-3 Tram)"
-		"sligwolf_tram_bendy" : "sligwolf_tram_bendy (Bendy Tram | Tram)"
-		"sligwolf_tram_single" : "sligwolf_tram_single (Tram)"
-		"sligwolf_wagons_tc15_bogie" : "sligwolf_wagons_tc15_bogie (TC-15 Bogie | Train Cars)"
-		"sligwolf_wagons_tc15_box_long" : "sligwolf_wagons_tc15_box_long (TC-15 Box - L | Train Cars)"
-		"sligwolf_wagons_tc15_box_short" : "sligwolf_wagons_tc15_box_short (TC-15 Box - M | Train Cars)"
-		"sligwolf_wagons_tc15_car_long" : "sligwolf_wagons_tc15_car_long (TC-15 Car - L | Train Cars)"
-		"sligwolf_wagons_tc15_car_short" : "sligwolf_wagons_tc15_car_short (TC-15 Car - M | Train Cars)"
-		"sligwolf_wagons_tc15_cargo_long" : "sligwolf_wagons_tc15_cargo_long (TC-15 Gondola - L | Train Cars)"
-		"sligwolf_wagons_tc15_cargo_short" : "sligwolf_wagons_tc15_cargo_short (TC-15 Gondola - M | Train Cars)"
-		"sligwolf_wagons_tc15_flat_long" : "sligwolf_wagons_tc15_flat_long (TC-15 Flat - L | Train Cars)"
-		"sligwolf_wagons_tc15_flat_short" : "sligwolf_wagons_tc15_flat_short (TC-15 Flat - M | Train Cars)"
-		"sligwolf_wagons_tc15_pass_long" : "sligwolf_wagons_tc15_pass_long (TC-15 Passenger - L | Train Cars)"
-		"sligwolf_wagons_tc15_pass_short" : "sligwolf_wagons_tc15_pass_short (TC-15 Passenger - M | Train Cars)"
-		"sligwolf_wagons_tc15_tank_long" : "sligwolf_wagons_tc15_tank_long (TC-15 Tank - L | Train Cars)"
-		"sligwolf_wagons_tc15_tank_short" : "sligwolf_wagons_tc15_tank_short (TC-15 Tank - M | Train Cars)"
-		"sligwolf_wagons_tc25_bogie_double" : "sligwolf_wagons_tc25_bogie_double (TC-25 Bogie | Train Cars)"
-		"sligwolf_wagons_tc25_bogie_double_with_coupler" : "sligwolf_wagons_tc25_bogie_double_with_coupler (TC-25 Bogie | Train Cars)"
-		"sligwolf_wagons_tc25_bogie_single" : "sligwolf_wagons_tc25_bogie_single (TC-25 Bogie | Train Cars)"
-		"sligwolf_wagons_tc25_bogie_single_with_coupler" : "sligwolf_wagons_tc25_bogie_single_with_coupler (TC-25 Bogie | Train Cars)"
-		"sligwolf_wagons_tc25_box_long" : "sligwolf_wagons_tc25_box_long (TC-25 Box - L | Train Cars)"
-		"sligwolf_wagons_tc25_box_medium" : "sligwolf_wagons_tc25_box_medium (TC-25 Box - M | Train Cars)"
-		"sligwolf_wagons_tc25_box_small" : "sligwolf_wagons_tc25_box_small (TC-25 Box - S | Train Cars)"
-		"sligwolf_wagons_tc25_caboose_medium_a" : "sligwolf_wagons_tc25_caboose_medium_a (TC-25 Caboose - M | Train Cars)"
-		"sligwolf_wagons_tc25_caboose_medium_b" : "sligwolf_wagons_tc25_caboose_medium_b (TC-25 Caboose - M | Train Cars)"
-		"sligwolf_wagons_tc25_caboose_medium_c" : "sligwolf_wagons_tc25_caboose_medium_c (TC-25 Caboose - M | Train Cars)"
-		"sligwolf_wagons_tc25_caboose_small_a" : "sligwolf_wagons_tc25_caboose_small_a (TC-25 Caboose - S | Train Cars)"
-		"sligwolf_wagons_tc25_caboose_small_b" : "sligwolf_wagons_tc25_caboose_small_b (TC-25 Caboose - S | Train Cars)"
-		"sligwolf_wagons_tc25_caboose_small_c" : "sligwolf_wagons_tc25_caboose_small_c (TC-25 Caboose - S | Train Cars)"
-		"sligwolf_wagons_tc25_car_long" : "sligwolf_wagons_tc25_car_long (TC-25 Car - L | Train Cars)"
-		"sligwolf_wagons_tc25_car_medium" : "sligwolf_wagons_tc25_car_medium (TC-25 Car - M | Train Cars)"
-		"sligwolf_wagons_tc25_car_small" : "sligwolf_wagons_tc25_car_small (TC-25 Car - S | Train Cars)"
-		"sligwolf_wagons_tc25_cargo_long" : "sligwolf_wagons_tc25_cargo_long (TC-25 Gondola - L | Train Cars)"
-		"sligwolf_wagons_tc25_cargo_medium" : "sligwolf_wagons_tc25_cargo_medium (TC-25 Gondola - M | Train Cars)"
-		"sligwolf_wagons_tc25_cargo_small" : "sligwolf_wagons_tc25_cargo_small (TC-25 Gondola - S | Train Cars)"
-		"sligwolf_wagons_tc25_flat_long" : "sligwolf_wagons_tc25_flat_long (TC-25 Flat Bed - L | Train Cars)"
-		"sligwolf_wagons_tc25_flat_long_spike" : "sligwolf_wagons_tc25_flat_long_spike (TC-25 Flat Spike - L | Train Cars)"
-		"sligwolf_wagons_tc25_flat_long_tub" : "sligwolf_wagons_tc25_flat_long_tub (TC-25 Flat Tub - L | Train Cars)"
-		"sligwolf_wagons_tc25_flat_medium" : "sligwolf_wagons_tc25_flat_medium (TC-25 Flat Bed - M | Train Cars)"
-		"sligwolf_wagons_tc25_flat_medium_spike" : "sligwolf_wagons_tc25_flat_medium_spike (TC-25 Flat Spike - M | Train Cars)"
-		"sligwolf_wagons_tc25_flat_medium_tub" : "sligwolf_wagons_tc25_flat_medium_tub (TC-25 Flat Tub - M | Train Cars)"
-		"sligwolf_wagons_tc25_flat_small" : "sligwolf_wagons_tc25_flat_small (TC-25 Flat Bed - S | Train Cars)"
-		"sligwolf_wagons_tc25_flat_small_spike" : "sligwolf_wagons_tc25_flat_small_spike (TC-25 Flat Spike - S | Train Cars)"
-		"sligwolf_wagons_tc25_flat_small_tub" : "sligwolf_wagons_tc25_flat_small_tub (TC-25 Flat Tub - S | Train Cars)"
-		"sligwolf_wagons_tc25_hopper_long" : "sligwolf_wagons_tc25_hopper_long (TC-25 Hopper - L | Train Cars)"
-		"sligwolf_wagons_tc25_hopper_medium" : "sligwolf_wagons_tc25_hopper_medium (TC-25 Hopper - M | Train Cars)"
-		"sligwolf_wagons_tc25_hopper_small" : "sligwolf_wagons_tc25_hopper_small (TC-25 Hopper - S | Train Cars)"
-		"sligwolf_wagons_tc25_pass_long" : "sligwolf_wagons_tc25_pass_long (TC-25 Passenger - L | Train Cars)"
-		"sligwolf_wagons_tc25_pass_medium" : "sligwolf_wagons_tc25_pass_medium (TC-25 Passenger - M | Train Cars)"
-		"sligwolf_wagons_tc25_pass_small" : "sligwolf_wagons_tc25_pass_small (TC-25 Passenger - S | Train Cars)"
-		"sligwolf_wagons_tc25_tank_long" : "sligwolf_wagons_tc25_tank_long (TC-25 Tanker - L | Train Cars)"
-		"sligwolf_wagons_tc25_tank_medium" : "sligwolf_wagons_tc25_tank_medium (TC-25 Tanker - M | Train Cars)"
-		"sligwolf_wagons_tc25_tank_small" : "sligwolf_wagons_tc25_tank_small (TC-25 Tanker - S | Train Cars)"
-		"sligwolf_wagons_tc25_tipper_long" : "sligwolf_wagons_tc25_tipper_long (TC-25 Tipper - L | Train Cars)"
-		"sligwolf_wagons_tc25_tipper_medium" : "sligwolf_wagons_tc25_tipper_medium (TC-25 Tipper - M | Train Cars)"
-		"sligwolf_wagons_tc25_tipper_small" : "sligwolf_wagons_tc25_tipper_small (TC-25 Tipper - S | Train Cars)"
-		"sligwolf_westernloco_wl13_brake" : "sligwolf_westernloco_wl13_brake (WL-13 Caboose | Western Loco)"
-		"sligwolf_westernloco_wl13_flat" : "sligwolf_westernloco_wl13_flat (WL-13 Flatbed | Western Loco)"
-		"sligwolf_westernloco_wl13_gondola" : "sligwolf_westernloco_wl13_gondola (WL-13 Gondola | Western Loco)"
-		"sligwolf_westernloco_wl13_loco" : "sligwolf_westernloco_wl13_loco (WL-13 Loco | Western Loco)"
-		"sligwolf_westernloco_wl13_loco_wc" : "sligwolf_westernloco_wl13_loco_wc (WL-13 Loco (Front coupler) | Western Loco)"
-		"sligwolf_westernloco_wl13_passenger" : "sligwolf_westernloco_wl13_passenger (WL-13 Passenger | Western Loco)"
-		"sligwolf_westernloco_wl13_tender" : "sligwolf_westernloco_wl13_tender (WL-13 Tender | Western Loco)"
-		"sligwolf_westernloco_wl1855_bogie" : "sligwolf_westernloco_wl1855_bogie (WL-26 Bogie | Western Loco)"
-		"sligwolf_westernloco_wl1855_bogie_wc" : "sligwolf_westernloco_wl1855_bogie_wc (WL-26 Bogie (Front coupler) | Western Loco)"
-		"sligwolf_westernloco_wl1855_loco" : "sligwolf_westernloco_wl1855_loco (WL-26 Loco | Western Loco)"
-		"sligwolf_westernloco_wl1855_loco_wc" : "sligwolf_westernloco_wl1855_loco_wc (WL-26 Loco (Front coupler) | Western Loco)"
-		"sligwolf_westernloco_wl1890_bogie" : "sligwolf_westernloco_wl1890_bogie (WL-26 Bogie | Western Loco)"
-		"sligwolf_westernloco_wl1890_caboose" : "sligwolf_westernloco_wl1890_caboose (WL-26 Caboose | Western Loco)"
-		"sligwolf_westernloco_wl1890_combined" : "sligwolf_westernloco_wl1890_combined (WL-26 Combined | Western Loco)"
-		"sligwolf_westernloco_wl1890_luggage" : "sligwolf_westernloco_wl1890_luggage (WL-26 Luggage | Western Loco)"
-		"sligwolf_westernloco_wl1890_passenger" : "sligwolf_westernloco_wl1890_passenger (WL-26 Passenger | Western Loco)"
+		"sligwolf_bluex12_bogie" : "sligwolf_bluex12_bogie (MK-14 Blue-X12 Bogie - PHX | Blue-X12)"
+		"sligwolf_bluex12_long" : "sligwolf_bluex12_long (MK-14 Blue-X12 - PHX | Blue-X12)"
+		"sligwolf_bluex12_short" : "sligwolf_bluex12_short (MK-15 Blue-X12 - PHX | Blue-X12)"
+		"sligwolf_cranetrain_ca14_train" : "sligwolf_cranetrain_ca14_train (CA-14 Train - PHX | Cranetrain)"
+		"sligwolf_dieselemd" : "sligwolf_dieselemd (SD-40-2 EMD - PHX | Diesel EMD)"
+		"sligwolf_dieselemd_bogie_01" : "sligwolf_dieselemd_bogie_01 (SD-40-2 EMD Bogie - PHX | Diesel EMD)"
+		"sligwolf_dieselemd_bogie_02" : "sligwolf_dieselemd_bogie_02 (SD-40-2 EMD Bogie - PHX | Diesel EMD)"
+		"sligwolf_dieselhenschel_dh440_train" : "sligwolf_dieselhenschel_dh440_train (DH-440 Henschel - PHX | Diesel Henschel)"
+		"sligwolf_dieselhenschel_dh440_wagon_box_garage" : "sligwolf_dieselhenschel_dh440_wagon_box_garage (DH-440 Boxcar Garage - PHX | Diesel Henschel)"
+		"sligwolf_dieselhenschel_dh440_wagon_box_slide" : "sligwolf_dieselhenschel_dh440_wagon_box_slide (DH-440 Boxcar Slide - PHX | Diesel Henschel)"
+		"sligwolf_dieselhenschel_dh440_wagon_car" : "sligwolf_dieselhenschel_dh440_wagon_car (DH-440 Car Transporter - PHX | Diesel Henschel)"
+		"sligwolf_dieselludmilla_br130" : "sligwolf_dieselludmilla_br130 (BR-130 Ludmilla - PHX | Diesel Ludmilla)"
+		"sligwolf_dieselludmilla_br130_bogie" : "sligwolf_dieselludmilla_br130_bogie (BR-130 Ludmilla Bogie - PHX | Diesel Ludmilla)"
+		"sligwolf_greent7_train_long" : "sligwolf_greent7_train_long (Green-T7-L - PHX | Green-T7)"
+		"sligwolf_greent7_train_long_wfc" : "sligwolf_greent7_train_long_wfc (Green-T7-L (Front Coupler) - PHX | Green-T7)"
+		"sligwolf_greent7_train_short" : "sligwolf_greent7_train_short (Green-T7-S - PHX | Green-T7)"
+		"sligwolf_greent7_train_short_wfc" : "sligwolf_greent7_train_short_wfc (Green-T7-S (Front Coupler) - PHX | Green-T7)"
+		"sligwolf_greent7_wagon_bogie" : "sligwolf_greent7_wagon_bogie (Green-T7 Wagon Bogie - PHX | Green-T7)"
+		"sligwolf_greent7_wagon_long" : "sligwolf_greent7_wagon_long (Green-T7 Wagon L - PHX | Green-T7)"
+		"sligwolf_greent7_wagon_short" : "sligwolf_greent7_wagon_short (Green-T7 Wagon S - PHX | Green-T7)"
+		"sligwolf_metrotrain_br483_back" : "sligwolf_metrotrain_br483_back (BR 483 Rear - PHX | Metro Train)"
+		"sligwolf_metrotrain_br483_bogie" : "sligwolf_metrotrain_br483_bogie (BR 483 Bogie - PHX | Metro Train)"
+		"sligwolf_metrotrain_br483_front" : "sligwolf_metrotrain_br483_front (BR 483 Front - PHX | Metro Train)"
+		"sligwolf_metrotrain_br483_middle" : "sligwolf_metrotrain_br483_middle (BR 483 Middle - PHX | Metro Train)"
+		"sligwolf_minitrains_loco_diesel_blueline" : "sligwolf_minitrains_loco_diesel_blueline (Minitrain Regio | Mini Trains)"
+		"sligwolf_minitrains_loco_diesel_green" : "sligwolf_minitrains_loco_diesel_green (Minitrain Shunter | Mini Trains)"
+		"sligwolf_minitrains_loco_ice" : "sligwolf_minitrains_loco_ice (Minitrain ICE | Mini Trains)"
+		"sligwolf_minitrains_loco_ludmilla" : "sligwolf_minitrains_loco_ludmilla (Minitrain Ludmilla | Mini Trains)"
+		"sligwolf_minitrains_loco_steam_black" : "sligwolf_minitrains_loco_steam_black (Minitrain Steam | Mini Trains)"
+		"sligwolf_minitrains_loco_subway" : "sligwolf_minitrains_loco_subway (Minitrain Subway | Mini Trains)"
+		"sligwolf_minitrains_wagon_boxcar_brown" : "sligwolf_minitrains_wagon_boxcar_brown (Miniwagon Cattles | Mini Trains)"
+		"sligwolf_minitrains_wagon_boxcar_green" : "sligwolf_minitrains_wagon_boxcar_green (Miniwagon Wheat | Mini Trains)"
+		"sligwolf_minitrains_wagon_boxcar_yellow" : "sligwolf_minitrains_wagon_boxcar_yellow (Miniwagon Furniture | Mini Trains)"
+		"sligwolf_minitrains_wagon_container_blue" : "sligwolf_minitrains_wagon_container_blue (Miniwagon Goods | Mini Trains)"
+		"sligwolf_minitrains_wagon_container_brown" : "sligwolf_minitrains_wagon_container_brown (Miniwagon Reading Goods | Mini Trains)"
+		"sligwolf_minitrains_wagon_container_green" : "sligwolf_minitrains_wagon_container_green (Miniwagon Medical Goods | Mini Trains)"
+		"sligwolf_minitrains_wagon_container_red" : "sligwolf_minitrains_wagon_container_red (Miniwagon Groceries | Mini Trains)"
+		"sligwolf_minitrains_wagon_cooler" : "sligwolf_minitrains_wagon_cooler (Miniwagon Meat | Mini Trains)"
+		"sligwolf_minitrains_wagon_gondola_brown" : "sligwolf_minitrains_wagon_gondola_brown (Miniwagon Paper | Mini Trains)"
+		"sligwolf_minitrains_wagon_gondola_red" : "sligwolf_minitrains_wagon_gondola_red (Miniwagon Coal | Mini Trains)"
+		"sligwolf_minitrains_wagon_gondola_yellow" : "sligwolf_minitrains_wagon_gondola_yellow (Miniwagon Furniture | Mini Trains)"
+		"sligwolf_minitrains_wagon_ice" : "sligwolf_minitrains_wagon_ice (Miniwagon Passengers | Mini Trains)"
+		"sligwolf_minitrains_wagon_logs" : "sligwolf_minitrains_wagon_logs (Miniwagon Wood Logs | Mini Trains)"
+		"sligwolf_minitrains_wagon_ludmilla" : "sligwolf_minitrains_wagon_ludmilla (Miniwagon Passengers | Mini Trains)"
+		"sligwolf_minitrains_wagon_ludmilla_end" : "sligwolf_minitrains_wagon_ludmilla_end (Miniwagon Passengers | Mini Trains)"
+		"sligwolf_minitrains_wagon_medicine" : "sligwolf_minitrains_wagon_medicine (Miniwagon Medicine | Mini Trains)"
+		"sligwolf_minitrains_wagon_passenger_caboose" : "sligwolf_minitrains_wagon_passenger_caboose (Miniwagon Caboose | Mini Trains)"
+		"sligwolf_minitrains_wagon_passenger_green" : "sligwolf_minitrains_wagon_passenger_green (Miniwagon Passengers | Mini Trains)"
+		"sligwolf_minitrains_wagon_steel" : "sligwolf_minitrains_wagon_steel (Miniwagon Steel | Mini Trains)"
+		"sligwolf_minitrains_wagon_subway" : "sligwolf_minitrains_wagon_subway (Miniwagon Passengers | Mini Trains)"
+		"sligwolf_minitrains_wagon_tanker_black" : "sligwolf_minitrains_wagon_tanker_black (Miniwagon Crude Oil | Mini Trains)"
+		"sligwolf_minitrains_wagon_tanker_brown" : "sligwolf_minitrains_wagon_tanker_brown (Miniwagon Crude Oil | Mini Trains)"
+		"sligwolf_minitrains_wagon_tanker_white" : "sligwolf_minitrains_wagon_tanker_white (Miniwagon Milk | Mini Trains)"
+		"sligwolf_st3tram" : "sligwolf_st3tram (ST3 Tram - RON2FT | ST-3 Tram)"
+		"sligwolf_tram_metrovelvet_bendy" : "sligwolf_tram_metrovelvet_bendy (Metrovelvet Bendy - PHX | Tram)"
+		"sligwolf_tram_metrovelvet_single" : "sligwolf_tram_metrovelvet_single (Metrovelvet - PHX | Tram)"
+		"sligwolf_wagons_tc15_bogie" : "sligwolf_wagons_tc15_bogie (TC-15 Bogie - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_box_long" : "sligwolf_wagons_tc15_box_long (TC-15 Box L - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_box_medium" : "sligwolf_wagons_tc15_box_medium (TC-15 Box M - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_car_long" : "sligwolf_wagons_tc15_car_long (TC-15 Car L - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_car_medium" : "sligwolf_wagons_tc15_car_medium (TC-15 Car M - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_flat_long" : "sligwolf_wagons_tc15_flat_long (TC-15 Flat L - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_flat_medium" : "sligwolf_wagons_tc15_flat_medium (TC-15 Flat M - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_gondola_long" : "sligwolf_wagons_tc15_gondola_long (TC-15 Gondola L - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_gondola_medium" : "sligwolf_wagons_tc15_gondola_medium (TC-15 Gondola M - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_pass_long" : "sligwolf_wagons_tc15_pass_long (TC-15 Passenger L - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_pass_medium" : "sligwolf_wagons_tc15_pass_medium (TC-15 Passenger M - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_tank_long" : "sligwolf_wagons_tc15_tank_long (TC-15 Tank L - PHX | Train Cars)"
+		"sligwolf_wagons_tc15_tank_medium" : "sligwolf_wagons_tc15_tank_medium (TC-15 Tank M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_bogie_double" : "sligwolf_wagons_tc25_bogie_double (TC-25 Bogie - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_bogie_double_with_coupler" : "sligwolf_wagons_tc25_bogie_double_with_coupler (TC-25 Bogie - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_bogie_single" : "sligwolf_wagons_tc25_bogie_single (TC-25 Bogie - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_bogie_single_with_coupler" : "sligwolf_wagons_tc25_bogie_single_with_coupler (TC-25 Bogie - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_box_long" : "sligwolf_wagons_tc25_box_long (TC-25 Box L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_box_medium" : "sligwolf_wagons_tc25_box_medium (TC-25 Box M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_box_small" : "sligwolf_wagons_tc25_box_small (TC-25 Box S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_caboose_medium_a" : "sligwolf_wagons_tc25_caboose_medium_a (TC-25 Caboose M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_caboose_medium_b" : "sligwolf_wagons_tc25_caboose_medium_b (TC-25 Caboose M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_caboose_medium_c" : "sligwolf_wagons_tc25_caboose_medium_c (TC-25 Caboose M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_caboose_small_a" : "sligwolf_wagons_tc25_caboose_small_a (TC-25 Caboose S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_caboose_small_b" : "sligwolf_wagons_tc25_caboose_small_b (TC-25 Caboose S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_caboose_small_c" : "sligwolf_wagons_tc25_caboose_small_c (TC-25 Caboose S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_car_long" : "sligwolf_wagons_tc25_car_long (TC-25 Car L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_car_medium" : "sligwolf_wagons_tc25_car_medium (TC-25 Car M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_car_small" : "sligwolf_wagons_tc25_car_small (TC-25 Car S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_long" : "sligwolf_wagons_tc25_flat_long (TC-25 Flat Bed L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_long_spike" : "sligwolf_wagons_tc25_flat_long_spike (TC-25 Flat Spike L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_long_tub" : "sligwolf_wagons_tc25_flat_long_tub (TC-25 Flat Tub L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_medium" : "sligwolf_wagons_tc25_flat_medium (TC-25 Flat Bed M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_medium_spike" : "sligwolf_wagons_tc25_flat_medium_spike (TC-25 Flat Spike M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_medium_tub" : "sligwolf_wagons_tc25_flat_medium_tub (TC-25 Flat Tub M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_small" : "sligwolf_wagons_tc25_flat_small (TC-25 Flat Bed S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_small_spike" : "sligwolf_wagons_tc25_flat_small_spike (TC-25 Flat Spike S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_flat_small_tub" : "sligwolf_wagons_tc25_flat_small_tub (TC-25 Flat Tub S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_gondola_long" : "sligwolf_wagons_tc25_gondola_long (TC-25 Gondola L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_gondola_medium" : "sligwolf_wagons_tc25_gondola_medium (TC-25 Gondola M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_gondola_small" : "sligwolf_wagons_tc25_gondola_small (TC-25 Gondola S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_hopper_long" : "sligwolf_wagons_tc25_hopper_long (TC-25 Hopper L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_hopper_medium" : "sligwolf_wagons_tc25_hopper_medium (TC-25 Hopper M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_hopper_small" : "sligwolf_wagons_tc25_hopper_small (TC-25 Hopper S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_pass_long" : "sligwolf_wagons_tc25_pass_long (TC-25 Passenger L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_pass_medium" : "sligwolf_wagons_tc25_pass_medium (TC-25 Passenger M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_pass_small" : "sligwolf_wagons_tc25_pass_small (TC-25 Passenger S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_tank_long" : "sligwolf_wagons_tc25_tank_long (TC-25 Tanker L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_tank_medium" : "sligwolf_wagons_tc25_tank_medium (TC-25 Tanker M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_tank_small" : "sligwolf_wagons_tc25_tank_small (TC-25 Tanker S - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_tipper_long" : "sligwolf_wagons_tc25_tipper_long (TC-25 Tipper L - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_tipper_medium" : "sligwolf_wagons_tc25_tipper_medium (TC-25 Tipper M - PHX | Train Cars)"
+		"sligwolf_wagons_tc25_tipper_small" : "sligwolf_wagons_tc25_tipper_small (TC-25 Tipper S - PHX | Train Cars)"
+		"sligwolf_westernloco_wl13_brake" : "sligwolf_westernloco_wl13_brake (WL-13 Caboose - PHX | Western Loco)"
+		"sligwolf_westernloco_wl13_flat" : "sligwolf_westernloco_wl13_flat (WL-13 Flatbed - PHX | Western Loco)"
+		"sligwolf_westernloco_wl13_gondola" : "sligwolf_westernloco_wl13_gondola (WL-13 Gondola - PHX | Western Loco)"
+		"sligwolf_westernloco_wl13_loco" : "sligwolf_westernloco_wl13_loco (WL-13 Loco - PHX | Western Loco)"
+		"sligwolf_westernloco_wl13_loco_wc" : "sligwolf_westernloco_wl13_loco_wc (WL-13 Loco (Front coupler) - PHX | Western Loco)"
+		"sligwolf_westernloco_wl13_passenger" : "sligwolf_westernloco_wl13_passenger (WL-13 Passenger - PHX | Western Loco)"
+		"sligwolf_westernloco_wl13_tender" : "sligwolf_westernloco_wl13_tender (WL-13 Tender - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_bogie" : "sligwolf_westernloco_wl26_bogie (WL-26 Bogie - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_bogie_wc" : "sligwolf_westernloco_wl26_bogie_wc (WL-26 Bogie (Front coupler) - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_caboose" : "sligwolf_westernloco_wl26_caboose (WL-26 Caboose - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_combined" : "sligwolf_westernloco_wl26_combined (WL-26 Combined - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_loco" : "sligwolf_westernloco_wl26_loco (WL-26 Loco - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_loco_wc" : "sligwolf_westernloco_wl26_loco_wc (WL-26 Loco (Front coupler) - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_luggage" : "sligwolf_westernloco_wl26_luggage (WL-26 Luggage - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_passenger" : "sligwolf_westernloco_wl26_passenger (WL-26 Passenger - PHX | Western Loco)"
+		"sligwolf_westernloco_wl26_wagon_bogie" : "sligwolf_westernloco_wl26_wagon_bogie (WL-26 Wagon Bogie - PHX | Western Loco)"
 		"sligwolf_wpsuspensiontrain_g15" : "sligwolf_wpsuspensiontrain_g15 (Train G15 | Suspension Train)"
 		"sligwolf_wpsuspensiontrain_g15_bogie" : "sligwolf_wpsuspensiontrain_g15_bogie (Bogie G15 | Suspension Train)"
 	]
 
-	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as in-editor preview. It has no in-game effect."
+	model(studio) : "Studio model" : "models/vehicles/prisoner_pod.mdl" : "This is the studio model used as an in-editor preview. It has no in-game effect."
 ]
 
 
@@ -764,6 +769,36 @@
 
 @PointClass base(SLIGWOLF_BASECLASS_railway_switch_base) color(85 190 255) studioprop() = sligwolf_railway_switch :
 	"SligWolf's Addon: Generic railway switch"
+[
+]
+
+
+// ------------------------------
+//   Addon: bluex14
+// ------------------------------
+
+@BaseClass base(Targetname, Global, Angles) = SLIGWOLF_BASECLASS_bluex14_pickup_base
+[
+	output OnPickup(void) : ""
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/health.mdl") = sligwolf_bluex14_pickup_health :
+	"SligWolf's Addon, Blue-X14: Health"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/ammo.mdl") = sligwolf_bluex14_pickup_ammo_gatling :
+	"SligWolf's Addon, Blue-X14: Gatling"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/rocket.mdl") = sligwolf_bluex14_pickup_ammo_rocket :
+	"SligWolf's Addon, Blue-X14: Rocket"
+[
+]
+
+@PointClass base(SLIGWOLF_BASECLASS_bluex14_pickup_base) color(85 190 255) studioprop("models/sligwolf/bluex14/pickup/mine.mdl") = sligwolf_bluex14_pickup_ammo_mine :
+	"SligWolf's Addon, Blue-X14: Mine"
 [
 ]
 
@@ -799,17 +834,18 @@
 [
 ]
 
-@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_2way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_2way :
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_2way_1536_preview.mdl") = sligwolf_wpsuspensiontrain_turntable_2way :
 	"SligWolf's Addon, Suspension Train: 2-way Turntable"
 [
 ]
 
-@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_4way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_4way :
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_4way_1536_preview.mdl") = sligwolf_wpsuspensiontrain_turntable_4way :
 	"SligWolf's Addon, Suspension Train: 4-way Turntable"
 [
 ]
 
-@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_8way_1536.mdl") = sligwolf_wpsuspensiontrain_turntable_8way :
+@PointClass base(SLIGWOLF_BASECLASS_wpsuspensiontrain_turntable_base) color(85 190 255) studioprop("models/sligwolf/wpsuspensiontrain/turntable/turntable_ring_8way_1536_preview.mdl") = sligwolf_wpsuspensiontrain_turntable_8way :
 	"SligWolf's Addon, Suspension Train: 8-way Turntable"
 [
 ]
+

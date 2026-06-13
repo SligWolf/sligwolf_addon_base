@@ -8,7 +8,7 @@ local LIB = SligWolf_Addons:NewLib("Debug")
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 local LIBConvar = SligWolf_Addons.Convar
 local LIBPrint = SligWolf_Addons.Print
 local LIBTimer = SligWolf_Addons.Timer
@@ -61,6 +61,7 @@ LIB.ENUM_DEBUG_MODE_SERVER = 2
 LIB.ENUM_DEBUG_MODE_CLIENT = 3
 
 LIB.TRACE_DEBUG_CONTEXT_DEFAULT = "default"
+LIB.TRACE_DEBUG_CONTEXT_PLAYER = "player"
 
 local g_traceDebugContext = LIB.g_traceDebugContext or {}
 LIB.g_traceDebugContext = g_traceDebugContext
@@ -996,7 +997,7 @@ do
 			if all then
 				entities = ents.GetAll()
 			else
-				local tr = LIBTracer.PlayerAimTrace(ply, 5000)
+				local tr = LIBTrace.PlayerAimTrace(ply, 5000)
 				if tr and IsValid(tr.Entity) then
 					entities = LIBEntities.GetSystemEntities(tr.Entity)
 				end
@@ -1026,12 +1027,19 @@ do
 		colorUnused = Color(150, 50, 150),
 	})
 
+	LIB.AddTraceDebugContext(LIB.TRACE_DEBUG_CONTEXT_PLAYER, {
+		title = "Player",
+		colorLive = Color(255, 255, 255),
+		colorDead = Color(128, 128, 128),
+		colorUnused = Color(0, 0, 0, 0),
+	})
+
 	LIB.ResetTraceDebugContext()
 end
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
-	LIBTracer = SligWolf_Addons.Tracer
+	LIBTrace = SligWolf_Addons.Trace
 	LIBConvar = SligWolf_Addons.Convar
 	LIBPrint = SligWolf_Addons.Print
 	LIBTimer = SligWolf_Addons.Timer

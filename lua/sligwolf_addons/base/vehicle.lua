@@ -21,7 +21,7 @@ local LIBRailscan = SligWolf_Addons.Railscan
 local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 local LIBDebug = SligWolf_Addons.Debug
 local LIBPrint = SligWolf_Addons.Print
 local LIBRail = SligWolf_Addons.Rail
@@ -117,7 +117,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawnPos(vehicle, ply, title, spawnOffsets,
 	local isDupe = LIBDuplicator.WasDuped(vehicle)
 
 	if not isDupe and trainGauge and IsValid(ply) then
-		local aimTrace = LIBTracer.PlayerAimTrace(ply, 5000)
+		local aimTrace = LIBTrace.PlayerAimTrace(ply, 5000)
 
 		if aimTrace and aimTrace.Hit then
 			LIBDebug.SetLifetime(30)

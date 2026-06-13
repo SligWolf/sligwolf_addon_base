@@ -9,7 +9,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBRail = SligWolf_Addons.Rail
 local LIBDebug = SligWolf_Addons.Debug
-local LIBTracer = SligWolf_Addons.Tracer
+local LIBTrace = SligWolf_Addons.Trace
 
 local g_sqrtTwo = math.sqrt(2)
 local g_tinyMargin = 0.1
@@ -71,7 +71,7 @@ local function finalizeRailTopNormal(trainEnt, railSidePos, railSideNormal, esti
 	local traceTopEndPos = g_tmpMx * railOffsetBottom
 
 	-- Tracer for finding the top sides of rail tracks
-	local traceTop = LIBTracer.Tracer(trainEnt, traceTopStartPos, traceTopEndPos, g_traceResultBufferA)
+	local traceTop = LIBTrace.TraceSimple(trainEnt, traceTopStartPos, traceTopEndPos, g_traceResultBufferA)
 
 	if not traceTop or not traceTop.Hit or traceTop.StartSolid or traceTop.AllSolid then
 		return nil
@@ -89,8 +89,8 @@ local function getMonoRailSides(trainEnt, frontPos, backPos)
 	local center = (frontPos + backPos) / 2
 
 	-- Finding the rail 1st pass
-	local traceSideFront = LIBTracer.Tracer(trainEnt, frontPos, center, g_traceResultBufferA)
-	local traceSideBack = LIBTracer.Tracer(trainEnt, backPos, center, g_traceResultBufferB)
+	local traceSideFront = LIBTrace.TraceSimple(trainEnt, frontPos, center, g_traceResultBufferA)
+	local traceSideBack = LIBTrace.TraceSimple(trainEnt, backPos, center, g_traceResultBufferB)
 
 	if not traceSideFront or traceSideFront.StartSolid or traceSideFront.AllSolid then
 		return nil
@@ -183,8 +183,8 @@ local function checkRailStraightSpace(trainEnt, mx, trainSizeMin, trainSizeMax, 
 	g_spaceCheckVec.x = trainSizeMax
 	local straightTraceEndB = mx * g_spaceCheckVec
 
-	local straightTraceA = LIBTracer.Tracer(trainEnt, straightTraceStartA, straightTraceEndA, g_traceResultBufferA)
-	local straightTraceB = LIBTracer.Tracer(trainEnt, straightTraceStartB, straightTraceEndB, g_traceResultBufferB)
+	local straightTraceA = LIBTrace.TraceSimple(trainEnt, straightTraceStartA, straightTraceEndA, g_traceResultBufferA)
+	local straightTraceB = LIBTrace.TraceSimple(trainEnt, straightTraceStartB, straightTraceEndB, g_traceResultBufferB)
 
 	if not straightTraceA or straightTraceA.Hit or straightTraceA.StartSolid or straightTraceA.AllSolid then
 		return false
@@ -207,7 +207,7 @@ local function checkRailCrossSpace(trainEnt, mx, width, heightOffset)
 	g_spaceCheckVec.y = -width / 2
 	local traceEnd = mx * g_spaceCheckVec
 
-	local crossTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, g_traceResultBufferA)
+	local crossTrace = LIBTrace.TraceSimple(trainEnt, traceStart, traceEnd, g_traceResultBufferA)
 	if not crossTrace or crossTrace.Hit or crossTrace.StartSolid or crossTrace.AllSolid then
 		return false
 	end
@@ -225,7 +225,7 @@ local function checkRailSideSpace(trainEnt, mxTop, mxBottom, heightOffsetTop, he
 	g_spaceCheckVec.z = heightOffsetBottom
 	local traceEnd = mxBottom * g_spaceCheckVec
 
-	local sideTrace = LIBTracer.Tracer(trainEnt, traceStart, traceEnd, g_traceResultBufferA)
+	local sideTrace = LIBTrace.TraceSimple(trainEnt, traceStart, traceEnd, g_traceResultBufferA)
 	if not sideTrace or sideTrace.Hit or sideTrace.StartSolid or sideTrace.AllSolid then
 		return false
 	end
@@ -375,8 +375,8 @@ function LIB.ScanRail(trainEnt, aimTrace, parameters)
 			local layerEndPos = g_worldMx * maxRailGaugeDiagonalVecEnd
 
 			-- Tracer for finding the inner sides of rail tracks
-			local traceSideA = LIBTracer.Tracer(trainEnt, layerCenterPos, layerStartPos, g_traceResultBufferA)
-			local traceSideB = LIBTracer.Tracer(trainEnt, layerCenterPos, layerEndPos, g_traceResultBufferB)
+			local traceSideA = LIBTrace.TraceSimple(trainEnt, layerCenterPos, layerStartPos, g_traceResultBufferA)
+			local traceSideB = LIBTrace.TraceSimple(trainEnt, layerCenterPos, layerEndPos, g_traceResultBufferB)
 
 			if not traceSideA or not traceSideA.Hit or traceSideA.AllSolid then
 				continue
@@ -926,6 +926,11 @@ function LIB.ScanRailAutoInternal(trainEnt, aimTrace, scanParams, trainParams)
 
 		local result = LIB.ScanRail(trainEnt, aimTrace, trainClassScanParams)
 		if result then
+			local gauge = LIBRail.GetGaugeByWidth(result.width)
+			if not gauge then
+				continue
+			end
+
 			return result
 		end
 	end
@@ -969,7 +974,7 @@ function LIB.ScanMonoRailInternal(gauge, trainEnt, aimTrace, scanParams, trainPa
 end
 
 function LIB.Load()
-	LIBTracer = SligWolf_Addons.Tracer
+	LIBTrace = SligWolf_Addons.Trace
 	LIBDebug = SligWolf_Addons.Debug
 	LIBRail = SligWolf_Addons.Rail
 
@@ -1042,7 +1047,7 @@ function LIB.Load()
 		end
 
 		if retrace then
-			local aimTrace = LIBTracer.PlayerAimTrace(ply, 5000)
+			local aimTrace = LIBTrace.PlayerAimTrace(ply, 5000)
 			if aimTrace and aimTrace.Hit then
 				table.CopyFromTo(aimTrace, lastAimTrace)
 			end
