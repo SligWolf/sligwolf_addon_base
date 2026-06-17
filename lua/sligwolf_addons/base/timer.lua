@@ -77,8 +77,6 @@ function SLIGWOLF_ADDON:TimerRemove(identifier)
 		return
 	end
 
-	func = getTimerCallbackForAddon(self, identifier, func)
-
 	return LIBTimer.Remove(identifier)
 end
 
