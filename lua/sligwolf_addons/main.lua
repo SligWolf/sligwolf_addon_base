@@ -1209,6 +1209,35 @@ function SligWolf_Addons.GetAddon(name)
 	return addon
 end
 
+function SligWolf_Addons.GetAddonFromEntity(ent)
+	local sligwolfAddons = _G.SligWolf_Addons
+	if not sligwolfAddons then
+		return nil
+	end
+
+	if not IsValid(ent) then
+		return nil
+	end
+
+	local addonname = nil
+
+	if ent.sligwolf_baseEntity then
+		addonname = ent:GetAddonID()
+	end
+
+	if not addonname or addonname == "" then
+		addonname = ent.sligwolf_addonname
+	end
+
+	local addon = sligwolfAddons.GetAddon(addonname)
+	if not addon then
+		return nil
+	end
+
+	return addon
+end
+
+
 function SligWolf_Addons.HasLoadedAddon(name)
 	local sligwolfAddons = _G.SligWolf_Addons
 	if not sligwolfAddons then

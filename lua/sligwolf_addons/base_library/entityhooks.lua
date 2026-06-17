@@ -224,17 +224,7 @@ function LIB.Load()
 			end
 		end
 
-		local addonname = nil
-
-		if ent.sligwolf_baseEntity then
-			addonname = ent:GetAddonID()
-		end
-
-		if not addonname or addonname == "" then
-			addonname = ent.sligwolf_addonname
-		end
-
-		local addon = SligWolf_Addons.GetAddon(addonname)
+		local addon = SligWolf_Addons.GetAddonFromEntity(ent)
 		if addon then
 			if addon.SpawnSystemFinished then
 				addon:SpawnSystemFinished(ent, ply)

@@ -107,7 +107,8 @@ function LIB.ToString(ent)
 
 	local targetname = ent:GetName() or ""
 	local name = LIB.GetName(ent) or ""
-	local addonname = ent.sligwolf_addonname or ""
+	local addon = SligWolf_Addons.GetAddonFromEntity(ent)
+	local addonname = addon and addon.Addonname or ""
 
 	local output = {}
 
