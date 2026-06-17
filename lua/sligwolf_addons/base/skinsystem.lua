@@ -81,7 +81,24 @@ function SLIGWOLF_ADDON:SkinGetSelectedThemeName(ply, category)
 	end
 
 	local convarName = self:SkinGetConvarName(category)
-	local themeName = string.lower(tostring(ply:GetInfo(convarName)))
+	local themeName = ply:GetInfo(convarName)
+
+	themeName = self:SkinNormalizeThemeName(category, themeName)
+
+	if not themeName then
+		return defaultThemeName
+	end
+
+	return themeName
+end
+
+function SLIGWOLF_ADDON:SkinNormalizeThemeName(category, themeName)
+	local defaultThemeConfig = self:SkinGetDefaultThemeConfig(category)
+	if not defaultThemeConfig then
+		return nil
+	end
+
+	themeName = string.lower(tostring(themeName or ""))
 
 	if themeName == "" or themeName == "default" then
 		return defaultThemeName
