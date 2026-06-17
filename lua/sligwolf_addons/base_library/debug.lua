@@ -107,29 +107,37 @@ function LIB.GetDebugTraceEnabled()
 	return g_debugTraceEnabled
 end
 
+function LIB.IsValidDebugPlayer(ply)
+	if not IsValid(ply) then
+		return false
+	end
+
+	if ply:IsBot() then
+		return false
+	end
+
+	if not ply:IsListenServerHost() then
+		return false
+	end
+
+	if not ply:IsSuperAdmin() then
+		return false
+	end
+
+	return true
+end
+
 local g_debugPlayer = nil
 
 function LIB.GetDebugPlayer()
-	if IsValid(g_debugPlayer) then
+	if LIB.IsValidDebugPlayer(g_debugPlayer) then
 		return g_debugPlayer
 	end
 
 	g_debugPlayer = nil
 
 	for _, ply in player.Iterator() do
-		if not IsValid(ply) then
-			continue
-		end
-
-		if ply:IsBot() then
-			continue
-		end
-
-		if not ply:IsListenServerHost() then
-			continue
-		end
-
-		if not ply:IsSuperAdmin() then
+		if not LIB.IsValidDebugPlayer(ply) then
 			continue
 		end
 
@@ -625,8 +633,6 @@ function LIB.DrawHullTrace(traceHullResult)
 	local context = LIB.GetCurrentTraceDebugContext()
 	local scale = context.scale
 
-	local vecMin = traceHullParams.mins or CONSTANTS.vecZero
-	local vecMax = traceHullParams.maxs or CONSTANTS.vecZero
 	local vecMin = traceHullResult.mins or CONSTANTS.vecZero
 	local vecMax = traceHullResult.maxs or CONSTANTS.vecZero
 
