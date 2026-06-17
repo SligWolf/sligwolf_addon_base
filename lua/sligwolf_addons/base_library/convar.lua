@@ -172,10 +172,6 @@ function LIB.AddChangeCallback(convarName, callback, identifier)
 		return
 	end
 
-	if identifier == "" then
-		identifier = LIBUtil.UniqueString("_UnnamedAddChangeCallback_UniqueId")
-	end
-
 	local convarCallbacks = g_callbacks[convarName] or {}
 	g_callbacks[convarName] = convarCallbacks
 
@@ -286,11 +282,11 @@ local function pollChangeCallbacks(force)
 				newValue = modifier(newValue)
 			end
 
-			if oldValue and newValue == oldValue and not force then
+			if oldValue ~= nil and newValue == oldValue and not force then
 				continue
 			end
 
-			convarCallback.callback(newValue, convarName)
+			ProtectedCall(convarCallback.callback, newValue, convarName)
 			convarCallback.oldValue = newValue
 		end
 	end
