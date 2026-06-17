@@ -328,6 +328,10 @@ function LIB.IsSpawnedByEngine(ent)
 		return true
 	end
 
+	if entTable.isSpawnedByScript then
+		return true
+	end
+
 	if ent:IsVehicle() then
 		local vehicleSpawnname = tostring(ent.VehicleName or "")
 		if vehicleSpawnname == "" then
@@ -337,6 +341,24 @@ function LIB.IsSpawnedByEngine(ent)
 
 	entTable.isSpawnedByEngine = false
 	return false
+end
+
+function LIB.IsSpawnedByScript(ent)
+	if not IsValid(ent) then return false end
+
+	local entTable = ent:SligWolf_GetTable()
+	if entTable.isSpawnedByScript then
+		return true
+	end
+
+	return false
+end
+
+function LIB.SetSpawnedByScript(ent, bool)
+	if not IsValid(ent) then return false end
+
+	local entTable = ent:SligWolf_GetTable()
+	entTable.isSpawnedByScript = bool
 end
 
 function LIB.GetProxySpawnID(ent)
