@@ -163,7 +163,7 @@ function SLIGWOLF_ADDON:HandleVehicleSpawnPos(vehicle, ply, title, spawnOffsets,
 
 	if railScanResult then
 		if railScanResultGauge then
-			local message = string.format("Fitting %s into %s rail!", title, railScanResultGauge.title)
+			local message = LIBPrint.FormatMessage("Fitting %s into %s rail!", title, railScanResultGauge.title)
 			LIBPrint.Notify(LIBPrint.NOTIFY_GENERIC, message, 3, ply)
 		end
 
