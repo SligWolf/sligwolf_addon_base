@@ -627,6 +627,8 @@ function LIB.DrawHullTrace(traceHullResult)
 
 	local vecMin = traceHullParams.mins or CONSTANTS.vecZero
 	local vecMax = traceHullParams.maxs or CONSTANTS.vecZero
+	local vecMin = traceHullResult.mins or CONSTANTS.vecZero
+	local vecMax = traceHullResult.maxs or CONSTANTS.vecZero
 
 	local hit = traceHullResult.Hit or false
 	local vecHit = traceHullResult.HitPos or vecEnd

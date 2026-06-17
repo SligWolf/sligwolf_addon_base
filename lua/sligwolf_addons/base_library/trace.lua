@@ -640,11 +640,15 @@ function LIB.RawTraceHull(params)
 	local trA = params.output
 
 	local vecEnd = params.endpos
+	local mins = params.mins
+	local maxs = params.maxs
 
 	local trB = util.TraceHull(params)
 	local tr = trA or trB
 
 	tr.EndPos = vecEnd
+	tr.mins = mins
+	tr.maxs = maxs
 
 	return tr
 end
