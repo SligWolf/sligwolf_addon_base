@@ -17,6 +17,10 @@ local function getName(identifier)
 	return identifier
 end
 
+function LIB.GetName(identifier)
+	return getName(identifier)
+end
+
 function LIB.AddNetworkString(identifier)
 	if CLIENT then return end
 
