@@ -157,7 +157,7 @@ function LIB.Read(fileName, addon, isStatic)
 end
 
 function LIB.Write(fileName, fileContent, addon)
-	fileContent = tostring(fileContent or "")
+	fileContent = fileContent or ""
 	fileName = LIB.GetAbsolutePath(fileName, addon)
 
 	if file.Exists(fileName, g_dataRealm) then
