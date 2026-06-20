@@ -100,6 +100,8 @@ function SLIGWOLF_ADDON:SkinNormalizeThemeName(category, themeName)
 
 	themeName = string.lower(tostring(themeName or ""))
 
+	local defaultThemeName = defaultThemeConfig.name
+
 	if themeName == "" or themeName == "default" then
 		return defaultThemeName
 	end
