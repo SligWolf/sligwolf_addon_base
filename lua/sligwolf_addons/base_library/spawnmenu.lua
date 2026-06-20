@@ -986,7 +986,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	if not SpawnableEntities then return end
 
 	local entityItem = table.Copy(SpawnableEntities[spawnName] or {})
-	
+
 	local spawnFrozen = obj.spawnFrozen or false
 	local spawnOBB = table.Copy(obj.spawnOBB or {})
 
@@ -1140,7 +1140,8 @@ local function g_NPCSetup(ply, npc)
 		func(npc, data)
 	end
 
-	npc.Is_SLIGWOLF_Addon = true
+	npc.sligwolf_entity = true
+	npc.sligwolf_npc = true
 end
 
 local g_NpcOrder = 0

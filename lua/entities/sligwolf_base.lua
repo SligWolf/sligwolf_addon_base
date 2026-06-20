@@ -29,7 +29,6 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBDuplicator = SligWolf_Addons.Duplicator
-local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO
@@ -536,7 +535,7 @@ function ENT:GetSpawnName()
 	spawnname = LIBSourceIO.GetKeyValue(self, "sligwolf_spawnname") or ""
 
 	if spawnname == "" and self.sligwolf_spawnnameByModel then
-		spawnname = self:GetSpawnNameByModel() or ""
+		spawnname = self:GetSpawnnameByModel() or ""
 	end
 
 	if spawnname == "" then
@@ -569,20 +568,14 @@ function ENT:GetSpawnData()
 	return data
 end
 
-function ENT:GetSpawnNameByModel()
-	local byModel = LIBSpawnmenu.g_registerdSpawnnamesByModel["entity"]
-	if not byModel then
-		return nil
-	end
-
+function ENT:GetSpawnnameByModel()
 	local model = self:GetModel()
 	if not model then
 		return nil
 	end
 
-	local spawnname = byModel[model] or ""
-
-	if spawnname == "" then
+	local spawnname = LIBEntities.GetSpawnnameByModel(LIBEntities.SPAWN_CATEGORY_ENTITY, model)
+	if not spawnname then
 		return nil
 	end
 

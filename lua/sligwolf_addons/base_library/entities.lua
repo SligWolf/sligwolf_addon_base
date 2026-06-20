@@ -7,6 +7,7 @@ local LIB = SligWolf_Addons:NewLib("Entities")
 
 local LIBConstraints = SligWolf_Addons.Constraints
 local LIBProtection = SligWolf_Addons.Protection
+local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 local LIBPosition = SligWolf_Addons.Position
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
@@ -31,6 +32,7 @@ local g_emptyFunction = function() end
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
 	LIBProtection = SligWolf_Addons.Protection
+	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 	LIBPosition = SligWolf_Addons.Position
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBPhysics = SligWolf_Addons.Physics
@@ -169,7 +171,33 @@ function LIB.GetPrintName(ent)
 	return ent:GetClass()
 end
 
-function LIB.GetSpawnname(ent)
+function LIB.GetSpawncategory(ent)
+	if not IsValid(ent) then
+		return nil
+	end
+
+	if ent.sligwolf_baseEntity or ent.sligwolf_proxyEntity then
+		return LIB.SPAWN_CATEGORY_ENTITY
+	end
+
+	local category = LIB.SPAWN_CATEGORY_ENTITY
+
+	if ent:IsVehicle() then
+		category = LIB.SPAWN_CATEGORY_VEHICLE
+	elseif ent:IsNPC() then
+		category = LIB.SPAWN_CATEGORY_NPC
+	elseif ent:IsWeapon() then
+		category = LIB.SPAWN_CATEGORY_WEAPON
+	elseif ent.EntityName then
+		category = LIB.SPAWN_CATEGORY_ENTITY
+	elseif ent.ClassName then
+		category = LIB.SPAWN_CATEGORY_ENTITY
+	end
+
+	return category
+end
+
+function LIB.GetSpawnname(ent, failbackGuessByModel)
 	if not IsValid(ent) then
 		return nil
 	end
@@ -178,28 +206,36 @@ function LIB.GetSpawnname(ent)
 		return ent:GetSpawnName()
 	end
 
-	local name = nil
+	local spawnname = nil
+	local category = LIB.GetSpawncategory(ent)
 
 	if ent:IsVehicle() then
-		name = LIBVehicle.GetVehicleSpawnnameFromVehicle(ent)
+		spawnname = LIBVehicle.GetVehicleSpawnnameFromVehicle(ent)
 	elseif ent:IsNPC() then
-		name = ent.NPCName
+		spawnname = ent.NPCName
 	elseif ent:IsWeapon() then
-		name = ent.ClassName
+		spawnname = ent.ClassName
 	elseif ent.EntityName then
-		name = ent.EntityName
+		spawnname = ent.EntityName
 	elseif ent.ClassName then
-		name = ent.ClassName
+		spawnname = ent.ClassName
 	end
 
-	if not name then
-		return nil
+	if not spawnname then
+		if not failbackGuessByModel then
+			return nil
+		end
+
+		spawnname = LIB.GetSpawnnameByModel(category, ent:GetModel())
+		if not spawnname then
+			return nil
+		end
 	end
 
-	return name
+	return spawnname
 end
 
-function LIB.GetSpawntable(ent)
+function LIB.GetSpawntable(ent, failbackGuessByModel)
 	if not IsValid(ent) then
 		return nil
 	end
@@ -208,27 +244,14 @@ function LIB.GetSpawntable(ent)
 		return ent:GetSpawnData()
 	end
 
-	local spawnname = nil
-	local category = nil
-
-	if ent:IsVehicle() then
-		spawnname = LIBVehicle.GetVehicleSpawnnameFromVehicle(ent)
-		category = LIB.SPAWN_CATEGORY_VEHICLE
-	elseif ent:IsNPC() then
-		spawnname = ent.NPCName
-		category = LIB.SPAWN_CATEGORY_NPC
-	elseif ent:IsWeapon() then
-		spawnname = ent.ClassName
-		category = LIB.SPAWN_CATEGORY_WEAPON
-	elseif ent.EntityName then
-		spawnname = ent.EntityName
-		category = LIB.SPAWN_CATEGORY_ENTITY
-	elseif ent.ClassName then
-		spawnname = ent.ClassName
-		category = LIB.SPAWN_CATEGORY_ENTITY
-	end
+	local spawnname = LIB.GetSpawnname(ent, failbackGuessByModel)
+	local category = LIB.GetSpawncategory(ent)
 
 	local listEntry = LIB.GetSpawntableByName(category, spawnname)
+	if not listEntry then
+		return nil
+	end
+
 	return listEntry
 end
 
@@ -257,6 +280,30 @@ function LIB.GetSpawntableByName(category, spawnname)
 	end
 
 	return entry
+end
+
+function LIB.GetSpawnnameByModel(category, model)
+	category = tostring(category or "")
+	if category == "" then
+		return nil
+	end
+
+	model = tostring(model or "")
+	if model == "" then
+		return nil
+	end
+
+	local byModel = LIBSpawnmenu.g_registerdSpawnnamesByModel[category]
+	if not byModel then
+		return nil
+	end
+
+	local spawnname = byModel[model] or ""
+	if spawnname == "" then
+		return nil
+	end
+
+	return spawnname
 end
 
 function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
@@ -2007,6 +2054,83 @@ function LIB.GetBodygroupMeshIds(ent)
 	end
 
 	return result
+end
+
+local function getEntityOBBPoints(ent)
+	local min, max = ent:OBBMins(), ent:OBBMaxs()
+
+	local corners = {
+		Vector(min.x, min.y, min.z),
+		Vector(min.x, min.y, max.z),
+		Vector(min.x, max.y, min.z),
+		Vector(min.x, max.y, max.z),
+		Vector(max.x, min.y, min.z),
+		Vector(max.x, min.y, max.z),
+		Vector(max.x, max.y, min.z),
+		Vector(max.x, max.y, max.z)
+	}
+
+	for i = 1, 8 do
+		corners[i] = ent:LocalToWorld(corners[i])
+	end
+
+	return corners
+end
+
+function LIB.FindEntitiesInCone(pos, dir, distance, angle, classFilter)
+	local found = {}
+
+	local cosAngle = math.cos(math.rad(angle))
+	local maxDistSqr = distance * distance
+
+	local classFilterIndex = {}
+
+	if not istable(classFilter) then
+		classFilter = {classFilter}
+	end
+
+	for _, class in pairs(classFilter) do
+		class = tostring(class or "")
+		classFilterIndex[class] = true
+	end
+
+	if table.IsEmpty(classFilterIndex) then
+		classFilterIndex = nil
+	end
+
+	for _, ent in ents.Iterator() do
+		if not IsValid(ent) then
+			continue
+		end
+
+		if classFilterIndex and classFilterIndex[ent:GetClass()] then
+			continue
+		end
+
+		local pointsToCheck = getEntityOBBPoints(ent)
+		table.insert(pointsToCheck, ent:WorldSpaceCenter())
+
+		local inCone = false
+
+		for _, point in ipairs(pointsToCheck) do
+			local toPoint = point - pos
+
+			if toPoint:LengthSqr() <= maxDistSqr then
+				toPoint:Normalize()
+
+				if dir:Dot(toPoint) >= cosAngle then
+					inCone = true
+					break
+				end
+			end
+		end
+
+		if inCone then
+			table.insert(found, ent)
+		end
+	end
+
+	return found
 end
 
 return true
