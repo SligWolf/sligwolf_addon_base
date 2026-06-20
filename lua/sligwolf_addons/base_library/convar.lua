@@ -8,7 +8,6 @@ local LIB = SligWolf_Addons:NewLib("Convar")
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBDebug = SligWolf_Addons.Debug
-local LIBUtil = SligWolf_Addons.Util
 
 LIB.g_callbacks = LIB.g_callbacks or {}
 local g_callbacks = LIB.g_callbacks
@@ -179,14 +178,26 @@ function LIB.AddChangeCallback(convarName, callback, identifier)
 	convarCallbacks[identifier] = convarCallback
 
 	convarCallback.callback = callback
-	convarCallback.convar = GetConVar(convarName)
+	convarCallback.convar = LIB.GetConvar(convarName)
 	convarCallback.oldValue = nil
 end
 
-function LIB.GetValue(convarName)
+function LIB.GetConvar(convarName)
 	convarName = tostring(convarName or "")
+	if convarName == "" then
+		return nil
+	end
 
 	local convar = GetConVar(convarName)
+	if not convar then
+		return nil
+	end
+
+	return convar
+end
+
+function LIB.GetValue(convarName)
+	local convar = LIB.GetConvar(convarName)
 	if not convar then
 		return nil
 	end
@@ -304,7 +315,6 @@ end
 
 function LIB.Load()
 	LIBDebug = SligWolf_Addons.Debug
-	LIBUtil = SligWolf_Addons.Util
 
 	local LIBHook = SligWolf_Addons.Hook
 
