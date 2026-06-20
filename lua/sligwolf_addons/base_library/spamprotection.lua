@@ -312,7 +312,7 @@ function LIB.Load()
 		LIBHook.Add("PlayerSpawnVehicle", "Library_SpamProtection_AntiSpam", AntiSpamVehicle, 1000)
 
 		local function AntiSpamEntity(ply, spawnname)
-			local spawnTable = LIBEntities.GetSpawntableByName("SpawnableEntities", spawnname)
+			local spawnTable = LIBEntities.GetSpawntableByName(LIBEntities.SPAWN_CATEGORY_ENTITY, spawnname)
 			if not spawnTable then
 				return
 			end
