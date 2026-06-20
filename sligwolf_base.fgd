@@ -4,7 +4,7 @@
 
 // Please also include garrysmod.fgd or halflife2.fgd in Hammer for optimal results.
 // It is not recommended to edit this file as it is automaticly generated.
-// Generated via concommand: sv_sligwolf_mapping_generate_fgd <rebuildCache (0/1)>
+// Generated via concommand: sv_sligwolf_base_hammer_generate_fgd <rebuildCache (0/1)>
 
 // Generated:
 //   API Version:   2.0.0

@@ -180,7 +180,7 @@ function SLIGWOLF_ADDON:RegisterKeySettings(name, default, time, description, ex
 	if description == "" then return end
 	if default == 0 then return end
 
-	local cmd = "cl_sligwolf_addons_" .. self.Addonname .. "_key_" .. name
+	local cmd = "cl_sligwolf_" .. self.Addonname .. "_key_" .. name
 
 	local setting = {}
 	setting.description = description

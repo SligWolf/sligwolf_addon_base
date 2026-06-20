@@ -957,7 +957,7 @@ function LIB.Load()
 	LIBPrint = SligWolf_Addons.Print
 	LIBTimer = SligWolf_Addons.Timer
 
-	LIBConvar.AddConvar("sv_sligwolf_addons_debug_mode", {
+	LIBConvar.AddConvar("sv_sligwolf_base_debug_mode", {
 		default = LIB.ENUM_DEBUG_MODE_DISABLED,
 		flags = bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL, FCVAR_REPLICATED),
 		help = "Sets the debug mode. This requires 'developer 1' or above. 0 = Disabled, 1 = Shared, 2 = Server only, 2 = Client only, Default: 0",
@@ -965,7 +965,7 @@ function LIB.Load()
 		max = 3,
 	})
 
-	LIBConvar.AddConvar("sv_sligwolf_addons_debug_trace_enable", {
+	LIBConvar.AddConvar("sv_sligwolf_base_debug_trace_enable", {
 		default = true,
 		flags = bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL, FCVAR_REPLICATED),
 		help = "Enable drawing tracer debugging. This requires 'developer 1' or above. 0 = Disabled, 1 = Enabled, Default: 1",
@@ -979,11 +979,11 @@ function LIB.Load()
 		g_debugEnabled = value > 0
 	end, "DebugUpdate")
 
-	LIBConvar.AddChangeCallback("sv_sligwolf_addons_debug_mode", function(value)
+	LIBConvar.AddChangeCallback("sv_sligwolf_base_debug_mode", function(value)
 		g_debugMode = value
 	end, "DebugUpdate")
 
-	LIBConvar.AddChangeCallback("sv_sligwolf_addons_debug_trace_enable", function(value)
+	LIBConvar.AddChangeCallback("sv_sligwolf_base_debug_trace_enable", function(value)
 		g_debugTraceEnabled = value
 	end, "DebugUpdate")
 end

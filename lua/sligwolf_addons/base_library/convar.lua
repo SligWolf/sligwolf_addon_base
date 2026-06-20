@@ -224,7 +224,7 @@ if CLIENT then
 	LIB.ENUM_SLIDER_RENDER_MODE_PHYSGUN = 1
 	LIB.ENUM_SLIDER_RENDER_MODE_ALWAYS = 2
 
-	LIB.AddClientConvar("cl_sligwolf_addons_slider_render_mode", {
+	LIB.AddClientConvar("cl_sligwolf_base_slider_render_mode", {
 		default = LIB.ENUM_SLIDER_RENDER_MODE_DISABLED,
 		shouldsave = true,
 		userinfo = false,
@@ -257,7 +257,7 @@ if CLIENT then
 			return LIB.ENUM_SLIDER_RENDER_MODE_ALWAYS
 		end
 
-		local showSlidersMode = LIB.GetValue("cl_sligwolf_addons_slider_render_mode")
+		local showSlidersMode = LIB.GetValue("cl_sligwolf_base_slider_render_mode")
 
 		if showSlidersMode == LIB.ENUM_SLIDER_RENDER_MODE_DISABLED then
 			return showSlidersMode

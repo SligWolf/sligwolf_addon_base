@@ -164,7 +164,7 @@ local addWorkshopClientDownload = nil
 
 if SERVER then
 	local cvarAllowWorkshopDownload = CreateConVar(
-		"sv_sligwolf_addons_allow_workshop_download",
+		"sv_sligwolf_base_allow_workshop_download",
 		"1",
 		bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL),
 		"Allow or disallow workshop downloads (resource.AddWorkshop()) of SW Addons for joining clients. Requires server restart. (Default: 1)",

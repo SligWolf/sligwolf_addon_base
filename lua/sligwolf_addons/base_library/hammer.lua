@@ -478,7 +478,7 @@ function LIB.GenerateFGD(rebuildCache)
 end
 
 if SERVER then
-	concommand.Add("sv_sligwolf_hammer_generate_fgd", function(ply, cmd, args)
+	concommand.Add("sv_sligwolf_base_hammer_generate_fgd", function(ply, cmd, args)
 		if not LIBUtil.IsAdminForCMD(ply) then
 			return
 		end
