@@ -7,9 +7,9 @@ local LIB = SligWolf_Addons:NewLib("Railscan")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
-local LIBRail = SligWolf_Addons.Rail
 local LIBDebug = SligWolf_Addons.Debug
 local LIBTrace = SligWolf_Addons.Trace
+local LIBRail = SligWolf_Addons.Rail
 
 local g_sqrtTwo = math.sqrt(2)
 local g_tinyMargin = 0.1
@@ -1014,53 +1014,6 @@ function LIB.Load()
 		colorLive = Color(255, 120, 50),
 		colorDead = Color(150, 0, 0),
 	})
-
-	-- Test code
-	local lastAimTrace = LIB._lastAimTrace or {}
-	LIB._lastAimTrace = lastAimTrace
-
-	local mode = LIBRail.TRAIN_GAUGE_WP
-
-	local LIBHook = SligWolf_Addons.Hook
-	LIBHook.Add("Think", "RailScan_Test", function()
-		local ply = LIBDebug.GetDebugPlayer()
-		if not IsValid(ply) then
-			return
-		end
-
-		local retrace = false
-
-		if ply:KeyDown(IN_USE) then
-			retrace = true
-		end
-
-		if ply:KeyDown(IN_WALK) and ply:KeyDown(IN_JUMP) then
-			mode = LIBRail.TRAIN_GAUGE_AUTO
-		end
-
-		if ply:KeyDown(IN_WALK) and ply:KeyDown(IN_DUCK) then
-			mode = LIBRail.TRAIN_GAUGE_PHX
-		end
-
-		if ply:KeyDown(IN_WALK) and ply:KeyDown(IN_SPEED) then
-			mode = LIBRail.TRAIN_GAUGE_WP
-		end
-
-		if retrace then
-			local aimTrace = LIBTrace.PlayerAimTrace(ply, 5000)
-			if aimTrace and aimTrace.Hit then
-				table.CopyFromTo(aimTrace, lastAimTrace)
-			end
-		end
-
-		if lastAimTrace.Hit and mode then
-			LIBDebug.SetLifetime(CLIENT and LIBDebug.DEBUG_LIFETIME_FRAME or LIBDebug.DEBUG_LIFETIME_DEFAULT)
-
-			LIB.ScanRailWithGauge(ply, lastAimTrace, mode)
-
-			LIBDebug.ResetLifetime()
-		end
-	end)
 end
 
 return true
