@@ -301,6 +301,23 @@ function LIB.CheckSumOfFile(filePath, gamePath)
 	return hash
 end
 
+function LIB.DeduplicateTable(array)
+	local seen = {}
+	local result = {}
+
+	for _, v in ipairs(array) do
+		if seen[v] then
+			continue
+		end
+
+		table.insert(result, v)
+		seen[v] = true
+	end
+
+	return result
+end
+
+
 function LIB.FlashWindow()
 	-- This helps detecting load time behavour if the game is unfocused.
 	-- This is only active if the code has been reloaded.
