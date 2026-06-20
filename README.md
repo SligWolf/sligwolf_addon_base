@@ -1,7 +1,12 @@
-Base Framework for SligWolf's GMod Addons
+# SligWolf's Base Addon
+
+Base Framework for SligWolf's GMod Addons.
 
 Please see [SW Base on Steam Workhop](https://steamcommunity.com/sharedfiles/filedetails/?id=2866238940) for details.
 
+Do not reupload in any way!
+
 This is the development version. If you need a stable version that runs with the currently released SligWolf's addons, please either use:
-- [Latest release on GitHub](https://github.com/SligWolf/sw_base/releases)
+- [Latest release on GitHub](https://github.com/SligWolf/sligwolf_addon_base/releases)
 - [Latest release on Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2866238940)
+
