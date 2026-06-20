@@ -948,7 +948,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 
 	obj = obj or {}
 
-	local category = "entity"
+	local category = LIBEntities.SPAWN_CATEGORY_ENTITY
 
 	g_EntityOrder = (g_EntityOrder % 1000000) + 1
 
@@ -1044,7 +1044,7 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 
 	obj = obj or {}
 
-	local category = "weapon"
+	local category = LIBEntities.SPAWN_CATEGORY_WEAPON
 
 	g_WeaponOrder = (g_WeaponOrder % 1000000) + 1
 
@@ -1163,7 +1163,7 @@ function LIB.AddNPC(addonname, spawnname, obj)
 		model = nil
 	end
 
-	local category = "npc"
+	local category = LIBEntities.SPAWN_CATEGORY_NPC
 
 	g_NpcOrder = (g_NpcOrder % 1000000) + 1
 
@@ -1265,7 +1265,7 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 		return
 	end
 
-	local category = "vehicle"
+	local category = LIBEntities.SPAWN_CATEGORY_VEHICLE
 
 	g_VehicleOrder = (g_VehicleOrder % 1000000) + 1
 
