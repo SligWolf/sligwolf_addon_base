@@ -1,8 +1,8 @@
 {
-	"title"		:	"SW Base",
-    "type"		:	"tool",
-	"tags"		:	"fun",
-	"ignore"	:
+	"title"  : "SW Base",
+	"type"   : "tool",
+	"tags"   : ["fun", "build"],
+	"ignore" :
 	[
 		"glualint.json",
 		"*.git*",
@@ -19,3 +19,4 @@
 		"LICENSE"
 	]
 }
+
