@@ -208,19 +208,43 @@ function SLIGWOLF_ADDON:GetThemeNameFromKeyValue(category, keyValue)
 	return themeConfig.name
 end
 
-
 function SLIGWOLF_ADDON:SkinGetCategoryAndMapName(ent)
 	local spawntable = LIBEntities.GetSpawntable(ent)
+	local categoryName, mapName = self:SkinGetCategoryAndMapNameFromSpawntable(spawntable)
 
-	if not spawntable then return end
-	if not spawntable.Is_SLIGWOLF then return end
-	if spawntable.SLIGWOLF_Addonname ~= self.Addonname then return end
+	if not categoryName then
+		return nil
+	end
+
+	if not mapName then
+		return nil
+	end
+
+	return categoryName, mapName
+end
+
+function SLIGWOLF_ADDON:SkinGetCategoryAndMapNameFromSpawntable(spawntable)
+	if not spawntable then
+		return nil
+	end
+
+	if not spawntable.Is_SLIGWOLF then
+		return nil
+	end
+
+	if spawntable.SLIGWOLF_Addonname ~= self.Addonname then
+		return nil
+	end
 
 	local categoryName = spawntable.SLIGWOLF_SkinCategory
-	if not categoryName then return end
+	if not categoryName then
+		return nil
+	end
 
 	local mapName = spawntable.SLIGWOLF_SkinMapName
-	if not mapName then return end
+	if not mapName then
+		return nil
+	end
 
 	return categoryName, mapName
 end
@@ -329,6 +353,8 @@ function SLIGWOLF_ADDON:SkinAddThemeConfig(category, name, config)
 	themeConfig.category = category
 	themeConfig.order = config.order or LIBUtil.Order()
 	themeConfig.isRandom = config.isRandom or false
+
+	themeConfig.isDefault = false
 
 	if config.isDefault and not self.g_skinThemeConfigsDefaults[category] then
 		self.g_skinThemeConfigsDefaults[category] = themeConfig
