@@ -150,7 +150,7 @@ local g_WorkshopIDWhitelist = {
 	["westernloco"] = "132174849",
 	["wheelpack"] = "3384113283",
 	["wpsuspensiontrain"] = "3297918081",
-	["zdevtools"] = "",
+	["zdevtools"] = "3748654399",
 }
 
 local g_realmText = SERVER and "server" or "client"
