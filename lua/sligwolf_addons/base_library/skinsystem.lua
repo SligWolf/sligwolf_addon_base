@@ -22,10 +22,10 @@ LIB.g_skinParamKeys = {
 local g_skinMetaNames = {}
 local g_skinParamKeys = LIB.g_skinParamKeys
 
-LIB.ENUM_KEY_ALL = "all"
-LIB.ENUM_KEY_SKIN = "skin"
-LIB.ENUM_KEY_COLOR = "color"
-LIB.ENUM_KEY_BODYGROUPS = "bodygroups"
+LIB.KEY_ALL = "all"
+LIB.KEY_SKIN = "skin"
+LIB.KEY_COLOR = "color"
+LIB.KEY_BODYGROUPS = "bodygroups"
 
 function LIB.GetAllThemes(category)
 	local result = {}
@@ -57,7 +57,7 @@ function LIB.GetAllThemes(category)
 end
 
 function LIB.AddSkinMetaFunction(key, name, func)
-	if key == LIB.ENUM_KEY_ALL then
+	if key == LIB.KEY_ALL then
 		for _, v in ipairs(g_skinParamKeys) do
 			LIB.AddSkinMetaFunction(v, name, func)
 		end
@@ -119,15 +119,15 @@ function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
 	LIBHook = SligWolf_Addons.Hook
 
-	LIB.AddSkinMetaFunction(LIB.ENUM_KEY_ALL, "", function()
+	LIB.AddSkinMetaFunction(LIB.KEY_ALL, "", function()
 		return nil
 	end)
 
-	LIB.AddSkinMetaFunction(LIB.ENUM_KEY_ALL, "void", function()
+	LIB.AddSkinMetaFunction(LIB.KEY_ALL, "void", function()
 		return nil
 	end)
 
-	LIB.AddSkinMetaFunction(LIB.ENUM_KEY_COLOR, "playerMainColor", function(key, name, ent)
+	LIB.AddSkinMetaFunction(LIB.KEY_COLOR, "playerMainColor", function(key, name, ent)
 		local ply = LIB.GetColorPlayer(ent)
 		if not IsValid(ply) then
 			return CONSTANTS.colorError1
@@ -141,7 +141,7 @@ function LIB.Load()
 		return colorVector:ToColor()
 	end)
 
-	LIB.AddSkinMetaFunction(LIB.ENUM_KEY_COLOR, "playerWeaponColor", function(key, name, ent)
+	LIB.AddSkinMetaFunction(LIB.KEY_COLOR, "playerWeaponColor", function(key, name, ent)
 		local ply = LIB.GetColorPlayer(ent)
 		if not IsValid(ply) then
 			return CONSTANTS.colorError2
