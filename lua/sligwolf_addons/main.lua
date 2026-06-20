@@ -37,6 +37,7 @@ SligWolf_Addons.Addondata = SligWolf_Addons.Addondata or {}
 SligWolf_Addons.AddondataSorted = nil
 
 SligWolf_Addons.BASE_ADDON_NAME = "base"
+SligWolf_Addons.DEV_ADDON_NAME = "zdevtools"
 
 local ENUM_ERROR_UNSPECIFIED = "ERROR_UNSPECIFIED"
 local ENUM_ERROR_BAD_VERSION = "ERROR_BAD_VERSION"
@@ -149,6 +150,7 @@ local g_WorkshopIDWhitelist = {
 	["westernloco"] = "132174849",
 	["wheelpack"] = "3384113283",
 	["wpsuspensiontrain"] = "3297918081",
+	["zdevtools"] = "",
 }
 
 local g_realmText = SERVER and "server" or "client"
@@ -318,6 +320,13 @@ local g_folderNameBlacklist = {
 	["sw_addonbase"] = true,
 	["sligwolf_addons"] = true,
 	["spawnmenu_content"] = true,
+	["cl"] = true,
+	["sv"] = true,
+	["client"] = true,
+	["server"] = true,
+	["module"] = true,
+	["test"] = true,
+	["lib"] = true,
 }
 
 local function GetAddonNameFromPath(path)
@@ -1053,6 +1062,7 @@ function SligWolf_Addons.LoadLibraries()
 	g_validBase = nil
 
 	sligwolfAddons.BASE_ADDON = nil
+	sligwolfAddons.DEV_ADDON = nil
 
 	sligwolfAddons.LoadingLibraries = true
 	sligwolfAddons.Include("sligwolf_addons/base_library/_libraryinit.lua")
@@ -1061,6 +1071,7 @@ function SligWolf_Addons.LoadLibraries()
 	sligwolfAddons.LibrariesLoaded = sligwolfAddons.HasNoIncludeErrors()
 
 	sligwolfAddons.BASE_ADDON = sligwolfAddons.GetAddon(sligwolfAddons.BASE_ADDON_NAME)
+	sligwolfAddons.DEV_ADDON = sligwolfAddons.GetAddon(sligwolfAddons.DEV_ADDON_NAME)
 end
 
 function SligWolf_Addons.ReloadAllAddons()
@@ -1074,6 +1085,7 @@ function SligWolf_Addons.ReloadAllAddons()
 	sligwolfAddons.LoadLibraries()
 
 	local baseAddonName = sligwolfAddons.BASE_ADDON_NAME
+	local devAddonName = sligwolfAddons.DEV_ADDON_NAME
 
 	local sortedAddondata = sligwolfAddons.GetAddonsSorted()
 	local reloadList = {}
@@ -1082,6 +1094,11 @@ function SligWolf_Addons.ReloadAllAddons()
 		local addonName = addon.Addonname
 		if addonName == baseAddonName then
 			-- base addon is always loaded first
+			continue
+		end
+
+		if addonName == devAddonName then
+			-- dev addon is always loaded last
 			continue
 		end
 
@@ -1097,6 +1114,9 @@ function SligWolf_Addons.ReloadAllAddons()
 	for i, addonName in ipairs(reloadList) do
 		sligwolfAddons.LoadAddon(addonName, forceReload)
 	end
+
+	sligwolfAddons.LoadAddon(devAddonName, forceReload)
+	sligwolfAddons.DEV_ADDON = sligwolfAddons.GetAddon(devAddonName)
 
 	inValidateSortedAddondata()
 
