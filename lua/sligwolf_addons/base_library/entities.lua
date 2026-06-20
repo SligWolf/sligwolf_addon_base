@@ -14,6 +14,18 @@ local LIBTimer = SligWolf_Addons.Timer
 local LIBPrint = SligWolf_Addons.Print
 local LIBUtil = SligWolf_Addons.Util
 
+LIB.SPAWN_CATEGORY_ENTITY = "entity"
+LIB.SPAWN_CATEGORY_WEAPON = "weapon"
+LIB.SPAWN_CATEGORY_NPC = "npc"
+LIB.SPAWN_CATEGORY_VEHICLE = "vehicle"
+
+local g_spawnCategoryToListname = {
+	[LIB.SPAWN_CATEGORY_ENTITY] = "SpawnableEntities",
+	[LIB.SPAWN_CATEGORY_WEAPON] = "Weapon",
+	[LIB.SPAWN_CATEGORY_NPC] = "NPC",
+	[LIB.SPAWN_CATEGORY_VEHICLE] = "Vehicles",
+}
+
 local g_emptyFunction = function() end
 
 function LIB.Load()
@@ -197,31 +209,31 @@ function LIB.GetSpawntable(ent)
 	end
 
 	local spawnname = nil
-	local listname = nil
+	local category = nil
 
 	if ent:IsVehicle() then
 		spawnname = LIBVehicle.GetVehicleSpawnnameFromVehicle(ent)
-		listname = "Vehicles"
+		category = LIB.SPAWN_CATEGORY_VEHICLE
 	elseif ent:IsNPC() then
 		spawnname = ent.NPCName
-		listname = "NPC"
+		category = LIB.SPAWN_CATEGORY_NPC
 	elseif ent:IsWeapon() then
 		spawnname = ent.ClassName
-		listname = "Weapon"
+		category = LIB.SPAWN_CATEGORY_WEAPON
 	elseif ent.EntityName then
 		spawnname = ent.EntityName
-		listname = "SpawnableEntities"
+		category = LIB.SPAWN_CATEGORY_ENTITY
 	elseif ent.ClassName then
 		spawnname = ent.ClassName
-		listname = "SpawnableEntities"
+		category = LIB.SPAWN_CATEGORY_ENTITY
 	end
 
-	local listEntry = LIB.GetSpawntableByName(listname, spawnname)
+	local listEntry = LIB.GetSpawntableByName(category, spawnname)
 	return listEntry
 end
 
-function LIB.GetSpawntableByName(listname, spawnname)
-	if not listname then
+function LIB.GetSpawntableByName(category, spawnname)
+	if not category then
 		return nil
 	end
 
@@ -229,17 +241,22 @@ function LIB.GetSpawntableByName(listname, spawnname)
 		return nil
 	end
 
-	local sentList = LIBUtil.GetList(listname)
-	if not sentList then
+	local listname = g_spawnCategoryToListname[category]
+	if not listname then
 		return nil
 	end
 
-	local listEntry = sentList[spawnname]
-	if not listEntry then
+	local spawnlist = LIBUtil.GetList(listname)
+	if not spawnlist then
 		return nil
 	end
 
-	return listEntry
+	local entry = spawnlist[spawnname]
+	if not entry then
+		return nil
+	end
+
+	return entry
 end
 
 function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
