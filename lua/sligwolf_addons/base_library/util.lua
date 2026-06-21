@@ -241,6 +241,16 @@ function LIB.IsAdminForCMD(ply)
 	return true
 end
 
+function LIB.GameIsPaused()
+	local frametime = FrameTime()
+
+	if frametime > 0 then
+		return false
+	end
+
+	return true
+end
+
 local function entitySpawnSorterAsc(a, b)
 	local ctA = a:GetCreationTime()
 	local ctB = b:GetCreationTime()
