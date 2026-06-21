@@ -7,6 +7,7 @@ SWEP.Spawnable				= false
 SWEP.AdminOnly				= false
 
 SWEP.sligwolf_entity		= true
+SWEP.sligwolf_weapon		= true
 SWEP.sligwolf_baseWeapon	= true
 
 if not SligWolf_Addons then return end
@@ -88,3 +89,21 @@ function SWEP:MakeVehicle(spawnname, name, parent)
 	return addon:MakeVehicle(spawnname, plyOwner, parent, name)
 end
 
+function SWEP:AddClientCallForPredictionHook(hookName)
+	if CLIENT then
+		return
+	end
+
+	local originalHook = self[hookName]
+	if not originalHook then
+		return
+	end
+
+	self[hookName] = function(this, ...)
+		local a, b, c, d, e, f, g, h = originalHook(this, ...)
+
+		self:CallOnClient(hookName .. "Client")
+
+		return a, b, c, d, e, f, g, h
+	end
+end
