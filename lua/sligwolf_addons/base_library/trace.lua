@@ -74,29 +74,31 @@ local function traceSimple(vecStart, vecEnd)
 		local context = LIBDebug.GetCurrentTraceDebugContext()
 		local scale = context.scale
 
-		LIBDebug.SetIgnoreZ(true)
+		if context.draw then
+			LIBDebug.SetIgnoreZ(true)
 
-		LIBDebug.Line(vecStart, vecHit, context.colorLive)
+			LIBDebug.Line(vecStart, vecHit, context.colorLive)
 
-		if context.drawDead then
-			LIBDebug.Line(vecHit, vecEnd, context.colorDead)
-			LIBDebug.Cross(vecEnd, scale, context.colorDead)
+			if context.drawDead then
+				LIBDebug.Line(vecHit, vecEnd, context.colorDead)
+				LIBDebug.Cross(vecEnd, scale, context.colorDead)
+			end
+
+			LIBDebug.Cross(vecStart, scale, context.colorLive)
+
+			if hit then
+				local vecHitNormal = tr.HitNormal or CONSTANTS.vecZero
+				local vecHitNormalEnd = vecHit + vecHitNormal * scale * 0.5
+
+				LIBDebug.Cross(vecHit, scale * 1.5, context.colorLive)
+				LIBDebug.Line(vecHit, vecHitNormalEnd, context.colorLive)
+
+				LIBDebug.EntityTextAtPosition(vecStart, context.title, context.colorLive)
+				LIBDebug.EntityTextAtPosition(vecHit, "Hit", context.colorLive)
+			end
+
+			LIBDebug.ResetIgnoreZ()
 		end
-
-		LIBDebug.Cross(vecStart, scale, context.colorLive)
-
-		if hit then
-			local vecHitNormal = tr.HitNormal or CONSTANTS.vecZero
-			local vecHitNormalEnd = vecHit + vecHitNormal * scale * 0.5
-
-			LIBDebug.Cross(vecHit, scale * 1.5, context.colorLive)
-			LIBDebug.Line(vecHit, vecHitNormalEnd, context.colorLive)
-
-			LIBDebug.EntityTextAtPosition(vecStart, context.title, context.colorLive)
-			LIBDebug.EntityTextAtPosition(vecHit, "Hit", context.colorLive)
-		end
-
-		LIBDebug.ResetIgnoreZ()
 	end
 
 	if not tr or table.IsEmpty(tr) then
@@ -121,6 +123,7 @@ local function traceChain(vectorChain)
 
 	local hasHit = false
 	local context = LIBDebug.GetCurrentTraceDebugContext()
+	local drawDebug = g_isDebug and context.draw
 
 	for i = 2, lasti do
 		local isFirst = i <= 2
@@ -142,7 +145,7 @@ local function traceChain(vectorChain)
 			hit = tr.Hit
 		end
 
-		if g_isDebug then
+		if drawDebug then
 			local scale = context.scale
 
 			LIBDebug.SetIgnoreZ(true)
@@ -184,7 +187,7 @@ local function traceChain(vectorChain)
 		end
 
 		if hit then
-			if not g_isDebug or not context.drawUnused then
+			if not drawDebug or not context.drawUnused then
 				break
 			end
 
@@ -209,6 +212,7 @@ local function traceOBBPointIndexes(points, pointIndexes)
 
 	local hasHit = false
 	local context = LIBDebug.GetCurrentTraceDebugContext()
+	local drawDebug = g_isDebug and context.draw
 
 	for _, pointIndex in ipairs(pointIndexes) do
 		local vecStart = points[pointIndex[1]]
@@ -227,7 +231,7 @@ local function traceOBBPointIndexes(points, pointIndexes)
 			hit = tr.Hit
 		end
 
-		if g_isDebug then
+		if drawDebug then
 			local scale = context.scale
 
 			LIBDebug.SetIgnoreZ(true)
@@ -257,7 +261,7 @@ local function traceOBBPointIndexes(points, pointIndexes)
 		end
 
 		if hit then
-			if not g_isDebug or not context.drawUnused then
+			if not drawDebug or not context.drawUnused then
 				break
 			end
 
