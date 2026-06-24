@@ -172,9 +172,35 @@ function LIB.SimpleNextFrame(func)
 	LIB.Simple(g_time_min, func)
 end
 
+local g_base_unix_realtime = nil
+local g_base_unix_systime = nil
+
+function LIB.UnixRealTime()
+	local now = RealTime()
+
+	if not g_base_unix_realtime then
+		g_base_unix_realtime = os.time() - now
+	end
+
+	local unix = g_base_unix_realtime + now
+	return unix
+end
+
+function LIB.UnixSysTime()
+	local now = SysTime()
+
+	if not g_base_unix_systime then
+		g_base_unix_systime = os.time() - now
+	end
+
+	local unix = g_base_unix_systime + now
+	return unix
+end
+
 function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
 end
+
 
 return true
 

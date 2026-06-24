@@ -14,6 +14,8 @@ local g_dataStaticDirectoryAddons = "data_static/" .. g_dataDirectoryAddons
 local g_dataRealm = "DATA"
 local g_dataStaticRealm = "GAME"
 
+local g_maxLogSize = 128 * 1024 * 1024 -- 128 MB
+
 LIB.ENUM_NO_ADDON = ""
 LIB.ENUM_DATA = false
 LIB.ENUM_DATA_STATIC = true
@@ -161,7 +163,7 @@ function LIB.Write(fileName, fileContent, addon)
 	fileName = LIB.GetAbsolutePath(fileName, addon)
 
 	if file.Exists(fileName, g_dataRealm) then
-		file.Delete(fileName)
+		file.Delete(fileName, g_dataRealm)
 
 		if file.Exists(fileName, g_dataRealm) then
 			return false
@@ -178,7 +180,38 @@ function LIB.Write(fileName, fileContent, addon)
 		end
 	end
 
-	file.Write(fileName, fileContent)
+	local ok = file.Write(fileName, fileContent)
+	if not ok then
+		return false
+	end
+
+	if not file.Exists(fileName, g_dataRealm) then
+		return false
+	end
+
+	return true
+end
+
+function LIB.Append(fileName, fileContent, addon)
+	fileContent = fileContent or ""
+	fileName = LIB.GetAbsolutePath(fileName, addon)
+
+	if not file.Exists(fileName, g_dataRealm) then
+		local path = string.GetPathFromFilename(fileName)
+
+		if not file.IsDir(path, g_dataRealm) then
+			file.CreateDir(path, g_dataRealm)
+
+			if not file.IsDir(path, g_dataRealm) then
+				return false
+			end
+		end
+	end
+
+	local ok = file.Append(fileName, fileContent)
+	if not ok then
+		return false
+	end
 
 	if not file.Exists(fileName, g_dataRealm) then
 		return false
@@ -191,11 +224,44 @@ function LIB.Delete(fileName, addon)
 	fileName = LIB.GetAbsolutePath(fileName, addon)
 
 	if file.Exists(fileName, g_dataRealm) then
-		file.Delete(fileName)
+		file.Delete(fileName, g_dataRealm)
 
 		if file.Exists(fileName, g_dataRealm) then
 			return false
 		end
+	end
+
+	return true
+end
+
+function LIB.Log(fileName, fileContent, addon)
+	fileContent = fileContent or ""
+	fileName = LIB.GetAbsolutePath(fileName, addon)
+
+	if file.Exists(fileName, g_dataRealm) then
+		if file.Size(fileName, g_dataRealm) >= g_maxLogSize then
+			-- log auto clean
+			file.Delete(fileName, g_dataRealm)
+		end
+	else
+		local path = string.GetPathFromFilename(fileName)
+
+		if not file.IsDir(path, g_dataRealm) then
+			file.CreateDir(path, g_dataRealm)
+
+			if not file.IsDir(path, g_dataRealm) then
+				return false
+			end
+		end
+	end
+
+	local ok = file.Append(fileName, fileContent)
+	if not ok then
+		return false
+	end
+
+	if not file.Exists(fileName, g_dataRealm) then
+		return false
 	end
 
 	return true
