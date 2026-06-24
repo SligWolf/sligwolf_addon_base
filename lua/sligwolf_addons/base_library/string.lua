@@ -21,6 +21,14 @@ function LIB.UniqueString(prefix)
 end
 
 function LIB.WildcardMatch(strInput, wildcard)
+	if wildcard == "*" then
+		return true
+	end
+
+	if wildcard == "" then
+		return false
+	end
+
 	local escapedWildcard = string.PatternSafe(wildcard)
 	local pattern = "^" .. string.gsub(escapedWildcard, "%%%*", ".*") .. "$"
 
