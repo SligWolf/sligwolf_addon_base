@@ -56,6 +56,7 @@ LIB.ENUM_DEBUG_MODE_CLIENT = 3
 
 LIB.TRACE_DEBUG_CONTEXT_DEFAULT = "default"
 LIB.TRACE_DEBUG_CONTEXT_PLAYER = "player"
+LIB.TRACE_DEBUG_CONTEXT_NONE = "none"
 
 local g_traceDebugContext = LIB.g_traceDebugContext or {}
 LIB.g_traceDebugContext = g_traceDebugContext
@@ -522,8 +523,10 @@ function LIB.AddTraceDebugContext(name, params)
 	item.colorDead = params.colorDead or CONSTANTS.colorError2
 	item.colorUnused = params.colorUnused or item.colorDead
 
-	item.drawDead = item.colorDead.a > 0
-	item.drawUnused = item.colorUnused.a > 0
+	item.draw = item.colorLive.a > 0
+
+	item.drawDead = item.draw and item.colorDead.a > 0
+	item.drawUnused = item.draw and item.colorUnused.a > 0
 end
 
 function LIB.SetCurrentTraceDebugContext(name)
@@ -578,6 +581,10 @@ function LIB.DrawLineTrace(traceLineResult)
 	local vecHit = traceLineResult.HitPos or vecEnd
 	local vecHitNormal = traceLineResult.HitNormal or CONSTANTS.vecZero
 	local vecHitNormalEnd = vecHit + vecHitNormal * scale * 0.5
+
+	if not context.draw then
+		return
+	end
 
 	LIB.Line(vecStart, vecHit, context.colorLive)
 
@@ -637,6 +644,10 @@ function LIB.DrawHullTrace(traceHullResult)
 
 	local vecMinHit = vecMin + Vector(1, 1, 0)
 	local vecMaxHit = vecMax - Vector(1, 1, 1)
+
+	if not context.draw then
+		return
+	end
 
 	LIB.Line(vecStart, vecHit, context.colorLive)
 
@@ -944,7 +955,14 @@ do
 		title = "Player",
 		colorLive = Color(255, 255, 255),
 		colorDead = Color(128, 128, 128),
-		colorUnused = Color(0, 0, 0, 255),
+		colorUnused = Color(0, 0, 0),
+	})
+
+	LIB.AddTraceDebugContext(LIB.TRACE_DEBUG_CONTEXT_NONE, {
+		title = "",
+		colorLive = Color(0, 0, 0, 0),
+		colorDead = Color(0, 0, 0, 0),
+		colorUnused = Color(0, 0, 0, 0),
 	})
 
 	LIB.ResetTraceDebugContext()
