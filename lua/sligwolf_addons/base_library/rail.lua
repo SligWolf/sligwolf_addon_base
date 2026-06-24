@@ -5,8 +5,6 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Rail")
 
-local CONSTANTS = SligWolf_Addons.Constants
-
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBTrace = SligWolf_Addons.Trace
@@ -494,7 +492,7 @@ function LIB.AddGauge(gaugeName, params)
 	gauge.titleShort = titleShort
 	gauge.isReal = isReal
 
-	gauge.modelDirectoryName = string.format("gauge_%s", trainClassName)
+	gauge.modelDirectoryName = string.format("gauge_%s", gaugeName)
 
 	gauge.width = width
 	gauge.tolerance = tolerance
