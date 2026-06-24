@@ -25,16 +25,63 @@ function SWEP:Initialize()
 	BaseClass.Initialize(self)
 
 	self:RunPostInitialize()
+	self:ResetInternal()
 end
 
 function SWEP:PostInitialize()
 	-- override me
 end
 
+function SWEP:ResetInternal()
+	self:Reset()
+
+	if SERVER then
+		local owner = self:GetOwner()
+
+		if IsValid(owner) and owner:IsPlayer() and not owner:IsBot() then
+			self:CallOnClient("ResetInternal")
+		end
+	end
+end
+
+function SWEP:Reset()
+	-- Override me
+end
+
 function SWEP:SetupDataTables()
 	self:AddNetworkRVar("String", "AddonID")
 
 	self:RegisterNetworkRVarNotify("AddonID", self.ClearAddonCache)
+end
+
+function SWEP:Deploy()
+	if SERVER then
+		self:ResetInternal()
+	end
+
+	return true
+end
+
+function SWEP:Holster()
+	if SERVER then
+		self:ResetInternal()
+	end
+
+	return true
+end
+
+function SWEP:Equip()
+	if SERVER then
+		self:ResetInternal()
+	end
+end
+
+function SWEP:OnReloaded()
+	-- script reloaded, not to be confused with ammo reload
+
+	if SERVER then
+		self:ResetInternal()
+	end
 end
 
 function SWEP:ActToTime(act)
@@ -99,10 +146,26 @@ function SWEP:AddClientCallForPredictionHook(hookName)
 		return
 	end
 
-	self[hookName] = function(this, ...)
-		local a, b, c, d, e, f, g, h = originalHook(this, ...)
+	self.clientCallForPredictionOriginalHook = self.clientCallForPredictionOriginalHook or {}
+	if not self.clientCallForPredictionOriginalHook[hookName] then
+		self.clientCallForPredictionOriginalHook[hookName] = originalHook
+	end
 
-		self:CallOnClient(hookName .. "Client")
+	self[hookName] = function(this, ...)
+		local thisOriginalHook = this.clientCallForPredictionOriginalHook[hookName]
+		if not thisOriginalHook then
+			return
+		end
+
+		local a, b, c, d, e, f, g, h = thisOriginalHook(this, ...)
+
+		if SERVER then
+			local owner = self:GetOwner()
+
+			if IsValid(owner) and owner:IsPlayer() and not owner:IsBot() then
+				self:CallOnClient(hookName .. "Client")
+			end
+		end
 
 		return a, b, c, d, e, f, g, h
 	end
