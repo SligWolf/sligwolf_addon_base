@@ -13,6 +13,7 @@ CONSTANTS.vecZero = Vector()
 CONSTANTS.vecPOne = Vector(1, 1, 1)
 CONSTANTS.vecNOne = Vector(-1, -1, -1)
 CONSTANTS.vecBogie = Vector(0, 0, 1)
+CONSTANTS.vecUp = Vector(0, 0, 1)
 
 -- angles
 CONSTANTS.angZero = Angle()
