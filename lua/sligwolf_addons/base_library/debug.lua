@@ -267,6 +267,35 @@ function LIB.Axis(pos, ang, size)
 	debugoverlay.Line(pos, up, g_lifetime, LIB.COLOR_AXIS_Z, g_ignoreZ)
 end
 
+function LIB.Normal(pos, normal, size, color)
+	if not pos then
+		pos = CONSTANTS.vecZero
+		LIB.Debug("Debug.Axis: Missing 'pos'")
+	end
+
+	if not LIB.CanDraw(pos) then
+		return
+	end
+
+	if not normal then
+		normal = CONSTANTS.vecUp
+	end
+
+	if not size or size <= 0 then
+		size = LIB.DEBUG_SIZE
+	end
+
+	if not color then
+		color = LIB.COLOR
+	end
+
+	normal = normal:GetNormalized()
+	normal:Mul(size)
+	normal:Add(pos)
+
+	debugoverlay.Line(pos, normal, g_lifetime, color, g_ignoreZ)
+end
+
 function LIB.EntityTextAtPosition(pos, text, lineOrColor, color)
 	if istable(lineOrColor) then
 		return LIB.EntityTextAtPosition(pos, text, nil, lineOrColor)
