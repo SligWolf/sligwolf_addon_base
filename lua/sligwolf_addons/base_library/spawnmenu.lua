@@ -985,7 +985,7 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	local SpawnableEntities = LIBUtil.GetList("SpawnableEntities")
 	if not SpawnableEntities then return end
 
-	local entityItem = table.Copy(SpawnableEntities[spawnName] or {})
+	local entityItem = table.Copy(SpawnableEntities[spawnname] or {})
 
 	local spawnFrozen = obj.spawnFrozen or false
 	local spawnOBB = table.Copy(obj.spawnOBB or {})
@@ -1083,7 +1083,7 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 	local SpawnableWeapons = LIBUtil.GetList("Weapon")
 	if not SpawnableWeapons then return end
 
-	local weaponItem = table.Copy(SpawnableWeapons[spawnName] or {})
+	local weaponItem = table.Copy(SpawnableWeapons[spawnname] or {})
 
 	weaponItem.PrintName = weaponItem.PrintName or tostring(obj.title or spawnname)
 	weaponItem.ClassName = weaponItem.ClassName or obj.class or spawnname
