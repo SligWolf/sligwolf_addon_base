@@ -150,8 +150,8 @@ function ENT:GetParticleEndLength()
 	return self:GetNetworkRVarNumber("EndLength", 0)
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	local Delay = self.Delay or 0
 	local Time = self:GetParticleSpawnTime() or EmitTime

@@ -50,8 +50,8 @@ if SERVER then
 	local g_ColorDefault = Color(255, 255, 255)
 	local g_ColorTouched = Color(0, 255, 0)
 
-	function ENT:ThinkInternal()
-		BaseClass.ThinkInternal(self)
+	function ENT:FastThink()
+		BaseClass.FastThink(self)
 
 		if self:IsDeveloper() then
 			local touched = self:IsTouched()

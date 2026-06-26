@@ -113,8 +113,8 @@ function ENT:IsOnRail(bypassCache)
 	return LIBRail.IsOnRail(self, bypassCache)
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	if not SERVER then
 		return

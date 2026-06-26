@@ -104,8 +104,8 @@ function ENT:CreateProjectedTexture()
 	self.flashlighttex = ProjectedTexture()
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	local isON = self:IsOn()
 

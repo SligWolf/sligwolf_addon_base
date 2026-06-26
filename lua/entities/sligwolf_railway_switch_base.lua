@@ -402,8 +402,8 @@ function ENT:RunCurrentState()
 	self:ResetSequence(seq)
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	LIBWire.PollRenderBounds(self)
 

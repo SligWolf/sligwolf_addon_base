@@ -111,8 +111,8 @@ function ENT:GetDisplayPos()
 	return attachment.Pos or pos, attachment.Ang or ang
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	local isON = self:IsOn()
 

@@ -77,8 +77,8 @@ function ENT:GetViewingPlayer()
 	return self._viewingPlayer
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	if not SERVER then
 		return

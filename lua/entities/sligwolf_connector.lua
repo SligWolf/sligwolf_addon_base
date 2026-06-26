@@ -262,8 +262,8 @@ function ENT:OnRemove()
 	self._isButtom = false
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	local connected = self._connected
 	local connectedConstraint = self._constraint

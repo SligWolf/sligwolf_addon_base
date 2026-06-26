@@ -176,8 +176,8 @@ function ENT:UpdateGuagePose()
 	self:InvalidateBoneCache()
 end
 
-function ENT:ThinkInternal()
-	BaseClass.ThinkInternal(self)
+function ENT:FastThink()
+	BaseClass.FastThink(self)
 
 	if SERVER then return end
 	self:UpdateGuagePose()
