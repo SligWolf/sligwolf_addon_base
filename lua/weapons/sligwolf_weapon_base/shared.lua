@@ -124,6 +124,8 @@ function SWEP:Equip(...)
 end
 
 function SWEP:OnReloaded()
+	LIBSpawnmenu.RequestReloadSpawnmenu()
+	LIBSpawnmenu.InitSpawnmenuContent()
 
 	-- script reloaded, not to be confused with ammo reload
 	self:Reset()

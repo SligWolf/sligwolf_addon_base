@@ -91,6 +91,11 @@ function ENT:PostInitialize()
 	self:HandleSpawnFinishedEvent()
 end
 
+function ENT:OnReloaded()
+	LIBSpawnmenu.RequestReloadSpawnmenu()
+	LIBSpawnmenu.InitSpawnmenuContent()
+end
+
 function ENT:OnPositioningDoneInternal()
 	local spawndata = self:GetSpawnData()
 
