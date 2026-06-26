@@ -102,11 +102,11 @@ function SLIGWOLF_ADDON:SkinNormalizeThemeName(category, themeName)
 
 	local defaultThemeName = defaultThemeConfig.name
 
-	if themeName == "" or themeName == "default" then
+	if themeName == "" or themeName == LIBSkinsystem.THEME_DEFAULT then
 		return defaultThemeName
 	end
 
-	if themeName == "random" then
+	if themeName == LIBSkinsystem.THEME_RANDOM then
 		local themeConfig = self:SkinGetRandomPickerThemeConfig(category)
 		if not themeConfig then
 			return defaultThemeName
@@ -115,7 +115,7 @@ function SLIGWOLF_ADDON:SkinNormalizeThemeName(category, themeName)
 		return themeConfig.name
 	end
 
-	if themeName == "player" then
+	if themeName == LIBSkinsystem.THEME_PLAYER then
 		local themeConfig = self:SkinGetPlayerColoredThemeConfig(category)
 		if not themeConfig then
 			return defaultThemeName
@@ -149,11 +149,11 @@ function SLIGWOLF_ADDON:GetThemeNameFromKeyValue(category, keyValue)
 
 	local defaultThemeName = defaultThemeConfig.name
 
-	if keyValue == "" or keyValue == "default" then
+	if keyValue == "" or keyValue == LIBSkinsystem.THEME_DEFAULT then
 		return defaultThemeName
 	end
 
-	if keyValue == "random" then
+	if keyValue == LIBSkinsystem.THEME_RANDOM then
 		local themeConfig = self:SkinGetRandomPickerThemeConfig(category)
 		if not themeConfig then
 			return defaultThemeName
@@ -162,7 +162,7 @@ function SLIGWOLF_ADDON:GetThemeNameFromKeyValue(category, keyValue)
 		return themeConfig.name
 	end
 
-	if keyValue == "player" then
+	if keyValue == LIBSkinsystem.THEME_PLAYER then
 		if not IsValid(LIBUtil.GetFailbackPlayer()) then
 			return defaultThemeName
 		end

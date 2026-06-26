@@ -27,6 +27,10 @@ LIB.KEY_SKIN = "skin"
 LIB.KEY_COLOR = "color"
 LIB.KEY_BODYGROUPS = "bodygroups"
 
+LIB.THEME_DEFAULT = "default"
+LIB.THEME_RANDOM = "random"
+LIB.THEME_PLAYER = "player"
+
 function LIB.GetAllThemes(category)
 	local result = {}
 	local sortedAddondata = SligWolf_Addons.GetAddonsSorted()
