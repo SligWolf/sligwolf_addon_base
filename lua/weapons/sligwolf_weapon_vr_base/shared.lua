@@ -175,7 +175,7 @@ function SWEP:OnRemove()
 	return true
 end
 
-function SWEP:Holster()
+function SWEP:OnHolster()
 	BaseClass.Holster(self)
 	self:CallMethodWithErrorNoHalt("OnVRExit")
 

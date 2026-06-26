@@ -14,6 +14,7 @@ if not SligWolf_Addons then return end
 if not SligWolf_Addons.IsLoaded then return end
 if not SligWolf_Addons.IsLoaded() then return end
 
+local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 local LIBBones = SligWolf_Addons.Bones
 local LIBBase = SligWolf_Addons.Base
 
@@ -25,27 +26,65 @@ function SWEP:Initialize()
 	BaseClass.Initialize(self)
 
 	self:RunPostInitialize()
-	self:ResetInternal()
+
+	self:Reset()
 end
 
 function SWEP:PostInitialize()
 	-- override me
 end
 
-function SWEP:ResetInternal()
-	self:Reset()
+function SWEP:Reset(isPredicted)
+	if not isPredicted then
+		self:OnReset()
+		return
+	end
 
-	if SERVER then
-		local owner = self:GetOwner()
-
-		if IsValid(owner) and owner:IsPlayer() and not owner:IsBot() then
-			self:CallOnClient("ResetInternal")
+	if CLIENT then
+		if IsFirstTimePredicted() then
+			self:OnReset()
 		end
+
+		return
+	end
+
+	self:OnReset()
+
+	if game.SinglePlayer() then
+		self:ResetOnClient()
 	end
 end
 
-function SWEP:Reset()
+function SWEP:ResetOnClient()
+	if not SERVER then
+		self:Reset()
+		return
+	end
+
+	local owner = self:GetOwner()
+
+	if IsValid(owner) and owner:IsPlayer() and not owner:IsBot() then
+		self:CallOnClient("ResetOnClient")
+	end
+end
+
+function SWEP:OnReset()
 	-- Override me
+end
+
+function SWEP:OnDeploy()
+	-- Override me
+	return true
+end
+
+function SWEP:OnHolster()
+	-- Override me
+	return true
+end
+
+function SWEP:OnEquip()
+	-- Override me
+	return true
 end
 
 function SWEP:SetupDataTables()
@@ -54,33 +93,71 @@ function SWEP:SetupDataTables()
 	self:RegisterNetworkRVarNotify("AddonID", self.ClearAddonCache)
 end
 
-function SWEP:Deploy()
-	if SERVER then
-		self:ResetInternal()
-	end
+function SWEP:Deploy(...)
+	BaseClass.Deploy(self, ...)
 
-	return true
+	self:Reset(true)
+
+	local result = self:OnDeploy(...)
+	return result
 end
 
-function SWEP:Holster()
-	if SERVER then
-		self:ResetInternal()
+function SWEP:Holster(...)
+	BaseClass.Holster(self, ...)
+
+	if SERVER or (CLIENT and not IsFirstTimePredicted()) then
+		-- Holster has a not pretedicted client call
+		self:Reset()
 	end
 
-	return true
+	local result = self:OnHolster(...)
+	return result
 end
 
-function SWEP:Equip()
-	if SERVER then
-		self:ResetInternal()
-	end
+function SWEP:Equip(...)
+	BaseClass.Equip(self, ...)
+
+	self:Reset()
+	self:ResetOnClient()
+
+	self:OnEquip(...)
 end
 
 function SWEP:OnReloaded()
-	-- script reloaded, not to be confused with ammo reload
 
-	if SERVER then
-		self:ResetInternal()
+	-- script reloaded, not to be confused with ammo reload
+	self:Reset()
+end
+
+function SWEP:OnRemove(...)
+	self:Reset()
+
+	BaseClass.OnRemove(self, ...)
+end
+
+function SWEP:SlowThink()
+	-- override me
+end
+
+function SWEP:FastThink()
+	-- override me
+end
+
+function SWEP:Think()
+	BaseClass.Think(self)
+
+	local result = self:FastThink()
+
+	local nextSlowThink = self._nextSlowThink or 0
+	local now = CurTime()
+
+	if nextSlowThink < now then
+		self:SlowThink()
+		self._nextSlowThink = now + 0.5
+	end
+
+	if result then
+		return true
 	end
 end
 
