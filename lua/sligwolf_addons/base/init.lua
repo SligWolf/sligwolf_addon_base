@@ -14,11 +14,5 @@ SLIGWOLF_ADDON.Author = "SligWolf"
 SLIGWOLF_ADDON.NiceName = "Base"
 SLIGWOLF_ADDON.Version = SligWolf_Addons.BaseApiVersion
 
-SLIGWOLF_ADDON:AddEntity("sligwolf_help", {
-	title = "SligWolf's Addons Help",
-	class = "sligwolf_help",
-	model = "models/sligwolf/base/help.mdl",
-})
-
 return true
 

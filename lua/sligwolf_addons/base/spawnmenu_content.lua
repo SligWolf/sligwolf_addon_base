@@ -1,0 +1,16 @@
+AddCSLuaFile()
+local SligWolf_Addons = SligWolf_Addons
+
+if not SLIGWOLF_ADDON then
+	SligWolf_Addons.AutoLoadAddon()
+	return
+end
+
+SLIGWOLF_ADDON:AddEntity("sligwolf_help", {
+	title = "SligWolf's Addons Help",
+	class = "sligwolf_help",
+	model = "models/sligwolf/base/help.mdl",
+})
+
+return true
+
