@@ -263,7 +263,7 @@ function LIB.WriteFGDCache()
 end
 
 function LIB.ReadFGDCache()
-	local data = LIBFile.Read(g_fgd_cache_filename, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA)
+	local data = LIBFile.Read(g_fgd_cache_filename, LIBFile.ADDON_NONE, LIBFile.REALM_DATA)
 	if not data then
 		return
 	end
@@ -381,9 +381,9 @@ function LIB.GenerateFGD(rebuildCache)
 	local fileNameGeneratedAbsolute = LIBFile.GetAbsolutePath(fileNameGenerated)
 
 	local fileNameTempate = "hammer/sligwolf_base_template.fgd.txt"
-	local fileNameTempateAbsolute = LIBFile.GetAbsolutePath(fileNameTempate, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC)
+	local fileNameTempateAbsolute = LIBFile.GetAbsolutePath(fileNameTempate, LIBFile.ADDON_NONE, LIBFile.REALM_DATA_STATIC)
 
-	local fgdContent = LIBFile.Read(fileNameTempate, LIBFile.ENUM_NO_ADDON, LIBFile.ENUM_DATA_STATIC) or ""
+	local fgdContent = LIBFile.Read(fileNameTempate, LIBFile.ADDON_NONE, LIBFile.REALM_DATA_STATIC) or ""
 	if fgdContent == "" then
 		LIBPrint.Print(
 			"Hammer.GenerateFGD: FGD template '%s' not found or empty",

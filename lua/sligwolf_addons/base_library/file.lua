@@ -5,8 +5,8 @@ end
 
 local LIB = SligWolf_Addons:NewLib("File")
 
-local g_dataDirectoryMain = "sligwolf_addons/common"
-local g_dataDirectoryAddons = "sligwolf_addons/addon"
+local g_dataDirectoryMain = "sligwolf_addons/base"
+local g_dataDirectoryAddons = "sligwolf_addons"
 
 local g_dataStaticDirectoryMain = "data_static/" .. g_dataDirectoryMain
 local g_dataStaticDirectoryAddons = "data_static/" .. g_dataDirectoryAddons
@@ -16,9 +16,9 @@ local g_dataStaticRealm = "GAME"
 
 local g_maxLogSize = 128 * 1024 * 1024 -- 128 MB
 
-LIB.ENUM_NO_ADDON = ""
-LIB.ENUM_DATA = false
-LIB.ENUM_DATA_STATIC = true
+LIB.ADDON_NONE = ""
+LIB.REALM_DATA = false
+LIB.REALM_DATA_STATIC = true
 
 local function sanitizePath(path)
 	path = string.lower(path)
@@ -97,22 +97,23 @@ function LIB.GetAbsolutePath(fileName, addon, isStatic)
 		addon = addon.Addonname
 	end
 
-	isStatic = isStatic or LIB.ENUM_DATA
+	isStatic = isStatic or LIB.REALM_DATA
 
-	addon = tostring(addon or LIB.ENUM_NO_ADDON)
+	addon = tostring(addon or "")
+
 	if addon == "" then
-		addon = nil
+		addon = LIB.ADDON_NONE
 	end
 
 	if isStatic then
-		if not addon then
+		if addon == LIB.ADDON_NONE then
 			return joinAndNormalizePaths(g_dataStaticDirectoryMain, fileName), g_dataStaticRealm
 		else
 			return joinAndNormalizePaths(g_dataStaticDirectoryAddons, addon, fileName), g_dataStaticRealm
 		end
 	end
 
-	if not addon then
+	if addon == LIB.ADDON_NONE then
 		return joinAndNormalizePaths(g_dataDirectoryMain, fileName), g_dataRealm
 	else
 		return joinAndNormalizePaths(g_dataDirectoryAddons, addon, fileName), g_dataRealm
