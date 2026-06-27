@@ -11,6 +11,7 @@ local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 local LIBPosition = SligWolf_Addons.Position
 local LIBVehicle = SligWolf_Addons.Vehicle
 local LIBPhysics = SligWolf_Addons.Physics
+local LIBString = SligWolf_Addons.String
 local LIBTimer = SligWolf_Addons.Timer
 local LIBPrint = SligWolf_Addons.Print
 local LIBUtil = SligWolf_Addons.Util
@@ -36,6 +37,7 @@ function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBPhysics = SligWolf_Addons.Physics
+	LIBString = SligWolf_Addons.String
 	LIBTimer = SligWolf_Addons.Timer
 	LIBPrint = SligWolf_Addons.Print
 	LIBUtil = SligWolf_Addons.Util
@@ -736,7 +738,7 @@ function LIB.GetName(ent)
 	if not IsValid(ent) then return end
 
 	local entTable = ent:SligWolf_GetTable()
-	local name = LIBUtil.ValidateName(entTable.Name)
+	local name = LIBString.ValidateName(entTable.Name)
 
 	if CLIENT and name == "" then
 		name = GenerateUnknownEntityName(ent)
@@ -755,7 +757,7 @@ function LIB.SetName(ent, name)
 
 	local parent = LIB.GetParent(ent)
 
-	name = LIBUtil.ValidateName(name)
+	name = LIBString.ValidateName(name)
 	if name == "" then
 		name = GenerateUnknownEntityName(ent)
 	end

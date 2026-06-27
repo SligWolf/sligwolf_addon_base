@@ -6,6 +6,7 @@ end
 local LIB = SligWolf_Addons:NewLib("Hammer")
 
 local LIBSkinsystem = SligWolf_Addons.Skinsystem
+local LIBString = SligWolf_Addons.String
 local LIBPrint = SligWolf_Addons.Print
 local LIBUtil = SligWolf_Addons.Util
 local LIBFile = SligWolf_Addons.File
@@ -465,7 +466,7 @@ function LIB.GenerateFGD(rebuildCache)
 		getSpawnnameOptionsList(vehicleTables["prop_vehicle_sligwolf_train"])
 	)
 
-	fgdContent = LIBUtil.NormalizeNewlines(fgdContent, "\r\n")
+	fgdContent = LIBString.NormalizeNewlines(fgdContent, "\r\n")
 	fgdContent = string.Replace(fgdContent, "\\t", "\t")
 
 	local success = LIBFile.Write(fileNameGenerated, fgdContent)
@@ -491,6 +492,7 @@ end
 
 function LIB.Load()
 	LIBSkinsystem = SligWolf_Addons.Skinsystem
+	LIBString = SligWolf_Addons.String
 	LIBPrint = SligWolf_Addons.Print
 	LIBUtil = SligWolf_Addons.Util
 	LIBFile = SligWolf_Addons.File

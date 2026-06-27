@@ -11,6 +11,7 @@ local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBPosition = SligWolf_Addons.Position
 local LIBPhysics = SligWolf_Addons.Physics
+local LIBString = SligWolf_Addons.String
 local LIBCamera = SligWolf_Addons.Camera
 local LIBTimer = SligWolf_Addons.Timer
 local LIBModel = SligWolf_Addons.Model
@@ -441,7 +442,7 @@ local function npcEnterVehicleInternal(vehicle, vehicleTable, npc, immediately)
 		local tmpPrefix = oldVehicleName ~= "" and oldVehicleName or "Vehicle"
 		tmpPrefix = "SligWolf_" .. tmpPrefix .. "_UniqueId"
 
-		tmpVehicleName = LIBUtil.UniqueString(tmpPrefix)
+		tmpVehicleName = LIBString.UniqueString(tmpPrefix)
 	end
 
 	vehicleTable.currentPassengerVehicleOldName = oldVehicleName
@@ -766,6 +767,7 @@ function LIB.Load()
 	LIBPosition = SligWolf_Addons.Position
 	LIBPhysics = SligWolf_Addons.Physics
 	LIBCamera = SligWolf_Addons.Camera
+	LIBString = SligWolf_Addons.String
 	LIBTimer = SligWolf_Addons.Timer
 	LIBModel = SligWolf_Addons.Model
 	LIBHook = SligWolf_Addons.Hook

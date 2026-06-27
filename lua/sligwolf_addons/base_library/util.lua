@@ -17,19 +17,6 @@ function LIB.Uid()
 	return g_uid
 end
 
-function LIB.UniqueString(prefix)
-	prefix = tostring(prefix or "")
-
-	if prefix == "" then
-		prefix = "UniqueString"
-	end
-
-	local timeHash = tonumber(util.CRC(tostring(SysTime())))
-	local uniqueString = string.format("%s-%d-%08X", prefix, LIB.Uid(), timeHash)
-
-	return uniqueString
-end
-
 local g_order = 0
 function LIB.Order()
 	g_order = (g_order + 1) % 10000000
@@ -44,13 +31,6 @@ function LIB.EmptyTableSafe(tab)
 	end
 
 	table.Empty(tab)
-end
-
-function LIB.ValidateName(name)
-	name = tostring(name or "")
-	name = string.gsub(name, "^!", "", 1)
-	name = string.gsub(name, "[\\/]", "")
-	return name
 end
 
 local g_IsValidTextureCache = {}
@@ -186,31 +166,6 @@ function LIB.SetDFrameButtonProperties(ent, posx, posy, sizex, sizey, text, cmd,
 	if ent:GetClassName() ~= "Label" then return end
 	if not isfunction(ent.SetConsoleCommand) then return end
 	ent:SetConsoleCommand("say", cmd)
-end
-
-function LIB.NormalizeNewlines(text, nl)
-	nl = tostring(nl or "")
-	text = tostring(text or "")
-
-	local replacemap = {
-		["\r\n"] = true,
-		["\r"] = true,
-		["\n"] = true,
-	}
-
-	if not replacemap[nl] then
-		nl = "\n"
-	end
-
-	replacemap[nl] = nil
-
-	for k, v in pairs(replacemap) do
-		replacemap[k] = nl
-	end
-
-	text = string.gsub(text, "([\r]?[\n]?)", replacemap)
-
-	return text
 end
 
 function LIB.IsAdmin(ply)

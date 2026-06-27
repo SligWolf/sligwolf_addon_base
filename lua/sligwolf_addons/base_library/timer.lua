@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Timer")
 
-local LIBUtil = SligWolf_Addons.Util
+local LIBString = SligWolf_Addons.String
 
 function LIB.TickTime(tickCount)
 	tickCount = math.max(tickCount or 1, 1)
@@ -160,11 +160,11 @@ function LIB.Simple(delay, func)
 	-- timer.Simple is unrelaible to always run next tick, see this:
 	-- https://github.com/Facepunch/garrysmod-issues/issues/6668
 
-	if not LIBUtil then
-		LIBUtil = SligWolf_Addons.Util
+	if not LIBString then
+		LIBString = SligWolf_Addons.String
 	end
 
-	local identifier = LIBUtil.UniqueString("_SimpleThrowAwayTimer_UniqueId")
+	local identifier = LIBString.UniqueString("_SimpleThrowAwayTimer_UniqueId")
 	LIB.Once(identifier, delay, func)
 end
 
@@ -198,7 +198,7 @@ function LIB.UnixSysTime()
 end
 
 function LIB.Load()
-	LIBUtil = SligWolf_Addons.Util
+	LIBString = SligWolf_Addons.String
 end
 
 
