@@ -292,18 +292,10 @@ function ENT:FastThink()
 	-- override me
 end
 
-function ENT:ThinkInternal() -- @TODO: Remove
-	-- override me
-end
-
 function ENT:Think()
 	BaseClass.Think(self)
 
 	local result = self:FastThink()
-
-	if not result then
-		result = self:ThinkInternal() -- @TODO: Remove
-	end
 
 	local nextSlowThink = self._nextSlowThink or 0
 	local now = CurTime()
