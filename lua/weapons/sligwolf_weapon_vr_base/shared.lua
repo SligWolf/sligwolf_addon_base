@@ -161,25 +161,9 @@ function SWEP:OnVRThink()
 	-- override me
 end
 
-function SWEP:OnDrop()
-	BaseClass.OnDrop(self)
+function SWEP:OnReset()
+	BaseClass.OnReset(self)
 	self:CallMethodWithErrorNoHalt("OnVRExit")
-
-	return true
-end
-
-function SWEP:OnRemove()
-	BaseClass.OnRemove(self)
-	self:CallMethodWithErrorNoHalt("OnVRExit")
-
-	return true
-end
-
-function SWEP:OnHolster()
-	BaseClass.Holster(self)
-	self:CallMethodWithErrorNoHalt("OnVRExit")
-
-	return true
 end
 
 function SWEP:VRPollInternal()
@@ -203,8 +187,8 @@ function SWEP:VRPollInternal()
 	end
 end
 
-function SWEP:Think()
-	BaseClass.Think(self)
+function SWEP:FastThink()
+	BaseClass.FastThink(self)
 
 	self:VRPollInternal()
 end
