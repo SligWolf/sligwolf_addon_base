@@ -84,7 +84,10 @@ end
 
 function SWEP:OnEquip()
 	-- Override me
-	return true
+end
+
+function SWEP:OnUnwield()
+	-- Override me
 end
 
 function SWEP:SetupDataTables()
@@ -121,6 +124,15 @@ function SWEP:Equip(...)
 	self:ResetOnClient()
 
 	self:OnEquip(...)
+end
+
+function SWEP:OnDrop(...)
+	BaseClass.OnDrop(self, ...)
+
+	self:Reset()
+	self:ResetOnClient()
+
+	self:OnUnwield(...)
 end
 
 function SWEP:OnReloaded()
