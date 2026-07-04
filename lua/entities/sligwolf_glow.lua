@@ -176,7 +176,7 @@ function ENT:Debug(color)
 	LIBDebug.ResetLifetime()
 end
 
-function ENT:DrawGlow(pixVis, pos, ang, size, enlarge, count, col, AlphaReduce, matLight)
+function ENT:DrawGlow(pixVisObj, pos, ang, size, enlarge, count, col, AlphaReduce, matLight)
 	size = size or S_Size
 	enlarge = enlarge or S_Enlarge
 	count = count or S_Count
@@ -205,7 +205,7 @@ function ENT:DrawGlow(pixVis, pos, ang, size, enlarge, count, col, AlphaReduce, 
 		return
 	end
 
-	local Visibile = util.PixelVisible(pos, 4, pixVis) or 0
+	local Visibile = util.PixelVisible(pos, 4, pixVisObj) or 0
 
 	if Visibile < 0.1 then return end
 	local Vis = Visibile * ViewDot
@@ -268,13 +268,13 @@ function ENT:DrawTranslucent(flags)
 		pos = self:LocalToWorld(pos)
 		ang = self:LocalToWorldAngles(ang)
 
-		local pixVis = pixVisTable[i]
-		if not pixVis then
-			pixVis = util.GetPixelVisibleHandle()
-			pixVisTable[i] = pixVis
+		local pixVisObj = pixVisTable[i]
+		if not pixVisObj then
+			pixVisObj = util.GetPixelVisibleHandle()
+			pixVisTable[i] = pixVisObj
 		end
 
-		self:DrawGlow(pixVis, pos, ang, Size, Enlarge, Count, Col, AlphaReduce, LightMat)
+		self:DrawGlow(pixVisObj, pos, ang, Size, Enlarge, Count, Col, AlphaReduce, LightMat)
 	end
 end
 

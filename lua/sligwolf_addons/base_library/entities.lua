@@ -776,6 +776,10 @@ function LIB.IsSpawnSystemFinished(ent)
 		return false
 	end
 
+	if not ent.sligwolf_entity then
+		return true
+	end
+
 	local root = LIB.GetSuperParent(ent)
 	if LIB.IsMarkedForDeletion(root) then
 		return false
