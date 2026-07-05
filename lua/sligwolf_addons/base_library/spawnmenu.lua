@@ -809,11 +809,14 @@ function LIB.AddProp(addonname, model, obj)
 
 	obj = obj or {}
 
+	local category = LIBEntities.SPAWN_CATEGORY_PROP
+
 	g_PropOrder = (g_PropOrder % 1000000) + 1
 
 	if not obj.hidden then
 		AddSpawnMenuItem(
 			addonname,
+			category,
 			{
 				id = model,
 				order = obj.order or g_PropOrder * 100,

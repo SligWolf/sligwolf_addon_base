@@ -16,6 +16,7 @@ local LIBTimer = SligWolf_Addons.Timer
 local LIBPrint = SligWolf_Addons.Print
 local LIBUtil = SligWolf_Addons.Util
 
+LIB.SPAWN_CATEGORY_PROP = "prop"
 LIB.SPAWN_CATEGORY_ENTITY = "entity"
 LIB.SPAWN_CATEGORY_WEAPON = "weapon"
 LIB.SPAWN_CATEGORY_NPC = "npc"
