@@ -5,6 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Spawnmenu")
 
+local LIBSkinsystem = SligWolf_Addons.Skinsystem
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPrint = SligWolf_Addons.Print
 local LIBTimer = SligWolf_Addons.Timer
@@ -813,7 +814,6 @@ function LIB.AddProp(addonname, model, obj)
 	if not obj.hidden then
 		AddSpawnMenuItem(
 			addonname,
-			"prop",
 			{
 				id = model,
 				order = obj.order or g_PropOrder * 100,
@@ -974,7 +974,6 @@ function LIB.AddEntity(addonname, spawnname, obj)
 					title = obj.title or spawnname,
 					spawnName = spawnname,
 					adminOnly = obj.adminOnly or false,
-					icon = obj.icon,
 				}
 			}
 		)
@@ -1072,7 +1071,6 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 					title = obj.title or spawnname,
 					spawnName = spawnname,
 					adminOnly = obj.adminOnly or false,
-					icon = obj.icon,
 				}
 			}
 		)
@@ -1192,7 +1190,6 @@ function LIB.AddNPC(addonname, spawnname, obj)
 					title = obj.title or spawnname,
 					spawnName = spawnname,
 					adminOnly = obj.adminOnly or false,
-					icon = obj.icon,
 					weapons = obj.weapons,
 				}
 			}
@@ -1296,7 +1293,6 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 					title = obj.title or spawnname,
 					spawnName = spawnname,
 					adminOnly = obj.adminOnly or false,
-					icon = obj.icon,
 				}
 			}
 		)
@@ -1379,6 +1375,80 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	vehicleListItem.SLIGWOLF_Custom = table.Copy(obj.customProperties or {})
 
 	list.Set("Vehicles", spawnname, vehicleListItem)
+end
+
+function LIB.GetIconPath(spawnname, themename)
+	spawnname = tostring(spawnname or "")
+	themename = tostring(themename or "")
+
+	if spawnname == "" then
+		return
+	end
+
+	if themename == "" then
+		themename = LIBSkinsystem.THEME_DEFAULT
+	end
+
+	local iconFileDefault = string.format("materials/entities/%s.png", spawnname)
+	local iconFile = iconFileDefault
+
+	if themename ~= LIBSkinsystem.THEME_DEFAULT then
+		-- @TODO: Finalize standards for icon theme paths
+		iconFile = string.format("materials/entities/%s_%s.png", spawnname, themename)
+	end
+
+	return iconFile, iconFileDefault
+end
+
+local function ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, category)
+	local addon = SligWolf_Addons.GetAddon(addonname)
+	if not addon then
+		return
+	end
+
+	propPanel.Think = function(this)
+		local themename = addon:SkinGetSelectedThemeName(LocalPlayer(), category)
+		local themeconfig = addon:SkinGetThemeConfig(category, themename, false)
+
+		if themeconfig.isDefault then
+			themename = LIBSkinsystem.THEME_DEFAULT
+		elseif themeconfig.isRandom then
+			themename = LIBSkinsystem.THEME_RANDOM
+		elseif themeconfig.isPlayerColored then
+			themename = LIBSkinsystem.THEME_PLAYER
+		else
+			themename = themeconfig.name
+		end
+
+		local oldThemename = this._oldThemename
+		this._oldThemename = themename
+
+		if oldThemename and oldThemename == themename then
+			return
+		end
+
+		local contentPanels = this.IconList:GetChildren()
+
+		for _, contentPanel in ipairs(contentPanels) do
+			if not IsValid(contentPanel) then
+				continue
+			end
+
+			if contentPanel:GetName() ~= "ContentIcon" then
+				continue
+			end
+
+			local spawnname = contentPanel:GetSpawnName() or ""
+			if spawnname == "" then
+				continue
+			end
+
+			local iconFile, iconFileDefault = LIB.GetIconPath(spawnname, themename)
+			local mat = LIBUtil.LoadPngMaterial(iconFile, "", iconFileDefault)
+
+			contentPanel.Image:SetMaterial(mat)
+		end
+	end
 end
 
 local function AddColorSkinPicker(propPanel, addonname, category)
@@ -1484,6 +1554,8 @@ local function AddColorSkinPicker(propPanel, addonname, category)
 		surface.DrawRect(lineX, lineY2, lineW, lineH)
 	end
 
+	ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, category)
+
 	propPanel:InvalidateLayout()
 end
 
@@ -1556,6 +1628,7 @@ function LIB.InitSpawnmenuContent()
 end
 
 function LIB.Load()
+	LIBSkinsystem = SligWolf_Addons.Skinsystem
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPrint = SligWolf_Addons.Print
 	LIBTimer = SligWolf_Addons.Timer
@@ -1592,10 +1665,12 @@ function LIB.Load()
 			"entity",
 			"icon16/bricks.png",
 			function(node, propPanel, item)
+				local icon = LIB.GetIconPath(item.spawnName)
+
 				spawnmenu.CreateContentIcon("entity", propPanel, {
 					nicename = item.title,
 					spawnname = item.spawnName,
-					material = item.icon or "entities/" .. item.spawnName .. ".png",
+					material = icon,
 					admin = item.adminOnly
 				})
 
@@ -1616,10 +1691,12 @@ function LIB.Load()
 			"weapon",
 			"icon16/gun.png",
 			function(node, propPanel, item)
+				local icon = LIB.GetIconPath(item.spawnName)
+
 				spawnmenu.CreateContentIcon("weapon", propPanel, {
 					nicename = item.title,
 					spawnname = item.spawnName,
-					material = item.icon or "entities/" .. item.spawnName .. ".png",
+					material = icon,
 					admin = item.adminOnly
 				})
 
@@ -1640,10 +1717,12 @@ function LIB.Load()
 			"npc",
 			"icon16/monkey.png",
 			function(node, propPanel, item)
+				local icon = LIB.GetIconPath(item.spawnName)
+
 				spawnmenu.CreateContentIcon("npc", propPanel, {
 					nicename = item.title,
 					spawnname = item.spawnName,
-					material = item.icon or "entities/" .. item.spawnName .. ".png",
+					material = icon,
 					admin = item.adminOnly,
 					weapon = item.weapons,
 				})
@@ -1665,24 +1744,14 @@ function LIB.Load()
 			"vehicle",
 			"icon16/car.png",
 			function(node, propPanel, item)
-				-- local trainOptions = item.trainOptions
+				local icon = LIB.GetIconPath(item.spawnName)
 
-				-- if trainOptions then
-					-- spawnmenu.CreateContentIcon("sligwolf_train", propPanel, {
-					-- 	nicename = item.title,
-					-- 	spawnname = item.spawnName,
-					-- 	material = item.icon or "entities/" .. item.spawnName .. ".png",
-					-- 	admin = item.adminOnly,
-					-- 	trainOptions = trainOptions,
-					-- })
-				-- else
-					spawnmenu.CreateContentIcon("vehicle", propPanel, {
-						nicename = item.title,
-						spawnname = item.spawnName,
-						material = item.icon or "entities/" .. item.spawnName .. ".png",
-						admin = item.adminOnly,
-					})
-				-- end
+				spawnmenu.CreateContentIcon("vehicle", propPanel, {
+					nicename = item.title,
+					spawnname = item.spawnName,
+					material = icon,
+					admin = item.adminOnly,
+				})
 
 				RequestAddColorSkinPicker(propPanel, item.addonName, "vehicle")
 			end
