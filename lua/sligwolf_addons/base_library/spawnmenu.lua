@@ -1432,24 +1432,32 @@ local function ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, c
 
 		local contentPanels = this.IconList:GetChildren()
 
-		for _, contentPanel in ipairs(contentPanels) do
-			if not IsValid(contentPanel) then
+		for _, contentIconPanel in ipairs(contentPanels) do
+			if not IsValid(contentIconPanel) then
 				continue
 			end
 
-			if contentPanel:GetName() ~= "ContentIcon" then
+			if contentIconPanel:GetName() ~= "ContentIcon" then
 				continue
 			end
 
-			local spawnname = contentPanel:GetSpawnName() or ""
+			local spawnname = contentIconPanel:GetSpawnName() or ""
 			if spawnname == "" then
+				continue
+			end
+
+			local spawntable = LIBEntities.GetSpawntableByName(category, spawnname)
+			local supportsThemes = addon:SkinGetCategoryAndMapNameFromSpawntable(spawntable)
+
+			if not supportsThemes then
+				-- Don't mess with buttons that will never have themes
 				continue
 			end
 
 			local iconFile, iconFileDefault = LIB.GetIconPath(spawnname, themename)
 			local mat = LIBUtil.LoadPngMaterial(iconFile, "", iconFileDefault)
 
-			contentPanel.Image:SetMaterial(mat)
+			contentIconPanel.Image:SetMaterial(mat)
 		end
 	end
 end
