@@ -594,6 +594,49 @@ function LIB.CreateEntityLookup(name, idGetterFunc)
 	return lookup
 end
 
+function LIB.IsHostPlayer(ply)
+	if not IsValid(ply) then
+		return false
+	end
+
+	if not ply:IsPlayer() then
+		return false
+	end
+
+	if ply:IsBot() then
+		return false
+	end
+
+	if not ply:IsAdmin() then
+		return false
+	end
+
+	if ply:IsListenServerHost() then
+		return true
+	end
+end
+
+local g_hostPlayer = nil
+
+function LIB.GetHostPlayer()
+	if LIB.IsHostPlayer(g_hostPlayer) then
+		return g_hostPlayer
+	end
+
+	g_hostPlayer = nil
+
+	for _, ply in player.Iterator() do
+		if not LIB.IsHostPlayer(ply) then
+			continue
+		end
+
+		g_hostPlayer = ply
+		return g_hostPlayer
+	end
+
+	return nil
+end
+
 local g_failbackPlayer = nil
 
 function LIB.GetFailbackPlayer()
@@ -640,7 +683,6 @@ end
 function LIB.InvalidateFailbackPlayer()
 	g_failbackPlayer = nil
 end
-
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
