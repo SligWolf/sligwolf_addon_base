@@ -20,18 +20,36 @@ LIB.ADDON_NONE = ""
 LIB.REALM_DATA = false
 LIB.REALM_DATA_STATIC = true
 
-local function sanitizePath(path)
+local function sanitizePathString(path)
+	path = tostring(path or "")
+	if path == "" then
+		return ""
+	end
+
+	-- Lowercase and trim
 	path = string.lower(path)
 	path = string.Trim(path)
 
-	-- Prevent navigation (../)
-	path = string.gsub(path, "%.%.%/" , "")
-	path = string.gsub(path, "%.%/" , "")
+	-- Remove control characters first (prevents pattern interference)
+	path = string.gsub(path, "%c", "")
 
-	-- Keep the Path clean from any weird chars
-	path = string.gsub(path, "%s+" , "_")
-	path = string.gsub(path, "%c+" , "")
-	path = string.gsub(path, "[^%w_%-%.%/]" , "-")
+	-- Replace whitespace sequences with underscores
+	path = string.gsub(path, "%s+", "_")
+
+	-- Normalize slashes
+	path = string.gsub(path, "[/\\]+", "/")
+
+	-- Replace invalid characters with hyphens
+	-- Allowed: a-z, 0-9, _, -, ., /
+	path = string.gsub(path, "[^a-z0-9_./-]", "-")
+
+	-- Remove leading/trailing slashes
+	path = string.gsub(path, "^%/", "")
+	path = string.gsub(path, "%/$", "")
+
+	-- Collapse consecutive hyphens/underscores
+	path = string.gsub(path, "%-+", "-")
+	path = string.gsub(path, "_+", "_")
 
 	return path
 end
@@ -40,34 +58,26 @@ local function joinAndNormalizePathsArray(paths)
 	local tmp = {}
 
 	for _, path in ipairs(paths) do
-		path = tostring(path or "")
+		path = sanitizePathString(path)
 
 		if path == "" then
 			continue
 		end
 
-		if path == "." then
-			continue
-		end
-
-		if path == ".." then
-			continue
-		end
-
-		local subpaths = string.Explode("[%/%\\]+", path, true)
+		local subpaths = string.Explode("/", path)
 
 		for _, subpath in ipairs(subpaths) do
-			subpath = tostring(subpath or "")
+			subpath = sanitizePathString(subpath)
 
 			if subpath == "" then
 				continue
 			end
 
-			if path == "." then
+			if subpath == "." then
 				continue
 			end
 
-			if path == ".." then
+			if subpath == ".." then
 				continue
 			end
 
@@ -76,13 +86,19 @@ local function joinAndNormalizePathsArray(paths)
 	end
 
 	local path = table.concat(tmp, "/")
-	path = sanitizePath(path)
-
 	return path
 end
 
 local function joinAndNormalizePaths(...)
 	return joinAndNormalizePathsArray({...})
+end
+
+function LIB.Join(a, ...)
+	if istable(a) then
+		return joinAndNormalizePathsArray(a)
+	end
+
+	return joinAndNormalizePaths(a, ...)
 end
 
 function LIB.GetAbsolutePath(fileName, addon, isStatic)
