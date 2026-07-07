@@ -5,6 +5,8 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Entities")
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBConstraints = SligWolf_Addons.Constraints
 local LIBProtection = SligWolf_Addons.Protection
 local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
@@ -47,8 +49,13 @@ end
 local function getCache(ent)
 	local entTable = ent:SligWolf_GetTable()
 
-	local entCache = entTable.EntCache or {}
-	entTable.EntCache = entCache
+	local entCache = entTable._entCache
+
+	if not entCache or not entCache.alive then
+		entCache = {}
+		entCache.alive = CONSTANTS.unstoredTrue
+		entTable._entCache = entCache
+	end
 
 	local parents = entCache.parents or {}
 	entCache.parents = parents

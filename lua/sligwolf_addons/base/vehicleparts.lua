@@ -746,17 +746,6 @@ function SLIGWOLF_ADDON:SetUpVehiclePart(parent, component, dtr, ply, superparen
 
 	if IsValid(preExistingPart) then
 		-- Entity already exists from engine savegame
-		if IsValid(superparent) then
-			local superparentEntTable = superparent:SligWolf_GetTable()
-			superparentEntTable.isDoneSpawningParts = nil
-			superparentEntTable.isSpawningParts = nil
-			superparentEntTable.wasHandleSpawnFinishedEventRequested = nil
-		end
-
-		local preExistingPartEntTable = preExistingPart:SligWolf_GetTable()
-		preExistingPartEntTable.isDoneSpawningParts = nil
-		preExistingPartEntTable.isSpawningParts = nil
-		preExistingPartEntTable.wasHandleSpawnFinishedEventRequested = nil
 
 		LIBTimer.SimpleNextFrame(function()
 			nextStep(preExistingPart)

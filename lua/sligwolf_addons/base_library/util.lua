@@ -282,7 +282,6 @@ function LIB.DeduplicateTable(array)
 	return result
 end
 
-
 function LIB.FlashWindow()
 	-- This helps detecting load time behavour if the game is unfocused.
 	-- This is only active if the code has been reloaded.

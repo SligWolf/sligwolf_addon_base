@@ -10,6 +10,8 @@ if not SLIGWOLF_ADDON then
 	return
 end
 
+local CONSTANTS = SligWolf_Addons.Constants
+
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBEntities = SligWolf_Addons.Entities
 local LIBHook = SligWolf_Addons.Hook
@@ -101,10 +103,6 @@ function SLIGWOLF_ADDON:ForEachInEntList(name, func)
 end
 
 function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(ent, callNow)
-	if not IsValid(ent) then
-		return
-	end
-
 	if LIBEntities.IsMarkedForDeletion(ent) then
 		return
 	end
@@ -114,7 +112,7 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(ent, callNow)
 		return
 	end
 
-	entTable.wasHandleSpawnFinishedEventRequested = true
+	entTable.wasHandleSpawnFinishedEventRequested = CONSTANTS.unstoredTrue
 
 	local request = function(thisEnt)
 		if LIBEntities.IsMarkedForDeletion(thisEnt) then
@@ -182,11 +180,11 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEventInternal(superparent)
 
 		self:EntityTimerRemove(superparent, timernameEventTimeout)
 
-		superparentEntTable.isDoneSpawningParts = true
+		superparentEntTable.isDoneSpawningParts = CONSTANTS.unstoredTrue
 	end)
 
 	if not superparentEntTable.isSpawningParts then
-		superparentEntTable.isSpawningParts = true
+		superparentEntTable.isSpawningParts = CONSTANTS.unstoredTrue
 
 		self:EntityTimerOnce(superparent, timernameEventTimeout, 2, function()
 			if LIBEntities.IsMarkedForDeletion(superparent) then
