@@ -13,6 +13,7 @@ end
 local LIBSkinsystem = SligWolf_Addons.Skinsystem
 local LIBEntities = SligWolf_Addons.Entities
 local LIBConvar = SligWolf_Addons.Convar
+local LIBPlayer = SligWolf_Addons.Player
 local LIBPrint = SligWolf_Addons.Print
 local LIBUtil = SligWolf_Addons.Util
 
@@ -28,9 +29,16 @@ SLIGWOLF_ADDON.g_skinThemeConfigsPlayerColored = {}
 
 local g_skinParamKeys = LIBSkinsystem.g_skinParamKeys
 
-function SLIGWOLF_ADDON:SkinGetConvarName(category)
+function SLIGWOLF_ADDON:SkinGetConvarNameAndDefault(category)
+	local defaultThemeConfig = self:SkinGetDefaultThemeConfig(category)
+	if not defaultThemeConfig then
+		return nil
+	end
+
 	local convarName = string.format("cl_sligwolf_%s_theme_%s", self.Addonname, category)
-	return convarName
+	local defaultThemeName = defaultThemeConfig.name
+
+	return convarName, defaultThemeName
 end
 
 function SLIGWOLF_ADDON:SkinAddConvar(category)
@@ -38,36 +46,44 @@ function SLIGWOLF_ADDON:SkinAddConvar(category)
 		return nil
 	end
 
-	local defaultThemeConfig = self:SkinGetDefaultThemeConfig(category)
-	if not defaultThemeConfig then
+	if self.SkinConvar then
+		return self.SkinConvar
+	end
+
+	self.SkinConvar = nil
+
+	local convarName, defaultThemeName = self:SkinGetConvarNameAndDefault(category)
+	if not convarName or not defaultThemeName then
 		return nil
 	end
 
-	local defaultThemeName = defaultThemeConfig.name
-	local convarName = self:SkinGetConvarName(category)
-	local help = string.format("Set the color theme for the next spawned object for category '%s' in addon '%s'", category, self.Addonname)
+	local help = string.format(
+		"Set the color theme for the next spawned object for category \x04'%s'\x03 in addon \x04'%s'\x03",
+		category,
+		self.Addonname
+	)
 
-	LIBConvar.AddClientConvar(convarName, {
+	local convar = LIBConvar.AddClientConvar(convarName, {
 		default = defaultThemeName,
 		shouldsave = true,
 		userinfo = true,
 		help = help,
 	})
 
-	return convarName
+	self.SkinConvar = convar
+	return convar
 end
 
 function SLIGWOLF_ADDON:SkinGetSelectedThemeName(ply, category)
+	local convarName, defaultThemeName = self:SkinGetConvarNameAndDefault(category)
+	if not convarName or not defaultThemeName then
+		return nil
+	end
+
 	if not IsValid(ply) and CLIENT then
 		ply = LocalPlayer()
 	end
 
-	local defaultThemeConfig = self:SkinGetDefaultThemeConfig(category)
-	if not defaultThemeConfig then
-		return nil
-	end
-
-	local defaultThemeName = defaultThemeConfig.name
 	if not IsValid(ply) then
 		return defaultThemeName
 	end
@@ -80,7 +96,6 @@ function SLIGWOLF_ADDON:SkinGetSelectedThemeName(ply, category)
 		return defaultThemeName
 	end
 
-	local convarName = self:SkinGetConvarName(category)
 	local themeName = ply:GetInfo(convarName)
 
 	themeName = self:SkinNormalizeThemeName(category, themeName)
@@ -163,7 +178,7 @@ function SLIGWOLF_ADDON:GetThemeNameFromKeyValue(category, keyValue)
 	end
 
 	if keyValue == LIBSkinsystem.THEME_PLAYER then
-		if not IsValid(LIBUtil.GetFailbackPlayer()) then
+		if not IsValid(LIBPlayer.GetFailbackPlayer()) then
 			return defaultThemeName
 		end
 
@@ -397,6 +412,8 @@ function SLIGWOLF_ADDON:SkinAddThemeConfig(category, name, config)
 
 	self.g_skinThemeConfigsOrdered[category] = {}
 	self.g_skinThemeConfigsForRandom[category] = {}
+
+	self:SkinAddConvar(category)
 end
 
 function SLIGWOLF_ADDON:SkinGetThemeConfig(category, name, resolveRandom)
@@ -495,6 +512,7 @@ function SLIGWOLF_ADDON:SkinGetDefaultThemeConfig(category)
 		return nil
 	end
 
+	-- Pick first item as default in this failback
 	for i, themeConfig in ipairs(themeConfigs) do
 		self.g_skinThemeConfigsDefaults[category] = themeConfig
 		themeConfig.isDefault = true

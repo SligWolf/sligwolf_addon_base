@@ -43,6 +43,8 @@ SligWolf_Addons.FirstFrameRendered = false
 
 SligWolf_Addons.AddCSLuaFile("sligwolf_addons/base_library/baseobject.lua")
 
+-- This is the load order of the library files
+
 loadLib("constants")
 loadLib("print")
 loadLib("help")
@@ -52,6 +54,7 @@ loadLib("detours")
 loadLib("timer")
 loadLib("debug")
 loadLib("util")
+loadLib("player")
 loadLib("string")
 loadLib("file")
 loadLib("base")

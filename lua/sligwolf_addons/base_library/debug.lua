@@ -8,6 +8,7 @@ local LIB = SligWolf_Addons:NewLib("Debug")
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBPlayer = SligWolf_Addons.Player
 local LIBConvar = SligWolf_Addons.Convar
 local LIBPrint = SligWolf_Addons.Print
 
@@ -77,7 +78,7 @@ function LIB.IsDeveloper()
 		return false
 	end
 
-	if not LIB.GetDebugPlayer() then
+	if not IsValid(LIBPlayer.GetHostPlayer()) then
 		return false
 	end
 
@@ -102,53 +103,16 @@ function LIB.GetDebugTraceEnabled()
 	return g_debugTraceEnabled
 end
 
-function LIB.IsValidDebugPlayer(ply)
-	if not IsValid(ply) then
-		return false
-	end
-
-	if ply:IsBot() then
-		return false
-	end
-
-	if not ply:IsListenServerHost() then
-		return false
-	end
-
-	if not ply:IsSuperAdmin() then
-		return false
-	end
-
-	return true
-end
-
-local g_debugPlayer = nil
-
-function LIB.GetDebugPlayer()
-	if LIB.IsValidDebugPlayer(g_debugPlayer) then
-		return g_debugPlayer
-	end
-
-	g_debugPlayer = nil
-
-	for _, ply in player.Iterator() do
-		if not LIB.IsValidDebugPlayer(ply) then
-			continue
-		end
-
-		g_debugPlayer = ply
-		return g_debugPlayer
-	end
-
-	return nil
-end
-
 function LIB.CanDraw(pos)
 	if not LIB.IsDeveloper() then
 		return false
 	end
 
-	local ply = LIB.GetDebugPlayer()
+	local ply = LIBPlayer.GetHostPlayer()
+	if not IsValid(ply) then
+		return false
+	end
+
 	if ply:GetPos():DistToSqr(pos) > LIB.DEBUG_MAXDRAW_DISTANCE_SQR then
 	 	return false
 	end
@@ -999,23 +963,29 @@ end
 
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
-	LIBTrace = SligWolf_Addons.Trace
+	LIBPlayer = SligWolf_Addons.Player
 	LIBConvar = SligWolf_Addons.Convar
 	LIBPrint = SligWolf_Addons.Print
-	LIBTimer = SligWolf_Addons.Timer
 
 	LIBConvar.AddConvar("sv_sligwolf_base_debug_mode", {
 		default = LIB.ENUM_DEBUG_MODE_DISABLED,
 		flags = bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL, FCVAR_REPLICATED),
-		help = "Sets the debug mode. This requires 'developer 1' or above. 0 = Disabled, 1 = Shared, 2 = Server only, 2 = Client only, Default: 0",
 		min = 0,
 		max = 3,
+
+		help = "Sets the debug mode. This requires \x04'developer 1'\x03 or above.",
+		helpOptions = {
+			{0, "Disabled"},
+			{1, "Shared"},
+			{2, "Server only"},
+			{3, "Client only"},
+		},
 	})
 
 	LIBConvar.AddConvar("sv_sligwolf_base_debug_trace_enable", {
 		default = true,
 		flags = bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL, FCVAR_REPLICATED),
-		help = "Enable drawing tracer debugging. This requires 'developer 1' or above. 0 = Disabled, 1 = Enabled, Default: 1",
+		help = "Enable drawing tracer debugging. This requires \x04'developer 1'\x03 or above.",
 	})
 
 	LIBConvar.AddVarModifier("developer", function(var)

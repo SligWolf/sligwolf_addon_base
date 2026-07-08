@@ -226,7 +226,6 @@ function LIB.SetModel(ent, path, fallbackPath)
 	local onModelChange = ent.OnModelChange
 
 	if isfunction(onModelChange) then
-		-- @TODO: Call in one-tick timer?
 		onModelChange(ent, model, oldModel, valid)
 	end
 

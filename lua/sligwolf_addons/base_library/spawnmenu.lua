@@ -1482,14 +1482,14 @@ local function AddColorSkinPicker(propPanel, addonname, category)
 		return
 	end
 
-	local convar = addon:SkinAddConvar(category)
-	if not convar then
+	local convarName, defaultThemeName = addon:SkinGetConvarNameAndDefault(category)
+	if not convarName or not defaultThemeName then
 		return
 	end
 
 	local colorSkinPicker = vgui.Create("SligWolf_ColorSkinPicker")
 
-	colorSkinPicker:SetConVar(convar)
+	colorSkinPicker:SetConVar(convarName)
 
 	for i, themeConfig in ipairs(themeConfigs) do
 		local name = themeConfig.name
@@ -1503,10 +1503,7 @@ local function AddColorSkinPicker(propPanel, addonname, category)
 
 	local selected = colorSkinPicker:GetSelected()
 	if selected == "" then
-		local defaultThemeConfig = addon:SkinGetDefaultThemeConfig(category)
-		if defaultThemeConfig then
-			colorSkinPicker:SetSelected(defaultThemeConfig.name)
-		end
+		colorSkinPicker:SetSelected(defaultThemeName)
 	end
 
 	containerDivider:SetBottom(colorSkinPicker)

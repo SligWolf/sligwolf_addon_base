@@ -29,6 +29,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBSpamprotection = SligWolf_Addons.Spamprotection
 local LIBDuplicator = SligWolf_Addons.Duplicator
+local LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 local LIBPosition = SligWolf_Addons.Position
 local LIBEntities = SligWolf_Addons.Entities
 local LIBSourceIO = SligWolf_Addons.SourceIO

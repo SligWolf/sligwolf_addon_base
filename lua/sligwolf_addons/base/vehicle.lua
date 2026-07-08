@@ -24,6 +24,7 @@ local LIBPhysics = SligWolf_Addons.Physics
 local LIBTrace = SligWolf_Addons.Trace
 local LIBDebug = SligWolf_Addons.Debug
 local LIBPrint = SligWolf_Addons.Print
+local LIBTimer = SligWolf_Addons.Timer
 local LIBRail = SligWolf_Addons.Rail
 
 local g_spawnOffsetMx = Matrix()

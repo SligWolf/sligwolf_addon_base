@@ -760,7 +760,6 @@ end
 
 function LIB.Load()
 	LIBConstraints = SligWolf_Addons.Constraints
-	LIBSpawnmenu = SligWolf_Addons.Spawnmenu
 	LIBCoupling = SligWolf_Addons.Coupling
 	LIBEntities = SligWolf_Addons.Entities
 	LIBSourceIO = SligWolf_Addons.SourceIO

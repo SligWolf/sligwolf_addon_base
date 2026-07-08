@@ -10,7 +10,7 @@ local CONSTANTS = SligWolf_Addons.Constants
 local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBSourceIO = SligWolf_Addons.SourceIO
 local LIBEntities = SligWolf_Addons.Entities
-local LIBUtil = SligWolf_Addons.Util
+local LIBPlayer = SligWolf_Addons.Player
 local LIBHook = SligWolf_Addons.Hook
 
 LIB.g_skinParamKeys = {
@@ -100,7 +100,7 @@ end
 
 function LIB.GetColorPlayer(ent)
 	if not IsValid(ent) then
-		return LIBUtil.GetFailbackPlayer()
+		return LIBPlayer.GetFailbackPlayer()
 	end
 
 	if ent:IsPlayer() then
@@ -109,7 +109,7 @@ function LIB.GetColorPlayer(ent)
 
 	local ply = LIBEntities.GetOwner(ent)
 	if not IsValid(ply) then
-		return LIBUtil.GetFailbackPlayer()
+		return LIBPlayer.GetFailbackPlayer()
 	end
 
 	return ply
@@ -119,8 +119,7 @@ function LIB.Load()
 	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
 	LIBSourceIO = SligWolf_Addons.SourceIO
-	LIBTimer = SligWolf_Addons.Timer
-	LIBUtil = SligWolf_Addons.Util
+	LIBPlayer = SligWolf_Addons.Player
 	LIBHook = SligWolf_Addons.Hook
 
 	LIB.AddSkinMetaFunction(LIB.KEY_ALL, "", function()

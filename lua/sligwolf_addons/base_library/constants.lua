@@ -120,7 +120,7 @@ CONSTANTS.matPngRandomWhiteTransparent = "materials/vgui/sligwolf/base/spawnmenu
 -- special
 CONSTANTS.toolRubatsEasyInspector = "rb655_easy_inspector"
 
--- anti savegame, this will not survive saves/dupe
+-- anti savegame, this will not survive engine-saves
 CONSTANTS.unstoredTrue = CONSTANTS.unstoredTrue or function() return true end
 
 return true

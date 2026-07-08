@@ -6,6 +6,7 @@ end
 local LIB = SligWolf_Addons:NewLib("Hammer")
 
 local LIBSkinsystem = SligWolf_Addons.Skinsystem
+local LIBConvar = SligWolf_Addons.Convar
 local LIBString = SligWolf_Addons.String
 local LIBPrint = SligWolf_Addons.Print
 local LIBUtil = SligWolf_Addons.Util
@@ -479,19 +480,26 @@ function LIB.GenerateFGD(rebuildCache)
 end
 
 if SERVER then
-	concommand.Add("sv_sligwolf_base_hammer_generate_fgd", function(ply, cmd, args)
-		if not LIBUtil.IsAdminForCMD(ply) then
-			return
-		end
+	LIBConvar.AddCommand("sv_sligwolf_base_hammer_generate_fgd", {
+		flags = bit.bor(FCVAR_DONTRECORD, FCVAR_GAMEDLL),
+		role = LIBConvar.ROLE_ADMIN,
 
-		local rebuildCache = tobool(args[1])
+		callback = function(ply, cmd, args)
+			local rebuildCache = tobool(args[1])
+			LIB.GenerateFGD(rebuildCache)
+		end,
 
-		LIB.GenerateFGD(rebuildCache)
-	end)
+		help = "Rebuild Hammer FGD file.",
+		helpOptions = {
+			{0, "Without rebuilding cache"},
+			{1, "With rebuilding cache"},
+		},
+	})
 end
 
 function LIB.Load()
 	LIBSkinsystem = SligWolf_Addons.Skinsystem
+	LIBConvar = SligWolf_Addons.Convar
 	LIBString = SligWolf_Addons.String
 	LIBPrint = SligWolf_Addons.Print
 	LIBUtil = SligWolf_Addons.Util

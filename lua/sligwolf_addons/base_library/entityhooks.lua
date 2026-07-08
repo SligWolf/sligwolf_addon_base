@@ -154,11 +154,9 @@ function LIB.Load()
 	LIBSpamprotection = SligWolf_Addons.Spamprotection
 	LIBDuplicator = SligWolf_Addons.Duplicator
 	LIBEntities = SligWolf_Addons.Entities
-	LIBPhysics = SligWolf_Addons.Physics
 	LIBSourceIO = SligWolf_Addons.SourceIO
 	LIBVehicle = SligWolf_Addons.Vehicle
 	LIBHook = SligWolf_Addons.Hook
-	LIBUtil = SligWolf_Addons.Util
 
 	LIB.ListenToKeyValueForClasses({
 		"prop_vehicle_airboat",

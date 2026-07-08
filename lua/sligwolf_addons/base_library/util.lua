@@ -9,7 +9,6 @@ local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
 local LIBTimer = SligWolf_Addons.Timer
-local LIBHook = SligWolf_Addons.Hook
 
 local g_uid = 0
 function LIB.Uid()
@@ -166,34 +165,6 @@ function LIB.SetDFrameButtonProperties(ent, posx, posy, sizex, sizey, text, cmd,
 	if ent:GetClassName() ~= "Label" then return end
 	if not isfunction(ent.SetConsoleCommand) then return end
 	ent:SetConsoleCommand("say", cmd)
-end
-
-function LIB.IsAdmin(ply)
-	if CLIENT and not IsValid(ply) then
-		ply = LocalPlayer()
-	end
-
-	if not IsValid(ply) then
-		return false
-	end
-
-	if not ply:IsAdmin() then
-		return false
-	end
-
-	return true
-end
-
-function LIB.IsAdminForCMD(ply)
-	if not IsValid(ply) then
-		return true
-	end
-
-	if not LIB.IsAdmin(ply) then
-		return false
-	end
-
-	return true
 end
 
 function LIB.GameIsPaused()
@@ -593,105 +564,10 @@ function LIB.CreateEntityLookup(name, idGetterFunc)
 	return lookup
 end
 
-function LIB.IsHostPlayer(ply)
-	if not IsValid(ply) then
-		return false
-	end
-
-	if not ply:IsPlayer() then
-		return false
-	end
-
-	if ply:IsBot() then
-		return false
-	end
-
-	if not ply:IsAdmin() then
-		return false
-	end
-
-	if ply:IsListenServerHost() then
-		return true
-	end
-end
-
-local g_hostPlayer = nil
-
-function LIB.GetHostPlayer()
-	if LIB.IsHostPlayer(g_hostPlayer) then
-		return g_hostPlayer
-	end
-
-	g_hostPlayer = nil
-
-	for _, ply in player.Iterator() do
-		if not LIB.IsHostPlayer(ply) then
-			continue
-		end
-
-		g_hostPlayer = ply
-		return g_hostPlayer
-	end
-
-	return nil
-end
-
-local g_failbackPlayer = nil
-
-function LIB.GetFailbackPlayer()
-	if IsValid(g_failbackPlayer) then
-		return g_failbackPlayer
-	end
-
-	g_failbackPlayer = nil
-
-	for _, ply in player.Iterator() do
-		if not IsValid(ply) then
-			continue
-		end
-
-		if ply:IsListenServerHost() then
-			g_failbackPlayer = ply
-			return g_failbackPlayer
-		end
-	end
-
-	for _, ply in player.Iterator() do
-		if not IsValid(ply) then
-			continue
-		end
-
-		if ply:IsSuperAdmin() or ply:IsAdmin() then
-			g_failbackPlayer = ply
-			return g_failbackPlayer
-		end
-	end
-
-	for _, ply in player.Iterator() do
-		if not IsValid(ply) then
-			continue
-		end
-
-		g_failbackPlayer = ply
-		return g_failbackPlayer
-	end
-
-	return nil
-end
-
-function LIB.InvalidateFailbackPlayer()
-	g_failbackPlayer = nil
-end
-
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBTimer = SligWolf_Addons.Timer
-	LIBHook = SligWolf_Addons.Hook
-
-	LIBHook.Add("PlayerDisconnected", "Library_Util_PlayerIterator_InvalidateFailbackPlayer", LIB.InvalidateFailbackPlayer, -1000000)
-	LIBHook.Add("PlayerInitialSpawn", "Library_Util_PlayerIterator_InvalidateFailbackPlayer", LIB.InvalidateFailbackPlayer, -1000000)
 end
-
 
 return true
 

@@ -163,11 +163,14 @@ local g_prefixColor = Color(200, 200, 200)
 local addWorkshopClientDownload = nil
 
 if SERVER then
+	-- Handformated help text, so it matches the internal convar help system (sv_sligwolf_base_help).
+	local helpText = "Enables workshop downloads (resource.AddWorkshop()) of SW Addons for joining clients. Requires server restart.\n     Options: 0 = Off, 1 = On\n     Default: 1"
+
 	local cvarAllowWorkshopDownload = CreateConVar(
-		"sv_sligwolf_base_allow_workshop_download",
+		"sv_sligwolf_base_workshop_download",
 		"1",
 		bit.bor(FCVAR_ARCHIVE, FCVAR_GAMEDLL),
-		"Allow or disallow workshop downloads (resource.AddWorkshop()) of SW Addons for joining clients. Requires server restart. (Default: 1)",
+		helpText,
 		0,
 		1
 	)
@@ -1256,7 +1259,6 @@ function SligWolf_Addons.GetAddonFromEntity(ent)
 
 	return addon
 end
-
 
 function SligWolf_Addons.HasLoadedAddon(name)
 	local sligwolfAddons = _G.SligWolf_Addons

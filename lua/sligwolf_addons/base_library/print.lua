@@ -150,6 +150,26 @@ function LIB.Debug(format, ...)
 	MsgN(message)
 end
 
+function LIB.PrintForPlayer(ply, format, ...)
+	if CLIENT and ply == nil then
+		ply = LocalPlayer()
+	end
+
+	format = tostring(format or "")
+
+	if format == "" then
+		format = "Empty message!"
+	end
+
+	local message = formatMessage(format, ...)
+
+	if IsValid(ply) then
+		ply:PrintMessage(HUD_PRINTCONSOLE, message .. "\n")
+	else
+		MsgN(message)
+	end
+end
+
 if CLIENT then
 	local g_soundMap = {
 		[NOTIFY_ERROR] = Sound("buttons/button10.wav"),

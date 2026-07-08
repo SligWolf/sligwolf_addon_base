@@ -8,6 +8,7 @@ local LIB = SligWolf_Addons:NewLib("Coupling")
 local CONSTANTS = SligWolf_Addons.Constants
 
 local LIBEntities = SligWolf_Addons.Entities
+local LIBPlayer = SligWolf_Addons.Player
 local LIBUtil = SligWolf_Addons.Util
 
 LIB.GENDER_MALE = "M"
@@ -27,8 +28,8 @@ LIB.TYPE_METROJOINT = "metrojoint"
 LIB.TYPE_ST3TRAM = "st3tram"
 
 function LIB.Load()
-	LIBVehicleControl = SligWolf_Addons.VehicleControl
 	LIBEntities = SligWolf_Addons.Entities
+	LIBPlayer = SligWolf_Addons.Player
 	LIBUtil = SligWolf_Addons.Util
 end
 
@@ -527,7 +528,7 @@ local function getTrailerMainVehicleInternal(vehicles, checkPattern)
 				continue
 			end
 
-			if checkAdmin and not LIBUtil.IsAdmin(ply) then
+			if checkAdmin and not LIBPlayer.IsAdmin(ply) then
 				continue
 			end
 		end
