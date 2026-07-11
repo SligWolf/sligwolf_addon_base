@@ -58,7 +58,7 @@ function SLIGWOLF_ADDON:SkinAddConvar(category)
 	end
 
 	local help = string.format(
-		"Set the color theme for the next spawned object for category \x04'%s'\x03 in addon \x04'%s'\x03",
+		"Set the color theme for the next spawned object for category \x04'%s'\x03 in addon \x04'%s'\x03.",
 		category,
 		self.Addonname
 	)
@@ -68,6 +68,7 @@ function SLIGWOLF_ADDON:SkinAddConvar(category)
 		shouldsave = true,
 		userinfo = true,
 		help = help,
+		unlisted = true,
 	})
 
 	self.SkinConvar = convar

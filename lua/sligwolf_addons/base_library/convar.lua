@@ -480,7 +480,10 @@ function LIB.AddConvarHelp(convarName, parameters)
 		plaintext = helpPlaintext,
 	}
 
-	g_helpList.shCvar[convarName] = item
+	if not parameters.unlisted then
+		g_helpList.shCvar[convarName] = item
+	end
+
 	return item
 end
 
@@ -506,7 +509,10 @@ function LIB.AddClientConvarHelp(convarName, parameters)
 		plaintext = helpPlaintext,
 	}
 
-	g_helpList.clCvar[convarName] = item
+	if not parameters.unlisted then
+		g_helpList.clCvar[convarName] = item
+	end
+
 	return item
 end
 
@@ -543,7 +549,10 @@ function LIB.AddCommandHelp(cmdName, parameters)
 		plaintext = helpPlaintext,
 	}
 
-	g_helpList.cmd[cmdName] = item
+	if not parameters.unlisted then
+		g_helpList.cmd[cmdName] = item
+	end
+
 	return item
 end
 

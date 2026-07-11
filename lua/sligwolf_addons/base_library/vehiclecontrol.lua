@@ -38,31 +38,6 @@ function LIB.IsControllingVehicle(ply)
 	return true
 end
 
-function LIB.TrainDoorButtonToggle(button, mainvehicle, ply)
-	if not IsValid(button) then return end
-	if not IsValid(ply) then return end
-
-	-- @TODO: Create entity links between button and door (triggered entity)
-
-	local name = LIBEntities.GetName(button)
-	local id = string.Right(name, 1)
-
-	local door = LIBEntities.GetChild(mainvehicle, "Door_D" .. id)
-	if not IsValid(door) then return end
-
-	door.sligwolf_doorState = not door.sligwolf_doorState
-
-	if door.sligwolf_doorState then
-		door:SetDoorAutoClose(false)
-		door:DoorOpen()
-		return
-	else
-		door:SetDoorAutoClose(true)
-		door:DoorClose()
-		return
-	end
-end
-
 local breakUntil = 2
 local stopBreakingAt = 4
 local setSpeedTo = 0

@@ -12,6 +12,7 @@ local LIBTimer = SligWolf_Addons.Timer
 local LIBHook = SligWolf_Addons.Hook
 local LIBUtil = SligWolf_Addons.Util
 local LIBRail = SligWolf_Addons.Rail
+local LIBFile = SligWolf_Addons.File
 
 -- Tell the user something is wrong ("Broken") with the addons in case they see the usually hidden placeholder node.
 local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Broken)"
@@ -1380,25 +1381,36 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 	list.Set("Vehicles", spawnname, vehicleListItem)
 end
 
-function LIB.GetIconPath(spawnname, themename)
+function LIB.GetIconFilename(spawnname, themename)
 	spawnname = tostring(spawnname or "")
 	themename = tostring(themename or "")
 
 	if spawnname == "" then
-		return
+		return nil
 	end
 
 	if themename == "" then
 		themename = LIBSkinsystem.THEME_DEFAULT
 	end
 
-	local iconFileDefault = string.format("materials/entities/%s.png", spawnname)
-	local iconFile = iconFileDefault
+	local iconFileNameDefault = string.format("%s.png", spawnname)
+	local iconFileName = iconFileNameDefault
 
 	if themename ~= LIBSkinsystem.THEME_DEFAULT then
-		-- @TODO: Finalize standards for icon theme paths
-		iconFile = string.format("materials/entities/%s_%s.png", spawnname, themename)
+		iconFileName = string.format("%s_%s.png", spawnname, themename)
 	end
+
+	return iconFileName, iconFileNameDefault
+end
+
+function LIB.GetIconPath(spawnname, themename)
+	local iconFileName, iconFileNameDefault = LIB.GetIconFilename(spawnname, themename)
+	if not iconFileName then
+		return
+	end
+
+	local iconFile = LIBFile.Join("materials/entities", iconFileName)
+	local iconFileDefault = LIBFile.Join("materials/entities", iconFileNameDefault)
 
 	return iconFile, iconFileDefault
 end
@@ -1409,7 +1421,22 @@ local function ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, c
 		return
 	end
 
+	local batchSize = 5
+	local state = {
+		theme = nil,
+		panels = {},
+		index = 1,
+		count = 0,
+	}
+
 	propPanel.Think = function(this)
+		local iconList = this.IconList
+
+		if not IsValid(iconList) then
+			return
+		end
+
+		-- Get current theme
 		local themename = addon:SkinGetSelectedThemeName(LocalPlayer(), category)
 		local themeconfig = addon:SkinGetThemeConfig(category, themename, false)
 
@@ -1426,18 +1453,30 @@ local function ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, c
 		local oldThemename = this._oldThemename
 		this._oldThemename = themename
 
-		if oldThemename and oldThemename == themename then
-			return
+		-- Theme changed, reset state
+		if oldThemename ~= themename then
+			state.theme = themename
+			state.panels = iconList:GetChildren()
+			state.index = 1
+			state.count = #state.panels
 		end
 
-		local contentPanels = this.IconList:GetChildren()
+		-- Process a batch of icons
+		local processed = 0
+		while processed < batchSize and state.index <= state.count do
+			local contentIconPanel = state.panels[state.index]
+			state.index = state.index + 1
 
-		for _, contentIconPanel in ipairs(contentPanels) do
 			if not IsValid(contentIconPanel) then
 				continue
 			end
 
 			if contentIconPanel:GetName() ~= "ContentIcon" then
+				continue
+			end
+
+			local imagePanel = contentIconPanel.Image
+			if not IsValid(imagePanel) then
 				continue
 			end
 
@@ -1447,17 +1486,16 @@ local function ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, c
 			end
 
 			local spawntable = LIBEntities.GetSpawntableByName(category, spawnname)
-			local supportsThemes = addon:SkinGetCategoryAndMapNameFromSpawntable(spawntable)
 
-			if not supportsThemes then
-				-- Don't mess with buttons that will never have themes
+			if not addon:SkinGetCategoryAndMapNameFromSpawntable(spawntable) then
 				continue
 			end
 
-			local iconFile, iconFileDefault = LIB.GetIconPath(spawnname, themename)
+			local iconFile, iconFileDefault = LIB.GetIconPath(spawnname, state.theme)
 			local mat = LIBUtil.LoadPngMaterial(iconFile, "", iconFileDefault)
 
 			contentIconPanel.Image:SetMaterial(mat)
+			processed = processed + 1
 		end
 	end
 end
@@ -1643,6 +1681,7 @@ function LIB.Load()
 	LIBHook = SligWolf_Addons.Hook
 	LIBUtil = SligWolf_Addons.Util
 	LIBRail = SligWolf_Addons.Rail
+	LIBFile = SligWolf_Addons.File
 
 	local function PopulatePropListContent(pnlContent, tree)
 		g_spawnmenuLoaded = true

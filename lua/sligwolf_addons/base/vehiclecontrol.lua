@@ -12,7 +12,9 @@ end
 
 local LIBVehicleControl = SligWolf_Addons.VehicleControl
 local LIBEntities = SligWolf_Addons.Entities
+local LIBConvar = SligWolf_Addons.Convar
 local LIBTrace = SligWolf_Addons.Trace
+local LIBNet = SligWolf_Addons.Net
 
 function SLIGWOLF_ADDON:VehicleOrderThink()
 	if not self.HasVehicleOrders then return end
@@ -21,13 +23,18 @@ function SLIGWOLF_ADDON:VehicleOrderThink()
 		local ply = LocalPlayer()
 		if not IsValid(ply) then return end
 
-		local vehicle = LIBVehicleControl.GetControlledVehicle(ply)
-		if not IsValid(vehicle) then return end
-
 		if gui.IsGameUIVisible() then return end
 		if gui.IsConsoleVisible() then return end
 		if IsValid(vgui.GetKeyboardFocus()) then return end
 		if ply:IsTyping() then return end
+
+		local vehicle = LIBVehicleControl.GetControlledVehicle(ply)
+		if not IsValid(vehicle) then return end
+
+		local spawntable = LIBEntities.GetSpawntable(vehicle, true)
+		if not spawntable or spawntable.SLIGWOLF_Addonname ~= self.Addonname then
+			return
+		end
 
 		for k, v in pairs(self.KeySettings or {}) do
 			if not v.cv then continue end
@@ -84,9 +91,13 @@ function SLIGWOLF_ADDON:RegisterVehicleOrder(name, callback_hold, callback_down,
 	if CLIENT then return end
 
 	name = name or ""
+
+	name = string.Trim(name)
+	name = string.lower(name)
+
 	if name == "" then return end
 
-	local netname = "SligWolf_VehicleOrder_" .. self.Addonname .. "_" .. name
+	local netname = self.Addonname .. "_vo_" .. name
 
 	local valid = false
 	if not isfunction(callback_hold) then
@@ -112,8 +123,8 @@ function SLIGWOLF_ADDON:RegisterVehicleOrder(name, callback_hold, callback_down,
 		return
 	end
 
-	util.AddNetworkString(netname)
-	net.Receive(netname, function(len, ply)
+	LIBNet.AddNetworkString(netname)
+	LIBNet.Receive(netname, function(len, ply)
 		local ent = net.ReadEntity()
 		local down = net.ReadBool() or false
 
@@ -167,14 +178,16 @@ function SLIGWOLF_ADDON:RegisterVehicleOrder(name, callback_hold, callback_down,
 	end)
 end
 
-function SLIGWOLF_ADDON:RegisterKeySettings(name, default, time, description, extra_text)
+function SLIGWOLF_ADDON:RegisterKeySettings(name, default, time, description)
 	self.HasVehicleOrders = true
 
 	name = name or ""
 	description = description or ""
-	help = help or ""
 	default = default or 0
 	time = time or 0.1
+
+	name = string.Trim(name)
+	name = string.lower(name)
 
 	if name == "" then return end
 	if description == "" then return end
@@ -188,12 +201,20 @@ function SLIGWOLF_ADDON:RegisterKeySettings(name, default, time, description, ex
 	setting.default = default
 	setting.time = time
 
-	if extra_text ~= "" then
-		setting.extra_text = extra_text
-	end
-
 	if CLIENT then
-		setting.cv = CreateClientConVar(setting.cvcmd, tostring(default), true, false)
+		local help = string.format(
+			"Set control key for \x04'%s'\x03 in addon \x04'%s'\x03.",
+			description,
+			self.Addonname
+		)
+
+		setting.cv = LIBConvar.AddClientConvar(setting.cvcmd, {
+			default = default,
+			shouldsave = true,
+			userinfo = false,
+			help = help,
+			unlisted = true,
+		})
 	end
 
 	self.KeySettings = self.KeySettings or {}
@@ -208,6 +229,9 @@ if CLIENT then
 		name = name or ""
 		down = down or false
 
+		name = string.Trim(name)
+		name = string.lower(name)
+
 		if name == "" then return end
 
 		self.KeyBuffer = self.KeyBuffer or {}
@@ -220,38 +244,28 @@ if CLIENT then
 
 		self.KeyBuffer[vehicle][name] = changedbuffer
 
-		local netname = "SligWolf_VehicleOrder_" .. self.Addonname .. "_" .. name
-		net.Start(netname)
+		local netname = self.Addonname .. "_vo_" .. name
+		LIBNet.Start(netname)
 			net.WriteEntity(vehicle)
 			net.WriteBool(down)
-		net.SendToServer()
+		LIBNet.SendToServer()
 	end
 
-	-- local function AddDescription(panel, text)
-	-- 	local DLabel = vgui.Create("DLabel", panel)
-	-- 	DLabel:SetText(text)
-	-- 	DLabel:SetDark(true)
-	-- 	DLabel:SetContentAlignment(8)
-	-- 	panel:AddPanel(DLabel)
-
-	-- 	return DLabel
-	-- end
-
 	local function AddGap(panel)
-		local DPanel = vgui.Create("DPanel", panel)
-		DPanel:SetTall(5)
-		panel:AddPanel(DPanel)
+		local this = vgui.Create("DPanel", panel)
+		this:SetTall(5)
+		panel:AddPanel(this)
 
-		return DPanel
+		return this
 	end
 
 	local function AddCtrlNumPad(panel, text, command)
-		local CtrlNumPad = vgui.Create("SligWolf_CtrlNumPad", panel)
-		CtrlNumPad:SetLabel(text)
-		CtrlNumPad:SetConVar(command)
-		panel:AddPanel(CtrlNumPad)
+		local this = vgui.Create("SligWolf_CtrlNumPad", panel)
+		this:SetLabel(text)
+		this:SetConVar(command)
+		panel:AddPanel(this)
 
-		return CtrlNumPad
+		return this
 	end
 
 	function SLIGWOLF_ADDON:VehicleOrderMenu()
@@ -274,10 +288,6 @@ if CLIENT then
 					end
 
 					AddCtrlNumPad(panel, v.description, v.cvcmd)
-
-					if (v.extra_text) then
-						panel:ControlHelp(v.extra_text)
-					end
 
 					isFirst = false
 				end
@@ -313,7 +323,9 @@ function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 	if IsValid(playervehicle) and superparent ~= playervehicle then return end
 	if superparent.sligwolf_addonname ~= self.Addonname then return end
 
-	if not button.SLIGWOLF_Buttonfunc then return end
+	if not button.sligwolf_buttonEntity then
+		return
+	end
 
 	local allowuse = true
 
@@ -321,9 +333,11 @@ function SLIGWOLF_ADDON:PressButton(ply, playervehicle)
 		allowuse = superparent:CPPICanUse(ply) or false
 	end
 
-	if not allowuse then return end
+	if not allowuse then
+		return
+	end
 
-	return button.SLIGWOLF_Buttonfunc(button, superparent, ply)
+	return button:OnPress(ply)
 end
 
 return true

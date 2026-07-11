@@ -41,6 +41,7 @@ local g_FallbackComponentsParams = {
 	keyValues = {},
 	inputFires = {},
 	constraints = {},
+	trigger = {},
 	colorFromParent = false,
 	isBody = false,
 	removeAllOnDelete = true,
@@ -543,6 +544,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local isBody = component.isBody
 	local selfAttachment = component.selfAttachment
 	local freeze = component.freeze
+	local trigger = component.trigger
 	local hasChildren = component.hasChildren
 	local noAsycPositioning = component.noAsycPositioning or not hasChildren
 
@@ -642,6 +644,10 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	local phys = ent:GetPhysicsObject()
 	if LIBPhysics.IsValidPhysObject(phys) and mass then
 		phys:SetMass(mass)
+	end
+
+	if ent.SetTriggeredNames then
+		ent:SetTriggeredNames(trigger)
 	end
 
 	return ent
@@ -1200,9 +1206,10 @@ function SLIGWOLF_ADDON:SetUpVehicleConnectorButton(parent, component, ply, supe
 	ent:SetNWBool("sligwolf_noPickup", true)
 
 	ent.sligwolf_inVehicle = inVehicle
-	ent.SLIGWOLF_Buttonfunc = function()
-		return LIBCoupling.ToogleConnection(ent, ply)
-	end
+
+	ent:SetCustomOnPressFunction(function(this, thisPly)
+		return LIBCoupling.ToogleConnection(this, thisPly)
+	end)
 
 	return ent
 end
@@ -1216,7 +1223,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent, 
 	local inVehicle = component.inVehicle
 	local func = component.func
 
-	if not isfunction(func) then
+	if func and not isfunction(func) then
 		error("component.func is not a function!")
 		return
 	end
@@ -1231,9 +1238,7 @@ function SLIGWOLF_ADDON:SetUpVehicleButton(parent, component, ply, superparent, 
 	ent:SetNWBool("sligwolf_noPickup", true)
 
 	ent.sligwolf_inVehicle = inVehicle
-	ent.SLIGWOLF_Buttonfunc = function(...)
-		return func(...)
-	end
+	ent:SetCustomOnPressFunction(func)
 
 	return ent
 end

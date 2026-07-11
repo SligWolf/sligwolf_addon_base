@@ -39,6 +39,13 @@ function ENT:Use(...)
 	parent:Use(...)
 end
 
+function ENT:OnSWTrigger(caller, params)
+	local parent = LIBEntities.GetParent(self)
+	if not IsValid(parent) then return end
+
+	parent:OnSWTrigger(caller, params)
+end
+
 function ENT:UpdateDoorPhysSolid()
 	self:SetDoorPhysSolid(self._isSolid or false)
 end

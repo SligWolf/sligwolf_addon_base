@@ -26,12 +26,13 @@ function LIB.GetKeyValues(ent)
 	local keyValuesRef = entTable.keyValuesRef or {}
 	entTable.keyValuesRef = keyValuesRef
 
-	for key, value in pairs(ent:GetKeyValues() or {}) do
+	for key, value in pairs(entTable.keyValues or {}) do
 		key = string.lower(key)
 		keyValuesRef[key] = tostring(value)
 	end
 
-	for key, value in pairs(entTable.keyValues or {}) do
+	-- engine known keyvalues must have priority
+	for key, value in pairs(ent:GetKeyValues() or {}) do
 		key = string.lower(key)
 		keyValuesRef[key] = tostring(value)
 	end

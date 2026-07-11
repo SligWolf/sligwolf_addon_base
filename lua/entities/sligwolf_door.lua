@@ -133,6 +133,18 @@ function ENT:Use(activator, caller, useType, value)
 	self:Toggle()
 end
 
+function ENT:OnSWTrigger(caller, params)
+	if CLIENT then return end
+
+	if not self:DoorIsOpen() then
+		self:SetDoorAutoClose(false)
+		self:DoorOpen()
+	else
+		self:SetDoorAutoClose(true)
+		self:DoorClose()
+	end
+end
+
 function ENT:UpdateCollisionEntity(force)
 	if CLIENT then return end
 

@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Net")
 
-local g_nameprefix = "SLIGWOLF_NW_"
+local g_nameprefix = "SLIGWOLF_"
 local g_maxIdentifierLen = 44
 
 local function getName(identifier)
