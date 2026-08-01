@@ -9,14 +9,14 @@ local LIBEntityhooks = SligWolf_Addons.Entityhooks
 local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBUtil = SligWolf_Addons.Util
 
-function LIB.GetKeyValue(ent, key)
+function LIB.GetKeyValue(ent, key, prioritizeHookKV)
 	key = string.lower(tostring(key or ""))
 
-	local keyValues = LIB.GetKeyValues(ent)
+	local keyValues = LIB.GetKeyValues(ent, prioritizeHookKV)
 	return keyValues[key]
 end
 
-function LIB.GetKeyValues(ent)
+function LIB.GetKeyValues(ent, prioritizeHookKV)
 	if CLIENT then
 		return {}
 	end
@@ -26,15 +26,33 @@ function LIB.GetKeyValues(ent)
 	local keyValuesRef = entTable.keyValuesRef or {}
 	entTable.keyValuesRef = keyValuesRef
 
-	for key, value in pairs(entTable.keyValues or {}) do
-		key = string.lower(key)
-		keyValuesRef[key] = tostring(value)
-	end
+	table.Empty(keyValuesRef)
 
-	-- engine known keyvalues must have priority
-	for key, value in pairs(ent:GetKeyValues() or {}) do
-		key = string.lower(key)
-		keyValuesRef[key] = tostring(value)
+	local engineKeyValues = ent:GetKeyValues() or {}
+	local hookKeyValues = entTable.keyValues or {}
+
+	if prioritizeHookKV then
+		-- Case: We need key-values as set by lua or engine hook call
+		for key, value in pairs(engineKeyValues) do
+			key = string.lower(key)
+			keyValuesRef[key] = tostring(value)
+		end
+
+		for key, value in pairs(hookKeyValues) do
+			key = string.lower(key)
+			keyValuesRef[key] = tostring(value)
+		end
+	else
+		-- Case: We need key-values as set by engine without hook call
+		for key, value in pairs(hookKeyValues) do
+			key = string.lower(key)
+			keyValuesRef[key] = tostring(value)
+		end
+
+		for key, value in pairs(engineKeyValues) do
+			key = string.lower(key)
+			keyValuesRef[key] = tostring(value)
+		end
 	end
 
 	return keyValuesRef
