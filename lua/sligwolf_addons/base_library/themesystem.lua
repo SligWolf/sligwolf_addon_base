@@ -3,7 +3,7 @@ if not SligWolf_Addons then
 	return
 end
 
-local LIB = SligWolf_Addons:NewLib("Skinsystem")
+local LIB = SligWolf_Addons:NewLib("Themesystem")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
@@ -13,14 +13,14 @@ local LIBEntities = SligWolf_Addons.Entities
 local LIBPlayer = SligWolf_Addons.Player
 local LIBHook = SligWolf_Addons.Hook
 
-LIB.g_skinParamKeys = {
+LIB.g_themeParamKeys = {
 	"skin",
 	"color",
 	"bodygroups",
 }
 
-local g_skinMetaNames = {}
-local g_skinParamKeys = LIB.g_skinParamKeys
+local g_themeMetaNames = {}
+local g_themeParamKeys = LIB.g_themeParamKeys
 
 LIB.KEY_ALL = "all"
 LIB.KEY_SKIN = "skin"
@@ -36,7 +36,7 @@ function LIB.GetAllThemes(category)
 	local sortedAddondata = SligWolf_Addons.GetAddonsSorted()
 
 	for _, addon in ipairs(sortedAddondata) do
-		local themeConfigs = addon:SkinGetThemeConfigs(category)
+		local themeConfigs = addon:ThemeGetConfigs(category)
 
 		if not themeConfigs then
 			continue
@@ -44,8 +44,8 @@ function LIB.GetAllThemes(category)
 
 		local addonResult = {}
 		addonResult.addonname = addon.Addonname
-		addonResult.defaultTheme = addon:SkinGetDefaultThemeConfig(category)
-		addonResult.randomPickerTheme = addon:SkinGetRandomPickerThemeConfig(category)
+		addonResult.defaultTheme = addon:ThemeGetDefaultConfig(category)
+		addonResult.randomPickerTheme = addon:ThemeGetRandomPickerConfig(category)
 
 		local themesResult = {}
 		addonResult.themes = themesResult
@@ -60,37 +60,37 @@ function LIB.GetAllThemes(category)
 	return result
 end
 
-function LIB.AddSkinMetaFunction(key, name, func)
+function LIB.AddThemeMetaFunction(key, name, func)
 	if key == LIB.KEY_ALL then
-		for _, v in ipairs(g_skinParamKeys) do
-			LIB.AddSkinMetaFunction(v, name, func)
+		for _, v in ipairs(g_themeParamKeys) do
+			LIB.AddThemeMetaFunction(v, name, func)
 		end
 
 		return
 	end
 
-	local g_skinMetaNamesForKey = g_skinMetaNames[key] or {}
-	g_skinMetaNames[key] = g_skinMetaNamesForKey
+	local g_themeMetaNamesForKey = g_themeMetaNames[key] or {}
+	g_themeMetaNames[key] = g_themeMetaNamesForKey
 
-	g_skinMetaNamesForKey[name] = func
+	g_themeMetaNamesForKey[name] = func
 end
 
-function LIB.HasSkinMetaFunction(key, name)
-	local g_skinMetaNamesForKey = g_skinMetaNames[key]
-	if not g_skinMetaNamesForKey then
+function LIB.HasThemeMetaFunction(key, name)
+	local g_themeMetaNamesForKey = g_themeMetaNames[key]
+	if not g_themeMetaNamesForKey then
 		return false
 	end
 
-	return g_skinMetaNamesForKey[name] ~= nil
+	return g_themeMetaNamesForKey[name] ~= nil
 end
 
-function LIB.CallSkinMetaFunction(key, name, ent)
-	local g_skinMetaNamesForKey = g_skinMetaNames[key]
-	if not g_skinMetaNamesForKey then
+function LIB.CallThemeMetaFunction(key, name, ent)
+	local g_themeMetaNamesForKey = g_themeMetaNames[key]
+	if not g_themeMetaNamesForKey then
 		return false
 	end
 
-	local func = g_skinMetaNamesForKey[name]
+	local func = g_themeMetaNamesForKey[name]
 	if not func then
 		return false
 	end
@@ -122,15 +122,15 @@ function LIB.Load()
 	LIBPlayer = SligWolf_Addons.Player
 	LIBHook = SligWolf_Addons.Hook
 
-	LIB.AddSkinMetaFunction(LIB.KEY_ALL, "", function()
+	LIB.AddThemeMetaFunction(LIB.KEY_ALL, "", function()
 		return nil
 	end)
 
-	LIB.AddSkinMetaFunction(LIB.KEY_ALL, "void", function()
+	LIB.AddThemeMetaFunction(LIB.KEY_ALL, "void", function()
 		return nil
 	end)
 
-	LIB.AddSkinMetaFunction(LIB.KEY_COLOR, "playerMainColor", function(key, name, ent)
+	LIB.AddThemeMetaFunction(LIB.KEY_COLOR, "playerMainColor", function(key, name, ent)
 		local ply = LIB.GetColorPlayer(ent)
 		if not IsValid(ply) then
 			return CONSTANTS.colorError1
@@ -144,7 +144,7 @@ function LIB.Load()
 		return colorVector:ToColor()
 	end)
 
-	LIB.AddSkinMetaFunction(LIB.KEY_COLOR, "playerWeaponColor", function(key, name, ent)
+	LIB.AddThemeMetaFunction(LIB.KEY_COLOR, "playerWeaponColor", function(key, name, ent)
 		local ply = LIB.GetColorPlayer(ent)
 		if not IsValid(ply) then
 			return CONSTANTS.colorError2
@@ -177,20 +177,20 @@ function LIB.Load()
 				return
 			end
 
-			local categoryName = addon:SkinGetCategoryAndMapName(ent)
+			local categoryName = addon:ThemeGetCategoryAndMapName(ent)
 			if not categoryName then
 				return
 			end
 
-			local themeName = addon:SkinGetSelectedThemeName(ply, categoryName)
+			local themeName = addon:ThemeGetSelectedName(ply, categoryName)
 			if not themeName then
 				return
 			end
 
-			addon:SkinApplyThemeByName(ent, themeName)
+			addon:ThemeApplyByName(ent, themeName)
 		end
 
-		LIBHook.AddCustom("PostPlayerSpawnedAddonEntity", "Library_Skinsystem_ApplySkinThemeFromPlayer", ApplySkinThemeFromPlayer, 11000)
+		LIBHook.AddCustom("PostPlayerSpawnedAddonEntity", "Library_Themesystem_ApplySkinThemeFromPlayer", ApplySkinThemeFromPlayer, 11000)
 
 		local function ApplySkinThemeFromKeyValue(ent, spawnname, spawntable, addonname)
 			local addon = SligWolf_Addons.GetAddon(addonname)
@@ -202,7 +202,7 @@ function LIB.Load()
 				return
 			end
 
-			if addon:SkinHasAppliedTheme(ent) then
+			if addon:ThemeHasApplied(ent) then
 				-- A theme has already been set from somewhere else.
 				return
 			end
@@ -215,20 +215,20 @@ function LIB.Load()
 				return
 			end
 
-			local categoryName = addon:SkinGetCategoryAndMapName(ent)
+			local categoryName = addon:ThemeGetCategoryAndMapName(ent)
 			if not categoryName then
 				return
 			end
 
-			local themeName = addon:GetThemeNameFromKeyValue(categoryName, themeKeyValue)
+			local themeName = addon:ThemeGetNameFromKeyValue(categoryName, themeKeyValue)
 			if not themeName then
 				return
 			end
 
-			addon:SkinApplyThemeByName(ent, themeName)
+			addon:ThemeApplyByName(ent, themeName)
 		end
 
-		LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_Skinsystem_ApplySkinThemeFromKeyValue", ApplySkinThemeFromKeyValue, 12000)
+		LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_Themesystem_ApplySkinThemeFromKeyValue", ApplySkinThemeFromKeyValue, 12000)
 	end
 end
 

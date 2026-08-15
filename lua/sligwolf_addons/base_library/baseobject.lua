@@ -94,13 +94,13 @@ function SLIGWOLF_BASE_OBJ:MakeVehicleEnsured(spawnname, name, parent)
 	return ent
 end
 
-function SLIGWOLF_BASE_OBJ:SkinReapplyThemeDataForPath(path)
+function SLIGWOLF_BASE_OBJ:ThemeReapplyDataForPath(path)
 	local addon = self:GetAddon()
 	if not addon then
 		return
 	end
 
-	addon:SkinReapplyThemeDataForPath(self, path)
+	addon:ThemeReapplyDataForPath(self, path)
 end
 
 function SLIGWOLF_BASE_OBJ:AddNetworkRVar(datatype, name, ...)

@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Spawnmenu")
 
-local LIBSkinsystem = SligWolf_Addons.Skinsystem
+local LIBThemesystem = SligWolf_Addons.Themesystem
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPrint = SligWolf_Addons.Print
 local LIBTimer = SligWolf_Addons.Timer
@@ -1006,8 +1006,8 @@ function LIB.AddEntity(addonname, spawnname, obj)
 	entityItem.SLIGWOLF_SpawnOBB = spawnOBB
 	entityItem.SLIGWOLF_FGD = {}
 
-	entityItem.SLIGWOLF_SkinCategory = category
-	entityItem.SLIGWOLF_SkinMapName = obj.skinMapName
+	entityItem.SLIGWOLF_ThemeCategory = category
+	entityItem.SLIGWOLF_ThemeMapName = obj.themeMapName
 
 	local keyValues = table.Copy(obj.keyValues or {})
 
@@ -1098,8 +1098,8 @@ function LIB.AddWeapon(addonname, spawnname, obj)
 	weaponItem.SLIGWOLF_Hidden = hidden
 	weaponItem.SLIGWOLF_FGD = {}
 
-	weaponItem.SLIGWOLF_SkinCategory = category
-	weaponItem.SLIGWOLF_SkinMapName = obj.skinMapName
+	weaponItem.SLIGWOLF_ThemeCategory = category
+	weaponItem.SLIGWOLF_ThemeMapName = obj.themeMapName
 
 	local keyValues = table.Copy(obj.keyValues or {})
 
@@ -1219,8 +1219,8 @@ function LIB.AddNPC(addonname, spawnname, obj)
 	npcListItem.SLIGWOLF_Hidden = hidden
 	npcListItem.SLIGWOLF_FGD = {}
 
-	npcListItem.SLIGWOLF_SkinCategory = category
-	npcListItem.SLIGWOLF_SkinMapName = obj.skinMapName
+	npcListItem.SLIGWOLF_ThemeCategory = category
+	npcListItem.SLIGWOLF_ThemeMapName = obj.themeMapName
 
 	npcListItem.SpawnFlags = obj.spawnFlags
 	npcListItem.KeyValues = table.Copy(obj.keyValues or {})
@@ -1367,8 +1367,8 @@ function LIB.AddVehicle(addonname, spawnname, vehiclescript, obj)
 		end
 	end
 
-	vehicleListItem.SLIGWOLF_SkinCategory = category
-	vehicleListItem.SLIGWOLF_SkinMapName = obj.skinMapName
+	vehicleListItem.SLIGWOLF_ThemeCategory = category
+	vehicleListItem.SLIGWOLF_ThemeMapName = obj.themeMapName
 
 	vehicleListItem.Members = members
 
@@ -1390,13 +1390,13 @@ function LIB.GetIconFilename(spawnname, themename)
 	end
 
 	if themename == "" then
-		themename = LIBSkinsystem.THEME_DEFAULT
+		themename = LIBThemesystem.THEME_DEFAULT
 	end
 
 	local iconFileNameDefault = string.format("%s.png", spawnname)
 	local iconFileName = iconFileNameDefault
 
-	if themename ~= LIBSkinsystem.THEME_DEFAULT then
+	if themename ~= LIBThemesystem.THEME_DEFAULT then
 		iconFileName = string.format("%s_%s.png", spawnname, themename)
 	end
 
@@ -1437,15 +1437,15 @@ local function ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, c
 		end
 
 		-- Get current theme
-		local themename = addon:SkinGetSelectedThemeName(LocalPlayer(), category)
-		local themeconfig = addon:SkinGetThemeConfig(category, themename, false)
+		local themename = addon:ThemeGetSelectedName(LocalPlayer(), category)
+		local themeconfig = addon:ThemeGetConfig(category, themename, false)
 
 		if themeconfig.isDefault then
-			themename = LIBSkinsystem.THEME_DEFAULT
+			themename = LIBThemesystem.THEME_DEFAULT
 		elseif themeconfig.isRandom then
-			themename = LIBSkinsystem.THEME_RANDOM
+			themename = LIBThemesystem.THEME_RANDOM
 		elseif themeconfig.isPlayerColored then
-			themename = LIBSkinsystem.THEME_PLAYER
+			themename = LIBThemesystem.THEME_PLAYER
 		else
 			themename = themeconfig.name
 		end
@@ -1487,7 +1487,7 @@ local function ExtendContentIconsPanels(propPanel, colorSkinPicker, addonname, c
 
 			local spawntable = LIBEntities.GetSpawntableByName(category, spawnname)
 
-			if not addon:SkinGetCategoryAndMapNameFromSpawntable(spawntable) then
+			if not addon:ThemeGetCategoryAndMapNameFromSpawntable(spawntable) then
 				continue
 			end
 
@@ -1515,12 +1515,12 @@ local function AddColorSkinPicker(propPanel, addonname, category)
 		return
 	end
 
-	local themeConfigs = addon:SkinGetThemeConfigs(category)
+	local themeConfigs = addon:ThemeGetConfigs(category)
 	if not themeConfigs or #themeConfigs <= 1 then
 		return
 	end
 
-	local convarName, defaultThemeName = addon:SkinGetConvarNameAndDefault(category)
+	local convarName, defaultThemeName = addon:ThemeGetConvarNameAndDefault(category)
 	if not convarName or not defaultThemeName then
 		return
 	end
@@ -1674,7 +1674,7 @@ function LIB.InitSpawnmenuContent()
 end
 
 function LIB.Load()
-	LIBSkinsystem = SligWolf_Addons.Skinsystem
+	LIBThemesystem = SligWolf_Addons.Themesystem
 	LIBEntities = SligWolf_Addons.Entities
 	LIBPrint = SligWolf_Addons.Print
 	LIBTimer = SligWolf_Addons.Timer

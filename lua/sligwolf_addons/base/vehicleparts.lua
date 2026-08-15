@@ -586,7 +586,7 @@ function SLIGWOLF_ADDON:SetPartValues(ent, parent, component, attachment, superp
 	ent.DoNotDuplicate = true
 
 	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
+	local themeData = self:ThemeGetAppliedDataOfPath(superparent, path)
 
 	local color = themeData and themeData.color or component.color
 	local mdlSkin = themeData and themeData.skin or component.skin
@@ -1335,7 +1335,7 @@ function SLIGWOLF_ADDON:SetUpVehicleSmoke(parent, component, ply, superparent, c
 	end
 
 	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
+	local themeData = self:ThemeGetAppliedDataOfPath(superparent, path)
 
 	local color = themeData and themeData.color or component.color
 
@@ -1400,7 +1400,7 @@ function SLIGWOLF_ADDON:SetUpVehicleLight(parent, component, ply, superparent, c
 	end
 
 	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
+	local themeData = self:ThemeGetAppliedDataOfPath(superparent, path)
 
 	local color = themeData and themeData.color or component.color
 
@@ -1461,7 +1461,7 @@ function SLIGWOLF_ADDON:SetUpVehicleGlow(parent, component, ply, superparent, ca
 	end
 
 	local path = LIBEntities.GetEntityPath(ent, true)
-	local themeData = self:SkinGetAppliedThemeDataOfPath(superparent, path)
+	local themeData = self:ThemeGetAppliedDataOfPath(superparent, path)
 
 	local color = themeData and themeData.color or component.color
 

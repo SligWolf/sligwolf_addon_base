@@ -23,7 +23,7 @@ SligWolf_Addons.Include("sligwolf_addons/base/vehiclecontrol.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/vehicleparts.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/lights.lua")
 SligWolf_Addons.Include("sligwolf_addons/base/trackasm_adapter.lua")
-SligWolf_Addons.Include("sligwolf_addons/base/skinsystem.lua")
+SligWolf_Addons.Include("sligwolf_addons/base/themesystem.lua")
 
 SLIGWOLF_ADDON:TrackAssamblerAddContent()
 SLIGWOLF_ADDON:SpawnmenuContentAutoInclude()

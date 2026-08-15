@@ -5,7 +5,7 @@ end
 
 local LIB = SligWolf_Addons:NewLib("Hammer")
 
-local LIBSkinsystem = SligWolf_Addons.Skinsystem
+local LIBThemesystem = SligWolf_Addons.Themesystem
 local LIBConvar = SligWolf_Addons.Convar
 local LIBString = SligWolf_Addons.String
 local LIBPrint = SligWolf_Addons.Print
@@ -66,7 +66,7 @@ end
 local function getThemesByAddon(category)
 	local items = {}
 
-	local vehicleThemes = LIBSkinsystem.GetAllThemes(category)
+	local vehicleThemes = LIBThemesystem.GetAllThemes(category)
 	if not vehicleThemes then
 		return items
 	end
@@ -498,7 +498,7 @@ if SERVER then
 end
 
 function LIB.Load()
-	LIBSkinsystem = SligWolf_Addons.Skinsystem
+	LIBThemesystem = SligWolf_Addons.Themesystem
 	LIBConvar = SligWolf_Addons.Convar
 	LIBString = SligWolf_Addons.String
 	LIBPrint = SligWolf_Addons.Print
