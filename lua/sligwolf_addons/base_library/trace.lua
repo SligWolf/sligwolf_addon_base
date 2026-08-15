@@ -371,9 +371,23 @@ function LIB.GetSystemEntitiesWithOwnerFilter(ent, filter)
 	local owner = LIBEntities.GetOwner(ent)
 	filter = LIB.GetPlayerFilter(owner, filter)
 
-	local entResult = LIBEntities.GetSystemEntities(ent)
+	local systemEntityies = LIBEntities.GetSystemEntities(ent)
 
-	table.Add(filter, entResult)
+	table.Add(filter, systemEntityies)
+
+	return filter
+end
+
+function LIB.GetSystemEntitiesFilter(ent, filter)
+	if not filter or not istable(filter) then
+		filter = {}
+	else
+		table.Empty(filter)
+	end
+
+	local systemEntityies = LIBEntities.GetSystemEntities(ent)
+
+	table.Add(filter, systemEntityies)
 
 	return filter
 end
@@ -429,7 +443,7 @@ function LIB.TraceSimple(ent, vecStart, vecEnd, copyToResult)
 
 	local params = g_buffer_trace_params
 
-	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetSystemEntitiesFilter(ent, params.filter)
 	params.filter = filter
 
 	local tr = traceSimple(vecStart, vecEnd)
@@ -446,7 +460,7 @@ function LIB.TraceChain(ent, vectorChain, copyToResult)
 
 	local params = g_buffer_trace_params
 
-	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetSystemEntitiesFilter(ent, params.filter)
 	params.filter = filter
 
 	local tr = traceChain(vectorChain)
@@ -474,7 +488,7 @@ function LIB.TraceAttachment(ent, attachment, len, copyToResult)
 
 	local params = g_buffer_trace_params
 
-	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetSystemEntitiesFilter(ent, params.filter)
 	params.filter = filter
 
 	local tr = traceSimple(vecStart, vecEnd)
@@ -503,7 +517,7 @@ function LIB.TraceAttachmentToAttachment(ent, attachmentA, attachmentB, copyToRe
 
 	local params = g_buffer_trace_params
 
-	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetSystemEntitiesFilter(ent, params.filter)
 	params.filter = filter
 
 	local tr = traceSimple(posA, posB)
@@ -532,7 +546,7 @@ function LIB.TraceAttachmentChain(ent, attachmentChain, copyToResult)
 
 	local params = g_buffer_trace_params
 
-	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetSystemEntitiesFilter(ent, params.filter)
 	params.filter = filter
 
 	local tr = traceChain(g_buffer_trace_attachments)
@@ -550,7 +564,7 @@ function LIB.TraceOBB(ent, obb, copyToResult)
 
 	local params = g_buffer_trace_params
 
-	local filter = LIB.GetFilterApplied(ent, params.filter) or LIBEntities.GetSystemEntities(ent)
+	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetSystemEntitiesFilter(ent, params.filter)
 	params.filter = filter
 
 	local mx = ent:GetWorldTransformMatrix()
@@ -611,7 +625,7 @@ function LIB.PlayerAimTrace(ply, maxdist, copyToResult)
 
 	local params = g_buffer_trace_params
 
-	local filter = LIB.GetFilterApplied(ent, params.filter) or LIB.GetPlayerFilter(ply, params.filter)
+	local filter = LIB.GetFilterApplied(ply, params.filter) or LIB.GetPlayerFilter(ply, params.filter)
 	params.filter = filter
 
 	local context = LIBDebug.GetCurrentTraceDebugContext()

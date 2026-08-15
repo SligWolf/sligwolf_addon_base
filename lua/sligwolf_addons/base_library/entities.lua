@@ -1111,8 +1111,6 @@ function LIB.GetEntityPath(ent, dontIncludeRoot)
 		cache.EntityPathWithRoot = entityPath
 	end
 
-	LIB.ClearChildrenCache(ent)
-
 	return entityPath
 end
 
@@ -1408,7 +1406,7 @@ function LIB.GetSystemEntities(ent)
 	local nodouble = {}
 
 	GetAllChildrenRecursiveItemHelper(root, children, nodouble)
-	GetAllChildrenRecursiveHelper(ent, children, nodouble)
+	GetAllChildrenRecursiveHelper(root, children, nodouble)
 
 	children = table.Reverse(children)
 
@@ -1440,7 +1438,7 @@ function LIB.GetBodyEntities(ent)
 	end
 
 	GetAllChildrenRecursiveItemHelper(body, children, nodouble, filter)
-	GetAllChildrenRecursiveHelper(ent, children, nodouble, filter)
+	GetAllChildrenRecursiveHelper(body, children, nodouble, filter)
 
 	children = table.Reverse(children)
 
