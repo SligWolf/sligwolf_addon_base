@@ -35,6 +35,17 @@ function SLIGWOLF_ADDON:AddPlayerModel(name, playerModel, vHandsModel, skin, bod
 	LIBSpawnmenu.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
 end
 
+function SLIGWOLF_ADDON:AddPlayerModel2(name, obj) -- @TODO: Replace SLIGWOLF_ADDON:AddPlayerModel
+	obj = obj or {}
+
+	local addonName = tostring(obj.addonName or "")
+	if addonName == "" then
+		addonName = self.Addonname
+	end
+
+	LIBSpawnmenu.AddPlayerModel2(addonName, name, obj)
+end
+
 function SLIGWOLF_ADDON:AddProp(model, obj)
 	obj = obj or {}
 

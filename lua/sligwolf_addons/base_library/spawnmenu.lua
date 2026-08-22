@@ -16,6 +16,7 @@ local LIBFile = SligWolf_Addons.File
 
 -- Tell the user something is wrong ("Broken") with the addons in case they see the usually hidden placeholder node.
 local g_defaultNodeNameToBeRemoved = "SligWolf's Addons (Broken)"
+local g_defaultNodeName = "SligWolf's Addons"
 
 local g_registeredSpawnMenuItems = {}
 local g_registeredSpawnMenuItemsUnique = {}
@@ -205,7 +206,7 @@ local function AddSpawnMenuItem(addonName, itemClass, obj)
 		itemClass,
 		id,
 		content.skin or "",
-		content.bodygroup or "",
+		content.bodygroups or "",
 	}
 
 	uniqueid = table.concat(uniqueid, "_")
@@ -448,7 +449,7 @@ local function CreateMainNode(tree, parentNode, itemClass)
 		itemClass
 	)
 
-	local name = "SligWolf's Addons"
+	local name = g_defaultNodeName
 	local icon = "icon16/sligwolf_base.png"
 
 	local node = CreateCategoryNode(tree, parentNode, name, icon, cookieName)
@@ -767,7 +768,7 @@ local function RemoveDefaultNode(treePanel)
 	end)
 end
 
-function LIB.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
+function LIB.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroups)
 	name = tostring(name or "")
 	if name == "" then
 		LIBPrint.Error("no name")
@@ -787,10 +788,57 @@ function LIB.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
 	end
 
 	skin = tonumber(skin or 0)
-	bodygroup = tostring(bodygroup or "00000000")
+	bodygroups = tostring(bodygroups or "00000000")
 
 	player_manager.AddValidModel(name, playerModel)
-	player_manager.AddValidHands(name, vHandsModel, skin, bodygroup)
+	player_manager.AddValidHands(name, vHandsModel, skin, bodygroups)
+end
+
+function LIB.AddPlayerModel2(addonname, name, obj) -- @TODO: Replace LIB.AddPlayerModel
+	addonname = tostring(addonname or "")
+	if addonname == "" then
+		LIBPrint.Error("no addonname")
+		return
+	end
+
+	name = tostring(name or "")
+	if name == "" then
+		LIBPrint.Error("no name")
+		return
+	end
+
+	obj = obj or {}
+
+	local model = tostring(obj.model or "")
+	if model == "" then
+		LIBPrint.Error("no model")
+		return
+	end
+
+	local viewHandsModel = tostring(obj.viewHandsModel or "")
+	if viewHandsModel == "" then
+		LIBPrint.Error("no viewHandsModel")
+		return
+	end
+
+	local title = tostring(obj.title or "")
+	if title == "" then
+		title = name
+	end
+
+	local category = tostring(obj.category or "")
+	if category == "" then
+		category = g_defaultNodeName
+	end
+
+	local skin = tonumber(obj.skin or 0)
+	local bodygroups = tostring(obj.bodygroups or "00000000")
+	local matchBodySkin = tobool(obj.matchBodySkin)
+
+	local internalName = string.format("%s.%s", addonname, name)
+
+	player_manager.AddValidModel(internalName, playerModel, title, category)
+	player_manager.AddValidHands(internalName, vHandsModel, skin, bodygroups, matchBodySkin)
 end
 
 local g_PropOrder = 0
@@ -825,7 +873,7 @@ function LIB.AddProp(addonname, model, obj)
 				content = {
 					model = model,
 					skin = tonumber(obj.skin or 0) or 0,
-					bodygroup = tostring(obj.bodygroup or "00000000"),
+					bodygroups = tostring(obj.bodygroups or "00000000"),
 				}
 			}
 		)
@@ -1696,7 +1744,7 @@ function LIB.Load()
 				spawnmenu.CreateContentIcon("model", propPanel, {
 					model = item.model,
 					skin = item.skin,
-					body = item.bodygroup,
+					body = item.bodygroups,
 				})
 			end
 		)
