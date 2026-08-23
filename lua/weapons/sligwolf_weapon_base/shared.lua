@@ -27,6 +27,7 @@ function SWEP:Initialize()
 
 	self:RunPostInitialize()
 
+	self._wasInit = true
 	self:Reset()
 end
 
@@ -144,7 +145,10 @@ function SWEP:OnReloaded()
 end
 
 function SWEP:OnRemove(...)
-	self:Reset()
+	if self._wasInit then
+		-- if a SWEP is given to the NPC it might be removed before it was Initialized, causing side effects
+		self:Reset()
+	end
 
 	BaseClass.OnRemove(self, ...)
 end
