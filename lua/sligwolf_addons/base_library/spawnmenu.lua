@@ -768,33 +768,7 @@ local function RemoveDefaultNode(treePanel)
 	end)
 end
 
-function LIB.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroups)
-	name = tostring(name or "")
-	if name == "" then
-		LIBPrint.Error("no name")
-		return
-	end
-
-	playerModel = tostring(playerModel or "")
-	if playerModel == "" then
-		LIBPrint.Error("no valid playerModel")
-		return
-	end
-
-	vHandsModel = tostring(vHandsModel or "")
-	if vHandsModel == "" then
-		LIBPrint.Error("no valid vHandsModel")
-		return
-	end
-
-	skin = tonumber(skin or 0)
-	bodygroups = tostring(bodygroups or "00000000")
-
-	player_manager.AddValidModel(name, playerModel)
-	player_manager.AddValidHands(name, vHandsModel, skin, bodygroups)
-end
-
-function LIB.AddPlayerModel2(addonname, name, obj) -- @TODO: Replace LIB.AddPlayerModel
+function LIB.AddPlayerModel(addonname, name, obj)
 	addonname = tostring(addonname or "")
 	if addonname == "" then
 		LIBPrint.Error("no addonname")
@@ -815,12 +789,6 @@ function LIB.AddPlayerModel2(addonname, name, obj) -- @TODO: Replace LIB.AddPlay
 		return
 	end
 
-	local viewHandsModel = tostring(obj.viewHandsModel or "")
-	if viewHandsModel == "" then
-		LIBPrint.Error("no viewHandsModel")
-		return
-	end
-
 	local title = tostring(obj.title or "")
 	if title == "" then
 		title = name
@@ -831,14 +799,41 @@ function LIB.AddPlayerModel2(addonname, name, obj) -- @TODO: Replace LIB.AddPlay
 		category = g_defaultNodeName
 	end
 
-	local skin = tonumber(obj.skin or 0)
-	local bodygroups = tostring(obj.bodygroups or "00000000")
-	local matchBodySkin = tobool(obj.matchBodySkin)
+	local viewHands = obj.viewHands or {}
 
-	local internalName = string.format("%s.%s", addonname, name)
+	local viewHandsSkin = tonumber(viewHands.skin or 0)
+	local viewHandsBodygroups = tostring(viewHands.bodygroups or "00000000")
+	local viewHandsMatchBodySkin = viewHands.matchBodySkin
 
-	player_manager.AddValidModel(internalName, playerModel, title, category)
-	player_manager.AddValidHands(internalName, vHandsModel, skin, bodygroups, matchBodySkin)
+	if viewHandsMatchBodySkin == nil and viewHandsSkin == 0 then
+		viewHandsMatchBodySkin = true
+	end
+
+	local viewHandsModel = tostring(viewHands.model or "")
+	if viewHandsModel == "" then
+		viewHandsModel = "models/weapons/c_arms_citizen.mdl"
+	end
+
+	if viewHandsMatchBodySkin then
+		viewHandsSkin = 0
+	end
+
+	local internalName = string.format("sligwolf_%s.%s", addonname, name)
+
+	player_manager.AddValidModel(
+		internalName,
+		model,
+		title,
+		category
+	)
+
+	player_manager.AddValidHands(
+		internalName,
+		viewHandsModel,
+		viewHandsSkin,
+		viewHandsBodygroups,
+		viewHandsMatchBodySkin or false
+	)
 end
 
 local g_PropOrder = 0

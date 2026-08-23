@@ -31,11 +31,7 @@ SLIGWOLF_ADDON:AddSpawnMenuItemAddonCategory("npc", g_allAddonCategoryName, g_al
 SLIGWOLF_ADDON:AddSpawnMenuItemAddonCategory("weapon", g_allAddonCategoryName, g_allAddonCategory)
 SLIGWOLF_ADDON:AddSpawnMenuItemAddonCategory("vehicle", g_allAddonCategoryName, g_allAddonCategory)
 
-function SLIGWOLF_ADDON:AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
-	LIBSpawnmenu.AddPlayerModel(name, playerModel, vHandsModel, skin, bodygroup)
-end
-
-function SLIGWOLF_ADDON:AddPlayerModel2(name, obj) -- @TODO: Replace SLIGWOLF_ADDON:AddPlayerModel
+function SLIGWOLF_ADDON:AddPlayerModel(name, obj)
 	obj = obj or {}
 
 	local addonName = tostring(obj.addonName or "")
@@ -43,7 +39,7 @@ function SLIGWOLF_ADDON:AddPlayerModel2(name, obj) -- @TODO: Replace SLIGWOLF_AD
 		addonName = self.Addonname
 	end
 
-	LIBSpawnmenu.AddPlayerModel2(addonName, name, obj)
+	LIBSpawnmenu.AddPlayerModel(addonName, name, obj)
 end
 
 function SLIGWOLF_ADDON:AddProp(model, obj)
