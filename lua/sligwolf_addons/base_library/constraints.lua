@@ -264,6 +264,48 @@ function LIB.GetAllConstrainedEntities(ent)
 	return constraint.GetAllConstrainedEntities(ent, resultTable)
 end
 
+function LIB.GetAllSolidlyConstrainedEntities(ent, result)
+	local results = result or {}
+
+	if not IsValid(ent) then
+		return
+	end
+
+	if ent:IsWorld() then
+		return
+	end
+
+	if results[ent] then
+		return
+	end
+
+	results[ent] = ent
+
+	local conTable = constraint.GetTable(ent)
+
+	for k, con in ipairs(conTable) do
+		if con.Type == "NoCollide" then
+			continue
+		end
+
+		for _, conEntEntry in pairs(con.Entity) do
+			local conEnt = conEntEntry.Entity
+
+			if not IsValid(conEnt) then
+				continue
+			end
+
+			if conEnt:IsWorld() then
+				continue
+			end
+
+			LIB.GetAllSolidlyConstrainedEntities(conEnt, results)
+		end
+	end
+
+	return results
+end
+
 function LIB.GetTable(ent)
 	return constraint.GetTable(ent)
 end

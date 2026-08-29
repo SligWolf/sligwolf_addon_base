@@ -32,8 +32,15 @@ function SLIGWOLF_ADDON:VehicleOrderThink()
 		if not IsValid(vehicle) then return end
 
 		local spawntable = LIBEntities.GetSpawntable(vehicle, true)
-		if not spawntable or spawntable.SLIGWOLF_Addonname ~= self.Addonname then
-			return
+
+		if not self.VehicleOrderValidateVehicle then
+			if not spawntable or spawntable.SLIGWOLF_Addonname ~= self.Addonname then
+				return
+			end
+		else
+			if not self:VehicleOrderValidateVehicle(vehicle, spawntable, ply) then
+				return
+			end
 		end
 
 		for k, v in pairs(self.KeySettings or {}) do
