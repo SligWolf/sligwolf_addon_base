@@ -1093,6 +1093,8 @@ function SligWolf_Addons.ReloadAllAddons()
 	local sortedAddondata = sligwolfAddons.GetAddonsSorted()
 	local reloadList = {}
 
+	local hasDevAddon = false
+
 	for _, addon in ipairs(sortedAddondata) do
 		local addonName = addon.Addonname
 		if addonName == baseAddonName then
@@ -1102,6 +1104,7 @@ function SligWolf_Addons.ReloadAllAddons()
 
 		if addonName == devAddonName then
 			-- dev addon is always loaded last
+			hasDevAddon = true
 			continue
 		end
 
@@ -1118,8 +1121,10 @@ function SligWolf_Addons.ReloadAllAddons()
 		sligwolfAddons.LoadAddon(addonName, forceReload)
 	end
 
-	sligwolfAddons.LoadAddon(devAddonName, forceReload)
-	sligwolfAddons.DEV_ADDON = sligwolfAddons.GetAddon(devAddonName)
+	if sligwolfAddons.DEV_ADDON ~= nil or hasDevAddon then
+		sligwolfAddons.LoadAddon(devAddonName, forceReload)
+		sligwolfAddons.DEV_ADDON = sligwolfAddons.GetAddon(devAddonName)
+	end
 
 	inValidateSortedAddondata()
 
@@ -1161,7 +1166,24 @@ function SligWolf_Addons.AutoLoadAddon()
 	end
 
 	local result = sligwolfAddons.LoadAddon(name, true)
-	return result
+
+	if not result then
+		return false
+	end
+
+	local baseAddonName = sligwolfAddons.BASE_ADDON_NAME
+	local devAddonName = sligwolfAddons.DEV_ADDON_NAME
+
+	local addon = sligwolfAddons.GetAddon(name)
+
+	local addonName = addon.Addonname
+	if addonName == baseAddonName then
+		sligwolfAddons.BASE_ADDON = addon
+	elseif addonName == devAddonName then
+		sligwolfAddons.DEV_ADDON = addon
+	end
+
+	return true
 end
 
 function SligWolf_Addons.GetLoadedAddonsCount()
