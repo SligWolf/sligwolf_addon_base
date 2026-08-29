@@ -124,9 +124,11 @@ function SLIGWOLF_ADDON:HandleSpawnFinishedEvent(ent, callNow)
 			return
 		end
 
-		local spawnTable = LIBEntities.GetSpawntable(superparent)
-		if not spawnTable then return end
-		if not spawnTable.Is_SLIGWOLF then return end
+		if SERVER or SligWolf_Addons.FirstFrameRendered then
+			local spawnTable = LIBEntities.GetSpawntable(superparent)
+			if not spawnTable then return end
+			if not spawnTable.Is_SLIGWOLF then return end
+		end
 
 		self:HandleSpawnFinishedEventInternal(superparent)
 	end

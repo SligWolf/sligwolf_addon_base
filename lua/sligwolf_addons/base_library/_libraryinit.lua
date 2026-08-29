@@ -97,13 +97,32 @@ callLoaderFunc("PostLoad")
 SligWolf_Addons.Hook.AddCustom("AllAddonsLoaded", "Library_Init_AllAddonsLoaded", function()
 	callLoaderFunc("AllAddonsLoaded")
 
-	SligWolf_Addons.Timer.NextFrame("Library_Init_FirstFrame", function()
-		callLoaderFunc("FirstFrame")
-		SligWolf_Addons.Hook.RunCustom("FirstFrame")
+	local lastFrameTime = SysTime()
+	local stableFrames = 0
+	local requiredStableFrames = 10
+	local maxFrameTime = 0.1
 
-		SligWolf_Addons.Util.FlashWindow()
+	SligWolf_Addons.Hook.Add("Think", "Library_Init_WaitForStableFrames", function()
+		local currentTime = SysTime()
+		local frameTime = currentTime - lastFrameTime
+		lastFrameTime = currentTime
 
-		SligWolf_Addons.FirstFrameRendered = true
+		if frameTime <= maxFrameTime then
+			stableFrames = stableFrames + 1
+		else
+			stableFrames = 0
+		end
+
+		if stableFrames >= requiredStableFrames then
+			SligWolf_Addons.Hook.Remove("Think", "Library_Init_WaitForStableFrames")
+
+			SligWolf_Addons.FirstFrameRendered = true
+
+			callLoaderFunc("FirstFrame")
+			SligWolf_Addons.Hook.RunCustom("FirstFrame")
+
+			SligWolf_Addons.Util.FlashWindow()
+		end
 	end)
 end, 1000)
 
