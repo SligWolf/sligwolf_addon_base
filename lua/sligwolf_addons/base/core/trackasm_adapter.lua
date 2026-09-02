@@ -485,7 +485,7 @@ function SLIGWOLF_ADDON:TrackAssamblerContentAutoInclude()
 	g_taSettings.Type = g_taType
 
 	self:CallAddonFunctionWithAddonEnvironment(function()
-		SligWolf_Addons.Include("sligwolf_addons/base/trackasm_export.lua")
+		SligWolf_Addons.Include("sligwolf_addons/base/core/trackasm_export.lua")
 	end)
 end
 

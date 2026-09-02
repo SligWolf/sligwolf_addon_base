@@ -880,7 +880,7 @@ function SligWolf_Addons.LoadAddon(name, forceReload)
 	thisAddon.ToString = emptyAddonToString
 
 	local files = {
-		"sligwolf_addons/base/addoncore.lua",
+		"sligwolf_addons/base/core/core.lua",
 		luaDirectory .. "/init.lua",
 	}
 

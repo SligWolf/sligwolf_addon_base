@@ -6,9 +6,7 @@ if not SLIGWOLF_ADDON then
 	return
 end
 
-local CONSTANTS = SligWolf_Addons.Constants
-
-function SLIGWOLF_ADDON:AddSoundScript(scriptData, preCache)
+function SLIGWOLF_ADDON:AddSoundScript(scriptData)
 	scriptData = scriptData or {}
 	local name = tostring(scriptData.name or "")
 
@@ -17,21 +15,13 @@ function SLIGWOLF_ADDON:AddSoundScript(scriptData, preCache)
 		return nil
 	end
 
-	if preCache == nil then
-		preCache = true
-	end
-
-	if preCache then
-		scriptData.name = self:PrecacheSoundScript(name)
-	else
-		scriptData.name = self:GetSoundScriptName(name)
-	end
+	scriptData.name = self:GetSoundScriptName(name)
 
 	sound.Add(scriptData)
 end
 
 function SLIGWOLF_ADDON:GetSoundScriptName(name)
-	local name = tostring(name or "")
+	name = tostring(name or "")
 
 	if name == "" then
 		error("name is empty!")
@@ -39,13 +29,6 @@ function SLIGWOLF_ADDON:GetSoundScriptName(name)
 	end
 
 	name = string.format("SLIGWOLF.%s.%s", self.Addonname, name)
-	return name
-end
-
-function SLIGWOLF_ADDON:PrecacheSoundScript(name)
-	name = self:GetSoundScriptName(name)
-
-	util.PrecacheSound(name)
 	return name
 end
 
@@ -62,7 +45,9 @@ function SLIGWOLF_ADDON:SoundCreate(ent, name, recipientFilter)
 end
 
 function SLIGWOLF_ADDON:SoundEdit(soundObj, state, pitch, pitchtime, volume, volumetime)
-	if not soundObj then return end
+	if not soundObj then
+		return
+	end
 
 	state = tonumber(state or 0)
 	pitch = tonumber(pitch or 100)

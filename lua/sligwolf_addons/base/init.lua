@@ -14,5 +14,7 @@ SLIGWOLF_ADDON.Author = "SligWolf"
 SLIGWOLF_ADDON.NiceName = "Base"
 SLIGWOLF_ADDON.Version = SligWolf_Addons.BaseApiVersion
 
+SLIGWOLF_ADDON:LuaInclude("sound.lua")
+
 return true
 
