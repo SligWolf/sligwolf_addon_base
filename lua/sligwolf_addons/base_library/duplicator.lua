@@ -13,7 +13,8 @@ local LIBMeta = SligWolf_Addons.Meta
 
 local g_mainEntityModifierName = "SLIGWOLF_Library_Duplicator_MainEntityModifier"
 local g_isDupedEntityModifierName = "SLIGWOLF_Library_Duplicator_IsDupedEntityModifier"
-local g_entityProxyModifierName = "SLIGWOLF_Library_Duplicator_EntityProxyModifierName"
+local g_entityProxyModifierName = "SLIGWOLF_Library_Duplicator_EntityProxyModifier"
+local g_themeModifierName = "SLIGWOLF_Library_Duplicator_ThemeModifier"
 
 local g_emptyFunction = function() end
 
@@ -64,11 +65,15 @@ end
 
 function LIB.WasDuped(ent)
 	if not IsValid(ent) then
-		return
+		return false
 	end
 
 	local entTable = ent:SligWolf_GetTable()
-	return entTable.isDuped
+	if not entTable.isDuped then
+		return false
+	end
+
+	return true
 end
 
 function LIB.SetAsDuped(ent)
@@ -89,7 +94,15 @@ function LIB.StoreIsDupedEntityModifier(ent)
 	duplicator.StoreEntityModifier(ent, g_isDupedEntityModifierName, {_ = true})
 end
 
-duplicator.RegisterEntityModifier(g_isDupedEntityModifierName, LIB.SetAsDuped)
+local function isDupedModifier(ply, ent, data)
+	if not IsValid(ent) then
+		return
+	end
+
+	LIB.SetAsDuped(ent)
+end
+
+duplicator.RegisterEntityModifier(g_isDupedEntityModifierName, isDupedModifier)
 
 function LIB.StoreEntityProxyModifier(ent, proxySpawnId)
 	if not IsValid(ent) then
@@ -112,6 +125,24 @@ local function entityProxyModifier(ply, ent, data)
 end
 
 duplicator.RegisterEntityModifier(g_entityProxyModifierName, entityProxyModifier)
+
+function LIB.StoreThemeEntityModifier(ent)
+	if not IsValid(ent) then
+		return
+	end
+
+	duplicator.StoreEntityModifier(ent, g_themeModifierName, {_ = true})
+end
+
+local function themeModifier(ply, ent, data)
+	if not IsValid(ent) then
+		return
+	end
+
+	LIB.SetAsDuped(ent)
+end
+
+duplicator.RegisterEntityModifier(g_themeModifierName, themeModifier)
 
 local function mainPostCopyCallback(ply, ent, data)
 	if not IsValid(ent) then

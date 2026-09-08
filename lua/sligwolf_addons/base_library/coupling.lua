@@ -7,9 +7,11 @@ local LIB = SligWolf_Addons:NewLib("Coupling")
 
 local CONSTANTS = SligWolf_Addons.Constants
 
+local LIBDuplicator = SligWolf_Addons.Duplicator
 local LIBEntities = SligWolf_Addons.Entities
 local LIBPlayer = SligWolf_Addons.Player
 local LIBUtil = SligWolf_Addons.Util
+local LIBHook = SligWolf_Addons.Hook
 
 LIB.GENDER_MALE = "M"
 LIB.GENDER_FEMALE = "F"
@@ -27,12 +29,6 @@ LIB.TYPE_MINITRAIN = "minitrain"
 LIB.TYPE_METROJOINT = "metrojoint"
 LIB.TYPE_ST3TRAM = "st3tram"
 
-function LIB.Load()
-	LIBEntities = SligWolf_Addons.Entities
-	LIBPlayer = SligWolf_Addons.Player
-	LIBUtil = SligWolf_Addons.Util
-end
-
 local function getCache(ent)
 	if not IsValid(ent) then
 		return nil
@@ -40,8 +36,13 @@ local function getCache(ent)
 
 	local entTable = ent:SligWolf_GetTable()
 
-	local couplingCache = entTable.couplingCache or {}
-	entTable.couplingCache = couplingCache
+	local couplingCache = entTable._couplingCache or {}
+
+	if not couplingCache or not couplingCache.alive then
+		couplingCache = {}
+		couplingCache.alive = CONSTANTS.unstoredTrue
+		entTable._couplingCache = couplingCache
+	end
 
 	local connections = couplingCache.connections or {}
 	couplingCache.connections = connections
@@ -822,6 +823,53 @@ function LIB.AutoConnect(vehicle, ply)
 	end
 
 	return hasConnected
+end
+
+function LIB.Load()
+	LIBDuplicator = SligWolf_Addons.Duplicator
+	LIBEntities = SligWolf_Addons.Entities
+	LIBPlayer = SligWolf_Addons.Player
+	LIBUtil = SligWolf_Addons.Util
+	LIBHook = SligWolf_Addons.Hook
+
+	local function AddDupeHooks(ent, spawnname, spawntable, addonname)
+		if not ent:IsVehicle() then
+			return
+		end
+
+		LIBDuplicator.RegisterEntityDuplicatorModifier(ent, {
+			name = "Library_Coupling",
+
+			copy = function(copiedEnt, data)
+				if not copiedEnt:IsVehicle() then
+					return
+				end
+
+				data.LightData = LIB.GetTrailerDataForDupe(copiedEnt)
+			end,
+
+			pastedAll = function(pastedEnt, data)
+				if not pastedEnt:IsVehicle() then
+					return
+				end
+
+				LIB.SetTrailerDataFromDupe(pastedEnt, data.LightData)
+
+				local addon = SligWolf_Addons.GetAddonFromEntity(pastedEnt)
+				if not addon then
+					return
+				end
+
+				if LIB.GetTrailerMainVehicle(pastedEnt, false) ~= pastedEnt then
+					return
+				end
+
+				addon:LightsUpdateGlows(pastedEnt)
+			end
+		})
+	end
+
+	LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_Coupling_AddDupeHooks", AddDupeHooks, 11200)
 end
 
 return true

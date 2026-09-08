@@ -229,6 +229,32 @@ function LIB.Load()
 		end
 
 		LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_Themesystem_ApplySkinThemeFromKeyValue", ApplySkinThemeFromKeyValue, 12000)
+
+		local function AddDupeHooks(ent, spawnname, spawntable, addonname)
+			LIBDuplicator.RegisterEntityDuplicatorModifier(ent, {
+				name = "Library_Themesystem",
+
+				copy = function(copiedEnt, data)
+					local addon = SligWolf_Addons.GetAddonFromEntity(copiedEnt)
+					if not addon then
+						return
+					end
+
+					data.ThemeData = addon:ThemeGetData(copiedEnt)
+				end,
+
+				pastedFirst = function(pastedEnt, data)
+					local addon = SligWolf_Addons.GetAddonFromEntity(pastedEnt)
+					if not addon then
+						return
+					end
+
+					addon:ThemeApplyData(pastedEnt, data.ThemeData)
+				end
+			})
+		end
+
+		LIBHook.AddCustom("OnPostAddonEntityCreated", "Library_Themesystem_AddDupeHooks", AddDupeHooks, 11100)
 	end
 end
 
