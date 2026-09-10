@@ -79,8 +79,7 @@ function SLIGWOLF_ADDON:LightsUpdateGlows(trailer)
 				return
 			end
 
-			local trailerData = LIBCoupling.GetTrailerData(v)
-			if not trailerData.isTrailerMain then
+			if not LIBCoupling.IsTrailerMain(v) then
 				return
 			end
 

@@ -267,7 +267,6 @@ function SLIGWOLF_ADDON:HandleVehicleSpawn(vehicle, vehicleSpawnname, vehicleTab
 
 		if members then
 			table.Merge(vehicle, members)
-			duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
 		end
 	end
 

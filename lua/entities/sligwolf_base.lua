@@ -186,6 +186,7 @@ function ENT:SetupDataTables()
 	self:AddNetworkRVar("Bool", "Enabled")
 	self:AddNetworkRVar("Entity", "OwningPlayer")
 	self:AddNetworkRVar("Entity", "ParentEntity")
+	self:AddNetworkRVar("Entity", "SuperparentEntity")
 
 	self:RegisterNetworkRVarNotify("AddonID", self.ClearAddonCache)
 	self:RegisterNetworkRVarNotify("ParentEntity", self.UpdateChildren)
@@ -416,6 +417,26 @@ function ENT:SetParentEntity(parentEntity)
 	end
 
 	self:SetNetworkRVar("ParentEntity", parentEntity)
+end
+
+function ENT:GetSuperParentEntity()
+	local superparentEntity = self:GetNetworkRVar("SuperparentEntity")
+
+	if not IsValid(superparentEntity) then
+		return nil
+	end
+
+	return superparentEntity
+end
+
+function ENT:SetSuperParentEntity(superparentEntity)
+	if CLIENT then return end
+
+	if not IsValid(superparentEntity) then
+		superparentEntity = NULL
+	end
+
+	self:SetNetworkRVar("SuperparentEntity", superparentEntity)
 end
 
 function ENT:SetOwningPlayer(plyOwner)

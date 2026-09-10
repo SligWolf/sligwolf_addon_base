@@ -357,6 +357,7 @@ function LIB.MakeEnt(classname, plyOwner, parent, name, addonname)
 	end
 
 	LIB.InheritSpawnEffectFromParent(ent)
+	LIB.NetworkSuperParent(ent)
 
 	return ent
 end
@@ -804,35 +805,27 @@ end
 function LIB.GetParent(ent)
 	if not IsValid(ent) then return end
 
+	local parent = nil
+
 	if ent.sligwolf_baseEntity then
-		local parent = ent:GetParentEntity()
+		parent = ent:GetParentEntity()
+	else
+		parent = ent:GetNWEntity("sligwolf_parent")
+	end
 
-		if IsValid(parent) and parent ~= ent then
-			return parent
-		end
-
+	if not IsValid(parent) then
 		return nil
 	end
 
-	local cache = getCache(ent).parents
-	if cache then
-		local parent = cache.ParentENT
-
-		if IsValid(parent) and parent ~= ent then
-			return parent
-		end
-
-		parent = ent:GetNWEntity("sligwolf_parent")
-
-		if IsValid(parent) and parent ~= ent then
-			return parent
-		end
+	if parent == ent then
+		return nil
 	end
 
-	return nil
+	return parent
 end
 
 function LIB.SetParent(ent, parent)
+	if CLIENT then return end
 	if not IsValid(ent) then return end
 
 	if parent == ent then
@@ -845,17 +838,16 @@ function LIB.SetParent(ent, parent)
 
 	local name = LIB.GetName(ent)
 
-	local cache = getCache(ent).parents
-
-	cache.ParentENT = parent
-
 	if ent.sligwolf_baseEntity then
 		ent:SetParentEntity(parent)
+		ent:SetSuperParentEntity(NULL)
 	else
 		ent:SetNWEntity("sligwolf_parent", parent or NULL)
+		ent:SetNWEntity("sligwolf_superparent", NULL)
 	end
 
-	cache.SuperParentENT = nil
+	local cache = getCache(ent).parents
+
 	cache.NearstBodyENT = nil
 	cache.ParentBodyENT = nil
 
@@ -939,12 +931,32 @@ function LIB.CalcNearstBody(ent)
 	return nil
 end
 
+function LIB.NetworkSuperParent(ent)
+	if CLIENT then return end
+	if not IsValid(ent) then return end
+
+	local superParent = LIB.CalcSuperParent(ent)
+	if not IsValid(superParent) then
+		superParent = ent
+	end
+
+	if ent.sligwolf_baseEntity then
+		ent:SetSuperParentEntity(superParent)
+	else
+		ent:SetNWEntity("sligwolf_superparent", superParent)
+	end
+end
+
 function LIB.GetSuperParent(ent)
 	if not IsValid(ent) then return end
 
-	local cache = getCache(ent).parents
+	local superParent = nil
 
-	local superParent = cache.SuperParentENT
+	if ent.sligwolf_baseEntity then
+		superParent = ent:GetSuperParentEntity()
+	else
+		superParent = ent:GetNWEntity("sligwolf_superparent")
+	end
 
 	if IsValid(superParent) then
 		return superParent
@@ -955,8 +967,17 @@ function LIB.GetSuperParent(ent)
 		superParent = ent
 	end
 
-	cache.SuperParentENT = superParent
+	if CLIENT then
+		return superParent
+	end
+
 	LIB.ClearChildrenCache(ent)
+
+	if ent.sligwolf_baseEntity then
+		ent:SetSuperParentEntity(superParent)
+	else
+		ent:SetNWEntity("sligwolf_superparent", superParent)
+	end
 
 	return superParent
 end

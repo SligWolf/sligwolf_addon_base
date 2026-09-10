@@ -69,7 +69,6 @@ function LIB.MakeVehicle(spawnname, plyOwner, parent, name, addonname)
 
 	if members then
 		table.Merge(vehicle, members)
-		duplicator.StoreEntityModifier(vehicle, "VehicleMemDupe", members)
 	end
 
 	if IsValid(parent) then

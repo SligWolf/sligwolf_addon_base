@@ -215,6 +215,32 @@ function LIB.MarkAsTrailer(vehicle)
 	trailerData.isTrailer = true
 end
 
+function LIB.IsTrailerMain(vehicle)
+	if not IsValid(vehicle) then
+		return false
+	end
+
+	local trailerData = LIB.GetTrailerData(vehicle)
+	if not trailerData.isTrailerMain then
+		return false
+	end
+
+	return true
+end
+
+function LIB.IsTrailer(vehicle)
+	if not IsValid(vehicle) then
+		return false
+	end
+
+	local trailerData = LIB.GetTrailerData(vehicle)
+	if not trailerData.isTrailer then
+		return false
+	end
+
+	return true
+end
+
 function LIB.GetCouplers(vehicle)
 	vehicle = LIBEntities.GetSuperParent(vehicle)
 	if not IsValid(vehicle) then return end
@@ -419,7 +445,6 @@ local function copyCache(vehicle, otherVehicles, name)
 			return
 		end
 
-		table.Empty(otherCacheItems)
 		table.CopyFromTo(cacheItems, otherCacheItems)
 	end
 end
@@ -559,12 +584,7 @@ function LIB.GetTrailerMainVehicles(vehicle)
 	if not vehicles then return end
 
 	for k, v in pairs(vehicles) do
-		if not IsValid(v) then
-			continue
-		end
-
-		local trailerData = LIB.GetTrailerData(v)
-		if not trailerData.isTrailerMain then
+		if not LIB.IsTrailerMain(v) then
 			continue
 		end
 
@@ -860,7 +880,8 @@ function LIB.Load()
 					return
 				end
 
-				if LIB.GetTrailerMainVehicle(pastedEnt, false) ~= pastedEnt then
+				local main = LIB.GetTrailerMainVehicle(pastedEnt, false)
+				if IsValid(main) and main ~= pastedEnt then
 					return
 				end
 
