@@ -2038,15 +2038,19 @@ function LIB.SetBodygroupMeshIds(ent, bodygroups)
 	end
 
 	for _, bodygroup in ipairs(bodygroups) do
-		local id = tonumber(bodygroup.id) or tostring(bodygroup.name)
+		local id = tonumber(bodygroup.id)
+		local idOrName = tostring(bodygroup.name or "")
 		local meshId = tonumber(bodygroup.meshId or 0) or 0
 
-		if not id or id == "" then
-			error("missing id or name")
-			return
+		if idOrName == "" then
+			idOrName = id
+
+			if not idOrName then
+				continue
+			end
 		end
 
-		LIB.SetBodygroupMeshId(ent, id, meshId)
+		LIB.SetBodygroupMeshId(ent, idOrName, meshId)
 	end
 end
 
@@ -2071,9 +2075,15 @@ function LIB.GetBodygroupMeshIds(ent)
 	local bodygroups = ent:GetBodyGroups()
 	local result = {}
 
-	for name, bodygroup in ipairs(bodygroups) do
-		local id = tonumber(bodygroup.id)
+	for _, bodygroup in ipairs(bodygroups) do
+		local id = bodygroup.id
+		local name = bodygroup.name
+
 		if not id then
+			continue
+		end
+
+		if not name then
 			continue
 		end
 

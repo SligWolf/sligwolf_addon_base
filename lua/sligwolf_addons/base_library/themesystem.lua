@@ -243,7 +243,7 @@ function LIB.Load()
 					data.ThemeData = addon:ThemeGetData(copiedEnt)
 				end,
 
-				pastedAll = function(pastedEnt, data)
+				pastedFirst = function(pastedEnt, data)
 					local addon = SligWolf_Addons.GetAddonFromEntity(pastedEnt)
 					if not addon then
 						return

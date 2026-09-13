@@ -620,16 +620,25 @@ function SLIGWOLF_ADDON:ThemeApplyData(superparent, themeData)
 			)
 
 			appliedTheme[path] = appliedThemeEntry
+
+			entTable.themeHasApplied = true
+			entTable.themeHasAppliedColor = true
 		end
 
 		if itemSkin then
 			appliedThemeEntry.skin = itemSkin
 			appliedTheme[path] = appliedThemeEntry
+
+			entTable.themeHasApplied = true
+			entTable.themeHasAppliedSkin = true
 		end
 
 		if itemBodygroups then
 			appliedThemeEntry.bodygroups = itemBodygroups
 			appliedTheme[path] = appliedThemeEntry
+
+			entTable.themeHasApplied = true
+			entTable.themeHasAppliedBodygroups = true
 		end
 
 		local ent = nil
