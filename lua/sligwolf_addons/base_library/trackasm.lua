@@ -15,9 +15,6 @@ function LIB.Exist()
 	local trackasmlib = g_trackasmlib or _G.trackasmlib
 	if not istable(trackasmlib) then return false end
 
-	local getOpVarFunc = trackasmlib.GetOpVar
-	if not isfunction(getOpVarFunc) then return false end
-
 	local isInitFunc = trackasmlib.IsInit
 	if not isfunction(isInitFunc) then return false end
 
@@ -44,11 +41,9 @@ function LIB.GetLibVersion()
 		return nil
 	end
 
-	local success = ProtectedCall(function()
-		g_version = trackasmlib.GetOpVar("TOOL_VERSION")
-	end)
+	g_version = trackasmlib.TOOL_VERSION
 
-	if not success then
+	if not g_version then
 		g_version = false
 		return nil
 	end
@@ -62,7 +57,7 @@ function LIB.IsValidVersion()
 		return false
 	end
 
-	if version < "8.749" then
+	if version < "10.785" then
 		return false
 	end
 
@@ -83,7 +78,7 @@ function LIB.CheckVersion()
 	end
 
 	g_versionErrorPrintedChecked = true
-	LIBPrint.ErrorNoHalt("TrackAssemblyTool is outdated! (TOOL_VERSION < 8.749)")
+	LIBPrint.ErrorNoHalt("TrackAssemblyTool is outdated! (TOOL_VERSION < 10.785)")
 
 	return false
 end

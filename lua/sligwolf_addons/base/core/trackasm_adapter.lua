@@ -11,7 +11,6 @@ if not SLIGWOLF_ADDON then
 end
 
 local LIBTrackasm = SligWolf_Addons.Trackasm
-local LIBPrint = SligWolf_Addons.Print
 
 local function isAttachmentString(var)
 	if not var then
@@ -244,9 +243,6 @@ local g_taType = nil
 local g_taSettings = {}
 
 g_taSettings.Source = "SW_ADDONS"
-g_taSettings.Error = function(message)
-	LIBPrint.Print("%s", message)
-end
 
 SLIGWOLF_ADDON.TrackAssamblerSettings = g_taSettings
 SLIGWOLF_ADDON.TrackAssamblerPieces = SLIGWOLF_ADDON.TrackAssamblerPiece or {}
@@ -302,7 +298,7 @@ end
  *          the model ( from the last slash to the file extension ).
  * LINEID > This is the ID of the point that can be selected for building. They must be
  *          sequential and mandatory. If provided, the ID must the same as the row index under
- *          a given model key. Disabling this, makes it use the the index of the current line.
+ *          a given model key. Disabling this, makes it use the index of the current line.
  *          Use that to swap the active points around by only moving the desired row up or down.
  *          For the example table definition below, the line ID in the database will be the same.
  * POINT  > This is the location vector that TA searches and selects the related ORIGIN for.
@@ -318,7 +314,7 @@ end
  * CLASS  > This string is populated up when your entity class is not /prop_physics/ but something else
  *          used by ents.Create of the gmod ents API library. Keep this empty if your stuff is a normal prop.
  *          Disabling via /#/ makes it take the NULL value. In this case the model is spawned as a prop
---]]
+]]--
 
 local g_asmlib = nil
 local g_gsMissDB = nil
@@ -475,8 +471,8 @@ function SLIGWOLF_ADDON:TrackAssamblerContentAutoInclude()
 
 	g_asmlib = LIBTrackasm.GetLib()
 
-	g_gsMissDB = g_asmlib.GetOpVar("MISS_NOSQL")
-	g_gsSymOff = g_asmlib.GetOpVar("OPSYM_DISABLE")
+	g_gsMissDB = g_asmlib.MISS_NOSQL
+	g_gsSymOff = g_asmlib.OPSYM_DISABLE
 
 	local addonName = self:GetNiceNameWithAuthor()
 	g_taType = addonName
