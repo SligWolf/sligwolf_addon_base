@@ -27,7 +27,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "9755358f8f6aba3eec3821b1fcfb82f8ae1387e10288b9266cb47badfff5a3a7"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "2.0.1"
+SligWolf_Addons.BaseApiVersion = "2.0.2"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 260916
@@ -115,7 +115,6 @@ local g_WorkshopIDWhitelist = {
 	["jeeps"] = "1375274405",
 	["leotank"] = "288026358",
 	["limousine"] = "180567595",
-	["loopings"] = "105780180",
 	["mannedturret"] = "3477565429",
 	["metrotrain"] = "3578975599",
 	["minitrains"] = "149759773",
@@ -127,13 +126,11 @@ local g_WorkshopIDWhitelist = {
 	["rerailer"] = "132843280",
 	["robotgen1"] = "147802259",
 	["robotgen2"] = "119968146",
-	["robotgen2npc"] = "123685947",
 	["robotgen3"] = "3384124517",
 	["rustyer"] = "219898030",
 	["seats"] = "107865704",
 	["siren"] = "337151920",
 	["slig"] = "104914708",
-	["slignpc"] = "123686602",
 	["snowmobile"] = "105781997",
 	["st3tram"] = "707877689",
 	["tinyhoverracer"] = "1375275167",
