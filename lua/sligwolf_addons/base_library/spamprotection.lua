@@ -302,6 +302,14 @@ function LIB.Load()
 		LIBHook.AddCustom("DuplicatorPostPaste", "Library_SpamProtection_UnmarkAsDupe", UnmarkAsDupe, 1000)
 
 		local function AntiSpamVehicle(ply, model, spawnname, spawnTable)
+			if not spawnname then
+				return
+			end
+
+			if not spawnTable then
+				return
+			end
+
 			if LIB.CanSpawn(ply, spawnTable) then
 				return
 			end

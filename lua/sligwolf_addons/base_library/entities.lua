@@ -120,18 +120,30 @@ function LIB.ToString(ent)
 	end
 
 	local spawnname = ""
+	local name = ""
+	local addon = nil
 
 	local entTable = ent:SligWolf_GetTable()
 
-	if not entTable.isInToString then
-		entTable.isInToString = true
+	if not entTable.isInToString_GetSpawnname then
+		entTable.isInToString_GetSpawnname = true
 		spawnname = LIB.GetSpawnname(ent) or ""
-		entTable.isInToString = false
+		entTable.isInToString_GetSpawnname = false
 	end
 
-	local targetname = ent:GetName() or ""
-	local name = LIB.GetName(ent) or ""
-	local addon = SligWolf_Addons.GetAddonFromEntity(ent)
+	if not entTable.isInToString_GetName then
+		entTable.isInToString_GetName = true
+		name = LIB.GetName(ent) or ""
+		entTable.isInToString_GetName = false
+	end
+
+	if not entTable.isInToString_GetAddonFromEntity then
+		entTable.isInToString_GetAddonFromEntity = true
+		addon = SligWolf_Addons.GetAddonFromEntity(ent)
+		entTable.isInToString_GetAddonFromEntity = false
+	end
+
+	local targetname = SERVER and ent:GetName() or ""
 	local addonname = addon and addon.Addonname or ""
 
 	local output = {}
