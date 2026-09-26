@@ -38,6 +38,9 @@ local g_waitInitSpawnmenuContent = false
 
 local g_AddonContentContainers = {}
 
+local g_currentSpawnMenu = IsValid(_G.g_SpawnMenu) and _G.g_SpawnMenu or nil
+local g_currentCreationMenu = IsValid(g_currentSpawnMenu) and g_currentSpawnMenu:GetCreationMenu() or nil
+
 function LIB.AddSpawnMenuItemAddonCategory(addonName, itemClass, name, obj)
 	addonName = tostring(addonName or "")
 	if addonName == "" then
@@ -359,34 +362,34 @@ function LIB.GetSpawnMenuItemsOrdered(itemClass)
 	return g_registeredSpawnMenuItemsOrdered[itemClass]
 end
 
-local function BuildTabPanelIndex(creationMenu)
-	if not table.IsEmpty(g_tabPanelIndex) then
-		return g_tabPanelIndex
+local function BuildTabPanelIndex()
+	table.Empty(g_tabPanelIndex)
+
+	if not IsValid(g_currentCreationMenu) then
+		return
 	end
 
-	local tabs = creationMenu:GetCreationTabs()
+	local tabs = g_currentCreationMenu:GetCreationTabs()
 
 	for _, tab in pairs(tabs) do
 		local name = tab.Name
 
-		local panel = tab.Panel
-		if not IsValid(panel) then
+		local tabContainer = tab.Panel
+		if not IsValid(tabContainer) then
 			continue
 		end
 
-		local tabPanel = tab.Tab
-		if not IsValid(tabPanel) then
+		local tabButton = tab.Tab
+		if not IsValid(tabButton) then
 			continue
 		end
 
-		g_tabPanelIndex[panel] = {
+		g_tabPanelIndex[tabContainer] = {
 			name = name,
-			panel = panel,
-			tabPanel = tabPanel,
+			tabContainer = tabContainer,
+			tabButton = tabButton,
 		}
 	end
-
-	return g_tabPanelIndex
 end
 
 local function CreateCategoryNode(tree, parentNode, name, icon, cookieName)
@@ -588,64 +591,47 @@ local function CreateContentContainerNode(pnlContent, parentNode, title, icon, c
 		g_lastSpawnMenuState.lastNodeId = thisNode.sligwolf_id
 	end
 
-	LIBTimer.SimpleNextFrame(function()
-		if not IsValid(pnlContent) then
-			return
-		end
+	if not IsValid(g_currentCreationMenu) then
+		return
+	end
 
-		if not IsValid(parentNode) then
-			return
-		end
+	local tabContainer = pnlContent:GetParent()
+	if not IsValid(tabContainer) then
+		return
+	end
 
-		if not IsValid(node) then
-			return
-		end
+	local tabItem = g_tabPanelIndex[tabContainer]
+	if not tabItem then
+		return
+	end
 
-		local tabContainer = pnlContent:GetParent()
-		if not IsValid(tabContainer) then
-			return
-		end
+	local tabButton = tabItem.tabButton
+	if not IsValid(tabButton) then
+		return
+	end
 
-		local creationMenu = tabContainer:GetParent()
-		if not IsValid(creationMenu) then
-			return
-		end
+	local pnlContentTitle = tabItem and tabItem.name or ""
+	local parentTitle = parentNode:GetText()
+	local nodeTitle = node:GetText()
 
-		local tabIndex = BuildTabPanelIndex(creationMenu)
-		local tabItem = tabIndex[tabContainer]
+	local id = string.format("id_%s_%s_%s", pnlContentTitle, parentTitle, nodeTitle)
+	id = util.MD5(id)
 
-		if not tabItem then
-			return
-		end
+	local titleId = string.format("id_%s_%s", pnlContentTitle, nodeTitle)
+	titleId = util.MD5(titleId)
 
-		local tabPanel = tabItem.tabPanel
-		if not IsValid(tabPanel) then
-			return
-		end
+	node.sligwolf_id = id
+	node.sligwolf_titleId = titleId
 
-		local pnlContentTitle = tabItem and tabItem.name or ""
-		local parentTitle = parentNode:GetText()
-		local nodeTitle = node:GetText()
+	if g_lastSpawnMenuState.lastNodeId and id == g_lastSpawnMenuState.lastNodeId then
+		g_lastSpawnMenuState.lastNodeId = nil
 
-		local id = string.format("id_%s_%s_%s", pnlContentTitle, parentTitle, nodeTitle)
-		id = util.MD5(id)
+		g_currentCreationMenu:SetActiveTab(tabButton)
+		parentNode:SetExpanded(true)
+		node:SetExpanded(true)
 
-		local titleId = string.format("id_%s_%s", pnlContentTitle, nodeTitle)
-		titleId = util.MD5(titleId)
-
-		node.sligwolf_id = id
-		node.sligwolf_titleId = titleId
-
-		if g_lastSpawnMenuState.lastNodeId and id == g_lastSpawnMenuState.lastNodeId then
-			g_lastSpawnMenuState.lastNodeId = nil
-
-			creationMenu:SetActiveTab(tabPanel)
-			parentNode:SetExpanded(true)
-			node:SetExpanded(true)
-
-			node:InternalDoClick()
-		end
-	end)
+		node:InternalDoClick()
+	end
 
 	return node
 end
@@ -1727,127 +1713,146 @@ function LIB.Load()
 	LIBFile = SligWolf_Addons.File
 
 	local function PopulatePropListContent(pnlContent, tree)
-		g_spawnmenuLoaded = true
-		table.Empty(g_tabPanelIndex)
-
-		PopulateSpawnmenuListContent(
-			pnlContent,
-			tree,
-			"prop",
-			"icon16/page.png",
-			function(node, propPanel, item)
-				spawnmenu.CreateContentIcon("model", propPanel, {
-					model = item.model,
-					skin = item.skin,
-					body = item.bodygroups,
-				})
-			end
-		)
+		LIBTimer.NextFrame("Library_Spawnmenu_PopulatePropListContent", function()
+			PopulateSpawnmenuListContent(
+				pnlContent,
+				tree,
+				"prop",
+				"icon16/page.png",
+				function(node, propPanel, item)
+					spawnmenu.CreateContentIcon("model", propPanel, {
+						model = item.model,
+						skin = item.skin,
+						body = item.bodygroups,
+					})
+				end
+			)
+		end)
 	end
 
 	local function PopulateEntityListContent(pnlContent, tree)
-		g_spawnmenuLoaded = true
-		table.Empty(g_tabPanelIndex)
+		LIBTimer.NextFrame("Library_Spawnmenu_PopulateEntityListContent", function()
+			PopulateSpawnmenuListContent(
+				pnlContent,
+				tree,
+				"entity",
+				"icon16/bricks.png",
+				function(node, propPanel, item)
+					local icon = LIB.GetIconPath(item.spawnName)
 
-		PopulateSpawnmenuListContent(
-			pnlContent,
-			tree,
-			"entity",
-			"icon16/bricks.png",
-			function(node, propPanel, item)
-				local icon = LIB.GetIconPath(item.spawnName)
+					spawnmenu.CreateContentIcon("entity", propPanel, {
+						nicename = item.title,
+						spawnname = item.spawnName,
+						material = icon,
+						admin = item.adminOnly
+					})
 
-				spawnmenu.CreateContentIcon("entity", propPanel, {
-					nicename = item.title,
-					spawnname = item.spawnName,
-					material = icon,
-					admin = item.adminOnly
-				})
+					RequestAddColorSkinPicker(propPanel, item.addonName, "entity")
+				end
+			)
 
-				RequestAddColorSkinPicker(propPanel, item.addonName, "entity")
-			end
-		)
-
-		RemoveDefaultNode(tree)
+			RemoveDefaultNode(tree)
+		end)
 	end
 
 	local function PopulateWeaponListContent(pnlContent, tree)
-		g_spawnmenuLoaded = true
-		table.Empty(g_tabPanelIndex)
+		LIBTimer.NextFrame("Library_Spawnmenu_PopulateWeaponListContent", function()
+			PopulateSpawnmenuListContent(
+				pnlContent,
+				tree,
+				"weapon",
+				"icon16/gun.png",
+				function(node, propPanel, item)
+					local icon = LIB.GetIconPath(item.spawnName)
 
-		PopulateSpawnmenuListContent(
-			pnlContent,
-			tree,
-			"weapon",
-			"icon16/gun.png",
-			function(node, propPanel, item)
-				local icon = LIB.GetIconPath(item.spawnName)
+					spawnmenu.CreateContentIcon("weapon", propPanel, {
+						nicename = item.title,
+						spawnname = item.spawnName,
+						material = icon,
+						admin = item.adminOnly
+					})
 
-				spawnmenu.CreateContentIcon("weapon", propPanel, {
-					nicename = item.title,
-					spawnname = item.spawnName,
-					material = icon,
-					admin = item.adminOnly
-				})
+					RequestAddColorSkinPicker(propPanel, item.addonName, "weapon")
+				end
+			)
 
-				RequestAddColorSkinPicker(propPanel, item.addonName, "weapon")
-			end
-		)
-
-		RemoveDefaultNode(tree)
+			RemoveDefaultNode(tree)
+		end)
 	end
 
 	local function PopulateNPCListContent(pnlContent, tree)
-		g_spawnmenuLoaded = true
-		table.Empty(g_tabPanelIndex)
+		LIBTimer.NextFrame("Library_Spawnmenu_PopulateNPCListContent", function()
+			PopulateSpawnmenuListContent(
+				pnlContent,
+				tree,
+				"npc",
+				"icon16/monkey.png",
+				function(node, propPanel, item)
+					local icon = LIB.GetIconPath(item.spawnName)
 
-		PopulateSpawnmenuListContent(
-			pnlContent,
-			tree,
-			"npc",
-			"icon16/monkey.png",
-			function(node, propPanel, item)
-				local icon = LIB.GetIconPath(item.spawnName)
+					spawnmenu.CreateContentIcon("npc", propPanel, {
+						nicename = item.title,
+						spawnname = item.spawnName,
+						material = icon,
+						admin = item.adminOnly,
+						weapon = item.weapons,
+					})
 
-				spawnmenu.CreateContentIcon("npc", propPanel, {
-					nicename = item.title,
-					spawnname = item.spawnName,
-					material = icon,
-					admin = item.adminOnly,
-					weapon = item.weapons,
-				})
+					RequestAddColorSkinPicker(propPanel, item.addonName, "npc")
+				end
+			)
 
-				RequestAddColorSkinPicker(propPanel, item.addonName, "npc")
-			end
-		)
-
-		RemoveDefaultNode(tree)
+			RemoveDefaultNode(tree)
+		end)
 	end
 
 	local function PopulateVehicleListContent(pnlContent, tree)
+		LIBTimer.NextFrame("Library_Spawnmenu_PopulateVehicleListContent", function()
+			PopulateSpawnmenuListContent(
+				pnlContent,
+				tree,
+				"vehicle",
+				"icon16/car.png",
+				function(node, propPanel, item)
+					local icon = LIB.GetIconPath(item.spawnName)
+
+					spawnmenu.CreateContentIcon("vehicle", propPanel, {
+						nicename = item.title,
+						spawnname = item.spawnName,
+						material = icon,
+						admin = item.adminOnly,
+					})
+
+					RequestAddColorSkinPicker(propPanel, item.addonName, "vehicle")
+				end
+			)
+
+			RemoveDefaultNode(tree)
+		end)
+	end
+
+	local function SpawnMenuCreated(spawnmenuPanel)
 		g_spawnmenuLoaded = true
-		table.Empty(g_tabPanelIndex)
 
-		PopulateSpawnmenuListContent(
-			pnlContent,
-			tree,
-			"vehicle",
-			"icon16/car.png",
-			function(node, propPanel, item)
-				local icon = LIB.GetIconPath(item.spawnName)
+		local wasVisible = false
 
-				spawnmenu.CreateContentIcon("vehicle", propPanel, {
-					nicename = item.title,
-					spawnname = item.spawnName,
-					material = icon,
-					admin = item.adminOnly,
-				})
+		ProtectedCall(function()
+			-- g_currentSpawnMenu is invalid, but IsVisible is still usable.
+			-- ProtectedCall is for the case something changes about this fact.
+			wasVisible = g_currentSpawnMenu and g_currentSpawnMenu.IsVisible and g_currentSpawnMenu:IsVisible() or false
+		end)
 
-				RequestAddColorSkinPicker(propPanel, item.addonName, "vehicle")
+		g_currentSpawnMenu = spawnmenuPanel
+		g_currentCreationMenu = spawnmenuPanel:GetCreationMenu()
+
+		BuildTabPanelIndex()
+
+		-- This is especially useful for rapid development.
+		LIBTimer.NextFrame("Library_Spawnmenu_SpawnMenuCreated_Reopen", function()
+			if IsValid(g_currentSpawnMenu) and wasVisible then
+				RunConsoleCommand("+menu")
 			end
-		)
-
-		RemoveDefaultNode(tree)
+		end)
 	end
 
 	LIBHook.Add("PopulateContent", "Library_Spawnmenu_PopulateProplistContent", PopulatePropListContent, 20000)
@@ -1855,6 +1860,8 @@ function LIB.Load()
 	LIBHook.Add("PopulateWeapons", "Library_Spawnmenu_PopulateWeaponlistContent", PopulateWeaponListContent, 20000)
 	LIBHook.Add("PopulateNPCs", "Library_Spawnmenu_PopulateNPClistContent", PopulateNPCListContent, 20000)
 	LIBHook.Add("PopulateVehicles", "Library_Spawnmenu_PopulateVehiclelistContent", PopulateVehicleListContent, 20000)
+
+	LIBHook.Add("SpawnMenuCreated", "Library_Spawnmenu_SpawnMenuCreated", SpawnMenuCreated, 20000)
 end
 
 function LIB.FirstFrame()

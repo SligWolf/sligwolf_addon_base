@@ -27,7 +27,7 @@ end
 local BASECHECK_SCRIPT_CHECKSUM = "9755358f8f6aba3eec3821b1fcfb82f8ae1387e10288b9266cb47badfff5a3a7"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "2.0.3"
+SligWolf_Addons.BaseApiVersion = "2.0.4"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 260915
