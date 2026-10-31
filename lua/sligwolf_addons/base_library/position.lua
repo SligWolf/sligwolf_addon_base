@@ -665,7 +665,12 @@ function LIB.GetPlayerPosData(ply)
 
 	local plyTable = ply:SligWolf_GetTable()
 
-	local data = plyTable.lastPlyPosData or {}
+	local data = plyTable.lastPlyPosData
+	if data then
+		return data
+	end
+
+	data = {}
 	plyTable.lastPlyPosData = data
 
 	return data
