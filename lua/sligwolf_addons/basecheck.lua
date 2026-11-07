@@ -333,17 +333,50 @@ function SLIGWOLF_BASECHECK.MatchVersion(currentVersion, requiredVersion)
 	return false
 end
 
-if CLIENT then
-	-- Tell the client user about issues they might have in the chat on connection
+if SERVER then
+	ProtectedCall(function()
+		-- Transmit SLIGWOLF_BASECHECK errors to client.
+
+		util.AddNetworkString("SLIGWOLF_BASECHECK_error_network")
+
+		hook.Add("PlayerInitialSpawn", "SLIGWOLF_BASECHECK_error_network", function(ply)
+			if not IsValid(ply) then
+				return
+			end
+
+			if not SLIGWOLF_BASECHECK.HasErrors() then
+				return
+			end
+
+			local errors = SLIGWOLF_BASECHECK.GetErrors()
+			local count = math.min(#errors, 255)
+
+			net.Start("SLIGWOLF_BASECHECK_error_network")
+				net.WriteUInt(count, 8)
+
+				for i, err in ipairs(errors) do
+					net.WriteString(err)
+				end
+			net.Send(ply)
+		end)
+	end)
+else
+	-- Tell the client user about SLIGWOLF_BASECHECK errors in the chat after they fully joined.
 
 	local colError = Color(255, 128, 128)
+	local addErrorDisplayHookTimer = nil
 
 	local function clearHook()
-		hook.Remove("InitPostEntity", "SLIGWOLF_BASECHECK_addErrorDisplayHook")
-		timer.Remove("SLIGWOLF_BASECHECK_addErrorDisplayHook_timer")
+		hook.Remove("InitPostEntity", "SLIGWOLF_BASECHECK_error_network_output")
+		timer.Remove("SLIGWOLF_BASECHECK_error_network_output_debounce")
 	end
 
 	local function displayErrorsInChat()
+		if not IsValid(LocalPlayer()) then
+			addErrorDisplayHookTimer()
+			return
+		end
+
 		clearHook()
 
 		if not SLIGWOLF_BASECHECK.HasErrors() then
@@ -357,21 +390,32 @@ if CLIENT then
 		end
 	end
 
-	local function addErrorDisplayHook()
+	addErrorDisplayHookTimer = function()
 		clearHook()
 
-		hook.Add("InitPostEntity", "SLIGWOLF_BASECHECK_addErrorDisplayHook", function()
-			clearHook()
+		if not SLIGWOLF_BASECHECK.HasErrors() then
+			return
+		end
 
-			if not SLIGWOLF_BASECHECK.HasErrors() then
-				return
-			end
-
-			timer.Create("SLIGWOLF_BASECHECK_addErrorDisplayHook_timer", 1, 1, displayErrorsInChat)
-		end)
+		timer.Create("SLIGWOLF_BASECHECK_error_network_output_debounce", 1, 1, displayErrorsInChat)
 	end
 
-	addErrorDisplayHook()
+	ProtectedCall(function()
+		net.Receive("SLIGWOLF_BASECHECK_error_network", function()
+			local count = net.ReadUInt(8)
+
+			for i = 1, count do
+				local err = net.ReadString()
+				SLIGWOLF_BASECHECK.MarkError(err)
+			end
+
+			addErrorDisplayHookTimer()
+		end)
+	end)
+
+	hook.Add("InitPostEntity", "SLIGWOLF_BASECHECK_error_network_output", function()
+		addErrorDisplayHookTimer()
+	end)
 end
 
 return SLIGWOLF_BASECHECK

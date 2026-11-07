@@ -994,6 +994,7 @@ function LIB.Load()
 
 	LIBConvar.AddChangeCallback("developer", function(value)
 		g_debugEnabled = value > 0
+		SligWolf_Addons._IsDeveloper = g_debugEnabled
 	end, "DebugUpdate")
 
 	LIBConvar.AddChangeCallback("sv_sligwolf_base_debug_mode", function(value)

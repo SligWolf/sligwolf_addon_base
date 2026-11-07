@@ -9,12 +9,12 @@
 
 local SligWolf_Addons = _G.SligWolf_Addons
 if not SligWolf_Addons then
-	error("SligWolf_Addons is missing")
+	error("SligWolf_Addons is missing!")
 	return false
 end
 
 if not SligWolf_Addons.ReloadAddonSystem then
-	error("SligWolf_Addons.ReloadAddonSystem is missing")
+	error("SligWolf_Addons.ReloadAddonSystem is missing!")
 	return false
 end
 
@@ -24,10 +24,10 @@ end
 
 -- Check sum of SW Base validation script "sligwolf_addons/basecheck.lua".
 -- It contains logic to validate the SW Base addon being installed, up to date and active. (SHA256)
-local BASECHECK_SCRIPT_CHECKSUM = "9755358f8f6aba3eec3821b1fcfb82f8ae1387e10288b9266cb47badfff5a3a7"
+local BASECHECK_SCRIPT_CHECKSUM = "25b329729f5c3b17be879e22db2fa5d5f85754b599692ca678a9a22c13732bc0"
 
 -- Version validation requirements to make sure everything is up to date.
-SligWolf_Addons.BaseApiVersion = "2.0.5"
+SligWolf_Addons.BaseApiVersion = "2.0.6"
 
 -- Minimum supported game version.
 SligWolf_Addons.MinGameVersionServer = 260915
@@ -150,12 +150,27 @@ local g_WorkshopIDWhitelist = {
 	["zdevtools"] = "3748654399",
 }
 
+do
+	-- Early available global to check developer mode. Only for pre sw-base loaded code.
+	-- On change, it is updated in sligwolf_addons/base_library/debug.lua
+	local developerConvar = GetConVar("developer")
+
+	if developerConvar then
+		SligWolf_Addons._IsDeveloper = developerConvar:GetInt() > 0
+	else
+		SligWolf_Addons._IsDeveloper = false
+	end
+end
+
 local g_realmText = SERVER and "server" or "client"
 local g_realmColor = SERVER and Color(137, 222, 255) or Color(255, 222, 102)
 local g_realmLuaPath = SERVER and "lsv" or "lcl"
 local g_errorColor = Color(255, 90, 90)
 local g_successColor = Color(90, 192, 90)
 local g_prefixColor = Color(200, 200, 200)
+
+local g_abortInclude = false
+local g_abortIncludeErrorThrown = false
 
 local addWorkshopClientDownload = nil
 
@@ -583,7 +598,7 @@ local function saveCSLuaFile(luafile)
 		end
 
 		if not luaExists(luafile) then
-			local err = string.format("Couldn't AddCSLuaFile file '%s' (File not found)", luafile)
+			local err = string.format("Couldn't AddCSLuaFile file '%s'! (File not found)", luafile)
 			error(err)
 
 			return
@@ -608,24 +623,32 @@ local function saveInclude(luafile)
 		return nil
 	end
 
+	local devMode = _G.SligWolf_Addons_ZDevTools or (_G.SligWolf_Addons and _G.SligWolf_Addons._IsDeveloper)
+	if not devMode and g_abortInclude then
+		-- do not attempt to load any more files after the first one fails to prevent include error spam.
+		g_hasIncludeErrors = true
+		return false, nil
+	end
+
 	local status, result = xpcall(function()
-		if SERVER then
-			-- Too slow on clientside on some servers
-			-- See: https://github.com/Facepunch/garrysmod-issues/issues/5674
-
-			if not luaExists(luafile) then
-				local err = string.format("Couldn't include file '%s' (File not found)", luafile)
-				error(err)
-
-				return nil
-			end
-		end
-
 		local r = include(luafile)
 
 		if not r then
-			local err = string.format("Couldn't include file '%s' (Error during execution or file not found)", luafile)
-			error(err)
+			if devMode then
+				local err = string.format("Included file '%s' had no return value!", luafile)
+				error(err)
+				return nil
+			end
+
+			if not g_abortInclude then
+				g_abortInclude = true
+				g_abortIncludeErrorThrown = false
+			end
+
+			if not g_abortIncludeErrorThrown then
+				g_abortIncludeErrorThrown = true
+				error("Error including files, aborted addon loading! Restart with 'developer 1' for details. Did server code load correctly?")
+			end
 
 			return nil
 		end
