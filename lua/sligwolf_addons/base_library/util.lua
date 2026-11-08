@@ -564,6 +564,42 @@ function LIB.CreateEntityLookup(name, idGetterFunc)
 	return lookup
 end
 
+function LIB.CompareObjectLists(listA, listB)
+	if not listA and not listB then
+		return true
+	end
+
+	if not listA then
+		return false
+	end
+
+	if not listB then
+		return false
+	end
+
+	if #listA ~= #listB then
+		return false
+	end
+
+	for i, itemA in ipairs(listA) do
+		local itemB = listB[i]
+
+		for k, v in pairs(itemA) do
+			if itemB[k] ~= v then
+				return false
+			end
+		end
+
+		for k, v in pairs(itemB) do
+			if itemA[k] ~= v then
+				return false
+			end
+		end
+	end
+
+	return true
+end
+
 function LIB.Load()
 	LIBEntities = SligWolf_Addons.Entities
 	LIBTimer = SligWolf_Addons.Timer
