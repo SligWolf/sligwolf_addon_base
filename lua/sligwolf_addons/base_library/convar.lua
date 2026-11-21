@@ -47,7 +47,44 @@ g_helpList.shCvar = g_helpList.shCvar or {}
 g_helpList.clCvar = g_helpList.clCvar or {}
 g_helpList.cmd = g_helpList.cmd or {}
 
+g_helpList.sortedShCvar = nil
+g_helpList.sortedClCvar = nil
+g_helpList.sortedCmd = nil
+g_helpList.dirty = true
+
 local g_nextThink = nil
+
+local function sortHelp()
+	if not g_helpList.dirty and g_helpList.sortedShCvar and g_helpList.sortedClCvar and g_helpList.sortedCmd then
+		return
+	end
+
+	g_helpList.sortedShCvar = nil
+	g_helpList.sortedClCvar = nil
+	g_helpList.sortedCmd = nil
+
+	local shCvar = {}
+	local clCvar = {}
+	local cmd = {}
+
+	for _, item in SortedPairsByMemberValue(g_helpList.shCvar, "name", false) do
+		table.insert(shCvar, table.Copy(item))
+	end
+
+	for _, item in SortedPairsByMemberValue(g_helpList.clCvar, "name", false) do
+		table.insert(clCvar, table.Copy(item))
+	end
+
+	for _, item in SortedPairsByMemberValue(g_helpList.cmd, "name", false) do
+		table.insert(cmd, table.Copy(item))
+	end
+
+	g_helpList.sortedShCvar = shCvar
+	g_helpList.sortedClCvar = clCvar
+	g_helpList.sortedCmd = cmd
+	g_helpList.dirty = nil
+end
+
 
 local function buildHelp(cmdName, parameters, role)
 	local innerHelp = tostring(parameters.help or "")
@@ -202,7 +239,9 @@ local function printHelp(filter)
 	local clCvar = {}
 	local cmd = {}
 
-	for _, item in SortedPairsByMemberValue(g_helpList.shCvar, "name", false) do
+	sortHelp()
+
+	for _, item in ipairs(g_helpList.sortedShCvar) do
 		if not LIBString.WildcardMatch(item.name, filter) then
 			continue
 		end
@@ -211,7 +250,7 @@ local function printHelp(filter)
 	end
 
 	if CLIENT then
-		for _, item in SortedPairsByMemberValue(g_helpList.clCvar, "name", false) do
+		for _, item in ipairs(g_helpList.sortedClCvar) do
 			if not LIBString.WildcardMatch(item.name, filter) then
 				continue
 			end
@@ -220,7 +259,7 @@ local function printHelp(filter)
 		end
 	end
 
-	for _, item in SortedPairsByMemberValue(g_helpList.cmd, "name", false) do
+	for _, item in ipairs(g_helpList.sortedCmd) do
 		if not LIBString.WildcardMatch(item.name, filter) then
 			continue
 		end
@@ -478,10 +517,12 @@ function LIB.AddConvarHelp(convarName, parameters)
 		name = convarName,
 		help = helpObj,
 		plaintext = helpPlaintext,
+		parameters = parameters,
 	}
 
 	if not parameters.unlisted then
 		g_helpList.shCvar[convarName] = item
+		g_helpList.dirty = true
 	end
 
 	return item
@@ -507,10 +548,12 @@ function LIB.AddClientConvarHelp(convarName, parameters)
 		name = convarName,
 		help = helpObj,
 		plaintext = helpPlaintext,
+		parameters = parameters,
 	}
 
 	if not parameters.unlisted then
 		g_helpList.clCvar[convarName] = item
+		g_helpList.dirty = true
 	end
 
 	return item
@@ -547,13 +590,31 @@ function LIB.AddCommandHelp(cmdName, parameters)
 		name = cmdName,
 		help = helpObj,
 		plaintext = helpPlaintext,
+		parameters = parameters,
 	}
 
 	if not parameters.unlisted then
 		g_helpList.cmd[cmdName] = item
+		g_helpList.dirty = true
 	end
 
 	return item
+end
+
+function LIB.GetCommandHelpList()
+	sortHelp()
+
+	local result = {}
+
+	result.sharedConvars = g_helpList.sortedShCvar
+
+	if CLIENT then
+		result.clientConvars = g_helpList.sortedClCvar
+	end
+
+	result.commands = g_helpList.sortedCmd
+
+	return result
 end
 
 function LIB.AddCommandRole(roleName, parameters)
