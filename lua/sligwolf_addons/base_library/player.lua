@@ -24,7 +24,7 @@ function LIB.IsAdmin(ply)
 end
 
 function LIB.IsAdminForCMD(ply)
-	if ply == nil then
+	if not IsValid(ply) then
 		return true
 	end
 
