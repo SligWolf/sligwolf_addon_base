@@ -3,8 +3,6 @@ if not SligWolf_Addons then
 	return
 end
 
-local LIB = SligWolf_Addons.Mustache
-
 local string_find, string_match, string_sub =
       string.find, string.match, string.sub
 
