@@ -57,6 +57,59 @@ function LIB.ReadInt(...)
 	return net.ReadInt(...)
 end
 
+function LIB.WriteTable(data, compressed)
+	if compressed == nil then
+		compressed = true
+	end
+
+	if not data then
+		data = {}
+	end
+
+	if not istable(data) then
+		data = {data}
+	end
+
+	local json = util.TableToJSON(data, false)
+
+	if compressed then
+		json = util.Compress(json)
+	end
+
+	local len = #json
+
+	net.WriteUInt(len, 16)
+	net.WriteData(json, len)
+end
+
+function LIB.ReadTable(compressed)
+	if compressed == nil then
+		compressed = true
+	end
+
+	local len = net.ReadUInt(16)
+	local json = net.ReadData(len)
+
+	if not json or json == "" then
+		return nil
+	end
+
+	if compressed then
+		json = util.Decompress(json, 1024 * 1024)
+
+		if not json or json == "" then
+			return nil
+		end
+	end
+
+	local data = util.JSONToTable(json)
+	if not data then
+		return nil
+	end
+
+	return data
+end
+
 function LIB.Send(...)
 	return net.Send(...)
 end
