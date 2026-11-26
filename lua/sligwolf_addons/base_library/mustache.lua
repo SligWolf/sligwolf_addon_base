@@ -7,6 +7,9 @@ local LIB = SligWolf_Addons:NewLib("Mustache")
 
 local LIBPrint = SligWolf_Addons.Print
 
+-- This library uses a thirdparty library called Lustache, by Olivine-Labs.
+-- https://github.com/Olivine-Labs/lustache
+
 if SERVER then
 	SligWolf_Addons.AddCSLuaFile("sligwolf_addons/thirdparty/lustache/lustache.lua")
 	SligWolf_Addons.AddCSLuaFile("sligwolf_addons/thirdparty/lustache/context.lua")
@@ -47,9 +50,24 @@ function LIB.Require(name)
 	return mod
 end
 
-function LIB.Render(...)
-	local output = LIB.Require("lustache"):render(...)
+function LIB.Render(template, view, partials)
+	template = tostring(template or "")
+
+	if template == "" then
+		return ""
+	end
+
+	local lustache = LIB.Require("lustache")
+
+	local output = lustache:render(template, view, partials)
+	lustache.partials = nil
+
 	return output
+end
+
+function LIB.ClearCache()
+	local lustache = LIB.Require("lustache")
+	lustache.renderer:clear_cache()
 end
 
 function LIB.Load()

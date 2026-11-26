@@ -95,7 +95,7 @@ function LIB.ReadTable(compressed)
 	end
 
 	if compressed then
-		json = util.Decompress(json, 1024 * 1024)
+		json = util.Decompress(json, 4 * 1024 * 1024)
 
 		if not json or json == "" then
 			return nil

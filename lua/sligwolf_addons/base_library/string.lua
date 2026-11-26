@@ -213,6 +213,14 @@ function LIB.CreateColoredString(rawtext, colors)
 	return obj
 end
 
+function LIB.PlaintextFromColoredString(rawtextOrObj, colors)
+	if isstring(rawtextOrObj) then
+		rawtextOrObj = LIB.CreateColoredString(rawtextOrObj, colors)
+	end
+
+	return rawtextOrObj:GetPlaintext()
+end
+
 function LIB.Load()
 	LIBUtil = SligWolf_Addons.Util
 end

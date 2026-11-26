@@ -68,15 +68,15 @@ local function sortHelp()
 	local cmd = {}
 
 	for _, item in SortedPairsByMemberValue(g_helpList.shCvar, "name", false) do
-		table.insert(shCvar, table.Copy(item))
+		table.insert(shCvar, item)
 	end
 
 	for _, item in SortedPairsByMemberValue(g_helpList.clCvar, "name", false) do
-		table.insert(clCvar, table.Copy(item))
+		table.insert(clCvar, item)
 	end
 
 	for _, item in SortedPairsByMemberValue(g_helpList.cmd, "name", false) do
-		table.insert(cmd, table.Copy(item))
+		table.insert(cmd, item)
 	end
 
 	g_helpList.sortedShCvar = shCvar
@@ -85,6 +85,26 @@ local function sortHelp()
 	g_helpList.dirty = nil
 end
 
+local function getAddonByCmdName(cmdName, addon)
+	local addonName = SligWolf_Addons.BASE_ADDON_NAME
+
+	if not addon then
+		addonName = string.match(cmdName, "_sligwolf_([^_]+)_")
+	else
+		if isstring(addon) then
+			addonName = addon
+		elseif addon.Addonname then
+			addonName = addon.Addonname
+		end
+	end
+
+	local addons = SligWolf_Addons.GetAddons()
+	if not addons[addonName] then
+		return SligWolf_Addons.BASE_ADDON_NAME
+	end
+
+	return addonName
+end
 
 local function buildHelp(cmdName, parameters, role)
 	local innerHelp = tostring(parameters.help or "")
@@ -92,10 +112,12 @@ local function buildHelp(cmdName, parameters, role)
 	local max = tostring(parameters.max or "")
 	local default = parameters.default
 	local helpOptions = parameters.helpOptions or {}
-	local helpSyntax = tostring(parameters.helpSyntax or "")
-	local optiosHelp = {}
+	local helpSyntax = parameters.helpSyntax or {}
+	local optionsHelp = {}
 
 	local isBoolean = isbool(default)
+
+	local sanitizedParameters = {}
 
 	if #helpOptions <= 0 and isBoolean then
 		helpOptions = {
@@ -116,8 +138,16 @@ local function buildHelp(cmdName, parameters, role)
 			continue
 		end
 
-		local optiosHelpItem = string.format("\x04%s\x01 = %s", value, name)
-		optiosHelp[#optiosHelp + 1] = optiosHelpItem
+		local optionItem = {
+			value = value,
+			name = LIBString.PlaintextFromColoredString(name, LIB.HELP_COLORS),
+		}
+
+		local sanitizedOptions = sanitizedParameters.options or {}
+		sanitizedParameters.options = sanitizedOptions
+
+		optionsHelp[#optionsHelp + 1] = string.format("\x04%s\x01 = %s", value, name)
+		sanitizedOptions[#sanitizedOptions + 1] = optionItem
 	end
 
 	local roleTitle = ""
@@ -133,44 +163,70 @@ local function buildHelp(cmdName, parameters, role)
 	end
 
 	if roleTitle ~= "" then
+		sanitizedParameters.roleTitle = LIBString.PlaintextFromColoredString(roleTitle, LIB.HELP_COLORS)
 		helpBuffer[#helpBuffer + 1] = string.format("\x06[%s]\x01 ", roleTitle)
 	end
 
+	sanitizedParameters.innerHelp = LIBString.PlaintextFromColoredString(innerHelp, LIB.HELP_COLORS)
 	helpBuffer[#helpBuffer + 1] = string.format("\x03%s\x01", innerHelp)
 
-	if #optiosHelp <= 0 then
+	if #optionsHelp <= 0 then
 		helpBuffer[#helpBuffer + 1] = "\n"
 
 		if min ~= "" then
+			sanitizedParameters.min = min
 			min = string.format("Min: \x04%s\x01", min)
 			helpBuffer[#helpBuffer + 1] = min
 		end
 
 		if max ~= "" then
+			sanitizedParameters.max = max
 			max = string.format("Max: \x04%s\x01", max)
 			helpBuffer[#helpBuffer + 1] = max
 		end
 	else
 		helpBuffer[#helpBuffer + 1] = "\n"
-
-		optiosHelp = string.format("Options: %s", table.concat(optiosHelp, ", "))
-		helpBuffer[#helpBuffer + 1] = optiosHelp
+		optionsHelp = string.format("Options: %s", table.concat(optionsHelp, ", "))
+		helpBuffer[#helpBuffer + 1] = optionsHelp
 	end
 
-	if helpSyntax ~= "" then
+	local hasHelpSyntaxHeader = false
+
+	for _, helpSyntaxItem in ipairs(helpSyntax) do
+		if helpSyntaxItem == "" then
+			continue
+		end
+
+		if not hasHelpSyntaxHeader then
+			helpBuffer[#helpBuffer + 1] = "\n"
+			helpBuffer[#helpBuffer + 1] = "Syntax: "
+			hasHelpSyntaxHeader = true
+		end
+
+		local helpSyntaxItemFormated = string.format("\\t\x02%s\x01 \x04%s\x01", cmdName, helpSyntaxItem)
+
 		helpBuffer[#helpBuffer + 1] = "\n"
-		helpSyntax = string.format("Syntax: \x02%s\x01 \x04%s\x01", cmdName, helpSyntax)
-		helpBuffer[#helpBuffer + 1] = helpSyntax
+		helpBuffer[#helpBuffer + 1] = helpSyntaxItemFormated
+
+		local sanitizedHelpSyntax = sanitizedParameters.helpSyntax or {}
+		sanitizedParameters.helpSyntax = sanitizedHelpSyntax
+
+		sanitizedHelpSyntax[#sanitizedHelpSyntax + 1] = LIBString.PlaintextFromColoredString(helpSyntaxItem, LIB.HELP_COLORS)
 	end
 
 	if default ~= nil then
 		helpBuffer[#helpBuffer + 1] = "\n"
 
 		if isBoolean then
-			default = string.format("Default: \x04%i\x01", default and 1 or 0)
+			default = default and 1 or 0
+			sanitizedParameters.default = default
+
+			default = string.format("Default: \x04%i\x01", default)
 		else
+			sanitizedParameters.default = isstring(default) and LIBString.PlaintextFromColoredString(default, LIB.HELP_COLORS) or default
+
 			if default == "" then
-				default = string.format("Default: \x05<empty>\x01", default)
+				default = string.format("Default: \x05<empty>\x01")
 			else
 				default = string.format("Default: \x04%s\x01", default)
 			end
@@ -186,10 +242,11 @@ local function buildHelp(cmdName, parameters, role)
 	help = string.gsub(help, "[ \t]+", " ")
 	help = string.gsub(help, "[ \t]+[\r\n]+", "\n")
 	help = string.gsub(help, "[\r\n]+[ \t]+", "\n")
+	help = string.gsub(help, "%\\t", "  ")
 
 	local helpObj = LIBString.CreateColoredString(help, LIB.HELP_COLORS)
 
-	return helpObj
+	return helpObj, sanitizedParameters
 end
 
 local g_defaultColor = LIB.HELP_COLORS[1]
@@ -508,7 +565,8 @@ function LIB.AddConvarHelp(convarName, parameters)
 		return nil
 	end
 
-	local helpObj = buildHelp(convarName, parameters)
+	local helpObj, sanitizedParameters = buildHelp(convarName, parameters)
+	local addonname = getAddonByCmdName(convarName, parameters.addon)
 
 	local helpPlaintext = helpObj:GetPlaintext()
 	helpPlaintext = formatPlaintextHelp(helpPlaintext)
@@ -517,7 +575,8 @@ function LIB.AddConvarHelp(convarName, parameters)
 		name = convarName,
 		help = helpObj,
 		plaintext = helpPlaintext,
-		parameters = parameters,
+		parameters = sanitizedParameters,
+		addonname = addonname,
 	}
 
 	if not parameters.unlisted then
@@ -539,7 +598,8 @@ function LIB.AddClientConvarHelp(convarName, parameters)
 		return nil
 	end
 
-	local helpObj = buildHelp(convarName, parameters)
+	local helpObj, sanitizedParameters = buildHelp(convarName, parameters)
+	local addonname = getAddonByCmdName(convarName, parameters.addon)
 
 	local helpPlaintext = helpObj:GetPlaintext()
 	helpPlaintext = formatPlaintextHelp(helpPlaintext)
@@ -548,7 +608,8 @@ function LIB.AddClientConvarHelp(convarName, parameters)
 		name = convarName,
 		help = helpObj,
 		plaintext = helpPlaintext,
-		parameters = parameters,
+		parameters = sanitizedParameters,
+		addonname = addonname,
 	}
 
 	if not parameters.unlisted then
@@ -581,7 +642,8 @@ function LIB.AddCommandHelp(cmdName, parameters)
 		return nil
 	end
 
-	local helpObj = buildHelp(cmdName, parameters, role)
+	local helpObj, sanitizedParameters = buildHelp(cmdName, parameters, role)
+	local addonname = getAddonByCmdName(cmdName, parameters.addon)
 
 	local helpPlaintext = helpObj:GetPlaintext()
 	helpPlaintext = formatPlaintextHelp(helpPlaintext)
@@ -590,7 +652,8 @@ function LIB.AddCommandHelp(cmdName, parameters)
 		name = cmdName,
 		help = helpObj,
 		plaintext = helpPlaintext,
-		parameters = parameters,
+		parameters = sanitizedParameters,
+		addonname = addonname,
 	}
 
 	if not parameters.unlisted then
@@ -606,13 +669,13 @@ function LIB.GetCommandHelpList()
 
 	local result = {}
 
-	result.sharedConvars = g_helpList.sortedShCvar
+	result.sharedConvars = g_helpList.sortedShCvar and table.Copy(g_helpList.sortedShCvar)
 
 	if CLIENT then
-		result.clientConvars = g_helpList.sortedClCvar
+		result.clientConvars = g_helpList.sortedClCvar and table.Copy(g_helpList.sortedClCvar)
 	end
 
-	result.commands = g_helpList.sortedCmd
+	result.commands = g_helpList.sortedCmd and table.Copy(g_helpList.sortedCmd)
 
 	return result
 end
@@ -897,7 +960,9 @@ function LIB.Load()
 			end,
 
 			help = "Lists all ConCommands and ConVars related to SW Addons.",
-			helpSyntax = "[<commandname wildcard|*>]",
+			helpSyntax = {
+				"[<commandname wildcard|*>]",
+			},
 		})
 	else
 		LIB.AddCommand("sv_sligwolf_base_help", {
@@ -909,7 +974,9 @@ function LIB.Load()
 			end,
 
 			help = "Lists all ConCommands and ConVars related to SW Addons.",
-			helpSyntax = "[<commandname wildcard|*>]",
+			helpSyntax = {
+				"[<commandname wildcard|*>]",
+			},
 		})
 
 		LIB.AddConvarHelp("sv_sligwolf_base_workshop_download", {
